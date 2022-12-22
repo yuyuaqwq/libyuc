@@ -29,20 +29,20 @@ void AVLHeadInit(AVLHead* head, int objSize, int entryOffset, int keyOffset, int
 
 void AVLEntryInit(AVLEntry* entry);
 
-//#define AVLFindKey_Macro(head, retEntry, key, entryFieldName, typeName, keyFieldName) { \
-//	AVLEntry* cur = head->root; \
-//	retEntry = NULL; \
-//	while (cur) { \
-//		typeName* temp = GetHeadFromField(cur, typeName, entryFieldName); \
-//		if (temp->keyFieldName < (key)) { \
-//			cur = cur->right; \
-//		} else if (temp->keyFieldName > (key)) { \
-//			cur = cur->left; \
-//		} else { \
-//			retEntry = cur; break; \
-//		} \
-//	} \
-//}
+#define AVLFindKey_Macro(head, retEntry, key, typeName, entryFieldName, keyFieldName) { \
+	AVLEntry* cur = (head)->root; \
+	retEntry = NULL; \
+	while (cur) { \
+		typeName* temp = GetHeadFromField(cur, typeName, entryFieldName); \
+		if (temp->keyFieldName < (key)) { \
+			cur = cur->right; \
+		} else if (temp->keyFieldName > (key)) { \
+			cur = cur->left; \
+		} else { \
+			retEntry = cur; break; \
+		} \
+	} \
+}
 
 AVLEntry* AVLFindKey(AVLHead* head, void* key);
 
