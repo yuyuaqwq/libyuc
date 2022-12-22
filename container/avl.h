@@ -1,7 +1,7 @@
 #ifndef UTILS_AVL_H_
 #define UTILS_AVL_H_
 
-#include "CUtils/obj.h"
+#include "CUtils/container/obj.h"
 
 #ifdef __cplusplus
 extern "C" {
