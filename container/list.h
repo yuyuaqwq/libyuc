@@ -27,17 +27,20 @@ ListEntry* ListRemoveHead(ListEntry* head);
 
 ListEntry* ListRemoveTail(ListEntry* head);
 
-bool ListTraversal(ListEntry* head, ListEntry** cur);
+size_t ListEntryCount(ListEntry* head);
 
-#define ListFindKey_Macro(head, retEntry, key, typeName, entryFieldName, keyFieldName) { \
-	ListEntry* cur; \
-	retEntry = NULL; \
-	while (ListTraversal((head), &cur)) { \
-		typeName* temp = GetHeadFromField(cur, typeName, entryFieldName); \
-		if (temp->keyFieldName == (key)) { \
-			retEntry = (typeName*)cur; \
+bool ListIteration(ListEntry* head, ListEntry** cur);
+
+#define ListFindKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
+	retObj = NULL; \
+	ListEntry* cur = (head)->next; \
+	while ((head) != cur) { \
+		objName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
+		if (tempObj->keyFieldName == (key)) { \
+			retObj = tempObj; \
 			break; \
 		} \
+		cur = cur->next; \
 	} \
 }
 

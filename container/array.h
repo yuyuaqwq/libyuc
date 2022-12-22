@@ -15,18 +15,18 @@ typedef struct _Array {
 	int objByteCount;
 } Array;
 
-void ArrayInit(Array* arr, int typeSize, size_t capacity);
+void ArrayInit(Array* arr, int objByteCount, size_t capacity);
 
 void ArrayRelease(Array* arr);
 
-#define ArrayAt(arr, typeName, index) ((typeName*)(((uintptr_t)(arr)->objArr) + (arr)->objByteCount * (index)))
+#define ArrayAt(arr, objName, index) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objByteCount * (index)))
 
-#define ArrayFindKey_Macro(arr, retEntry, typeName, keyField, key) { \
-	retEntry = NULL; \
+#define ArrayFindKeyM(arr, retObj, objName, keyFieldName, key) { \
+	retObj = NULL; \
 	for (int i = 0; i < (arr)->size; i++) { \
-		typeName* temp = ArrayAt((arr), typeName, i); \
-		if (temp->keyField == key) { \
-			retEntry = temp; \
+		objName* tempObj = ArrayAt((arr), objName, i); \
+		if (tempObj->keyFieldName == (key)) { \
+			retObj = tempObj; \
 			break; \
 		} \
 	} \

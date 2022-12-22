@@ -14,18 +14,18 @@ typedef struct _Vector {
 	void** objPtrArr;
 } Vector;
 
-void VectorInit(Vector* arr, int typeSize, size_t capacity);
+void VectorInit(Vector* arr, size_t capacity);
 
 void VectorRelease(Vector* arr);
 
-#define VectorAt(vector, typeName, index) (*(typeName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
+#define VectorAt(vector, objName, index) (*(objName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
 
-#define VectorFindKey_Macro(vector, retEntry, typeName, keyField, key) { \
-	retEntry = NULL; \
+#define VectorFindKeyM(vector, retObj, objName, keyFieldName, key) { \
+	retObj = NULL; \
 	for (int i = 0; i < (vector)->size; i++) { \
-		typeName* temp = VectorAt((vector), typeName, i); \
-		if (temp->keyField == key) { \
-			retEntry = temp; \
+		objName* tempObj = VectorAt((vector), objName, i); \
+		if (tempObj->keyFieldName == (key)) { \
+			retObj = tempObj; \
 			break; \
 		} \
 	} \

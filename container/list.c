@@ -44,10 +44,27 @@ ListEntry* ListRemoveTail(ListEntry* head) {
 	return ListRemoveEntry(head->prev, true);
 }
 
-bool ListTraversal(ListEntry* head, ListEntry** cur) {
+size_t ListEntryCount(ListEntry* head) {
+	size_t count = 0;
+	ListEntry* cur = head->next;
+	while (cur != head) {
+		count++;
+		cur = cur->next;
+	}
+	return count;
+}
+
+bool ListIteration(ListEntry* head, ListEntry** cur) {
+	if (*cur == NULL) {
+		*cur = head->next;
+		if (head == *cur) {
+			return false;
+		}
+		return true;
+	}
 	if (head == *cur) {
 		return false;
 	}
-	*cur = head->next;
+	*cur = (*cur)->next;
 	return true;
 }

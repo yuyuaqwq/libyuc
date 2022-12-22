@@ -20,7 +20,7 @@ static void VectorExpand(Vector* vector, size_t targetCapacity) {
 	}
 }
 
-void VectorInit(Vector* vector, int typeSize, size_t capacity) {
+void VectorInit(Vector* vector, size_t capacity) {
 	VectorRelease(vector);
 	if (capacity != 0) {
 		VectorExpand(vector, capacity);

@@ -204,9 +204,9 @@ void AVLEntryInit(AVLEntry* entry) {
 
 AVLEntry* AVLFindKey(AVLHead* head, void* key) {
 	AVLEntry* cur = head->root;
-	void* obj = GetHeadFromFieldOffset(void, cur, head->entryOffset);
+	void* obj = GetObjFromFieldOffset(void, cur, head->entryOffset);
 	while (cur) {
-		int res = MemoryCmp_ByteOrder(GetFieldFromHeadOffset(void, obj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
+		int res = MemoryCmp_ByteOrder(GetFieldFromObjOffset(void, obj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
 		if (res < 0) {
 			cur = cur->right;
 		} else if (res > 0) {
@@ -227,12 +227,12 @@ bool AVLInsertEntry(AVLHead* head, AVLEntry* entry) {
 		return true;
 	}
 
-	void* obj = GetHeadFromFieldOffset(void, entry, head->entryOffset);
-	void* key = GetFieldFromHeadOffset(void, obj, head->keyOffset);
+	void* obj = GetObjFromFieldOffset(void, entry, head->entryOffset);
+	void* key = GetFieldFromObjOffset(void, obj, head->keyOffset);
 	AVLEntry* cur = (AVLEntry*)root;
 	while (cur) {
-		void* curObj = GetHeadFromFieldOffset(void, cur, head->entryOffset);
-		int res = MemoryCmp_ByteOrder(GetFieldFromHeadOffset(void, curObj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
+		void* curObj = GetObjFromFieldOffset(void, cur, head->entryOffset);
+		int res = MemoryCmp_ByteOrder(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
 		if (res < 0) {
 			if (!cur->right) {
 				cur->right = entry;
@@ -272,8 +272,8 @@ AVLEntry* AVLDeleteEntry(AVLHead* head, void* key) {
 	AVLEntry* cur = head->root;
 	AVLEntry* backtrack = NULL;
 	while (cur) {
-		void* curObj = GetHeadFromFieldOffset(void, cur, head->entryOffset);
-		int res = MemoryCmp_ByteOrder(GetFieldFromHeadOffset(void, curObj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
+		void* curObj = GetObjFromFieldOffset(void, cur, head->entryOffset);
+		int res = MemoryCmp_ByteOrder(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
 		if (res < 0) {
 			cur = cur->right;
 		} else if (res > 0) {
