@@ -32,10 +32,13 @@ void ArrayRelease(Array* arr);
 	} \
 }
 
-void ArrayPushBack(Array* arr, void* obj);
+void ArrayPushTail(Array* arr, void* obj);
 
-void* ArrayPopBack(Array* arr);
+void* ArrayPopTail(Array* arr);
 
+void ArrayExpand(Array* arr, size_t targetSize);
+
+void ArraySwapEntry(Array* arr, int index1, int index2);
 
 #ifdef __cplusplus
 }

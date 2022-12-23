@@ -31,9 +31,9 @@ void VectorRelease(Vector* arr);
 	} \
 }
 
-void VectorPushBack(Vector* vector, void* obj);
+void VectorPushTail(Vector* vector, void* obj);
 
-void* VectorPopBack(Vector* vector);
+void* VectorPopTail(Vector* vector);
 
 
 #ifdef __cplusplus

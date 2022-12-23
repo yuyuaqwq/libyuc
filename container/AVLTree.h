@@ -17,7 +17,7 @@ typedef struct _AVLEntry {
 typedef struct _AVLHead {
 	AVLEntry* root;
 	int entryOffset;
-	bool smallByteOrder;
+	// bool smallByteOrder;
 	int keyOffset;
 	int keyByteCount;
 	int objByteCount;
@@ -31,9 +31,9 @@ void AVLEntryInit(AVLEntry* entry);
 
 #define AVLFindKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
-	AVLEntry* cur = (obj)->root; \
+	AVLEntry* cur = (head)->root; \
 	while (cur) { \
-		typeName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
+		objName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
 		if (tempObj->keyFieldName < (key)) { \
 			cur = cur->right; \
 		} else if (tempObj->keyFieldName > (key)) { \

@@ -1,21 +1,5 @@
 #include "AVLTree.h"
 
-static int MemoryCmp_ByteOrder(void* buf1_, void* buf2_, int size, bool smallByteOrder) {
-	if (smallByteOrder) {
-		uint8_t* buf1 = buf1_;
-		uint8_t* buf2 = buf2_;
-		while (--size >= 0) {
-			int res = buf1[size] - buf2[size];
-			if (res != 0) {
-				return res;
-			}
-		}
-		return 0;
-	}
-	return MemoryCmp(buf1_, buf2_, size);
-	
-}
-
 /*
 * 根据左右子树高度获取节点高度
 */
@@ -188,7 +172,7 @@ static void AVLHitchEntry(AVLHead* head, AVLEntry* entry, AVLEntry* newEntry) {
 void AVLHeadInit(AVLHead* head, int objSize, int entryOffset, int keyOffset, int keySize) {
 	head->root = NULL;
 	head->entryOffset = entryOffset;
-	head->smallByteOrder = true;
+	// head->smallByteOrder = true;
 	head->keyOffset = keyOffset;
 	head->keyByteCount = keySize;
 	head->objByteCount = objSize;
@@ -206,7 +190,7 @@ AVLEntry* AVLFindKey(AVLHead* head, void* key) {
 	AVLEntry* cur = head->root;
 	void* obj = GetObjFromFieldOffset(void, cur, head->entryOffset);
 	while (cur) {
-		int res = MemoryCmp_ByteOrder(GetFieldFromObjOffset(void, obj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
+		int res = MemoryCmpR(GetFieldFromObjOffset(void, obj, head->keyOffset), key, head->keyByteCount);
 		if (res < 0) {
 			cur = cur->right;
 		} else if (res > 0) {
@@ -232,7 +216,7 @@ bool AVLInsertEntry(AVLHead* head, AVLEntry* entry) {
 	AVLEntry* cur = (AVLEntry*)root;
 	while (cur) {
 		void* curObj = GetObjFromFieldOffset(void, cur, head->entryOffset);
-		int res = MemoryCmp_ByteOrder(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
+		int res = MemoryCmpR(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount);
 		if (res < 0) {
 			if (!cur->right) {
 				cur->right = entry;
@@ -273,7 +257,7 @@ AVLEntry* AVLDeleteEntry(AVLHead* head, void* key) {
 	AVLEntry* backtrack = NULL;
 	while (cur) {
 		void* curObj = GetObjFromFieldOffset(void, cur, head->entryOffset);
-		int res = MemoryCmp_ByteOrder(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount, head->smallByteOrder);
+		int res = MemoryCmpR(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount);
 		if (res < 0) {
 			cur = cur->right;
 		} else if (res > 0) {

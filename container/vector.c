@@ -1,12 +1,13 @@
 #include "vector.h"
 
-static void VectorExpand(Vector* vector, size_t targetCapacity) {
+
+void VectorExpand(Vector* vector, size_t targetSize) {
 	size_t oldCapacity = vector->capacity;
 
 	if (vector->capacity == 0) {
 		vector->capacity = 1;
 	}
-	while (vector->capacity > targetCapacity) {
+	while (vector->capacity < targetSize) {
 		vector->capacity *= 2;
 	}
 
@@ -14,7 +15,7 @@ static void VectorExpand(Vector* vector, size_t targetCapacity) {
 		void* newBuf = CreateMultipleObjFromCount(void*, vector->capacity);
 		if (vector->objPtrArr) {
 			MemoryCopy(newBuf, vector->objPtrArr, sizeof(uintptr_t) * vector->size);
-			DeleteObj(vector->objPtrArr);
+			DeleteObject(vector->objPtrArr);
 		}
 		vector->objPtrArr = newBuf;
 	}
@@ -30,22 +31,22 @@ void VectorInit(Vector* vector, size_t capacity) {
 void VectorRelease(Vector* vector) {
 	if (vector->objPtrArr) {
 		for (int i = 0; i < vector->size; i++) {
-			DeleteObj(vector->objPtrArr[i]);
+			DeleteObject(vector->objPtrArr[i]);
 		}
-		DeleteObj(vector->objPtrArr);
+		DeleteObject(vector->objPtrArr);
 		vector->objPtrArr = NULL;
 	}
 	vector->capacity = 0;
 	vector->size = 0;
 }
 
-void VectorPushBack(Vector* vector, void* obj) {
+void VectorPushTail(Vector* vector, void* obj) {
 	if (vector->capacity <= vector->size) {
 		VectorExpand(vector, vector->size + 1);
 	}
 	vector->objPtrArr[vector->size++] = obj;
 }
 
-void* VectorPopBack(Vector* vector) {
+void* VectorPopTail(Vector* vector) {
 	return vector->objPtrArr[vector->size--];
 }
