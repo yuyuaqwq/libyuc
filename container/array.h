@@ -1,7 +1,7 @@
 #ifndef UTILS_ARRAY_H_
 #define UTILS_ARRAY_H_
 
-#include "CUtils/container/obj.h"
+#include "CUtils/container/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +15,7 @@ typedef struct _Array {
 	int objByteCount;
 } Array;
 
-void ArrayInit(Array* arr, int objByteCount, size_t capacity);
+void ArrayInit(Array* arr, size_t capacity, int objByteCount);
 
 void ArrayRelease(Array* arr);
 

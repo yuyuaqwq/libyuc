@@ -5,7 +5,7 @@ void ListHeadInit(ListEntry* head) {
 	head->next = head;
 }
 
-bool ListHeadEmpty(ListEntry* head) {
+bool ListIsEmpty(ListEntry* head) {
 	return head->next == head && head->prev == head;
 }
 

@@ -20,7 +20,7 @@ static void ArrayExpand(Array* arr, size_t targetCapacity) {
 	}
 }
 
-void ArrayInit(Array* arr, int objByteCount, size_t capacity) {
+void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
 	ArrayRelease(arr);
 	arr->objByteCount = objByteCount;
 	if (capacity != 0) {

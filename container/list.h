@@ -1,7 +1,7 @@
 #ifndef UTILS_LIST_H_
 #define UTILS_LIST_H_
 
-#include "CUtils/container/obj.h"
+#include "CUtils/container/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +15,7 @@ typedef struct _ListEntry {
 
 void ListHeadInit(ListEntry* head);
 
-bool ListHeadEmpty(ListEntry* entry);
+bool ListIsEmpty(ListEntry* entry);
 
 void ListInsertHead(ListEntry* head, ListEntry* entry);
 

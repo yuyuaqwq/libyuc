@@ -1,5 +1,5 @@
-#ifndef UTILS_OBJ_H_
-#define UTILS_OBJ_H_
+#ifndef UTILS_OBJECT_H_
+#define UTILS_OBJECT_H_
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -12,10 +12,10 @@ extern "C" {
 #endif
 
 
-#define CreateObj(objName) ((objName*)malloc(sizeof(objName)))
+#define CreateObject(objName) ((objName*)malloc(sizeof(objName)))
 #define CreateMultipleObjFromCount(objName, count) ((objName*)malloc(sizeof(objName) * (count)))
 #define CreateMultipleObjFromByteCount(objByteCount, count) (malloc((objByteCount) * (count)))
-#define DeleteObj(obj) free(obj)
+#define DeleteObject(obj) (free(obj))
 
 #define MemoryCopy(dst, src, size) memcpy((void*)(dst), (void*)(src), (size))
 #define MemorySet(dst, val, size) memset((void*)(dst), (val), (size))
@@ -32,4 +32,4 @@ extern "C" {
 #endif
 
 
-#endif UTILS_OBJ_H_
+#endif UTILS_OBJECT_H_
