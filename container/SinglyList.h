@@ -1,5 +1,5 @@
-#ifndef UTILS_SIGNLY_LIST_H_
-#define UTILS_SIGNLY_LIST_H_
+#ifndef CUTILS_SIGNLY_LIST_H_
+#define CUTILS_SIGNLY_LIST_H_
 
 #include "CUtils/container/object.h"
 
@@ -45,4 +45,4 @@ bool SinglyListIteration(SinglyListHead* head, SinglyListEntry** cur);
 }
 #endif
 
-#endif // UTILS_SIGNLY_LIST_H_
+#endif // CUTILS_SIGNLY_LIST_H_

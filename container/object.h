@@ -1,5 +1,5 @@
-#ifndef UTILS_OBJECT_H_
-#define UTILS_OBJECT_H_
+#ifndef CUTILS_OBJECT_H_
+#define CUTILS_OBJECT_H_
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -38,4 +38,4 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #endif
 
 
-#endif UTILS_OBJECT_H_
+#endif CUTILS_OBJECT_H_

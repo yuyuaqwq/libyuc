@@ -1,5 +1,5 @@
-#ifndef UTILS_ARRAY_H_
-#define UTILS_ARRAY_H_
+#ifndef CUTILS_ARRAY_H_
+#define CUTILS_ARRAY_H_
 
 #include "CUtils/container/object.h"
 
@@ -9,17 +9,17 @@ extern "C" {
 
 
 typedef struct _Array {
-	size_t size;
+	size_t count;
 	size_t capacity;
 	void* objArr;
-	int objByteCount;
+	int objSize;
 } Array;
 
 void ArrayInit(Array* arr, size_t capacity, int objByteCount);
 
 void ArrayRelease(Array* arr);
 
-#define ArrayAt(arr, objName, index) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objByteCount * (index)))
+#define ArrayAt(arr, objName, index) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
 
 #define ArrayFindEntryByKeyM(arr, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \
@@ -44,4 +44,4 @@ void ArraySwapEntry(Array* arr, int index1, int index2);
 }
 #endif
 
-#endif // UTILS_ARRAY_H_
+#endif // CUTILS_ARRAY_H_

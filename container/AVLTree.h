@@ -1,5 +1,5 @@
-#ifndef UTILS_AVL_H_
-#define UTILS_AVL_H_
+#ifndef CUTILS_AVL_H_
+#define CUTILS_AVL_H_
 
 #include "CUtils/container/object.h"
 
@@ -16,11 +16,11 @@ typedef struct _AVLEntry {
 
 typedef struct _AVLTree {
 	AVLEntry* root;
-	int entryFieldOffset;
 	// bool smallByteOrder;
+	int entryFieldOffset;
+	int objByteCount;
 	int keyFieldOffset;
 	int keyByteCount;
-	int objByteCount;
 } AVLTree;
 
 typedef bool (*TraversalCallback)(AVLEntry* entry, void* arg);
@@ -63,4 +63,4 @@ bool AVLMiddleorder_Iteration(AVLEntry** cur, bool* status_right);
 }
 #endif
 
-#endif // UTILS_AVL_H_
+#endif // CUTILS_AVL_H_

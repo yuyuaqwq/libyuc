@@ -11,9 +11,9 @@ void ArrayExpand(Array* arr, size_t targetSize) {
 	}
 
 	if (oldCapacity != arr->capacity) {
-		void* newBuf = CreateMultipleObjByByteCount(arr->objByteCount, arr->capacity);
+		void* newBuf = CreateMultipleObjByByteCount(arr->objSize, arr->capacity);
 		if (arr->objArr) {
-			MemoryCopy(newBuf, arr->objArr, arr->objByteCount * arr->size);
+			MemoryCopy(newBuf, arr->objArr, arr->objSize * arr->count);
 			DeleteObject(arr->objArr);
 		}
 		arr->objArr = newBuf;
@@ -22,7 +22,7 @@ void ArrayExpand(Array* arr, size_t targetSize) {
 
 void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
 	ArrayRelease(arr);
-	arr->objByteCount = objByteCount;
+	arr->objSize = objByteCount;
 	if (capacity != 0) {
 		ArrayExpand(arr, capacity);
 	}
@@ -34,25 +34,25 @@ void ArrayRelease(Array* arr) {
 		arr->objArr = NULL;
 	}
 	arr->capacity = 0;
-	arr->size = 0;
+	arr->count = 0;
 }
 
 void ArrayPushTail(Array* arr, void* obj) {
-	if (arr->capacity <= arr->size) {
-		ArrayExpand(arr, arr->size + 1);
+	if (arr->capacity <= arr->count) {
+		ArrayExpand(arr, arr->count + 1);
 	}
-	MemoryCopy(ArrayAt(arr, void, arr->size++), obj, arr->objByteCount);
+	MemoryCopy(ArrayAt(arr, void, arr->count++), obj, arr->objSize);
 }
 
 void* ArrayPopTail(Array* arr) {
-	if (arr->size == 0) {
+	if (arr->count == 0) {
 		return NULL;
 	}
-	return ArrayAt(arr, void, arr->size--);
+	return ArrayAt(arr, void, arr->count--);
 }
 
 void ArraySwapEntry(Array* arr, int index1, int index2) {
 	void* obj1 = ArrayAt(arr, void, index1);
 	void* obj2 = ArrayAt(arr, void, index2);
-	MemorySwap(obj1, obj2, arr->objByteCount);
+	MemorySwap(obj1, obj2, arr->objSize);
 }

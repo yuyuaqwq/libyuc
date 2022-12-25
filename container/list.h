@@ -1,5 +1,5 @@
-#ifndef UTILS_LIST_H_
-#define UTILS_LIST_H_
+#ifndef CUTILS_LIST_H_
+#define CUTILS_LIST_H_
 
 #include "CUtils/container/object.h"
 
@@ -42,4 +42,4 @@ bool ListIteration(ListHead* head, ListEntry** cur);
 }
 #endif
 
-#endif // UTILS_LIST_H_
+#endif // CUTILS_LIST_H_

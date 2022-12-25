@@ -1,5 +1,5 @@
-#ifndef UTILS_QUEUE_H_
-#define UTILS_QUEUE_H_
+#ifndef CUTILS_QUEUE_H_
+#define CUTILS_QUEUE_H_
 
 #include "CUtils/container/object.h"
 #include "CUtils/container/array.h"
@@ -20,7 +20,7 @@ typedef struct ArrayQueue {
 //             t   h
 // ¶ÓÂú£º| 3 |   | 1 | 2 |
 
-void ArrayQueueInit(ArrayQueue* queue, size_t capacity, int objByteCount);
+void ArrayQueueInit(ArrayQueue* queue, size_t capacity, int objSize);
 void ArrayQueueRelease(ArrayQueue* queue);
 bool ArrayQueueIsEmpty(ArrayQueue* queue);
 bool ArrayQueueIsFull(ArrayQueue* queue);
@@ -32,4 +32,4 @@ void* ArrayQueueDequeue(ArrayQueue* queue);
 }
 #endif
 
-#endif // UTILS_VECTOR_H_
+#endif // CUTILS_VECTOR_H_
