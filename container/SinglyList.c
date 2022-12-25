@@ -1,26 +1,26 @@
 #include "SinglyList.h"
 
-void SinglyListHeadInit(SinglyListEntry* head) {
+void SinglyListHeadInit(SinglyListHead* head) {
 	head->next = head;
 }
 
-bool SinglyListIsEmpty(SinglyListEntry* head) {
+bool SinglyListIsEmpty(SinglyListHead* head) {
 	return head->next == head;
 }
 
-void SinglyListInsertHead(SinglyListEntry* head, SinglyListEntry* entry) {
+void SinglyListInsertHead(SinglyListHead* head, SinglyListEntry* entry) {
 	SinglyListEntry* old = head->next;
 	head->next = entry;
 	entry->next = old;
 }
 
-SinglyListEntry* SinglyListRemoveHead(SinglyListEntry* head) {
+SinglyListEntry* SinglyListRemoveHead(SinglyListHead* head) {
 	SinglyListEntry* old = head->next;
 	head->next = old->next;
 	return old;
 }
 
-size_t SinglyListEntryCount(SinglyListEntry* head) {
+size_t SinglyListEntryCount(SinglyListHead* head) {
 	size_t count = 0;
 	SinglyListEntry* cur = head->next;
 	while (cur != head) {
@@ -30,7 +30,7 @@ size_t SinglyListEntryCount(SinglyListEntry* head) {
 	return count;
 }
 
-bool SinglyListIteration(SinglyListEntry* head, SinglyListEntry** cur) {
+bool SinglyListIteration(SinglyListHead* head, SinglyListEntry** cur) {
 	if (*cur == NULL) {
 		*cur = head->next;
 		if (head == *cur) {

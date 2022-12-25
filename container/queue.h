@@ -20,18 +20,11 @@ typedef struct ArrayQueue {
 //             t   h
 // ¶ÓÂú£º| 3 |   | 1 | 2 |
 
-void ArrayQueueExpand(ArrayQueue* queue);
-
 void ArrayQueueInit(ArrayQueue* queue, size_t capacity, int objByteCount);
-
 void ArrayQueueRelease(ArrayQueue* queue);
-
 bool ArrayQueueIsEmpty(ArrayQueue* queue);
-
 bool ArrayQueueIsFull(ArrayQueue* queue);
-
 void ArrayQueueEnqueue(ArrayQueue* queue, void* obj);
-
 void* ArrayQueueDequeue(ArrayQueue* queue);
 
 

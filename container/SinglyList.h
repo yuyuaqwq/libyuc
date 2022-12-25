@@ -12,20 +12,21 @@ typedef struct _SinglyListEntry {
 	struct _SinglyListEntry* next;
 } SinglyListEntry;
 
+typedef SinglyListEntry SinglyListHead;
 
-void SinglyListHeadInit(SinglyListEntry* head);
+void SinglyListHeadInit(SinglyListHead* head);
 
-bool SinglyListIsEmpty(SinglyListEntry* head);
+bool SinglyListIsEmpty(SinglyListHead* head);
 
-void SinglyListInsertHead(SinglyListEntry* head, SinglyListEntry* entry);
+void SinglyListInsertHead(SinglyListHead* head, SinglyListEntry* entry);
 
-SinglyListEntry* SinglyListRemoveHead(SinglyListEntry* head);
+SinglyListEntry* SinglyListRemoveHead(SinglyListHead* head);
 
-size_t SinglyListEntryCount(SinglyListEntry* head);
+size_t SinglyListEntryCount(SinglyListHead* head);
 
-bool SinglyListIteration(SinglyListEntry* head, SinglyListEntry** cur);
+bool SinglyListIteration(SinglyListHead* head, SinglyListEntry** cur);
 
-#define SinglyListFindKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
+#define SinglyListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
 	SinglyListEntry* cur = (head)->next; \
 	while ((head) != cur) { \

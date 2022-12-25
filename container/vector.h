@@ -20,7 +20,7 @@ void VectorRelease(Vector* arr);
 
 #define VectorAt(vector, objName, index) (*(objName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
 
-#define VectorFindKeyM(vector, retObj, objName, keyFieldName, key) { \
+#define VectorFindEntryByKeyM(vector, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \
 	for (int i = 0; i < (vector)->size; i++) { \
 		objName* tempObj = VectorAt((vector), objName, i); \

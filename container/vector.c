@@ -12,7 +12,7 @@ void VectorExpand(Vector* vector, size_t targetSize) {
 	}
 
 	if (oldCapacity != vector->capacity) {
-		void* newBuf = CreateMultipleObjFromCount(void*, vector->capacity);
+		void* newBuf = CreateMultipleObjByCount(void*, vector->capacity);
 		if (vector->objPtrArr) {
 			MemoryCopy(newBuf, vector->objPtrArr, sizeof(uintptr_t) * vector->size);
 			DeleteObject(vector->objPtrArr);

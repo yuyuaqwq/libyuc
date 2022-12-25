@@ -1,6 +1,6 @@
 #include "queue.h"
 
-void ArrayQueueExpand(ArrayQueue* queue) {
+static void ArrayQueueExpand(ArrayQueue* queue) {
 	Array* arr = &queue->arr;
 	ArrayExpand(arr, arr->size + 2);
 	if (queue->head > queue->tail) {

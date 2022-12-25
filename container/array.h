@@ -21,7 +21,7 @@ void ArrayRelease(Array* arr);
 
 #define ArrayAt(arr, objName, index) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objByteCount * (index)))
 
-#define ArrayFindKeyM(arr, retObj, objName, keyFieldName, key) { \
+#define ArrayFindEntryByKeyM(arr, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \
 	for (int i = 0; i < (arr)->size; i++) { \
 		objName* tempObj = ArrayAt((arr), objName, i); \

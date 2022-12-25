@@ -1,15 +1,19 @@
 #include "list.h"
 
-void ListHeadInit(ListEntry* head) {
+void ListHeadInit(ListHead* head) {
 	head->prev = head;
 	head->next = head;
 }
 
-bool ListIsEmpty(ListEntry* head) {
+void ListEntryInit(ListEntry* entry) {
+	ListHeadInit(entry);
+}
+
+bool ListIsEmpty(ListHead* head) {
 	return head->next == head && head->prev == head;
 }
 
-void ListInsertHead(ListEntry* head, ListEntry* entry) {
+void ListInsertHead(ListHead* head, ListEntry* entry) {
 	ListEntry* old = head->next;
 	head->next = entry;
 	entry->prev = head;
@@ -17,7 +21,7 @@ void ListInsertHead(ListEntry* head, ListEntry* entry) {
 	old->prev = entry;
 }
 
-void ListInsertTail(ListEntry* head, ListEntry* entry) {
+void ListInsertTail(ListHead* head, ListEntry* entry) {
 	ListEntry* old = head->prev;
 	head->prev = entry;
 	entry->next = head;
@@ -31,20 +35,20 @@ ListEntry* ListRemoveEntry(ListEntry* entry, bool empty) {
 	prev->next = next;
 	next->prev = prev;
 	if (empty) {
-		ListHeadInit(entry);
+		ListEntryInit(entry);
 	}
 	return entry;
 }
 
-ListEntry* ListRemoveHead(ListEntry* head) {
+ListEntry* ListRemoveHead(ListHead* head) {
 	return ListRemoveEntry(head->next, true);
 }
 
-ListEntry* ListRemoveTail(ListEntry* head) {
+ListEntry* ListRemoveTail(ListHead* head) {
 	return ListRemoveEntry(head->prev, true);
 }
 
-size_t ListEntryCount(ListEntry* head) {
+size_t ListEntryCount(ListHead* head) {
 	size_t count = 0;
 	ListEntry* cur = head->next;
 	while (cur != head) {
@@ -54,7 +58,7 @@ size_t ListEntryCount(ListEntry* head) {
 	return count;
 }
 
-bool ListIteration(ListEntry* head, ListEntry** cur) {
+bool ListIteration(ListHead* head, ListEntry** cur) {
 	if (*cur == NULL) {
 		*cur = head->next;
 		if (head == *cur) {

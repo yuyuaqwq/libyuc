@@ -13,29 +13,23 @@ typedef struct _ListEntry {
 	struct _ListEntry* next;
 } ListEntry;
 
-void ListHeadInit(ListEntry* head);
+typedef ListEntry ListHead;
 
-bool ListIsEmpty(ListEntry* entry);
-
-void ListInsertHead(ListEntry* head, ListEntry* entry);
-
-void ListInsertTail(ListEntry* head, ListEntry* entry);
-
+void ListHeadInit(ListHead* head);
+void ListEntryInit(ListEntry* entry);
+bool ListIsEmpty(ListHead* entry);
+void ListInsertHead(ListHead* head, ListEntry* entry);
+void ListInsertTail(ListHead* head, ListEntry* entry);
 ListEntry* ListRemoveEntry(ListEntry* entry, bool empty);
-
-ListEntry* ListRemoveHead(ListEntry* head);
-
-ListEntry* ListRemoveTail(ListEntry* head);
-
-size_t ListEntryCount(ListEntry* head);
-
-bool ListIteration(ListEntry* head, ListEntry** cur);
-
-#define ListFindKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
+ListEntry* ListRemoveHead(ListHead* head);
+ListEntry* ListRemoveTail(ListHead* head);
+size_t ListEntryCount(ListHead* head);
+bool ListIteration(ListHead* head, ListEntry** cur);
+#define ListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
 	ListEntry* cur = (head)->next; \
 	while ((head) != cur) { \
-		objName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
+		objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
 		if (tempObj->keyFieldName == (key)) { \
 			retObj = tempObj; \
 			break; \
@@ -43,7 +37,6 @@ bool ListIteration(ListEntry* head, ListEntry** cur);
 		cur = cur->next; \
 	} \
 }
-
 
 #ifdef __cplusplus
 }

@@ -11,12 +11,8 @@
 extern "C" {
 #endif
 
-
-#define CreateObject(objName) ((objName*)malloc(sizeof(objName)))
-#define CreateMultipleObjFromCount(objName, count) ((objName*)malloc(sizeof(objName) * (count)))
-#define CreateMultipleObjFromByteCount(objByteCount, count) (malloc((objByteCount) * (count)))
-#define DeleteObject(obj) (free(obj))
-
+#define MemoryAlloc(size) malloc((size))
+#define MemoryFree(ptr) free((ptr))
 #define MemoryCopy(dst, src, size) memcpy((void*)(dst), (void*)(src), (size))
 void MemoryCopyR(void* dst_, void* src_, size_t size);
 #define MemorySet(dst, val, size) memset((void*)(dst), (val), (size))
@@ -25,11 +21,17 @@ int MemoryCmpR(void* buf1_, void* buf2_, size_t size);
 void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
-#define GetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
-#define GetFieldFromObjOffset(objName, obj, offset) ( (objName*)((uintptr_t)(obj) + (offset)) )
-#define GetObjFromFieldOffset(objName, field, offset) ( (objName*)((uintptr_t)(field) - (offset)) )
-#define GetObjFromField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
+#define CreateObject(objName) ((objName*)MemoryAlloc(sizeof(objName)))
+#define CreateMultipleObjByCount(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
+#define CreateMultipleObjByByteCount(objByteCount, count) (MemoryAlloc((objByteCount) * (count)))
+#define DeleteObject(obj) (MemoryFree(obj))
 
+
+#define GetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
+#define GetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
+#define GetFieldByFieldOffset(obj, objName, fieldOffset) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
+#define GetObjByFieldOffset(field, objName, fieldOffset) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
+#define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
 #ifdef __cplusplus
 }

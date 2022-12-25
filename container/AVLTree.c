@@ -102,7 +102,7 @@ static AVLEntry* RotateRight(AVLEntry* subRoot) {
 /*
 * 根据平衡因子来旋转子树
 */
-static bool RotateFromBalanceFactor(AVLHead* head, AVLEntry** subRoot_) {
+static bool RotateFromBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
 	AVLEntry* subRoot = *subRoot_;
 
 	int factor = GetBalanceFactor(subRoot);
@@ -138,8 +138,8 @@ static bool RotateFromBalanceFactor(AVLHead* head, AVLEntry** subRoot_) {
 	}
 
 	if (rotate) {
-		if (head->root == subRoot) {		// 原来的子树根节点可能是整棵树的根节点，因此要检查更新
-			head->root = newSubRoot;
+		if (tree->root == subRoot) {		// 原来的子树根节点可能是整棵树的根节点，因此要检查更新
+			tree->root = newSubRoot;
 		}
 		*subRoot_ = newSubRoot;
 	}
@@ -151,7 +151,7 @@ static bool RotateFromBalanceFactor(AVLHead* head, AVLEntry** subRoot_) {
 * newEntry挂接到entry原来的位置
 * entry从树中摘除，但entry的parent、left和right不变
 */
-static void AVLHitchEntry(AVLHead* head, AVLEntry* entry, AVLEntry* newEntry) {
+static void AVLHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* newEntry) {
 	if (entry->parent) {
 		if (entry->parent->left == entry) {
 			entry->parent->left = newEntry;
@@ -162,35 +162,43 @@ static void AVLHitchEntry(AVLHead* head, AVLEntry* entry, AVLEntry* newEntry) {
 	if (newEntry) {
 		newEntry->parent = entry->parent;
 	}
-	if (head->root == entry) {
-		head->root = newEntry;
+	if (tree->root == entry) {
+		tree->root = newEntry;
 	}
 }
 
 
-
-void AVLHeadInit(AVLHead* head, int objSize, int entryOffset, int keyOffset, int keySize) {
-	head->root = NULL;
-	head->entryOffset = entryOffset;
+/*
+* 初始化树
+*/
+void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize) {
+	tree->root = NULL;
+	tree->entryFieldOffset = entryFieldOffset;
 	// head->smallByteOrder = true;
-	head->keyOffset = keyOffset;
-	head->keyByteCount = keySize;
-	head->objByteCount = objSize;
+	tree->keyFieldOffset = keyFieldOffset;
+	tree->keyByteCount = keySize;
+	tree->objByteCount = objSize;
 }
 
+/*
+* 初始化节点
+*/
 void AVLEntryInit(AVLEntry* entry) {
 	entry->height = 0;
 	entry->left = NULL;
 	entry->right = NULL;
 	entry->parent = NULL;
-
 }
 
-AVLEntry* AVLFindKey(AVLHead* head, void* key) {
-	AVLEntry* cur = head->root;
-	void* obj = GetObjFromFieldOffset(void, cur, head->entryOffset);
+/*
+* 从树中查找节点
+* 存在返回查找到的节点，不存在返回NULL
+*/
+AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key) {
+	AVLEntry* cur = tree->root;
 	while (cur) {
-		int res = MemoryCmpR(GetFieldFromObjOffset(void, obj, head->keyOffset), key, head->keyByteCount);
+		void* obj = GetObjByFieldOffset(cur, void, tree->entryFieldOffset);
+		int res = MemoryCmpR(GetFieldByFieldOffset(obj, void, tree->keyFieldOffset), key, tree->keyByteCount);
 		if (res < 0) {
 			cur = cur->right;
 		} else if (res > 0) {
@@ -202,21 +210,25 @@ AVLEntry* AVLFindKey(AVLHead* head, void* key) {
 	return NULL;
 }
 
-#define AVLFindKey_Macro()
-
-bool AVLInsertEntry(AVLHead* head, AVLEntry* entry) {
-	AVLEntry* root = head->root;
+/*
+* 向树中插入节点
+* 不允许存在重复节点
+* 成功返回true，失败返回false
+*/
+bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry) {
+	AVLEntry* root = tree->root;
+	AVLEntryInit(entry);
 	if (root == NULL) {
-		head->root = entry;
+		tree->root = entry;
 		return true;
 	}
 
-	void* obj = GetObjFromFieldOffset(void, entry, head->entryOffset);
-	void* key = GetFieldFromObjOffset(void, obj, head->keyOffset);
+	void* obj = GetObjByFieldOffset(entry, void, tree->entryFieldOffset);
+	void* key = GetFieldByFieldOffset(obj, void, tree->keyFieldOffset);
 	AVLEntry* cur = (AVLEntry*)root;
 	while (cur) {
-		void* curObj = GetObjFromFieldOffset(void, cur, head->entryOffset);
-		int res = MemoryCmpR(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount);
+		void* curObj = GetObjByFieldOffset(cur, void, tree->entryFieldOffset);
+		int res = MemoryCmpR(GetFieldByFieldOffset(curObj, void, tree->keyFieldOffset), key, tree->keyByteCount);
 		if (res < 0) {
 			if (!cur->right) {
 				cur->right = entry;
@@ -243,7 +255,7 @@ bool AVLInsertEntry(AVLHead* head, AVLEntry* entry) {
 		} else {
 			break;		// 至此高度未发生变化，不再回溯
 		}
-		if (RotateFromBalanceFactor(head, &cur)) {
+		if (RotateFromBalanceFactor(tree, &cur)) {
 			break;		// 插入后如果旋转了，就不需要再向上回溯了，因为旋转会导致这颗子树的高度不变
 		}
 		cur = cur->parent;
@@ -252,87 +264,101 @@ bool AVLInsertEntry(AVLHead* head, AVLEntry* entry) {
 	return true;
 }
 
-AVLEntry* AVLDeleteEntry(AVLHead* head, void* key) {
-	AVLEntry* cur = head->root;
-	AVLEntry* backtrack = NULL;
-	while (cur) {
-		void* curObj = GetObjFromFieldOffset(void, cur, head->entryOffset);
-		int res = MemoryCmpR(GetFieldFromObjOffset(void, curObj, head->keyOffset), key, head->keyByteCount);
-		if (res < 0) {
-			cur = cur->right;
-		} else if (res > 0) {
-			cur = cur->left;
-		} else {
-			// 找到节点，准备删除
-			if (cur->left == NULL && cur->right == NULL) {
-				// 没有子节点，直接从父节点中摘除此节点
-				AVLHitchEntry(head, cur, NULL);
-			} else if (cur->left == NULL) {
-				// 只有右子节点，那说明右子节点没有子节点(有子节点的话就已经失衡了，因为没有左子节点，右子节点还有子节点就会形成0 - 2)
-				AVLHitchEntry(head, cur, cur->right);
-			} else if (cur->right == NULL) {
-				AVLHitchEntry(head, cur, cur->left);
-			} else {
-				// 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
-				AVLEntry* minEntry = cur->right;
-				while (minEntry) {
-					if (minEntry->left) {
-						minEntry = minEntry->left;
-					} else {
-						break;
-					}
-				}
-				
-				// 最小节点继承待删除节点的左子树
-				minEntry->left = cur->left;
-				if (minEntry->left) {
-					minEntry->left->parent = minEntry;
-				}
+/*
+* 从树中删除节点
+* 成功返回被删除的节点，失败返回NULL
+*/
+AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 
-				// 最小节点继承待删除节点的右子树
-				if (minEntry->parent != cur) {
-					backtrack = minEntry->parent;
-
-					minEntry->parent->left = minEntry->right;
-					if (minEntry->right) {
-						minEntry->right->parent = minEntry->parent;
-					}
-					minEntry->right = cur->right;
-					if (minEntry->right) {
-						minEntry->right->parent = minEntry;
-					}
-				} else {
-					backtrack = minEntry;
-				}
-				AVLHitchEntry(head, cur, minEntry);
+	AVLEntry* backtrack = entry->parent;		// 通常情况下是从被删除节点的父节点开始回溯
+	if (entry->left == NULL && entry->right == NULL) {
+		// 没有子节点，直接从父节点中摘除此节点
+		AVLHitchEntry(tree, entry, NULL);
+	}
+	else if (entry->left == NULL) {
+		// 只有右子节点，那说明右子节点没有子节点(有子节点的话就已经失衡了，因为没有左子节点，右子节点还有子节点就会形成0 - 2)
+		AVLHitchEntry(tree, entry, entry->right);
+	}
+	else if (entry->right == NULL) {
+		AVLHitchEntry(tree, entry, entry->left);
+	}
+	else {
+		// 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
+		AVLEntry* minEntry = entry->right;
+		while (minEntry) {
+			if (minEntry->left) {
+				minEntry = minEntry->left;
+			}
+			else {
 				break;
 			}
-			backtrack = cur->parent;
-			break;
 		}
+
+		// 最小节点继承待删除节点的左子树
+		minEntry->left = entry->left;
+		if (minEntry->left) {
+			minEntry->left->parent = minEntry;
+		}
+
+		// 最小节点继承待删除节点的右子树
+		if (minEntry->parent != entry) {
+			backtrack = minEntry->parent;
+
+			minEntry->parent->left = minEntry->right;
+			if (minEntry->right) {
+				minEntry->right->parent = minEntry->parent;
+			}
+			minEntry->right = entry->right;
+			if (minEntry->right) {
+				minEntry->right->parent = minEntry;
+			}
+		}
+		else {
+			backtrack = minEntry;
+		}
+		AVLHitchEntry(tree, entry, minEntry);
 	}
+	
+	
 	// 删除节点后高度可能发生变化，回溯维护节点高度
 	while (backtrack) {
 		if (UpdateHeight(backtrack) == false) {
 			// 父节点高度未变化则说明，父节点的另一子树深度更深，要检查是否失衡
-			if (RotateFromBalanceFactor(head, &backtrack) == false) {
+			if (RotateFromBalanceFactor(tree, &backtrack) == false) {
 				break;		// 未失衡则停止回溯，从当前节点开始不会再影响上层节点的高度。
 			}
-		} else { }
+		}
+		else {}
 		backtrack = backtrack->parent;
 	}
-	return cur;
+	return entry;
 }
 
+/*
+* 从树中按key删除节点
+* 成功返回被删除的节点，失败返回NULL
+*/
+AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key) {
+	AVLEntry* entry = AVLFindEntryByKey(tree, key);
+	if (entry) {
+		AVLDeleteEntry(tree, entry);
+	}
+	return entry;
+}
+
+/*
+* 获取树节点数量
+*/
 static void AVLEntrySizeCountCallback(AVLEntry* entry, void* arg) {
 	int* count = arg;
 	(*count)++;
 }
-size_t AVLEntrySize(AVLHead* head) {
+size_t AVLEntrySize(AVLTree* head) {
 	int count = 0;
 	AVLPreorder_Callback(head->root, AVLEntrySizeCountCallback, &count);
 	return count;
 }
+
 
 
 /*
@@ -350,21 +376,21 @@ void AVLPreorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg
 * 中序遍历
 * 先左再根再右
 */
-void Middleorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg) {
+void AVLMiddleorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg) {
 	if (!entry) return;
-	Middleorder_Callback(entry->left, callback, arg);
+	AVLMiddleorder_Callback(entry->left, callback, arg);
 	callback(entry, arg);
-	Middleorder_Callback(entry->right, callback, arg);
+	AVLMiddleorder_Callback(entry->right, callback, arg);
 }
 
 /*
 * 后序遍历
 * 先左再右再根
 */
-void Postorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg) {
+void AVLPostorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg) {
 	if (!entry) return;
-	Postorder_Callback(entry->left, callback, arg);
-	Postorder_Callback(entry->right, callback, arg);
+	AVLPostorder_Callback(entry->left, callback, arg);
+	AVLPostorder_Callback(entry->right, callback, arg);
 	callback(entry, arg);
 }
 
@@ -373,7 +399,7 @@ void Postorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg) 
 * 中序遍历
 * 先左再根再右
 */
-bool AVLMiddleorder(AVLEntry** cur, bool* status_right) {
+bool AVLMiddleorder_Iteration(AVLEntry** cur, bool* status_right) {
 	if (*status_right == true) {
 		// 当前节点和左子树已经遍历过了，准备从右子树开始
 		if ((*cur)->right == NULL) {

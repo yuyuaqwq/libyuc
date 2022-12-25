@@ -11,7 +11,7 @@ void ArrayExpand(Array* arr, size_t targetSize) {
 	}
 
 	if (oldCapacity != arr->capacity) {
-		void* newBuf = CreateMultipleObjFromByteCount(arr->objByteCount, arr->capacity);
+		void* newBuf = CreateMultipleObjByByteCount(arr->objByteCount, arr->capacity);
 		if (arr->objArr) {
 			MemoryCopy(newBuf, arr->objArr, arr->objByteCount * arr->size);
 			DeleteObject(arr->objArr);

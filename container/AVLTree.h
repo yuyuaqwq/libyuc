@@ -14,26 +14,28 @@ typedef struct _AVLEntry {
 	int height;
 } AVLEntry;
 
-typedef struct _AVLHead {
+typedef struct _AVLTree {
 	AVLEntry* root;
-	int entryOffset;
+	int entryFieldOffset;
 	// bool smallByteOrder;
-	int keyOffset;
+	int keyFieldOffset;
 	int keyByteCount;
 	int objByteCount;
-} AVLHead;
+} AVLTree;
 
 typedef bool (*TraversalCallback)(AVLEntry* entry, void* arg);
 
-void AVLHeadInit(AVLHead* head, int objSize, int entryOffset, int keyOffset, int keySize);
+#define AVLTreeInitM(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), sizeof(objName), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName))
+
+void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize);
 
 void AVLEntryInit(AVLEntry* entry);
 
-#define AVLFindKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
+#define AVLFindEntryByKeyM(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
-	AVLEntry* cur = (head)->root; \
+	AVLEntry* cur = (tree)->root; \
 	while (cur) { \
-		objName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
+		objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
 		if (tempObj->keyFieldName < (key)) { \
 			cur = cur->right; \
 		} else if (tempObj->keyFieldName > (key)) { \
@@ -44,15 +46,18 @@ void AVLEntryInit(AVLEntry* entry);
 	} \
 }
 
-AVLEntry* AVLFindKey(AVLHead* head, void* key);
+AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key);
 
-bool AVLInsertEntry(AVLHead* head, AVLEntry* entry);
+bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry);
 
-AVLEntry* AVLDeleteEntry(AVLHead* head, void* key);
+AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry);
 
-size_t AVLEntrySize(AVLHead* head);
+AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key);
+
+size_t AVLEntrySize(AVLTree* tree);
 
 void AVLPreorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg);
+bool AVLMiddleorder_Iteration(AVLEntry** cur, bool* status_right);
 
 #ifdef __cplusplus
 }
