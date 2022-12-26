@@ -19,7 +19,7 @@ void ArrayInit(Array* arr, size_t capacity, int objByteCount);
 
 void ArrayRelease(Array* arr);
 
-#define ArrayAt(arr, objName, index) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
+#define ArrayAt(arr, index, objName) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
 
 #define ArrayFindEntryByKeyM(arr, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \

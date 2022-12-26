@@ -6,9 +6,9 @@ static void ArrayQueueExpand(ArrayQueue* queue) {
 	if (queue->head > queue->tail) {
 		size_t copyCount = arr->count - queue->head;
 		if (copyCount != 0) {
-			void* src = ArrayAt(arr, void, queue->head);
+			void* src = ArrayAt(arr, queue->head, void);
 			queue->head = arr->capacity - copyCount;
-			void* dst = ArrayAt(arr, void, queue->head);
+			void* dst = ArrayAt(arr, queue->head, void);
 			MemoryCopyR(dst, src, copyCount * arr->objSize);
 		}
 	}
@@ -43,7 +43,7 @@ void ArrayQueueEnqueue(ArrayQueue* queue, void* obj) {
 	if (ArrayQueueIsFull(queue)) {
 		ArrayQueueExpand(queue);
 	}
-	MemoryCopy(ArrayAt(&queue->arr, void, queue->tail), obj, queue->arr.objSize);
+	MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), obj, queue->arr.objSize);
 	queue->tail++;
 	queue->tail %= queue->arr.count;
 }
@@ -53,7 +53,7 @@ void* ArrayQueueDequeue(ArrayQueue* queue) {
 		return NULL;
 	}
 	int index = queue->head;
-	void* ret = ArrayAt(&queue->arr, void, index);
+	void* ret = ArrayAt(&queue->arr, index, void);
 	queue->head++;
 	queue->head %= queue->arr.count;
 	return ret;

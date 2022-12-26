@@ -18,7 +18,7 @@ void VectorInit(Vector* arr, size_t capacity);
 
 void VectorRelease(Vector* arr);
 
-#define VectorAt(vector, objName, index) (*(objName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
+#define VectorAt(vector, index, objName) (*(objName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
 
 #define VectorFindEntryByKeyM(vector, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \

@@ -1,5 +1,5 @@
-#ifndef CUTILS_SIGNLY_LIST_H_
-#define CUTILS_SIGNLY_LIST_H_
+#ifndef CUTILS_STATIC_LIST_H_
+#define CUTILS_STATIC_LIST_H_
 
 #include "CUtils/container/object.h"
 #include "CUtils/container/array.h"
@@ -14,18 +14,25 @@ typedef struct _StaticListHead {
 	int freeIndex;
 } StaticListHead;
 
+/*
+* 分配后此条目的值可以被覆盖，故可以使用union
+*/
 typedef struct _StaticListEntry {
 	int nextIndex;
 } StaticListEntry;
 
 void StaticListHeadInit(StaticListHead* head, size_t count, int objSize, int entryFieldOffset);
 
-void* StaticListAllocEntry(StaticListHead* head);
+int StaticListAllocEntry(StaticListHead* head);
 
 void StaticListFreeEntry(StaticListHead* head, int index);
+
+#define StaticListAt(head, index, objName) (ArrayAt((head)->array, index, objName))
+
+int StaticListSwitchFreeIndex(StaticListHead* head, int newIndex);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_SIGNLY_LIST_H_
+#endif // CUTILS_STATIC_LIST_H_
