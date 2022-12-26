@@ -14,11 +14,11 @@ void StaticListHeadInit(StaticListHead* head, size_t count, int objSize, int ent
 	int i = 0;
 	for (; i < count; i++) {
 		void* objEntry = ArrayAt(arr, i, void);
-		StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, StaticListEntry, entryFieldOffset);
+		StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, entryFieldOffset, StaticListEntry);
 		listEntry->nextIndex = i + 1;
 	}
 	void* objEntry = ArrayAt(arr, i, void);
-	StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, StaticListEntry, entryFieldOffset);
+	StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, entryFieldOffset, StaticListEntry);
 	listEntry->nextIndex = -1;
 }
 
@@ -28,7 +28,7 @@ int StaticListAllocEntry(StaticListHead* head) {
 	}
 	Array* arr = &head->array;
 	void* objEntry = ArrayAt(arr, head->freeIndex, void);
-	StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, StaticListEntry, head->entryFieldOffset);
+	StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, head->entryFieldOffset, StaticListEntry);
 	int allocIndex = head->freeIndex;
 	head->freeIndex = listEntry->nextIndex;
 	return allocIndex;
@@ -37,7 +37,7 @@ int StaticListAllocEntry(StaticListHead* head) {
 void StaticListFreeEntry(StaticListHead* head, int index) {
 	Array* arr = &head->array;
 	void* objEntry = ArrayAt(arr, index, void);
-	StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, StaticListEntry, head->entryFieldOffset);
+	StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, head->entryFieldOffset, StaticListEntry);
 	listEntry->nextIndex = head->freeIndex;
 	head->freeIndex = index;
 }
