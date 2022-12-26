@@ -29,8 +29,8 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 #define GetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
 #define GetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
-#define GetFieldByFieldOffset(obj, objName, fieldOffset) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
-#define GetObjByFieldOffset(field, objName, fieldOffset) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
+#define GetFieldByFieldOffset(obj, fieldOffset, objName) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
+#define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
 #ifdef __cplusplus

@@ -41,18 +41,18 @@ void ArrayPushTail(Array* arr, void* obj) {
 	if (arr->capacity <= arr->count) {
 		ArrayExpand(arr, arr->count + 1);
 	}
-	MemoryCopy(ArrayAt(arr, void, arr->count++), obj, arr->objSize);
+	MemoryCopy(ArrayAt(arr, arr->count++, void), obj, arr->objSize);
 }
 
 void* ArrayPopTail(Array* arr) {
 	if (arr->count == 0) {
 		return NULL;
 	}
-	return ArrayAt(arr, void, arr->count--);
+	return ArrayAt(arr, arr->count--, void);
 }
 
 void ArraySwapEntry(Array* arr, int index1, int index2) {
-	void* obj1 = ArrayAt(arr, void, index1);
-	void* obj2 = ArrayAt(arr, void, index2);
+	void* obj1 = ArrayAt(arr, index1, void);
+	void* obj2 = ArrayAt(arr, index2, void);
 	MemorySwap(obj1, obj2, arr->objSize);
 }
