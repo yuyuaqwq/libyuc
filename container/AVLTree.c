@@ -173,8 +173,8 @@ void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldO
 	tree->entryFieldOffset = entryFieldOffset;
 	// head->smallByteOrder = true;
 	tree->keyFieldOffset = keyFieldOffset;
-	tree->keyByteCount = keySize;
-	tree->objByteCount = objSize;
+	tree->keyFieldSize = keySize;
+	tree->objSize = objSize;
 }
 
 /*
@@ -195,7 +195,7 @@ AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key) {
 	AVLEntry* cur = tree->root;
 	while (cur) {
 		void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-		int res = MemoryCmpR(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyByteCount);
+		int res = MemoryCmpR(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
 		if (res < 0) {
 			cur = cur->right;
 		} else if (res > 0) {
@@ -225,7 +225,7 @@ bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry) {
 	AVLEntry* cur = root;
 	while (cur) {
 		void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-		int res = MemoryCmpR(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyByteCount);
+		int res = MemoryCmpR(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
 		if (res < 0) {
 			if (!cur->right) {
 				cur->right = entry;
@@ -291,16 +291,17 @@ AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 			}
 		}
 
-		// 最小节点继承待删除节点的左子树
+		// 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
 		minEntry->left = entry->left;
 		if (minEntry->left) {
 			minEntry->left->parent = minEntry;
 		}
 
-		// 最小节点继承待删除节点的右子树
+		// 最小节点可能是待删除节点的右节点
 		if (minEntry->parent != entry) {
-			backtrack = minEntry->parent;
+			backtrack = minEntry->parent;		// 在修改最小节点的父节点之前记录回溯节点
 
+			// 最小节点继承待删除节点的右子树
 			minEntry->parent->left = minEntry->right;
 			if (minEntry->right) {
 				minEntry->right->parent = minEntry->parent;
@@ -311,9 +312,13 @@ AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 			}
 		}
 		else {
-			backtrack = minEntry;
+			backtrack = minEntry;		// 最小节点的父亲就是待删除节点，交换位置后最小节点就是待删除节点的父亲，因此从这里回溯
 		}
+
+		// 最后进行挂接
 		AVLHitchEntry(tree, entry, minEntry);
+
+		// 也可以选择直接交换两个节点的数据
 	}
 	
 	

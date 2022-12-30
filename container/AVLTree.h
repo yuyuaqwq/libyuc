@@ -17,10 +17,10 @@ typedef struct _AVLEntry {
 typedef struct _AVLTree {
 	AVLEntry* root;
 	// bool smallByteOrder;
+	int objSize;
 	int entryFieldOffset;
-	int objByteCount;
 	int keyFieldOffset;
-	int keyByteCount;
+	int keyFieldSize;
 } AVLTree;
 
 typedef bool (*TraversalCallback)(AVLEntry* entry, void* arg);
