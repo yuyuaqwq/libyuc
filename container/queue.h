@@ -22,12 +22,15 @@ typedef struct ArrayQueue {
 
 void ArrayQueueInit(ArrayQueue* queue, size_t capacity, int objSize);
 void ArrayQueueRelease(ArrayQueue* queue);
+int ArrayIndexRewind(ArrayQueue* queue, int index);
 bool ArrayQueueIsEmpty(ArrayQueue* queue);
 bool ArrayQueueIsFull(ArrayQueue* queue);
+size_t ArrayQueueGetEntryCount(ArrayQueue* queue);
+size_t ArrayQueueGetFreeCount(ArrayQueue* queue);
+
 void ArrayQueueEnqueue(ArrayQueue* queue, void* obj);
 void ArrayQueueEnqueueByCount(ArrayQueue* queue, void* obj, size_t count);
 void* ArrayQueueDequeue(ArrayQueue* queue);
-size_t ArrayQueueGetCount(ArrayQueue* queue);
 
 #ifdef __cplusplus
 }

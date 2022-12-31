@@ -32,7 +32,7 @@ void ArrayPushTail(Array* arr, void* obj);
 void* ArrayPopTail(Array* arr);
 void ArrayExpand(Array* arr, size_t targetSize);
 void ArraySwapEntry(Array* arr, int index1, int index2);
-size_t ArrayGetEntryCount(Array* arr);
+size_t ArrayGetCount(Array* arr);
 
 #ifdef __cplusplus
 }

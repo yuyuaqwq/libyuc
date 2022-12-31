@@ -22,7 +22,7 @@ void SinglyListInsertHead(SinglyListHead* head, SinglyListEntry* entry);
 
 SinglyListEntry* SinglyListRemoveHead(SinglyListHead* head);
 
-size_t SinglyListEntryCount(SinglyListHead* head);
+size_t SinglyListGetCount(SinglyListHead* head);
 
 bool SinglyListIteration(SinglyListHead* head, SinglyListEntry** cur);
 

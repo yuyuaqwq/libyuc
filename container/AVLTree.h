@@ -54,7 +54,7 @@ AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry);
 
 AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key);
 
-size_t AVLEntrySize(AVLTree* tree);
+size_t AVLGetEntryCount(AVLTree* tree);
 
 void AVLPreorder_Callback(AVLEntry* entry, TraversalCallback callback, void* arg);
 bool AVLMiddleorder_Iteration(AVLEntry** cur, bool* status_right);

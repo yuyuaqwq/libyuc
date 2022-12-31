@@ -1,8 +1,8 @@
 #include "queue.h"
 
-static void ArrayQueueExpand(ArrayQueue* queue) {
+static void ArrayQueueExpand(ArrayQueue* queue, size_t targetSize) {
 	Array* arr = &queue->arr;
-	ArrayExpand(arr, arr->count + 2);
+	ArrayExpand(arr, targetSize + 1);
 	if (queue->head > queue->tail) {
 		size_t copyCount = arr->count - queue->head;
 		if (copyCount != 0) {
@@ -31,6 +31,10 @@ void ArrayQueueRelease(ArrayQueue* queue) {
 	queue->tail = 0;
 }
 
+inline int ArrayQueueIndexRewind(ArrayQueue* queue, int index) {
+	return index % queue->arr.count;
+}
+
 bool ArrayQueueIsEmpty(ArrayQueue* queue) {
 	return queue->head == queue->tail;
 }
@@ -39,22 +43,38 @@ bool ArrayQueueIsFull(ArrayQueue* queue) {
 	return queue->arr.count == 0 || (queue->tail + 1) % queue->arr.count == queue->head;
 }
 
-void ArrayQueueEnqueue(ArrayQueue* queue, void* obj) {
-	if (ArrayQueueIsFull(queue)) {
-		ArrayQueueExpand(queue);
+size_t ArrayQueueGetEntryCount(ArrayQueue* queue) {
+	if (queue->tail >= queue->head) {
+		return queue->tail - queue->head;
 	}
-	MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), obj, queue->arr.objSize);
-	queue->tail++;
-	queue->tail %= queue->arr.count;
+	else {
+		return queue->tail + (queue->arr.count - queue->head);
+	}
 }
 
-void ArrayQueueEnqueueByCount(ArrayQueue* queue, void* obj, size_t count) {
-	if (ArrayQueueIsFull(queue)) {
-		ArrayQueueExpand(queue);
+size_t ArrayQueueGetFreeCount(ArrayQueue* queue) {
+	if (queue->arr.count == 0) {
+		return 0;
 	}
-	MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), obj, queue->arr.objSize);
+	return queue->arr.count - ArrayQueueGetEntryCount(queue) - 1;
+}
+
+void ArrayQueueEnqueue(ArrayQueue* queue, void* entry) {
+	if (ArrayQueueIsFull(queue)) {
+		ArrayQueueExpand(queue, ArrayQueueGetEntryCount(queue) + 1);
+	}
+	MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
+	queue->tail++;
+	queue->tail = ArrayQueueIndexRewind(queue, queue->tail);
+}
+
+void ArrayQueueEnqueueByCount(ArrayQueue* queue, void* entry, size_t count) {
+	if (ArrayQueueGetFreeCount(queue) < count) {
+		ArrayQueueExpand(queue, ArrayQueueGetEntryCount(queue) + count);
+	}
+	MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
 	queue->tail += count;
-	queue->tail %= queue->arr.count;
+	queue->tail = ArrayQueueIndexRewind(queue, queue->tail);
 }
 
 void* ArrayQueueDequeue(ArrayQueue* queue) {
@@ -62,16 +82,8 @@ void* ArrayQueueDequeue(ArrayQueue* queue) {
 		return NULL;
 	}
 	int index = queue->head;
-	void* ret = ArrayAt(&queue->arr, index, void);
+	void* entry = ArrayAt(&queue->arr, index, void);
 	queue->head++;
-	queue->head %= queue->arr.count;
-	return ret;
-}
-
-size_t ArrayQueueGetCount(ArrayQueue* queue) {
-	if (queue->tail >= queue->head) {
-		return queue->tail - queue->head;
-	} else {
-		return queue->tail + (queue->arr.count - queue->head);
-	}
+	queue->head = ArrayQueueIndexRewind(queue, queue->head);
+	return entry;
 }
