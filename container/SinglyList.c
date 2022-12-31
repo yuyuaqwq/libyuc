@@ -20,7 +20,7 @@ SinglyListEntry* SinglyListRemoveHead(SinglyListHead* head) {
 	return old;
 }
 
-size_t SinglyListEntryCount(SinglyListHead* head) {
+size_t SinglyListGetCount(SinglyListHead* head) {
 	size_t count = 0;
 	SinglyListEntry* cur = head->next;
 	while (cur != head) {

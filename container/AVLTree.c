@@ -355,7 +355,7 @@ static void AVLEntrySizeCountCallback(AVLEntry* entry, void* arg) {
 	int* count = arg;
 	(*count)++;
 }
-size_t AVLEntrySize(AVLTree* head) {
+size_t AVLGetEntryCount(AVLTree* head) {
 	int count = 0;
 	AVLPreorder_Callback(head->root, AVLEntrySizeCountCallback, &count);
 	return count;

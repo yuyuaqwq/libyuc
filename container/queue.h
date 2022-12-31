@@ -25,8 +25,9 @@ void ArrayQueueRelease(ArrayQueue* queue);
 bool ArrayQueueIsEmpty(ArrayQueue* queue);
 bool ArrayQueueIsFull(ArrayQueue* queue);
 void ArrayQueueEnqueue(ArrayQueue* queue, void* obj);
+void ArrayQueueEnqueueByCount(ArrayQueue* queue, void* obj, size_t count);
 void* ArrayQueueDequeue(ArrayQueue* queue);
-
+size_t ArrayQueueGetCount(ArrayQueue* queue);
 
 #ifdef __cplusplus
 }

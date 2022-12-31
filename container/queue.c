@@ -48,6 +48,15 @@ void ArrayQueueEnqueue(ArrayQueue* queue, void* obj) {
 	queue->tail %= queue->arr.count;
 }
 
+void ArrayQueueEnqueueByCount(ArrayQueue* queue, void* obj, size_t count) {
+	if (ArrayQueueIsFull(queue)) {
+		ArrayQueueExpand(queue);
+	}
+	MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), obj, queue->arr.objSize);
+	queue->tail += count;
+	queue->tail %= queue->arr.count;
+}
+
 void* ArrayQueueDequeue(ArrayQueue* queue) {
 	if (ArrayQueueIsEmpty(queue)) {
 		return NULL;
@@ -57,4 +66,12 @@ void* ArrayQueueDequeue(ArrayQueue* queue) {
 	queue->head++;
 	queue->head %= queue->arr.count;
 	return ret;
+}
+
+size_t ArrayQueueGetCount(ArrayQueue* queue) {
+	if (queue->tail >= queue->head) {
+		return queue->tail - queue->head;
+	} else {
+		return queue->tail + (queue->arr.count - queue->head);
+	}
 }

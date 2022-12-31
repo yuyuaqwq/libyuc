@@ -56,3 +56,7 @@ void ArraySwapEntry(Array* arr, int index1, int index2) {
 	void* obj2 = ArrayAt(arr, index2, void);
 	MemorySwap(obj1, obj2, arr->objSize);
 }
+
+size_t ArrayGetCount(Array* arr) {
+	return arr->count;
+}
