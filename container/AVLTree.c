@@ -351,13 +351,13 @@ AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key) {
 /*
 * 获取树节点数量
 */
-static void AVLEntrySizeCountCallback(AVLEntry* entry, void* arg) {
+static void AVLGetEntryCountCallback(AVLEntry* entry, void* arg) {
 	int* count = arg;
 	(*count)++;
 }
 size_t AVLGetEntryCount(AVLTree* head) {
 	int count = 0;
-	AVLPreorder_Callback(head->root, AVLEntrySizeCountCallback, &count);
+	AVLPreorder_Callback(head->root, AVLGetEntryCountCallback, &count);
 	return count;
 }
 

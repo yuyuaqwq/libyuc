@@ -15,7 +15,7 @@ void VectorExpand(Vector* vector, size_t targetSize) {
 		void* newBuf = CreateMultipleObjByCount(void*, vector->capacity);
 		if (vector->objPtrArr) {
 			MemoryCopy(newBuf, vector->objPtrArr, sizeof(uintptr_t) * vector->size);
-			DeleteObject(vector->objPtrArr);
+			DeleteObject_(vector->objPtrArr);
 		}
 		vector->objPtrArr = newBuf;
 	}
@@ -31,9 +31,9 @@ void VectorInit(Vector* vector, size_t capacity) {
 void VectorRelease(Vector* vector) {
 	if (vector->objPtrArr) {
 		for (int i = 0; i < vector->size; i++) {
-			DeleteObject(vector->objPtrArr[i]);
+			DeleteObject_(vector->objPtrArr[i]);
 		}
-		DeleteObject(vector->objPtrArr);
+		DeleteObject_(vector->objPtrArr);
 		vector->objPtrArr = NULL;
 	}
 	vector->capacity = 0;

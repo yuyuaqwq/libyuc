@@ -14,7 +14,7 @@ void ArrayExpand(Array* arr, size_t targetSize) {
 		void* newBuf = CreateMultipleObjByByteCount(arr->objSize, arr->capacity);
 		if (arr->objArr) {
 			MemoryCopy(newBuf, arr->objArr, arr->objSize * arr->count);
-			DeleteObject(arr->objArr);
+			DeleteObject_(arr->objArr);
 		}
 		arr->objArr = newBuf;
 	}
@@ -30,7 +30,7 @@ void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
 
 void ArrayRelease(Array* arr) {
 	if (arr->objArr) {
-		DeleteObject(arr->objArr);
+		DeleteObject_(arr->objArr);
 		arr->objArr = NULL;
 	}
 	arr->capacity = 0;

@@ -22,7 +22,7 @@ typedef struct ArrayQueue {
 
 void ArrayQueueInit(ArrayQueue* queue, size_t capacity, int objSize);
 void ArrayQueueRelease(ArrayQueue* queue);
-int ArrayIndexRewind(ArrayQueue* queue, int index);
+int ArrayQueueIndexRewind(ArrayQueue* queue, int index);
 bool ArrayQueueIsEmpty(ArrayQueue* queue);
 bool ArrayQueueIsFull(ArrayQueue* queue);
 size_t ArrayQueueGetEntryCount(ArrayQueue* queue);
