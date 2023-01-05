@@ -66,10 +66,14 @@ static RBEntry* GetSiblingEntry(RBEntry* entry) {
 	if (entry->parent->left == entry) {
 		return entry->parent->right;
 	}
-	else if (entry->parent->right == entry) {
-		return entry->parent->left;
-	}
-	return entry->parent->left ? entry->parent->left : entry->parent->right;
+	return entry->parent->left;
+
+	//else if (entry->parent->right == entry) {
+	//	return entry->parent->left;
+	//}
+
+	//// 删除后无法正确找到对应
+	//return entry->parent->left ? entry->parent->left : entry->parent->right;
 }
 
 /*
@@ -285,17 +289,18 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 	RBEntry* backtrack = entry;		// 通常情况下是从被删除节点的父节点开始回溯
 	RBEntry* sibling = NULL;
+	RBEntry* newEntry;
 	if (entry->left == NULL && entry->right == NULL) {
 		// 没有子节点，直接从父节点中摘除此节点
-		RBHitchEntry(tree, entry, NULL);
+		newEntry = NULL;
 	}
 	else if (entry->left == NULL) {
 		// 挂接右子节点
-		RBHitchEntry(tree, entry, entry->right);
+		newEntry = entry->right;
 	}
 	else if (entry->right == NULL) {
 		// 挂接左子节点
-		RBHitchEntry(tree, entry, entry->left);
+		newEntry = entry->left;
 	}
 	else {
 		// 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
@@ -310,52 +315,56 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 		}
 		MemorySwap(&minEntry->color, &entry->color, sizeof(RBColor));
 
-		
 		// 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
 		minEntry->left = entry->left;
 		if (minEntry->left) {
 			minEntry->left->parent = minEntry;
 		}
 
+		// 这里需要临时将entry也挂接到minEntry的位置，回溯用
+
 		RBEntry* oldParent, * oldRight = minEntry->right;
 		// 最小节点可能是待删除节点的右节点
 		if (minEntry->parent != entry) {
-			oldParent = minEntry->parent;		// 从删除的节点开始回溯，因此需要记录
+			oldParent = minEntry->parent;		// 挂接minEntry之前记录
 
-			// 最小节点继承待删除节点的右子树
-			minEntry->parent->left = minEntry->right;
+			// 将minEntry从原先的位置摘除，用entry代替
+			minEntry->parent->left = entry;
 			if (minEntry->right) {
-				minEntry->right->parent = minEntry->parent;
+				minEntry->right->parent = entry;
 			}
+			// 最小节点继承待删除节点的右子树
 			minEntry->right = entry->right;
-			if (minEntry->right) {
-				minEntry->right->parent = minEntry;
+			if (entry->right) {
+				entry->right->parent = minEntry;
 			}
 		}
 		else {
 			oldParent = minEntry;		// 最小节点的父亲就是待删除节点，交换位置后最小节点就是待删除节点的父亲，因此从这里回溯
+			minEntry->right = entry;
 		}
 
-		// 最后进行挂接
 		RBHitchEntry(tree, entry, minEntry);
 
-		entry->parent = oldParent;		// 回溯需要父节点形成回溯路径
+		// 将entry临时挂接到minEntry的位置
+		entry->parent = oldParent;
 		entry->left = NULL; entry->right = oldRight;
+		newEntry = oldRight;
 	}
 
 	if (entry) {
 		if (entry->color == kRed) {
 			// 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除
-			return entry;
+			backtrack = NULL;
 		}
 		// 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可
-		if (entry->left) {
+		else if (entry->left) {
 			entry->left->color = kBlack;
-			return entry;
+			backtrack = NULL;
 		}
-		if (entry->right) {
+		else if (entry->right) {
 			entry->right->color = kBlack;
-			return entry;
+			backtrack = NULL;
 		}
 	}
 
@@ -432,6 +441,9 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 		
 		backtrack = backtrack->parent;
 	}
+
+	RBHitchEntry(tree, entry, newEntry);
+
 	return entry;
 }
 

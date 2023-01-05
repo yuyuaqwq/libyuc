@@ -293,22 +293,23 @@ AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 
 		// 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
 		minEntry->left = entry->left;
-		if (minEntry->left) {
-			minEntry->left->parent = minEntry;
+		if (entry->left) {
+			entry->left->parent = minEntry;
 		}
 
 		// 最小节点可能是待删除节点的右节点
 		if (minEntry->parent != entry) {
 			backtrack = minEntry->parent;		// 在修改最小节点的父节点之前记录回溯节点
 
-			// 最小节点继承待删除节点的右子树
+			// 将minEntry从原先的位置摘除，用其右子树代替
 			minEntry->parent->left = minEntry->right;
 			if (minEntry->right) {
 				minEntry->right->parent = minEntry->parent;
 			}
+			// 最小节点继承待删除节点的右子树
 			minEntry->right = entry->right;
-			if (minEntry->right) {
-				minEntry->right->parent = minEntry;
+			if (entry->right) {
+				entry->right->parent = minEntry;
 			}
 		}
 		else {
