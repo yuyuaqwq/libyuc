@@ -288,7 +288,6 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 */
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 	RBEntry* backtrack = entry;		// 通常情况下是从被删除节点的父节点开始回溯
-	RBEntry* sibling = NULL;
 	RBEntry* newEntry;
 	if (entry->left == NULL && entry->right == NULL) {
 		// 没有子节点，直接从父节点中摘除此节点
@@ -377,7 +376,7 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 			break;
 		}
 
-		sibling = GetSiblingEntry(backtrack);
+		RBEntry* sibling = GetSiblingEntry(backtrack);
 
 		if (sibling->color == kRed) {
 			// 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
