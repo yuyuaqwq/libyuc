@@ -33,6 +33,11 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
+
+typedef int (*CmpFunc)(const void* buf1_, const void* buf2_, size_t size);
+
+#define KEY_STRING_SIZE (-1)
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,5 @@
-#ifndef CUTILS_AVL_H_
-#define CUTILS_AVL_H_
+#ifndef CUTILS_AVLTREE_H_
+#define CUTILS_AVLTREE_H_
 
 #include "CUtils/container/object.h"
 
@@ -21,13 +21,14 @@ typedef struct _AVLTree {
 	int entryFieldOffset;
 	int keyFieldOffset;
 	int keyFieldSize;
+	CmpFunc cmpFunc;
 } AVLTree;
 
 typedef bool (*TraversalCallback)(AVLEntry* entry, void* arg);
 
-#define AVLTreeInitM(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), sizeof(objName), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName))
+#define AVLTreeInitM(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), sizeof(objName), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 
-void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize);
+void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 
 void AVLEntryInit(AVLEntry* entry);
 
@@ -63,4 +64,4 @@ bool AVLMiddleorder_Iteration(AVLEntry** cur, bool* status_right);
 }
 #endif
 
-#endif // CUTILS_AVL_H_
+#endif // CUTILS_AVLTREE_H_

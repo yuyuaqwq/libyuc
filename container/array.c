@@ -60,3 +60,15 @@ void ArraySwapEntry(Array* arr, int index1, int index2) {
 size_t ArrayGetCount(Array* arr) {
 	return arr->count;
 }
+
+
+int BinarySearch(int* array, int low, int high, int key) {
+	int mid = 0;
+	while (low < high) {
+		mid = low + (high - low) / 2;
+		if (array[mid] < key) low = mid + 1;
+		else if (array[mid] == key) return mid;
+		else high = mid;
+	}
+	return -1;
+}

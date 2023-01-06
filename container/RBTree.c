@@ -147,13 +147,17 @@ static void RBSwapEntry(RBTree* tree, RBEntry* entry1, RBEntry* entry2) {
 /*
 * ³õÊ¼»¯Ê÷
 */
-void RBTreeInit(RBTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize) {
+void RBTreeInit(RBTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
 	tree->root = NULL;
 	tree->entryFieldOffset = entryFieldOffset;
 	// head->smallByteOrder = true;
 	tree->keyFieldOffset = keyFieldOffset;
 	tree->keyFieldSize = keySize;
 	tree->objSize = objSize;
+	if (cmpFunc == NULL) {
+		cmpFunc = MemoryCmpR;
+	}
+	tree->cmpFunc = cmpFunc;
 }
 
 /*
@@ -175,7 +179,7 @@ RBEntry* RBFindEntryByKey(RBTree* tree, void* key) {
 	RBEntry* cur = tree->root;
 	while (cur) {
 		void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-		int res = MemoryCmpR(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+		int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
 		if (res < 0) {
 			cur = cur->right;
 		}
@@ -208,7 +212,7 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 	RBEntry* cur = root;
 	while (cur) {
 		void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-		int res = MemoryCmpR(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+		int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
 		if (res < 0) {
 			if (!cur->right) {
 				cur->right = entry;
