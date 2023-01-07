@@ -62,18 +62,14 @@ static RBEntry* RotateRight(RBEntry* subRoot) {
 
 }
 
+/*
+* 取兄弟节点
+*/
 static RBEntry* GetSiblingEntry(RBEntry* entry) {
 	if (entry->parent->left == entry) {
 		return entry->parent->right;
 	}
 	return entry->parent->left;
-
-	//else if (entry->parent->right == entry) {
-	//	return entry->parent->left;
-	//}
-
-	//// 删除后无法正确找到对应
-	//return entry->parent->left ? entry->parent->left : entry->parent->right;
 }
 
 /*
@@ -148,25 +144,14 @@ static void RBSwapEntry(RBTree* tree, RBEntry* entry1, RBEntry* entry2) {
 * 初始化树
 */
 void RBTreeInit(RBTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-	tree->root = NULL;
-	tree->entryFieldOffset = entryFieldOffset;
-	// head->smallByteOrder = true;
-	tree->keyFieldOffset = keyFieldOffset;
-	tree->keyFieldSize = keySize;
-	tree->objSize = objSize;
-	if (cmpFunc == NULL) {
-		cmpFunc = MemoryCmpR;
-	}
-	tree->cmpFunc = cmpFunc;
+	BSTreeInit(tree, objSize, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*
 * 初始化节点
 */
 void RBEntryInit(RBEntry* entry, RBColor color) {
-	entry->left = NULL;
-	entry->right = NULL;
-	entry->parent = NULL;
+	BSEntryInit(&entry->bs);
 	entry->color = color;
 }
 
@@ -176,21 +161,7 @@ void RBEntryInit(RBEntry* entry, RBColor color) {
 * 存在返回查找到的节点，不存在返回NULL
 */
 RBEntry* RBFindEntryByKey(RBTree* tree, void* key) {
-	RBEntry* cur = tree->root;
-	while (cur) {
-		void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-		int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
-		if (res < 0) {
-			cur = cur->right;
-		}
-		else if (res > 0) {
-			cur = cur->left;
-		}
-		else {
-			return cur;
-		}
-	}
-	return NULL;
+	return (RBEntry*)BSFindEntryByKey(tree, key);
 }
 
 
@@ -200,39 +171,18 @@ RBEntry* RBFindEntryByKey(RBTree* tree, void* key) {
 * 成功返回true，失败返回false
 */
 bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
-	RBEntry* root = tree->root;
-	if (root == NULL) {
-		RBEntryInit(entry, kBlack);
-		tree->root = entry;
+	if (!BSInsertEntry(tree, &entry->bs)) {
+		return false;
+	}
+
+	RBEntry* cur = entry->parent;
+	if (cur == NULL) {
+		entry->color = kBlack;
 		return true;
 	}
-	RBEntryInit(entry, kRed);
-	void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
-	void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
-	RBEntry* cur = root;
-	while (cur) {
-		void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-		int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
-		if (res < 0) {
-			if (!cur->right) {
-				cur->right = entry;
-				break;
-			}
-			cur = cur->right;
-		}
-		else if (res > 0) {
-			if (!cur->left) {
-				cur->left = entry;
-				break;
-			}
-			cur = cur->left;
-		}
-		else {
-			return false;
-		}
-	}
-	entry->parent = cur;
-	if (cur && cur->color == kBlack) {
+	entry->color = kRed;
+
+	if (cur->color == kBlack) {
 		// 当前节点(插入节点的父节点)是黑色，啥都不用做(是2节点/3节点的插入，直接合并)
 		return true;
 	}
@@ -292,6 +242,8 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 */
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 	RBEntry* backtrack = entry;		// 通常情况下是从被删除节点的父节点开始回溯
+
+	// 出于性能考虑，RB找节点删除的逻辑还是单独写一份，差不了太多，但是RB回溯时需要保证entry还在树上(找兄弟节点)，回溯完才删除
 	RBEntry* newEntry;
 	if (entry->left == NULL && entry->right == NULL) {
 		// 没有子节点，直接从父节点中摘除此节点
@@ -325,13 +277,12 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 		}
 
 		// 这里需要临时将entry也挂接到minEntry的位置，回溯用
-
 		RBEntry* oldParent, * oldRight = minEntry->right;
 		// 最小节点可能是待删除节点的右节点
 		if (minEntry->parent != entry) {
 			oldParent = minEntry->parent;		// 挂接minEntry之前记录
 
-			// 将minEntry从原先的位置摘除，用entry代替
+			// 将最小节点从原先的位置摘除，用entry代替
 			minEntry->parent->left = entry;
 			if (minEntry->right) {
 				minEntry->right->parent = entry;
@@ -467,6 +418,6 @@ static void RBGetEntryCountCallback(RBEntry* entry, void* arg) {
 }
 size_t RBGetEntryCount(RBTree* head) {
 	int count = 0;
-	AVLPreorder_Callback(head->root, RBGetEntryCountCallback, &count);
+	BSPreorder_Callback(head->root, RBGetEntryCountCallback, &count);
 	return count;
 }

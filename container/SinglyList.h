@@ -15,16 +15,13 @@ typedef struct _SinglyListEntry {
 typedef SinglyListEntry SinglyListHead;
 
 void SinglyListHeadInit(SinglyListHead* head);
-
 bool SinglyListIsEmpty(SinglyListHead* head);
-
 void SinglyListInsertHead(SinglyListHead* head, SinglyListEntry* entry);
-
 SinglyListEntry* SinglyListRemoveHead(SinglyListHead* head);
-
+SinglyListEntry* SinglyListRemoveEntry(SinglyListEntry* prev, SinglyListEntry* removeEntry);
 size_t SinglyListGetCount(SinglyListHead* head);
-
-bool SinglyListIteration(SinglyListHead* head, SinglyListEntry** cur);
+SinglyListEntry* SinglyListFirst(SinglyListHead* head);
+SinglyListEntry* SinglyListNext(SinglyListEntry* entry);
 
 #define SinglyListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \

@@ -1,11 +1,15 @@
 #include "SinglyList.h"
 
 void SinglyListHeadInit(SinglyListHead* head) {
-	head->next = head;
+	head->next = NULL;
+}
+
+void SinglyListEntryInit(SinglyListEntry* entry) {
+	entry->next = NULL;
 }
 
 bool SinglyListIsEmpty(SinglyListHead* head) {
-	return head->next == head;
+	return head->next == NULL;
 }
 
 void SinglyListInsertHead(SinglyListHead* head, SinglyListEntry* entry) {
@@ -20,27 +24,26 @@ SinglyListEntry* SinglyListRemoveHead(SinglyListHead* head) {
 	return old;
 }
 
+SinglyListEntry* SinglyListRemoveEntry(SinglyListEntry* prev, SinglyListEntry* removeEntry) {
+	prev->next = removeEntry->next;
+	return removeEntry;
+}
+
+
 size_t SinglyListGetCount(SinglyListHead* head) {
 	size_t count = 0;
 	SinglyListEntry* cur = head->next;
-	while (cur != head) {
+	while (cur != NULL) {
 		count++;
 		cur = cur->next;
 	}
 	return count;
 }
 
-bool SinglyListIteration(SinglyListHead* head, SinglyListEntry** cur) {
-	if (*cur == NULL) {
-		*cur = head->next;
-		if (head == *cur) {
-			return false;
-		}
-		return true;
-	}
-	if (head == *cur) {
-		return false;
-	}
-	*cur = (*cur)->next;
-	return true;
+SinglyListEntry* SinglyListFirst(SinglyListHead* head) {
+	return head->next;
+}
+
+SinglyListEntry* SinglyListNext(SinglyListEntry* entry) {
+	return entry->next;
 }

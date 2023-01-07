@@ -24,7 +24,6 @@ ListEntry* ListRemoveEntry(ListEntry* entry, bool empty);
 ListEntry* ListRemoveHead(ListHead* head);
 ListEntry* ListRemoveTail(ListHead* head);
 size_t ListEntryCount(ListHead* head);
-bool ListIteration(ListHead* head, ListEntry** cur);
 #define ListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
 	ListEntry* cur = (head)->next; \

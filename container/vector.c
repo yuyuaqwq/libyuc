@@ -1,13 +1,13 @@
 #include "vector.h"
 
 
-void VectorExpand(Vector* vector, size_t targetSize) {
+void VectorExpand(Vector* vector, size_t targetCount) {
 	size_t oldCapacity = vector->capacity;
 
 	if (vector->capacity == 0) {
 		vector->capacity = 1;
 	}
-	while (vector->capacity < targetSize) {
+	while (vector->capacity < targetCount) {
 		vector->capacity *= 2;
 	}
 

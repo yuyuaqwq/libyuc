@@ -16,8 +16,8 @@ extern "C" {
 #define MemoryCopy(dst, src, size) memcpy((void*)(dst), (void*)(src), (size))
 void MemoryCopyR(void* dst_, void* src_, size_t size);
 #define MemorySet(dst, val, size) memset((void*)(dst), (val), (size))
-#define MemoryCmp(buf1, buf2, size) memcmp((void*)(buf1), (void*)(buf2), (size))
-int MemoryCmpR(void* buf1_, void* buf2_, size_t size);
+int MemoryCmp(const void* buf1_, const void* buf2_, size_t size);
+int MemoryCmpR(const void* buf1_, const void* buf2_, size_t size);
 void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
@@ -33,10 +33,10 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
-
 typedef int (*CmpFunc)(const void* buf1_, const void* buf2_, size_t size);
-
+typedef uint32_t(*HashFunc)(const void* buf1_, size_t size);
 #define KEY_STRING_SIZE (-1)
+
 
 #ifdef __cplusplus
 }

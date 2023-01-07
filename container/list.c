@@ -58,17 +58,24 @@ size_t ListEntryCount(ListHead* head) {
 	return count;
 }
 
-bool ListIteration(ListHead* head, ListEntry** cur) {
-	if (*cur == NULL) {
-		*cur = head->next;
-		if (head == *cur) {
-			return false;
-		}
-		return true;
+
+ListEntry* ListFirst(ListHead* head) {
+	if (head->next == head) {
+		return NULL;
 	}
-	if (head == *cur) {
-		return false;
+	return head->next;
+}
+
+ListEntry* ListPrev(ListHead* head, ListEntry* entry) {
+	if (entry->prev == head) {
+		return NULL;
 	}
-	*cur = (*cur)->next;
-	return true;
+	return entry->prev;
+}
+
+ListEntry* ListNext(ListHead* head, ListEntry* entry) {
+	if (entry->next == head) {
+		return NULL;
+	}
+	return entry->next;
 }

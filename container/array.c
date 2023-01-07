@@ -1,12 +1,12 @@
 #include "array.h"
 
-void ArrayExpand(Array* arr, size_t targetSize) {
+void ArrayExpand(Array* arr, size_t targetCount) {
 	size_t oldCapacity = arr->capacity;
 
 	if (arr->capacity == 0) {
 		arr->capacity = 1;
 	}
-	while (arr->capacity < targetSize) {
+	while (arr->capacity < targetCount) {
 		arr->capacity *= 2;
 	}
 
@@ -21,7 +21,9 @@ void ArrayExpand(Array* arr, size_t targetSize) {
 }
 
 void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
-	ArrayRelease(arr);
+	arr->capacity = 0;
+	arr->count = 0;
+	arr->objArr = NULL;
 	arr->objSize = objByteCount;
 	if (capacity != 0) {
 		ArrayExpand(arr, capacity);

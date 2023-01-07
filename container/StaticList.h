@@ -22,13 +22,9 @@ typedef struct _StaticListEntry {
 } StaticListEntry;
 
 void StaticListHeadInit(StaticListHead* head, size_t count, int objSize, int entryFieldOffset);
-
 int StaticListAllocEntry(StaticListHead* head);
-
 void StaticListFreeEntry(StaticListHead* head, int index);
-
 #define StaticListAt(head, index, objName) (ArrayAt((head)->array, index, objName))
-
 int StaticListSwitchFreeIndex(StaticListHead* head, int newIndex);
 
 #ifdef __cplusplus
