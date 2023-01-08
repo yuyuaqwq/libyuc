@@ -6,7 +6,7 @@ const int SKIPLIST_P = (RAND_MAX / 2);
 static int RandomLevel() {
 	int level = 1;
 
-	while (rand() < SKIPLIST_P && level < SKIPLIST_MAX_LEVEL)
+	while (SKIPLIST_P <= rand() && level < SKIPLIST_MAX_LEVEL)
 		level++;
 
 	return level;
@@ -20,7 +20,7 @@ static SkipListEntry* SkipListCreateEntry(int level, void* obj) {
 
 static forceinline SkipListEntry* SkipListFind_(SkipList* list, void* key, int* cmpRes, SkipListEntry** update) {
 	SkipListEntry* cur = list->head;
-	// 从最顶层开始遍历，每次循环结束都相当于下降一层索引
+	// 从最顶层开始遍历，每趟循环都相当于下降一层索引
 	for (int i = list->level - 1; i >= 0; i--) {
 		// 当前索引层的查找
 		while (cur->upper[i].next) {
@@ -31,8 +31,14 @@ static forceinline SkipListEntry* SkipListFind_(SkipList* list, void* key, int* 
 			}
 			cur = cur->upper[i].next;
 		}
+		
 		if (update) {
 			update[i] = cur;		// 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
+		}
+
+		if (*cmpRes == 0) {
+			// 不支持重复key，当前索引层找到了就不再需要下降了
+			break;
 		}
 	}
 	return cur;
