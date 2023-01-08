@@ -26,7 +26,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define CreateMultipleObjByByteCount(objByteCount, count) (MemoryAlloc((objByteCount) * (count)))
 #define DeleteObject_(obj) (MemoryFree(obj))
 
-
+#define ObjArrAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
 #define GetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
 #define GetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
 #define GetFieldByFieldOffset(obj, fieldOffset, objName) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )

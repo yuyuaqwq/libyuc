@@ -1,7 +1,7 @@
-#ifndef CUTILS_AVLTREE_H_
-#define CUTILS_AVLTREE_H_
+#ifndef CUTILS_CONTAINER_AVLTREE_H_
+#define CUTILS_CONTAINER_AVLTREE_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 #include "CUtils/container/BSTree.h"
 
 #ifdef __cplusplus
@@ -49,4 +49,4 @@ size_t AVLGetEntryCount(AVLTree* tree);
 }
 #endif
 
-#endif // CUTILS_AVLTREE_H_
+#endif // CUTILS_CONTAINER_AVLTREE_H_

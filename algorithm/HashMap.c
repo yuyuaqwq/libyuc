@@ -1,4 +1,4 @@
-#include "HashAlgorithm.h"
+#include "HashMap.h"
 
 
 /**

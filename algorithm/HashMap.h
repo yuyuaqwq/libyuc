@@ -1,7 +1,7 @@
-#ifndef CUTILS_HASH_ALGORITHM_H_
-#define CUTILS_HASH_ALGORITHM_H_
+#ifndef CUTILS_ALGORITHM_HASH_MAP_H_
+#define CUTILS_ALGORITHM_HASH_MAP_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 
 #ifdef __cplusplus
@@ -22,4 +22,4 @@ uint32_t Hashmap_murmurhash(const void* key_, uint32_t len);
 }
 #endif
 
-#endif // CUTILS_HASHTABLE_H_
+#endif // CUTILS_ALGORITHM_HASH_MAP_H_

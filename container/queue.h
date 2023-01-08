@@ -1,7 +1,7 @@
-#ifndef CUTILS_QUEUE_H_
-#define CUTILS_QUEUE_H_
+#ifndef CUTILS_CONTAINER_QUEUE_H_
+#define CUTILS_CONTAINER_QUEUE_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 #include "CUtils/container/array.h"
 
 #ifdef __cplusplus
@@ -36,4 +36,4 @@ void* ArrayQueueDequeue(ArrayQueue* queue);
 }
 #endif
 
-#endif // CUTILS_VECTOR_H_
+#endif // CUTILS_CONTAINER_QUEUE_H_

@@ -1,7 +1,7 @@
-#ifndef CUTILS_ARRAY_H_
-#define CUTILS_ARRAY_H_
+#ifndef CUTILS_CONTAINER_ARRAY_H_
+#define CUTILS_CONTAINER_ARRAY_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,4 +38,4 @@ size_t ArrayGetCount(Array* arr);
 }
 #endif
 
-#endif // CUTILS_ARRAY_H_
+#endif // CUTILS_CONTAINER_ARRAY_H_

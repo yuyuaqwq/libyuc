@@ -1,7 +1,7 @@
-#ifndef UTILS_VECTOR_H_
-#define CUTILS_VECTOR_H_
+#ifndef CUTILS_CONTAINER_VECTOR_H_
+#define CUTILS_CONTAINER_VECTOR_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,4 +40,4 @@ void* VectorPopTail(Vector* vector);
 }
 #endif
 
-#endif // CUTILS_VECTOR_H_
+#endif // CUTILS_CONTAINER_VECTOR_H_

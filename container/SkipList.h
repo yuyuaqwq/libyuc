@@ -1,7 +1,7 @@
-#ifndef CUTILS_SKIP_LIST_H_
-#define CUTILS_SKIP_LIST_H_
+#ifndef CUTILS_CONTAINER_SKIP_LIST_H_
+#define CUTILS_CONTAINER_SKIP_LIST_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,4 +46,4 @@ SkipListEntry* SkipListNext(SkipList* list, SkipListEntry* cur);
 }
 #endif
 
-#endif // CUTILS_STATIC_LIST_H_
+#endif // CUTILS_CONTAINER_STATIC_LIST_H_

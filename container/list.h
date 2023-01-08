@@ -1,7 +1,7 @@
-#ifndef CUTILS_LIST_H_
-#define CUTILS_LIST_H_
+#ifndef CUTILS_CONTAINER_LIST_H_
+#define CUTILS_CONTAINER_LIST_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ size_t ListEntryCount(ListHead* head);
 }
 #endif
 
-#endif // CUTILS_LIST_H_
+#endif // CUTILS_CONTAINER_LIST_H_

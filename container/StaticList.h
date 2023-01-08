@@ -1,7 +1,7 @@
-#ifndef CUTILS_STATIC_LIST_H_
-#define CUTILS_STATIC_LIST_H_
+#ifndef CUTILS_CONTAINER_STATIC_LIST_H_
+#define CUTILS_CONTAINER_STATIC_LIST_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 #include "CUtils/container/array.h"
 
 #ifdef __cplusplus
@@ -31,4 +31,4 @@ int StaticListSwitchFreeIndex(StaticListHead* head, int newIndex);
 }
 #endif
 
-#endif // CUTILS_STATIC_LIST_H_
+#endif // CUTILS_CONTAINER_STATIC_LIST_H_

@@ -1,7 +1,7 @@
-#ifndef CUTILS_SIGNLY_LIST_H_
-#define CUTILS_SIGNLY_LIST_H_
+#ifndef CUTILS_CONTAINER_SIGNLY_LIST_H_
+#define CUTILS_CONTAINER_SIGNLY_LIST_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,4 +42,4 @@ SinglyListEntry* SinglyListNext(SinglyListEntry* entry);
 }
 #endif
 
-#endif // CUTILS_SIGNLY_LIST_H_
+#endif // CUTILS_CONTAINER_SIGNLY_LIST_H_

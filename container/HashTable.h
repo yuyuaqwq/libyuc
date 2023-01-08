@@ -1,8 +1,8 @@
-#ifndef CUTILS_HASHTABLE_H_
-#define CUTILS_HASHTABLE_H_
+#ifndef CUTILS_CONTAINER_HASHTABLE_H_
+#define CUTILS_CONTAINER_HASHTABLE_H_
 
-#include "CUtils/container/object.h"
-#include "CUtils/container/HashAlgorithm.h"
+#include "CUtils/object.h"
+#include "CUtils/algorithm/HashMap.h"
 #include "CUtils/container/array.h"
 #include "CUtils/container/SinglyList.h"
 
@@ -74,4 +74,4 @@ void* HashTableFirst(HashTable* table, HashTableIterator* iter);
 }
 #endif
 
-#endif // CUTILS_HASHTABLE_H_
+#endif // CUTILS_CONTAINER_HASHTABLE_H_

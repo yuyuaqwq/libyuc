@@ -1,7 +1,7 @@
-#ifndef CUTILS_BSTREE_H_
-#define CUTILS_BSTREE_H_
+#ifndef CUTILS_CONTAINER_BSTREE_H_
+#define CUTILS_CONTAINER_BSTREE_H_
 
-#include "CUtils/container/object.h"
+#include "CUtils/object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,4 +42,4 @@ void BSPostorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* ar
 }
 #endif
 
-#endif // CUTILS_BSTREE_H_
+#endif // CUTILS_CONTAINER_BSTREE_H_
