@@ -30,10 +30,8 @@ typedef struct _RBEntry {
 
 typedef BSTree RBTree;
 
-void RBTreeInit(RBTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-
-#define RBTreeInitM(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), sizeof(objName), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
-
+void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+#define RBTreeInitM(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void RBEntryInit(RBEntry* entry, RBColor color);
 RBEntry* RBFindEntryByKey(RBTree* tree, void* key);
 bool RBInsertEntry(RBTree* tree, RBEntry* entry);

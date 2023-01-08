@@ -22,16 +22,18 @@ void VectorExpand(Vector* vector, size_t targetCount) {
 }
 
 void VectorInit(Vector* vector, size_t capacity) {
-	VectorRelease(vector);
+	vector->size = 0;
 	if (capacity != 0) {
 		VectorExpand(vector, capacity);
 	}
 }
 
-void VectorRelease(Vector* vector) {
+void VectorRelease(Vector* vector, bool deleteObj) {
 	if (vector->objPtrArr) {
-		for (int i = 0; i < vector->size; i++) {
-			DeleteObject_(vector->objPtrArr[i]);
+		if (deleteObj) {
+			for (int i = 0; i < vector->size; i++) {
+				DeleteObject_(vector->objPtrArr[i]);
+			}
 		}
 		DeleteObject_(vector->objPtrArr);
 		vector->objPtrArr = NULL;

@@ -143,8 +143,8 @@ static void RBSwapEntry(RBTree* tree, RBEntry* entry1, RBEntry* entry2) {
 /*
 * ³õÊ¼»¯Ê÷
 */
-void RBTreeInit(RBTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-	BSTreeInit(tree, objSize, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+	BSTreeInit(tree, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*

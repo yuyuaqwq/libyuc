@@ -62,7 +62,7 @@ typedef struct _HashTableIterator {
 
 void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashFunc hashFunc, CmpFunc cmpFunc);
 void HashEntryInit(HashEntry* entry);
-void HashTableRelease(HashTable* table);
+void HashTableRelease(HashTable* table, bool deleteObj);
 void* HashTableFind(HashTable* table, void* key);
 bool HashTableInsert(HashTable* table, void* obj);
 void* HashTableDelete(HashTable* table, void* key);

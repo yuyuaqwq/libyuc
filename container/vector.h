@@ -16,7 +16,7 @@ typedef struct _Vector {
 
 void VectorInit(Vector* arr, size_t capacity);
 
-void VectorRelease(Vector* arr);
+void VectorRelease(Vector* arr, bool deleteObj);
 
 #define VectorAt(vector, index, objName) (*(objName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
 

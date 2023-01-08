@@ -27,13 +27,11 @@ static void BSHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
 /*
 * ³õÊ¼»¯Ê÷
 */
-void BSTreeInit(BSTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
 	tree->root = NULL;
 	tree->entryFieldOffset = entryFieldOffset;
-	// head->smallByteOrder = true;
 	tree->keyFieldOffset = keyFieldOffset;
 	tree->keyFieldSize = keySize;
-	tree->objSize = objSize;
 	if (cmpFunc == NULL) {
 		cmpFunc = MemoryCmpR;
 	}

@@ -147,8 +147,8 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
 /*
 * ³õÊ¼»¯Ê÷
 */
-void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-	BSTreeInit((BSTree*)tree, objSize, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+	BSTreeInit((BSTree*)tree, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*

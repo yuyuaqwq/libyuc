@@ -22,12 +22,10 @@ typedef struct _AVLEntry {
 
 typedef BSTree AVLTree;
 
-#define AVLTreeInitM(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), sizeof(objName), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
-
-void AVLTreeInit(AVLTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-
+void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+#define AVLTreeInitM(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void AVLEntryInit(AVLEntry* entry);
-
+AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key);
 #define AVLFindEntryByKeyM(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
 	AVLEntry* cur = (tree)->root; \
@@ -42,15 +40,9 @@ void AVLEntryInit(AVLEntry* entry);
 		} \
 	} \
 }
-
-AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key);
-
 bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry);
-
 AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry);
-
 AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key);
-
 size_t AVLGetEntryCount(AVLTree* tree);
 
 #ifdef __cplusplus

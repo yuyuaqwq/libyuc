@@ -16,15 +16,13 @@ typedef struct _BSEntry {
 
 typedef struct _BSTree {
 	BSEntry* root;
-	// bool smallByteOrder;
-	int objSize;
 	int entryFieldOffset;
 	int keyFieldOffset;
 	int keyFieldSize;
 	CmpFunc cmpFunc;		// 间接调用增加一定开销
 } BSTree;
 
-void BSTreeInit(BSTree* tree, int objSize, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 void BSEntryInit(BSEntry* entry);
 BSEntry* BSFindEntryByKey(BSTree* tree, void* key);
 bool BSInsertEntry(BSTree* tree, BSEntry* entry);

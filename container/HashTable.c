@@ -59,13 +59,15 @@ void HashEntryInit(HashEntry* entry) {
 	entry->type = kFree;
 }
 
-void HashTableRelease(HashTable* table) {
+void HashTableRelease(HashTable* table, bool deleteObj) {
 	HashTableIterator iter;
 	void* obj = HashTableFirst(table, &iter);
 	while (obj) {
 		void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
 		HashTableDelete(table, key);
-		DeleteObject_(obj);
+		if (deleteObj) {
+			DeleteObject_(obj);
+		}
 		obj = HashTableNext(&iter);
 	}
 	ArrayRelease(&table->bucket);
