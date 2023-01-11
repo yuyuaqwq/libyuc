@@ -2,53 +2,42 @@
 
 
 void VectorExpand(Vector* vector, size_t targetCount) {
-	size_t oldCapacity = vector->capacity;
-
-	if (vector->capacity == 0) {
-		vector->capacity = 1;
-	}
-	while (vector->capacity < targetCount) {
-		vector->capacity *= 2;
-	}
-
-	if (oldCapacity != vector->capacity) {
-		void* newBuf = CreateMultipleObjByCount(void*, vector->capacity);
-		if (vector->objPtrArr) {
-			MemoryCopy(newBuf, vector->objPtrArr, sizeof(uintptr_t) * vector->size);
-			DeleteObject_(vector->objPtrArr);
-		}
-		vector->objPtrArr = newBuf;
-	}
+	ArrayExpand(&vector->array, targetCount);
 }
 
 void VectorInit(Vector* vector, size_t capacity) {
-	vector->size = 0;
-	if (capacity != 0) {
-		VectorExpand(vector, capacity);
-	}
+	ArrayInit(&vector->array, capacity, sizeof(void*));
 }
 
 void VectorRelease(Vector* vector, bool deleteObj) {
-	if (vector->objPtrArr) {
-		if (deleteObj) {
-			for (int i = 0; i < vector->size; i++) {
-				DeleteObject_(vector->objPtrArr[i]);
-			}
+	if (vector->array.objArr && deleteObj) {
+		for (int i = 0; i < vector->array.count; i++) {
+			DeleteObject_(((void**)vector->array.objArr)[i]);
 		}
-		DeleteObject_(vector->objPtrArr);
-		vector->objPtrArr = NULL;
 	}
-	vector->capacity = 0;
-	vector->size = 0;
+	ArrayRelease(&vector->array);
 }
 
-void VectorPushTail(Vector* vector, void* obj) {
-	if (vector->capacity <= vector->size) {
-		VectorExpand(vector, vector->size + 1);
-	}
-	vector->objPtrArr[vector->size++] = obj;
+int VectorPushTail(Vector* vector, void* obj) {
+	return ArrayPushTail(&vector->array, &obj);
 }
 
 void* VectorPopTail(Vector* vector) {
-	return vector->objPtrArr[vector->size--];
+	return *(void**)ArrayPopTail(&vector->array);
+}
+
+size_t VectorGetCount(Vector* vector) {
+	return ArrayGetCount(&vector->array);
+}
+
+void VectorSetCount(Vector* vector, size_t count) {
+	ArraySetCount(&vector->array, count);
+}
+
+size_t VectorGetCapacity(Vector* vector) {
+	return ArrayGetCapacity(&vector->array);
+}
+
+void VectorSetCapacity(Vector* vector, size_t capacity) {
+	ArraySetCapacity(&vector->array, capacity);
 }

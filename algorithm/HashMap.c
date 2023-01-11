@@ -1,5 +1,8 @@
 #include "HashMap.h"
 
+/*
+* 主要哈希算法来源：笨方法学C
+*/
 
 /**
  * Jenkins hash
@@ -77,12 +80,12 @@ uint32_t Hashmap_djb_hash(const void* data, size_t size)
 }
 
 
+
 /**
  * `murmurhash.h' - murmurhash
  *
  * copyright (c) 2014-2022 joseph werle <joseph.werle@gmail.com>
  */
-
 uint32_t Hashmap_murmurhash(const void* key_, uint32_t len/*, uint32_t seed*/) {
     uint32_t seed = 0;
 

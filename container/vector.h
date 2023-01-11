@@ -2,6 +2,7 @@
 #define CUTILS_CONTAINER_VECTOR_H_
 
 #include "CUtils/object.h"
+#include "CUtils/container/array.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,16 +10,14 @@ extern "C" {
 
 
 typedef struct _Vector {
-	size_t size;
-	size_t capacity;
-	void** objPtrArr;
+	Array array;
 } Vector;
 
-void VectorInit(Vector* arr, size_t capacity);
+void VectorInit(Vector* vector, size_t capacity);
 
-void VectorRelease(Vector* arr, bool deleteObj);
+void VectorRelease(Vector* vector, bool deleteObj);
 
-#define VectorAt(vector, index, objName) (*(objName**)(((uintptr_t)(vector)->objPtrArr) + (sizeof(void*)) * (index)))
+#define VectorAt(vector, index, objName) (ArrayAt(&(vector)->array, index, objName*))
 
 #define VectorFindEntryByKeyM(vector, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \
@@ -31,10 +30,17 @@ void VectorRelease(Vector* arr, bool deleteObj);
 	} \
 }
 
-void VectorPushTail(Vector* vector, void* obj);
+int VectorPushTail(Vector* vector, void* obj);
 
 void* VectorPopTail(Vector* vector);
 
+size_t VectorGetCount(Vector* vector);
+
+void VectorSetCount(Vector* vector, size_t count);
+
+size_t VectorGetCapacity(Vector* vector);
+
+void VectorSetCapacity(Vector* vector, size_t capacity);
 
 #ifdef __cplusplus
 }

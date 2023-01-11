@@ -39,18 +39,19 @@ void ArrayRelease(Array* arr) {
 	arr->count = 0;
 }
 
-void ArrayPushTail(Array* arr, void* obj) {
+int ArrayPushTail(Array* arr, void* obj) {
 	if (arr->capacity <= arr->count) {
 		ArrayExpand(arr, arr->count + 1);
 	}
 	MemoryCopy(ArrayAt(arr, arr->count++, void), obj, arr->objSize);
+	return arr->count - 1;
 }
 
 void* ArrayPopTail(Array* arr) {
 	if (arr->count == 0) {
 		return NULL;
 	}
-	return ArrayAt(arr, arr->count--, void);
+	return ArrayAt(arr, --arr->count, void);
 }
 
 void ArraySwapEntry(Array* arr, int index1, int index2) {
@@ -63,3 +64,14 @@ size_t ArrayGetCount(Array* arr) {
 	return arr->count;
 }
 
+void ArraySetCount(Array* arr, size_t count) {
+	arr->count = count;
+}
+
+size_t ArrayGetCapacity(Array* arr) {
+	return arr->capacity;
+}
+
+void ArraySetCapacity(Array* arr, size_t capacity) {
+	arr->capacity = capacity;
+}

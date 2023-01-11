@@ -18,6 +18,7 @@ typedef struct _Array {
 void ArrayInit(Array* arr, size_t capacity, int objByteCount);
 void ArrayRelease(Array* arr);
 #define ArrayAt(arr, index, objName) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
+#define ArrayToCArr(arr, objName) ((objName*)(arr)->objArr))
 #define ArrayFindEntryByKeyM(arr, retObj, objName, keyFieldName, key) { \
 	retObj = NULL; \
 	for (int i = 0; i < (arr)->size; i++) { \
@@ -28,11 +29,14 @@ void ArrayRelease(Array* arr);
 		} \
 	} \
 }
-void ArrayPushTail(Array* arr, void* obj);
+int ArrayPushTail(Array* arr, void* obj);
 void* ArrayPopTail(Array* arr);
+size_t ArrayGetCount(Array* arr);
+void ArraySetCount(Array* arr, size_t count);
+size_t ArrayGetCapacity(Array* arr);
+void ArraySetCapacity(Array* arr, size_t capacity);
 void ArrayExpand(Array* arr, size_t targetCount);
 void ArraySwapEntry(Array* arr, int index1, int index2);
-size_t ArrayGetCount(Array* arr);
 
 #ifdef __cplusplus
 }

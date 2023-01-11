@@ -48,7 +48,7 @@ ListEntry* ListRemoveTail(ListHead* head) {
 	return ListRemoveEntry(head->prev, true);
 }
 
-size_t ListEntryCount(ListHead* head) {
+size_t ListGetEntryCount(ListHead* head) {
 	size_t count = 0;
 	ListEntry* cur = head->next;
 	while (cur != head) {

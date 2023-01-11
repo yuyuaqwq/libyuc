@@ -23,7 +23,7 @@ void ListInsertTail(ListHead* head, ListEntry* entry);
 ListEntry* ListRemoveEntry(ListEntry* entry, bool empty);
 ListEntry* ListRemoveHead(ListHead* head);
 ListEntry* ListRemoveTail(ListHead* head);
-size_t ListEntryCount(ListHead* head);
+size_t ListGetEntryCount(ListHead* head);
 #define ListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
 	retObj = NULL; \
 	ListEntry* cur = (head)->next; \
@@ -36,6 +36,10 @@ size_t ListEntryCount(ListHead* head);
 		cur = cur->next; \
 	} \
 }
+
+ListEntry* ListFirst(ListHead* head);
+ListEntry* ListPrev(ListHead* head, ListEntry* entry);
+ListEntry* ListNext(ListHead* head, ListEntry* entry);
 
 #ifdef __cplusplus
 }

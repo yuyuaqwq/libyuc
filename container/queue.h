@@ -9,28 +9,28 @@ extern "C" {
 #endif
 
 
-typedef struct ArrayQueue {
+typedef struct _Queue {
 	Array arr;
 	int head;		// head指向即将出队的元素索引
 	int tail;		// tail指向最近入队的元素索引的下一个索引
-} ArrayQueue;
+} Queue;
 
 //        t=h
 // 队空：|   |   |   |
 //             t   h
 // 队满：| 3 |   | 1 | 2 |
 
-void ArrayQueueInit(ArrayQueue* queue, size_t capacity, int objSize);
-void ArrayQueueRelease(ArrayQueue* queue);
-int ArrayQueueIndexRewind(ArrayQueue* queue, int index);
-bool ArrayQueueIsEmpty(ArrayQueue* queue);
-bool ArrayQueueIsFull(ArrayQueue* queue);
-size_t ArrayQueueGetEntryCount(ArrayQueue* queue);
-size_t ArrayQueueGetFreeCount(ArrayQueue* queue);
+void QueueInit(Queue* queue, size_t capacity, int objSize);
+void QueueRelease(Queue* queue);
+int QueueIndexRewind(Queue* queue, int index);
+bool QueueIsEmpty(Queue* queue);
+bool QueueIsFull(Queue* queue);
+size_t QueueGetEntryCount(Queue* queue);
+size_t QueueGetFreeCount(Queue* queue);
 
-void ArrayQueueEnqueue(ArrayQueue* queue, void* obj);
-void ArrayQueueEnqueueByCount(ArrayQueue* queue, void* obj, size_t count);
-void* ArrayQueueDequeue(ArrayQueue* queue);
+void QueueEnqueue(Queue* queue, void* obj);
+void QueueEnqueueByCount(Queue* queue, void* obj, size_t count);
+void* QueueDequeue(Queue* queue);
 
 #ifdef __cplusplus
 }
