@@ -86,8 +86,7 @@ void* HeapGetTop(Heap* heap) {
 }
 
 void* HeapPopTop(Heap* heap) {
-	uint32_t tailIndex = VectorGetCount(&heap->vector) - 1;
-	if (tailIndex == 0) {
+	if (VectorGetCount(&heap->vector) <= 1) {
 		return NULL;
 	}
 	void* topObj = *VectorAt(&heap->vector, 1, void);

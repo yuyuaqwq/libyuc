@@ -15,7 +15,7 @@ typedef struct _StaticListHead {
 } StaticListHead;
 
 /*
-* 分配后此条目的值可以被覆盖，故可以使用union
+* 分配后此节点的值可以被覆盖，故可以使用union
 */
 typedef struct _StaticListEntry {
 	int nextIndex;

@@ -1,5 +1,10 @@
 #include "RBTree.h"
 
+typedef enum _RBColor {
+	kBlack,
+	kRed,
+} RBColor;
+
 
 /*
 * зѓа§згЪї

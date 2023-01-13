@@ -187,8 +187,23 @@ void* HashTableDelete(HashTable* table, void* key) {
 }
 
 /*
-* 现在的迭代思路是遍历空间所有条目，另外可以用静态链表连接所有已映射的条目，但需要额外空间
+* 现在的迭代思路是遍历空间所有节点，另外可以用静态链表连接所有已映射的节点，但需要额外空间
 */
+void* HashTableFirst(HashTable* table, HashTableIterator* iter) {
+	iter->table = table;
+	iter->curListEntry = NULL;
+	iter->curIndex = 0;
+#ifdef HASHTABLE_DATA_STATISTICS
+	iter->objCount = 0;
+	iter->freeCount = 0;
+	iter->listEntryCount = 0;
+	iter->listHeadCount = 0;
+	iter->maxListCount = 0;
+	iter->curListCount = 0;
+#endif // HASHTABLE_DATA_STATISTICS
+	return HashTableNext(iter);
+}
+
 void* HashTableNext(HashTableIterator* iter) {
 	if (iter->curListEntry) {
 		HashDataList* cur = iter->curListEntry;
@@ -233,19 +248,4 @@ void* HashTableNext(HashTableIterator* iter) {
 		}
 	}
 	return NULL;
-}
-
-void* HashTableFirst(HashTable* table, HashTableIterator* iter) {
-	iter->table = table;
-	iter->curListEntry = NULL;
-	iter->curIndex = 0;
-#ifdef HASHTABLE_DATA_STATISTICS
-	iter->objCount = 0;
-	iter->freeCount = 0;
-	iter->listEntryCount = 0;
-	iter->listHeadCount = 0;
-	iter->maxListCount = 0;
-	iter->curListCount = 0;
-#endif // HASHTABLE_DATA_STATISTICS
-	return HashTableNext(iter);
 }

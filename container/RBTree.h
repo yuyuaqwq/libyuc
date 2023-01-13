@@ -11,10 +11,7 @@ extern "C" {
 /*
 * 以234树为原型的红黑树实现
 */
-typedef enum _RBColor {
-	kBlack,
-	kRed,
-} RBColor;
+typedef enum _RBColor RBColor;
 typedef struct _RBEntry {
 	union {
 		struct {
@@ -25,7 +22,7 @@ typedef struct _RBEntry {
 		BSEntry bs;
 	};
 
-	RBColor color;
+	enum _RBColor color;
 } RBEntry;
 
 typedef BSTree RBTree;

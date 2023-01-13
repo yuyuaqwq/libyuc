@@ -14,30 +14,27 @@ extern "C" {
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
 
 
-typedef struct _BPlusLeafData {
+typedef struct _BPlusLeafInternalEntry {
 	int key;		// void* obj;
-} BPlusLeafData;
+} BPlusLeafInternalEntry;
 
-typedef struct _BPlusIndexData {		// Internal
+typedef struct _BPlusIndexInternalEntry {		// Internal
 	struct _BPlusEntry* child;
 	int key;
-} BPlusIndexData;
+} BPlusIndexInternalEntry;
 
-typedef enum {
-	kIndex,
-	kLeaf,
-} BPlusEntryType;
 
+typedef enum _BPlusEntryType BPlusEntryType;
 // 可以优化的点：child和key分别合并放到一起，可以加快查找以及避免内存对齐
 typedef struct _BPlusEntry {
 	BPlusEntryType type;
 	int count;		// child / obj计数
 	struct _BPlusEntry* parent;
 	union {
-		BPlusIndexData indexData[];
+		BPlusIndexInternalEntry indexInternalEntry[];
 		struct {
 			ListEntry leafListEntry;
-			BPlusLeafData leafData[];
+			BPlusLeafInternalEntry leafInternalEntry[];
 		};
 	};
 } BPlusEntry;
@@ -53,6 +50,7 @@ typedef struct _BPlusTree {
 void BPlusTreeInit(BPlusTree* tree, int m);
 bool BPlusTreeInsert(BPlusTree* tree, int key);
 bool BPlusTreeFind(BPlusTree* tree, int key);
+bool BPlusTreeDelete(BPlusTree* tree, int key);
 
 #ifdef __cplusplus
 }
