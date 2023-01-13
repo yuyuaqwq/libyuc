@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 楸奸奔
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 璇蜂繚鐣欐澹版槑
+*/
+
 #ifndef CUTILS_CONTAINER_HASHTABLE_H_
 #define CUTILS_CONTAINER_HASHTABLE_H_
 
@@ -33,7 +40,7 @@ typedef struct _HashDataList {
 
 typedef struct _HashTable {
 	Array bucket;
-	// Array tempBucket;		// 保留，未来可能修改为逐渐搬迁
+	// Array tempBucket;		// 淇濈暀锛屾湭鏉ュ彲鑳戒慨鏀逛负閫愭笎鎼縼
 	int keyFieldOffset;
 	int keyFieldSize;
 	int loadFator;

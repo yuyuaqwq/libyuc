@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #ifndef CUTILS_CONTAINER_SKIP_LIST_H_
 #define CUTILS_CONTAINER_SKIP_LIST_H_
 
@@ -9,18 +16,18 @@ extern "C" {
 
 
 /*
-* Ìø±íË÷Òı½Úµã
+* è·³è¡¨ç´¢å¼•èŠ‚ç‚¹
 */
 typedef struct _SkipListLevel {
-	struct _SkipListEntry* next;		// Í¬Ë÷Òı²ãµÄÏÂÒ»½Úµã
+	struct _SkipListEntry* next;		// åŒç´¢å¼•å±‚çš„ä¸‹ä¸€èŠ‚ç‚¹
 } SkipListLevel;
 
 /*
-* Ìø±í½Úµã£¬Ã¿¸ö½ÚµãÓĞËæ»úµÄË÷Òı²ãÊı£¬ËùÒÔÓÃÈáĞÔÊı×é¶¯Ì¬·ÖÅä
+* è·³è¡¨èŠ‚ç‚¹ï¼Œæ¯ä¸ªèŠ‚ç‚¹æœ‰éšæœºçš„ç´¢å¼•å±‚æ•°ï¼Œæ‰€ä»¥ç”¨æŸ”æ€§æ•°ç»„åŠ¨æ€åˆ†é…
 */
 typedef struct _SkipListEntry {
-	void* obj;		// ĞŞ¸ÄÎª´æ´¢obj
-	SkipListLevel upper[];		// ½ÚµãµÄÉÏ²ã£¬ÊÇË÷Òı½Úµã
+	void* obj;		// ä¿®æ”¹ä¸ºå­˜å‚¨obj
+	SkipListLevel upper[];		// èŠ‚ç‚¹çš„ä¸Šå±‚ï¼Œæ˜¯ç´¢å¼•èŠ‚ç‚¹
 } SkipListEntry;
 
 typedef struct _SkipList {

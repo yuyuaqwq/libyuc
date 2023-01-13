@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "SkipList.h"
 
 const int SKIPLIST_P = (RAND_MAX / 2);
@@ -20,9 +27,9 @@ static SkipListEntry* SkipListCreateEntry(int level, void* obj) {
 
 static forceinline SkipListEntry* SkipListFind_(SkipList* list, void* key, int* cmpRes, SkipListEntry** update) {
 	SkipListEntry* cur = list->head;
-	// ´Ó×î¶¥²ã¿ªÊ¼±éÀú£¬Ã¿ÌËÑ­»·¶¼Ïàµ±ÓÚÏÂ½µÒ»²ãË÷Òı
+	// ä»æœ€é¡¶å±‚å¼€å§‹éå†ï¼Œæ¯è¶Ÿå¾ªç¯éƒ½ç›¸å½“äºä¸‹é™ä¸€å±‚ç´¢å¼•
 	for (int i = list->level - 1; i >= 0; i--) {
-		// µ±Ç°Ë÷Òı²ãµÄ²éÕÒ
+		// å½“å‰ç´¢å¼•å±‚çš„æŸ¥æ‰¾
 		while (cur->upper[i].next) {
 			void* nextKey = GetFieldByFieldOffset(cur->upper[i].next->obj, list->keyFieldOffset, void);
 			*cmpRes = list->cmpFunc(nextKey, key, list->keyFieldSize);
@@ -33,11 +40,11 @@ static forceinline SkipListEntry* SkipListFind_(SkipList* list, void* key, int* 
 		}
 		
 		if (update) {
-			update[i] = cur;		// µ±Ç°½Úµã¸Ã²ãµÄË÷Òı¿ÉÄÜĞèÒª Ö¸Ïò±»É¾³ıË÷ÒıµÄÏÂÒ»Ë÷Òı / Ö¸ÏòĞÂ½ÚµãÍ¬²ãË÷Òı
+			update[i] = cur;		// å½“å‰èŠ‚ç‚¹è¯¥å±‚çš„ç´¢å¼•å¯èƒ½éœ€è¦ æŒ‡å‘è¢«åˆ é™¤ç´¢å¼•çš„ä¸‹ä¸€ç´¢å¼• / æŒ‡å‘æ–°èŠ‚ç‚¹åŒå±‚ç´¢å¼•
 		}
 
 		if (*cmpRes == 0) {
-			// ²»Ö§³ÖÖØ¸´key£¬µ±Ç°Ë÷Òı²ãÕÒµ½ÁË¾Í²»ÔÙĞèÒªÏÂ½µÁË
+			// ä¸æ”¯æŒé‡å¤keyï¼Œå½“å‰ç´¢å¼•å±‚æ‰¾åˆ°äº†å°±ä¸å†éœ€è¦ä¸‹é™äº†
 			break;
 		}
 
@@ -79,8 +86,8 @@ void* SkipListFind(SkipList* list, void* key) {
 	int cmpRes = 0;
 	SkipListEntry* cur = SkipListFind_(list, key, &cmpRes, NULL);
 
-	cur = cur->upper[0].next;		// ¸Õ³öÑ­»·Ê±cur»¹Î´¸üĞÂ
-	// ²éÕÒ³öÀ´£¬ÒªÃ´ÊÇËùÓĞË÷Òı²ã¶¼ÕÒ²»µ½£¬ÒªÃ´ÊÇcurµÄkey>=²éÕÒµÄkey
+	cur = cur->upper[0].next;		// åˆšå‡ºå¾ªç¯æ—¶curè¿˜æœªæ›´æ–°
+	// æŸ¥æ‰¾å‡ºæ¥ï¼Œè¦ä¹ˆæ˜¯æ‰€æœ‰ç´¢å¼•å±‚éƒ½æ‰¾ä¸åˆ°ï¼Œè¦ä¹ˆæ˜¯curçš„key>=æŸ¥æ‰¾çš„key
 
 	if (cur && cmpRes == 0) {
 		return cur->obj;
@@ -89,33 +96,33 @@ void* SkipListFind(SkipList* list, void* key) {
 }
 
 bool SkipListInsert(SkipList* list, void* obj) {
-	SkipListEntry* update[SKIPLIST_MAX_LEVEL];		// ¶ÔÓ¦Ã¿Ò»²ãĞèÒª¸üĞÂË÷ÒıµÄ½Úµã£¬ÒòÎªĞÂ½Úµã¿ÉÄÜ»á²åÈëË÷Òı
+	SkipListEntry* update[SKIPLIST_MAX_LEVEL];		// å¯¹åº”æ¯ä¸€å±‚éœ€è¦æ›´æ–°ç´¢å¼•çš„èŠ‚ç‚¹ï¼Œå› ä¸ºæ–°èŠ‚ç‚¹å¯èƒ½ä¼šæ’å…¥ç´¢å¼•
 
 	void* key = GetFieldByFieldOffset(obj, list->keyFieldOffset, void);
 
 	int cmpRes = 0;
 	SkipListEntry* cur = SkipListFind_(list, key, &cmpRes, update);
 
-	// cur´ËÊ±µÄnextÒªÃ´Ö¸ÏòNULL£¬ÒªÃ´>=key
+	// curæ­¤æ—¶çš„nextè¦ä¹ˆæŒ‡å‘NULLï¼Œè¦ä¹ˆ>=key
 	if (cur->upper[0].next && cmpRes == 0) {
-		// keyÏàµÈÔò²»²åÈë
+		// keyç›¸ç­‰åˆ™ä¸æ’å…¥
 		return false;
 	}
 
-	// ×¼±¸´´½¨Ëæ»ú¸ß¶ÈË÷Òı²ãµÄ½Úµã
+	// å‡†å¤‡åˆ›å»ºéšæœºé«˜åº¦ç´¢å¼•å±‚çš„èŠ‚ç‚¹
 	int level = RandomLevel();
 	if (level > list->level) {
-		// ĞÂ½ÚµãµÄË÷Òı²ã±ÈÒÔÍùµÄ½Úµã¶¼¸ß£¬¸ß³öÀ´µÄ²¿·ÖÓÉÍ·½ÚµãË÷Òı²ãÁ¬½Ó
+		// æ–°èŠ‚ç‚¹çš„ç´¢å¼•å±‚æ¯”ä»¥å¾€çš„èŠ‚ç‚¹éƒ½é«˜ï¼Œé«˜å‡ºæ¥çš„éƒ¨åˆ†ç”±å¤´èŠ‚ç‚¹ç´¢å¼•å±‚è¿æ¥
 		for (int i = list->level; i < level; i++) {
-			update[i] = list->head;		// Í·½Úµã¸Ã²ãµÄË÷ÒıĞèÒªÖ¸ÏòĞÂ½ÚµãÍ¬²ãË÷Òı
+			update[i] = list->head;		// å¤´èŠ‚ç‚¹è¯¥å±‚çš„ç´¢å¼•éœ€è¦æŒ‡å‘æ–°èŠ‚ç‚¹åŒå±‚ç´¢å¼•
 		}
 		list->level = level;
 	}
 
-	// ´´½¨½Úµã
+	// åˆ›å»ºèŠ‚ç‚¹
 	SkipListEntry* newEntry = SkipListCreateEntry(level, obj);
 	for (int i = 0; i < level; i++) {
-		// Á¬½Óµ½Í¬²ãË÷ÒıÁ´±íÖĞ
+		// è¿æ¥åˆ°åŒå±‚ç´¢å¼•é“¾è¡¨ä¸­
 		newEntry->upper[i].next = update[i]->upper[i].next;
 		update[i]->upper[i].next = newEntry;
 	}
@@ -124,26 +131,26 @@ bool SkipListInsert(SkipList* list, void* obj) {
 }
 
 void* SkipListDelete(SkipList* list, void* key) {
-	SkipListEntry* update[SKIPLIST_MAX_LEVEL];		// ¶ÔÓ¦Ã¿Ò»²ãĞèÒª¸üĞÂË÷ÒıµÄ½Úµã£¬ÒòÎªĞÂ½Úµã¿ÉÄÜ»áÉ¾³ıË÷Òı
+	SkipListEntry* update[SKIPLIST_MAX_LEVEL];		// å¯¹åº”æ¯ä¸€å±‚éœ€è¦æ›´æ–°ç´¢å¼•çš„èŠ‚ç‚¹ï¼Œå› ä¸ºæ–°èŠ‚ç‚¹å¯èƒ½ä¼šåˆ é™¤ç´¢å¼•
 
 	int cmpRes = 0;
 	SkipListEntry* cur = SkipListFind_(list, key, &cmpRes, update);
 	cur = cur->upper[0].next;
 
 	if (!cur || cmpRes) {
-		// ÕÒ²»µ½¸Ã½Úµã
+		// æ‰¾ä¸åˆ°è¯¥èŠ‚ç‚¹
 		return NULL;
 	}
 
-	// ×îµ×²ãË÷Òı¿ªÊ¼ÏòÉÏ¸üĞÂ
+	// æœ€åº•å±‚ç´¢å¼•å¼€å§‹å‘ä¸Šæ›´æ–°
 	for (int i = 0; i < list->level; i++) {
-		if (update[i]->upper[i].next != cur) {		// ¸Ã²ãµÄË÷Òı²»Ö¸Ïò±»É¾³ıµÄ½Úµã£¬Í£Ö¹¸üĞÂ
+		if (update[i]->upper[i].next != cur) {		// è¯¥å±‚çš„ç´¢å¼•ä¸æŒ‡å‘è¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œåœæ­¢æ›´æ–°
 			break;
 		}
-		update[i]->upper[i].next = cur->upper[i].next;		// É¾³ıË÷Òı£¬¼´Ö¸Ïò±»É¾³ıË÷ÒıµÄÏÂÒ»Ë÷Òı
+		update[i]->upper[i].next = cur->upper[i].next;		// åˆ é™¤ç´¢å¼•ï¼Œå³æŒ‡å‘è¢«åˆ é™¤ç´¢å¼•çš„ä¸‹ä¸€ç´¢å¼•
 	}
 
-	// ±»É¾³ıµÄË÷Òı²ã¿ÉÄÜÊÇ×î¸ßË÷Òı²ã£¬ĞèÒªµ÷Õû
+	// è¢«åˆ é™¤çš„ç´¢å¼•å±‚å¯èƒ½æ˜¯æœ€é«˜ç´¢å¼•å±‚ï¼Œéœ€è¦è°ƒæ•´
 	while (list->level > 1 && list->head->upper[list->level - 1].next == NULL) {
 		list->level--;
 	}

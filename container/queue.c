@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "queue.h"
 
 static void QueueExpand(Queue* queue, size_t targetSize) {
@@ -17,7 +24,7 @@ static void QueueExpand(Queue* queue, size_t targetSize) {
 
 void QueueInit(Queue* queue, size_t capacity, int objByteCount) {
 	if (capacity == 1) {
-		capacity = 2;		// ³¤¶È²»ÄÜÊÇ1£¬·ñÔò»á³öÏÖ¶ÓÂú=¶Ó¿ÕµÄÇé¿ö
+		capacity = 2;		// é•¿åº¦ä¸èƒ½æ˜¯1ï¼Œå¦åˆ™ä¼šå‡ºç°é˜Ÿæ»¡=é˜Ÿç©ºçš„æƒ…å†µ
 	}
 	ArrayInit(&queue->arr, capacity, objByteCount);
 	queue->arr.count = capacity;

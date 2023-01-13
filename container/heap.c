@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜Ž
+*/
+
 #include "heap.h"
 
 static void ShiftUp(Heap* heap, uint32_t now) {
@@ -10,7 +17,7 @@ static void ShiftUp(Heap* heap, uint32_t now) {
 		void** objChild = VectorAt(vec, now, void);
 		void* keyChild = GetFieldByFieldOffset(*objChild, heap->keyFieldOffset, void);
 		
-		// ¸¸Ç×´óÓÚµÈÓÚº¢×Ó¾Í½áÊø
+		// çˆ¶äº²å¤§äºŽç­‰äºŽå­©å­å°±ç»“æŸ
 		if (heap->cmpFunc(keyParent, keyChild , heap->keyFieldSize) >= 0) {
 			break;
 		}
@@ -31,7 +38,7 @@ static void ShiftDown(Heap* heap, uint32_t now) {
 		void** objChild = VectorAt(vec, next, void);
 		void* keyChild = GetFieldByFieldOffset(*objChild, heap->keyFieldOffset, void);
 
-		// Á½¸öº¢×Ó¶¼Ð¡ÓÚµÈÓÚ¸¸Ç×¾Í½áÊø
+		// ä¸¤ä¸ªå­©å­éƒ½å°äºŽç­‰äºŽçˆ¶äº²å°±ç»“æŸ
 		if (heap->cmpFunc(keyChild, keyParent, heap->keyFieldSize) <= 0) {
 			next++;
 			objChild = VectorAt(vec, next, void);
@@ -58,7 +65,7 @@ void HeapInit(Heap* heap, uint32_t high, uint32_t keyFieldOffset, uint32_t keyFi
 		capacity *= 2;
 	}
 	VectorInit(&heap->vector, capacity);
-	VectorPushTail(&heap->vector, NULL);		// ¼òµ¥Æð¼û£¬ÏÂ±ê´Ó1¿ªÊ¼
+	VectorPushTail(&heap->vector, NULL);		// ç®€å•èµ·è§ï¼Œä¸‹æ ‡ä»Ž1å¼€å§‹
 
 	heap->keyFieldOffset = keyFieldOffset;
 	heap->keyFieldSize = keyFieldSize;

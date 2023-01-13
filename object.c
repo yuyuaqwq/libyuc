@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 鱼鱼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 请保留此声明
+*/
+
 #include "object.h"
 
 void MemorySwap(void* buf1_, void* buf2_, size_t size) {

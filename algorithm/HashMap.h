@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 鱼鱼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 请保留此声明
+*/
+
 #ifndef CUTILS_ALGORITHM_HASH_MAP_H_
 #define CUTILS_ALGORITHM_HASH_MAP_H_
 

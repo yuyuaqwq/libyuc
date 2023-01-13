@@ -1,9 +1,16 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "BSTree.h"
 
 
 /*
-* newEntry¹Ò½Óµ½entryÔ­À´µÄÎ»ÖÃ
-* entry´ÓÊ÷ÖĞÕª³ı£¬µ«entryµÄparent¡¢leftºÍright²»±ä
+* newEntryæŒ‚æ¥åˆ°entryåŸæ¥çš„ä½ç½®
+* entryä»æ ‘ä¸­æ‘˜é™¤ï¼Œä½†entryçš„parentã€leftå’Œrightä¸å˜
 */
 static void BSHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
 	if (entry->parent) {
@@ -25,7 +32,7 @@ static void BSHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
 
 
 /*
-* ³õÊ¼»¯Ê÷
+* åˆå§‹åŒ–æ ‘
 */
 void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
 	tree->root = NULL;
@@ -39,7 +46,7 @@ void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keyS
 }
 
 /*
-* ³õÊ¼»¯½Úµã
+* åˆå§‹åŒ–èŠ‚ç‚¹
 */
 void BSEntryInit(BSEntry* entry) {
 	entry->left = NULL;
@@ -48,8 +55,8 @@ void BSEntryInit(BSEntry* entry) {
 }
 
 /*
-* ´ÓÊ÷ÖĞ²éÕÒ½Úµã
-* ´æÔÚ·µ»Ø²éÕÒµ½µÄ½Úµã£¬²»´æÔÚ·µ»ØNULL
+* ä»æ ‘ä¸­æŸ¥æ‰¾èŠ‚ç‚¹
+* å­˜åœ¨è¿”å›æŸ¥æ‰¾åˆ°çš„èŠ‚ç‚¹ï¼Œä¸å­˜åœ¨è¿”å›NULL
 */
 BSEntry* BSFindEntryByKey(BSTree* tree, void* key) {
 	BSEntry* cur = tree->root;
@@ -70,9 +77,9 @@ BSEntry* BSFindEntryByKey(BSTree* tree, void* key) {
 }
 
 /*
-* ÏòÊ÷ÖĞ²åÈë½Úµã
-* ²»ÔÊĞí´æÔÚÖØ¸´½Úµã
-* ³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+* å‘æ ‘ä¸­æ’å…¥èŠ‚ç‚¹
+* ä¸å…è®¸å­˜åœ¨é‡å¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›trueï¼Œå¤±è´¥è¿”å›false
 */
 bool BSInsertEntry(BSTree* tree, BSEntry* entry) {
 	BSEntry* root = tree->root;
@@ -110,23 +117,23 @@ bool BSInsertEntry(BSTree* tree, BSEntry* entry) {
 }
 
 /*
-* ´ÓÊ÷ÖĞÉ¾³ı½Úµã
-* ³É¹¦·µ»Ø±»É¾³ıµÄ½Úµã£¬Ê§°Ü·µ»ØNULL
+* ä»æ ‘ä¸­åˆ é™¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›è¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œå¤±è´¥è¿”å›NULL
 */
 BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
 	if (entry->left == NULL && entry->right == NULL) {
-		// Ã»ÓĞ×Ó½Úµã£¬Ö±½Ó´Ó¸¸½ÚµãÖĞÕª³ı´Ë½Úµã
+		// æ²¡æœ‰å­èŠ‚ç‚¹ï¼Œç›´æ¥ä»çˆ¶èŠ‚ç‚¹ä¸­æ‘˜é™¤æ­¤èŠ‚ç‚¹
 		BSHitchEntry(tree, entry, NULL);
 	}
 	else if (entry->left == NULL) {
-		// Ö»ÓĞÓÒ×Ó½Úµã£¬ÄÇËµÃ÷ÓÒ×Ó½ÚµãÃ»ÓĞ×Ó½Úµã(ÓĞ×Ó½ÚµãµÄ»°¾ÍÒÑ¾­Ê§ºâÁË£¬ÒòÎªÃ»ÓĞ×ó×Ó½Úµã£¬ÓÒ×Ó½Úµã»¹ÓĞ×Ó½Úµã¾Í»áĞÎ³É0 - 2)
+		// åªæœ‰å³å­èŠ‚ç‚¹ï¼Œé‚£è¯´æ˜å³å­èŠ‚ç‚¹æ²¡æœ‰å­èŠ‚ç‚¹(æœ‰å­èŠ‚ç‚¹çš„è¯å°±å·²ç»å¤±è¡¡äº†ï¼Œå› ä¸ºæ²¡æœ‰å·¦å­èŠ‚ç‚¹ï¼Œå³å­èŠ‚ç‚¹è¿˜æœ‰å­èŠ‚ç‚¹å°±ä¼šå½¢æˆ0 - 2)
 		BSHitchEntry(tree, entry, entry->right);
 	}
 	else if (entry->right == NULL) {
 		BSHitchEntry(tree, entry, entry->left);
 	}
 	else {
-		// ÓĞ×óÓÒ¸÷ÓĞ×Ó½Úµã£¬ÕÒµ±Ç°½ÚµãµÄÓÒ×ÓÊ÷ÖĞ×îĞ¡µÄ½Úµã£¬ÓÃ×îĞ¡½ÚµãÌæ»»µ½µ±Ç°½ÚµãËùÔÚµÄÎ»ÖÃ£¬Õª³ıµ±Ç°½Úµã£¬Ïàµ±ÓÚÒÆ³ıÁË×îĞ¡½Úµã
+		// æœ‰å·¦å³å„æœ‰å­èŠ‚ç‚¹ï¼Œæ‰¾å½“å‰èŠ‚ç‚¹çš„å³å­æ ‘ä¸­æœ€å°çš„èŠ‚ç‚¹ï¼Œç”¨æœ€å°èŠ‚ç‚¹æ›¿æ¢åˆ°å½“å‰èŠ‚ç‚¹æ‰€åœ¨çš„ä½ç½®ï¼Œæ‘˜é™¤å½“å‰èŠ‚ç‚¹ï¼Œç›¸å½“äºç§»é™¤äº†æœ€å°èŠ‚ç‚¹
 		BSEntry* minEntry = entry->right;
 		while (minEntry) {
 			if (minEntry->left) {
@@ -137,30 +144,30 @@ BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
 			}
 		}
 
-		// ×îĞ¡½Úµã¼Ì³Ğ´ıÉ¾³ı½ÚµãµÄ×ó×ÓÊ÷£¬ÒòÎª×îĞ¡½Úµã¿Ï¶¨Ã»ÓĞ×ó½Úµã£¬ËùÒÔÖ±½Ó¸³Öµ
+		// æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å·¦å­æ ‘ï¼Œå› ä¸ºæœ€å°èŠ‚ç‚¹è‚¯å®šæ²¡æœ‰å·¦èŠ‚ç‚¹ï¼Œæ‰€ä»¥ç›´æ¥èµ‹å€¼
 		minEntry->left = entry->left;
 		if (entry->left) {
 			entry->left->parent = minEntry;
 		}
 
-		// ×îĞ¡½Úµã¿ÉÄÜÊÇ´ıÉ¾³ı½ÚµãµÄÓÒ½Úµã
+		// æœ€å°èŠ‚ç‚¹å¯èƒ½æ˜¯å¾…åˆ é™¤èŠ‚ç‚¹çš„å³èŠ‚ç‚¹
 		if (minEntry->parent != entry) {
-			// ½«minEntry´ÓÔ­ÏÈµÄÎ»ÖÃÕª³ı£¬ÓÃÆäÓÒ×ÓÊ÷´úÌæ
+			// å°†minEntryä»åŸå…ˆçš„ä½ç½®æ‘˜é™¤ï¼Œç”¨å…¶å³å­æ ‘ä»£æ›¿
 			minEntry->parent->left = minEntry->right;
 			if (minEntry->right) {
 				minEntry->right->parent = minEntry->parent;
 			}
-			// ×îĞ¡½Úµã¼Ì³Ğ´ıÉ¾³ı½ÚµãµÄÓÒ×ÓÊ÷
+			// æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å³å­æ ‘
 			minEntry->right = entry->right;
 			if (entry->right) {
 				entry->right->parent = minEntry;
 			}
 		}
 
-		// ×îºó½øĞĞ¹Ò½Ó
+		// æœ€åè¿›è¡ŒæŒ‚æ¥
 		BSHitchEntry(tree, entry, minEntry);
 
-		// Ò²¿ÉÒÔÑ¡ÔñÖ±½Ó½»»»Á½¸ö½ÚµãµÄÊı¾İ
+		// ä¹Ÿå¯ä»¥é€‰æ‹©ç›´æ¥äº¤æ¢ä¸¤ä¸ªèŠ‚ç‚¹çš„æ•°æ®
 	}
 	return entry;
 }
@@ -217,8 +224,8 @@ BSEntry* BSPrev(BSEntry* entry) {
 
 
 /*
-* Ç°Ğò±éÀú
-* ÏÈ¸ùÔÙÓÒÔÙ×ó
+* å‰åºéå†
+* å…ˆæ ¹å†å³å†å·¦
 */
 void BSPreorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg) {
 	if (!entry) return;
@@ -228,8 +235,8 @@ void BSPreorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg
 }
 
 /*
-* ÖĞĞò±éÀú
-* ÏÈ×óÔÙ¸ùÔÙÓÒ
+* ä¸­åºéå†
+* å…ˆå·¦å†æ ¹å†å³
 */
 void BSMiddleorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg) {
 	if (!entry) return;
@@ -239,8 +246,8 @@ void BSMiddleorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* 
 }
 
 /*
-* ºóĞò±éÀú
-* ÏÈ×óÔÙÓÒÔÙ¸ù
+* ååºéå†
+* å…ˆå·¦å†å³å†æ ¹
 */
 void BSPostorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg) {
 	if (!entry) return;

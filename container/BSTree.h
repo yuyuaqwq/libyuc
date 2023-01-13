@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 楸奸奔
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 璇蜂繚鐣欐澹版槑
+*/
+
 #ifndef CUTILS_CONTAINER_BSTREE_H_
 #define CUTILS_CONTAINER_BSTREE_H_
 
@@ -19,7 +26,7 @@ typedef struct _BSTree {
 	int entryFieldOffset;
 	int keyFieldOffset;
 	int keyFieldSize;
-	CmpFunc cmpFunc;		// 间接调用增加一定开销
+	CmpFunc cmpFunc;		// 闂存帴璋冪敤澧炲姞涓�瀹氬紑閿�
 } BSTree;
 
 void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);

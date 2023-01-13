@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "RBTree.h"
 
 typedef enum _RBColor {
@@ -7,7 +14,7 @@ typedef enum _RBColor {
 
 
 /*
-* ×óĞı×ÓÊ÷
+* å·¦æ—‹å­æ ‘
 */
 static RBEntry* RotateLeft(RBEntry* subRoot) {
 	RBEntry* newSubRoot = subRoot->right;
@@ -37,7 +44,7 @@ static RBEntry* RotateLeft(RBEntry* subRoot) {
 }
 
 /*
-* ÓÒĞı×ÓÊ÷
+* å³æ—‹å­æ ‘
 */
 static RBEntry* RotateRight(RBEntry* subRoot) {
 	RBEntry* newSubRoot = subRoot->left;
@@ -68,7 +75,7 @@ static RBEntry* RotateRight(RBEntry* subRoot) {
 }
 
 /*
-* È¡ĞÖµÜ½Úµã
+* å–å…„å¼ŸèŠ‚ç‚¹
 */
 static RBEntry* GetSiblingEntry(RBEntry* entry) {
 	if (entry->parent->left == entry) {
@@ -78,8 +85,8 @@ static RBEntry* GetSiblingEntry(RBEntry* entry) {
 }
 
 /*
-* newEntry¹Ò½Óµ½entryÔ­À´µÄÎ»ÖÃ
-* entry´ÓÊ÷ÖĞÕª³ı£¬µ«entryµÄparent¡¢leftºÍright²»±ä
+* newEntryæŒ‚æ¥åˆ°entryåŸæ¥çš„ä½ç½®
+* entryä»æ ‘ä¸­æ‘˜é™¤ï¼Œä½†entryçš„parentã€leftå’Œrightä¸å˜
 */
 static void RBHitchEntry(RBTree* tree, RBEntry* entry, RBEntry* newEntry) {
 	if (entry->parent) {
@@ -99,8 +106,8 @@ static void RBHitchEntry(RBTree* tree, RBEntry* entry, RBEntry* newEntry) {
 }
 
 /*
-* ½»»»Á½¸ö½Úµã£¬°üÀ¨parent¡¢left¡¢right¡¢color£¬ÒÔ¼°½ÚµãµÄparent¡¢left¡¢rightÖ¸Ïò½ÚµãµÄÖ¸Õë
-* ¿ÉÄÜ³ö´í£¬²»½¨ÒéÊ¹ÓÃ(±ÈÈçentry2µÄ¸¸½ÚµãÊÇentry1£¬½»»»ºóentry1µÄ¸¸½Úµã¾ÍÖ¸Ïò×Ô¼ºÁË)
+* äº¤æ¢ä¸¤ä¸ªèŠ‚ç‚¹ï¼ŒåŒ…æ‹¬parentã€leftã€rightã€colorï¼Œä»¥åŠèŠ‚ç‚¹çš„parentã€leftã€rightæŒ‡å‘èŠ‚ç‚¹çš„æŒ‡é’ˆ
+* å¯èƒ½å‡ºé”™ï¼Œä¸å»ºè®®ä½¿ç”¨(æ¯”å¦‚entry2çš„çˆ¶èŠ‚ç‚¹æ˜¯entry1ï¼Œäº¤æ¢åentry1çš„çˆ¶èŠ‚ç‚¹å°±æŒ‡å‘è‡ªå·±äº†)
 */
 static void RBSwapEntry(RBTree* tree, RBEntry* entry1, RBEntry* entry2) {
 	MemorySwap(entry1, entry2, sizeof(RBEntry));
@@ -146,14 +153,14 @@ static void RBSwapEntry(RBTree* tree, RBEntry* entry1, RBEntry* entry2) {
 
 
 /*
-* ³õÊ¼»¯Ê÷
+* åˆå§‹åŒ–æ ‘
 */
 void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
 	BSTreeInit(tree, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*
-* ³õÊ¼»¯½Úµã
+* åˆå§‹åŒ–èŠ‚ç‚¹
 */
 void RBEntryInit(RBEntry* entry, RBColor color) {
 	BSEntryInit(&entry->bs);
@@ -162,8 +169,8 @@ void RBEntryInit(RBEntry* entry, RBColor color) {
 
 
 /*
-* ´ÓÊ÷ÖĞ²éÕÒ½Úµã
-* ´æÔÚ·µ»Ø²éÕÒµ½µÄ½Úµã£¬²»´æÔÚ·µ»ØNULL
+* ä»æ ‘ä¸­æŸ¥æ‰¾èŠ‚ç‚¹
+* å­˜åœ¨è¿”å›æŸ¥æ‰¾åˆ°çš„èŠ‚ç‚¹ï¼Œä¸å­˜åœ¨è¿”å›NULL
 */
 RBEntry* RBFindEntryByKey(RBTree* tree, void* key) {
 	return (RBEntry*)BSFindEntryByKey(tree, key);
@@ -171,9 +178,9 @@ RBEntry* RBFindEntryByKey(RBTree* tree, void* key) {
 
 
 /*
-* ÏòÊ÷ÖĞ²åÈë½Úµã
-* ²»ÔÊĞí´æÔÚÖØ¸´½Úµã
-* ³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+* å‘æ ‘ä¸­æ’å…¥èŠ‚ç‚¹
+* ä¸å…è®¸å­˜åœ¨é‡å¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›trueï¼Œå¤±è´¥è¿”å›false
 */
 bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 	if (!BSInsertEntry(tree, &entry->bs)) {
@@ -188,28 +195,28 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 	entry->color = kRed;
 
 	if (cur->color == kBlack) {
-		// µ±Ç°½Úµã(²åÈë½ÚµãµÄ¸¸½Úµã)ÊÇºÚÉ«£¬É¶¶¼²»ÓÃ×ö(ÊÇ2½Úµã/3½ÚµãµÄ²åÈë£¬Ö±½ÓºÏ²¢)
+		// å½“å‰èŠ‚ç‚¹(æ’å…¥èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹)æ˜¯é»‘è‰²ï¼Œå•¥éƒ½ä¸ç”¨åš(æ˜¯2èŠ‚ç‚¹/3èŠ‚ç‚¹çš„æ’å…¥ï¼Œç›´æ¥åˆå¹¶)
 		return true;
 	}
 
 	RBEntry* newSubRoot = NULL;
-	// ¿ªÊ¼»ØËİÎ¬»¤
+	// å¼€å§‹å›æº¯ç»´æŠ¤
 	while (cur) {
 		if (cur->parent == NULL) {
-			// Ã»ÓĞ¸¸½Úµã£¬»ØËİµ½¸ù½ÚµãÁË£¬Ö±½ÓÈ¾ºÚ
+			// æ²¡æœ‰çˆ¶èŠ‚ç‚¹ï¼Œå›æº¯åˆ°æ ¹èŠ‚ç‚¹äº†ï¼Œç›´æ¥æŸ“é»‘
 			cur->color = kBlack;
 			break;
 		}
 		RBEntry* sibling = GetSiblingEntry(cur);
 
 		if (sibling && sibling->color == kRed) {
-			// ĞÖµÜ½ÚµãÊÇºìÉ«£¬ËµÃ÷ÊÇ4½ÚµãµÄ²åÈë£¬·ÖÁÑ(ºìºÚÊ÷µÄÌåÏÖ¾ÍÊÇ±äÉ«)£¬¸¸½ÚµãÏòÉÏºÏ²¢£¬¼ÌĞø»ØËİ
+			// å…„å¼ŸèŠ‚ç‚¹æ˜¯çº¢è‰²ï¼Œè¯´æ˜æ˜¯4èŠ‚ç‚¹çš„æ’å…¥ï¼Œåˆ†è£‚(çº¢é»‘æ ‘çš„ä½“ç°å°±æ˜¯å˜è‰²)ï¼Œçˆ¶èŠ‚ç‚¹å‘ä¸Šåˆå¹¶ï¼Œç»§ç»­å›æº¯
 			cur->color = kBlack;
 			sibling->color = kBlack;
 			cur->parent->color = kRed;
 		}
 		else {
-			// Ã»ÓĞĞÖµÜ½Úµã»òÕßĞÖµÜ½ÚµãÊÇºÚÉ«£¬ËµÃ÷ÊÇ3½ÚµãµÄ²åÈë£¬¿ÉÒÔ²¢Èë£¬µ«ĞèÒªÀûÓÃĞı×ª½«Æä±äÎª4½Úµã
+			// æ²¡æœ‰å…„å¼ŸèŠ‚ç‚¹æˆ–è€…å…„å¼ŸèŠ‚ç‚¹æ˜¯é»‘è‰²ï¼Œè¯´æ˜æ˜¯3èŠ‚ç‚¹çš„æ’å…¥ï¼Œå¯ä»¥å¹¶å…¥ï¼Œä½†éœ€è¦åˆ©ç”¨æ—‹è½¬å°†å…¶å˜ä¸º4èŠ‚ç‚¹
 			//         10b               5b    
 			//      5r     20b  ->   !2r     10r    
 			//  !2r                             20b
@@ -229,11 +236,11 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 			cur->color = kBlack;
 			oldSubRoot->color = kRed;
 
-			if (tree->root == oldSubRoot) {		// Ô­À´µÄ×ÓÊ÷¸ù½Úµã¿ÉÄÜÊÇÕû¿ÃÊ÷µÄ¸ù½Úµã£¬Òò´ËÒª¼ì²é¸üĞÂ
+			if (tree->root == oldSubRoot) {		// åŸæ¥çš„å­æ ‘æ ¹èŠ‚ç‚¹å¯èƒ½æ˜¯æ•´æ£µæ ‘çš„æ ¹èŠ‚ç‚¹ï¼Œå› æ­¤è¦æ£€æŸ¥æ›´æ–°
 				tree->root = newSubRoot;
 			}
 
-			break;		// Ö»ÊÇ²¢Èë£¬Î´·ÖÁÑ£¬ÏòÉÏÃ»ÓĞ¸Ä±äÑÕÉ«£¬²»ÔÙĞèÒª»ØËİ
+			break;		// åªæ˜¯å¹¶å…¥ï¼Œæœªåˆ†è£‚ï¼Œå‘ä¸Šæ²¡æœ‰æ”¹å˜é¢œè‰²ï¼Œä¸å†éœ€è¦å›æº¯
 		}
 		cur = cur->parent;
 	}
@@ -242,28 +249,28 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 
 
 /*
-* ´ÓÊ÷ÖĞÉ¾³ı½Úµã
-* ³É¹¦·µ»Ø±»É¾³ıµÄ½Úµã£¬Ê§°Ü·µ»ØNULL
+* ä»æ ‘ä¸­åˆ é™¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›è¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œå¤±è´¥è¿”å›NULL
 */
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
-	RBEntry* backtrack = entry;		// Í¨³£Çé¿öÏÂÊÇ´Ó±»É¾³ı½ÚµãµÄ¸¸½Úµã¿ªÊ¼»ØËİ
+	RBEntry* backtrack = entry;		// é€šå¸¸æƒ…å†µä¸‹æ˜¯ä»è¢«åˆ é™¤èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹å¼€å§‹å›æº¯
 
-	// ³öÓÚĞÔÄÜ¿¼ÂÇ£¬RBÕÒ½ÚµãÉ¾³ıµÄÂß¼­»¹ÊÇµ¥¶ÀĞ´Ò»·İ£¬²î²»ÁËÌ«¶à£¬µ«ÊÇRB»ØËİÊ±ĞèÒª±£Ö¤entry»¹ÔÚÊ÷ÉÏ(ÕÒĞÖµÜ½Úµã)£¬»ØËİÍê²ÅÉ¾³ı
+	// å‡ºäºæ€§èƒ½è€ƒè™‘ï¼ŒRBæ‰¾èŠ‚ç‚¹åˆ é™¤çš„é€»è¾‘è¿˜æ˜¯å•ç‹¬å†™ä¸€ä»½ï¼Œå·®ä¸äº†å¤ªå¤šï¼Œä½†æ˜¯RBå›æº¯æ—¶éœ€è¦ä¿è¯entryè¿˜åœ¨æ ‘ä¸Š(æ‰¾å…„å¼ŸèŠ‚ç‚¹)ï¼Œå›æº¯å®Œæ‰åˆ é™¤
 	RBEntry* newEntry;
 	if (entry->left == NULL && entry->right == NULL) {
-		// Ã»ÓĞ×Ó½Úµã£¬Ö±½Ó´Ó¸¸½ÚµãÖĞÕª³ı´Ë½Úµã
+		// æ²¡æœ‰å­èŠ‚ç‚¹ï¼Œç›´æ¥ä»çˆ¶èŠ‚ç‚¹ä¸­æ‘˜é™¤æ­¤èŠ‚ç‚¹
 		newEntry = NULL;
 	}
 	else if (entry->left == NULL) {
-		// ¹Ò½ÓÓÒ×Ó½Úµã
+		// æŒ‚æ¥å³å­èŠ‚ç‚¹
 		newEntry = entry->right;
 	}
 	else if (entry->right == NULL) {
-		// ¹Ò½Ó×ó×Ó½Úµã
+		// æŒ‚æ¥å·¦å­èŠ‚ç‚¹
 		newEntry = entry->left;
 	}
 	else {
-		// ÓĞ×óÓÒ¸÷ÓĞ×Ó½Úµã£¬ÕÒµ±Ç°½ÚµãµÄÓÒ×ÓÊ÷ÖĞ×îĞ¡µÄ½Úµã£¬ÓÃ×îĞ¡½ÚµãÌæ»»µ½µ±Ç°½ÚµãËùÔÚµÄÎ»ÖÃ£¬Õª³ıµ±Ç°½Úµã£¬Ïàµ±ÓÚÒÆ³ıÁË×îĞ¡½Úµã
+		// æœ‰å·¦å³å„æœ‰å­èŠ‚ç‚¹ï¼Œæ‰¾å½“å‰èŠ‚ç‚¹çš„å³å­æ ‘ä¸­æœ€å°çš„èŠ‚ç‚¹ï¼Œç”¨æœ€å°èŠ‚ç‚¹æ›¿æ¢åˆ°å½“å‰èŠ‚ç‚¹æ‰€åœ¨çš„ä½ç½®ï¼Œæ‘˜é™¤å½“å‰èŠ‚ç‚¹ï¼Œç›¸å½“äºç§»é™¤äº†æœ€å°èŠ‚ç‚¹
 		RBEntry* minEntry = entry->right;
 		while (minEntry) {
 			if (minEntry->left) {
@@ -275,37 +282,37 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 		}
 		MemorySwap(&minEntry->color, &entry->color, sizeof(RBColor));
 
-		// ×îĞ¡½Úµã¼Ì³Ğ´ıÉ¾³ı½ÚµãµÄ×ó×ÓÊ÷£¬ÒòÎª×îĞ¡½Úµã¿Ï¶¨Ã»ÓĞ×ó½Úµã£¬ËùÒÔÖ±½Ó¸³Öµ
+		// æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å·¦å­æ ‘ï¼Œå› ä¸ºæœ€å°èŠ‚ç‚¹è‚¯å®šæ²¡æœ‰å·¦èŠ‚ç‚¹ï¼Œæ‰€ä»¥ç›´æ¥èµ‹å€¼
 		minEntry->left = entry->left;
 		if (minEntry->left) {
 			minEntry->left->parent = minEntry;
 		}
 
-		// ÕâÀïĞèÒªÁÙÊ±½«entryÒ²¹Ò½Óµ½minEntryµÄÎ»ÖÃ£¬»ØËİÓÃ
+		// è¿™é‡Œéœ€è¦ä¸´æ—¶å°†entryä¹ŸæŒ‚æ¥åˆ°minEntryçš„ä½ç½®ï¼Œå›æº¯ç”¨
 		RBEntry* oldParent, * oldRight = minEntry->right;
-		// ×îĞ¡½Úµã¿ÉÄÜÊÇ´ıÉ¾³ı½ÚµãµÄÓÒ½Úµã
+		// æœ€å°èŠ‚ç‚¹å¯èƒ½æ˜¯å¾…åˆ é™¤èŠ‚ç‚¹çš„å³èŠ‚ç‚¹
 		if (minEntry->parent != entry) {
-			oldParent = minEntry->parent;		// ¹Ò½ÓminEntryÖ®Ç°¼ÇÂ¼
+			oldParent = minEntry->parent;		// æŒ‚æ¥minEntryä¹‹å‰è®°å½•
 
-			// ½«×îĞ¡½Úµã´ÓÔ­ÏÈµÄÎ»ÖÃÕª³ı£¬ÓÃentry´úÌæ
+			// å°†æœ€å°èŠ‚ç‚¹ä»åŸå…ˆçš„ä½ç½®æ‘˜é™¤ï¼Œç”¨entryä»£æ›¿
 			minEntry->parent->left = entry;
 			if (minEntry->right) {
 				minEntry->right->parent = entry;
 			}
-			// ×îĞ¡½Úµã¼Ì³Ğ´ıÉ¾³ı½ÚµãµÄÓÒ×ÓÊ÷
+			// æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å³å­æ ‘
 			minEntry->right = entry->right;
 			if (entry->right) {
 				entry->right->parent = minEntry;
 			}
 		}
 		else {
-			oldParent = minEntry;		// ×îĞ¡½ÚµãµÄ¸¸Ç×¾ÍÊÇ´ıÉ¾³ı½Úµã£¬½»»»Î»ÖÃºó×îĞ¡½Úµã¾ÍÊÇ´ıÉ¾³ı½ÚµãµÄ¸¸Ç×£¬Òò´Ë´ÓÕâÀï»ØËİ
+			oldParent = minEntry;		// æœ€å°èŠ‚ç‚¹çš„çˆ¶äº²å°±æ˜¯å¾…åˆ é™¤èŠ‚ç‚¹ï¼Œäº¤æ¢ä½ç½®åæœ€å°èŠ‚ç‚¹å°±æ˜¯å¾…åˆ é™¤èŠ‚ç‚¹çš„çˆ¶äº²ï¼Œå› æ­¤ä»è¿™é‡Œå›æº¯
 			minEntry->right = entry;
 		}
 
 		RBHitchEntry(tree, entry, minEntry);
 
-		// ½«entryÁÙÊ±¹Ò½Óµ½minEntryµÄÎ»ÖÃ
+		// å°†entryä¸´æ—¶æŒ‚æ¥åˆ°minEntryçš„ä½ç½®
 		entry->parent = oldParent;
 		entry->left = NULL; entry->right = oldRight;
 		newEntry = oldRight;
@@ -313,10 +320,10 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 
 	if (entry) {
 		if (entry->color == kRed) {
-			// ÊÇºìÉ«µÄ£¬ÊÇ3/4½Úµã£¬ÒòÎª´ËÊ±Ò»¶¨ÊÇÒ¶×Ó½Úµã(ºì½Úµã²»¿ÉÄÜÖ»ÓĞÒ»¸ö×Ó½Úµã)£¬Ö±½ÓÒÆ³ı
+			// æ˜¯çº¢è‰²çš„ï¼Œæ˜¯3/4èŠ‚ç‚¹ï¼Œå› ä¸ºæ­¤æ—¶ä¸€å®šæ˜¯å¶å­èŠ‚ç‚¹(çº¢èŠ‚ç‚¹ä¸å¯èƒ½åªæœ‰ä¸€ä¸ªå­èŠ‚ç‚¹)ï¼Œç›´æ¥ç§»é™¤
 			backtrack = NULL;
 		}
-		// ÊÇºÚÉ«µÄ£¬µ«ÊÇÓĞÒ»¸ö×Ó½Úµã£¬ËµÃ÷ÊÇ3½Úµã£¬±äÎª2½Úµã¼´¿É
+		// æ˜¯é»‘è‰²çš„ï¼Œä½†æ˜¯æœ‰ä¸€ä¸ªå­èŠ‚ç‚¹ï¼Œè¯´æ˜æ˜¯3èŠ‚ç‚¹ï¼Œå˜ä¸º2èŠ‚ç‚¹å³å¯
 		else if (entry->left) {
 			entry->left->color = kBlack;
 			backtrack = NULL;
@@ -328,10 +335,10 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 	}
 
 	RBEntry* newSubRoot = NULL;
-	// »ØËİÎ¬»¤É¾³ıºÚÉ«½Úµã£¬¼´Ã»ÓĞ×Ó½Úµã(2½Úµã)µÄÇé¿ö
+	// å›æº¯ç»´æŠ¤åˆ é™¤é»‘è‰²èŠ‚ç‚¹ï¼Œå³æ²¡æœ‰å­èŠ‚ç‚¹(2èŠ‚ç‚¹)çš„æƒ…å†µ
 	while (backtrack) {
 		if (backtrack->parent == NULL) {
-			// Ã»ÓĞ¸¸½Úµã£¬»ØËİµ½¸ù½ÚµãÁË£¬Ö±½ÓÈ¾ºÚ
+			// æ²¡æœ‰çˆ¶èŠ‚ç‚¹ï¼Œå›æº¯åˆ°æ ¹èŠ‚ç‚¹äº†ï¼Œç›´æ¥æŸ“é»‘
 			backtrack->color = kBlack;
 			break;
 		}
@@ -339,8 +346,8 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 		RBEntry* sibling = GetSiblingEntry(backtrack);
 
 		if (sibling->color == kRed) {
-			// ĞÖµÜ½ÚµãÎªºì£¬ËµÃ÷ĞÖµÜ½ÚµãÓë¸¸½ÚµãĞÎ³É3½Úµã£¬ÕæÕıµÄĞÖµÜ½ÚµãÓ¦¸ÃÊÇºìĞÖµÜ½ÚµãµÄ×Ó½Úµã
-			// Ğı×ª£¬´ËÊ±Ö»ÊÇÊ¹µÃĞÖµÜ½ÚµãºÍ¸¸½ÚµãĞÎ³ÉµÄ3½ÚµãºìÉ«Á´½ÓÎ»ÖÃµ÷»»£¬µ«ĞÖµÜ½Úµã±äÎªÕæÕıµÄĞÖµÜ½Úµã
+			// å…„å¼ŸèŠ‚ç‚¹ä¸ºçº¢ï¼Œè¯´æ˜å…„å¼ŸèŠ‚ç‚¹ä¸çˆ¶èŠ‚ç‚¹å½¢æˆ3èŠ‚ç‚¹ï¼ŒçœŸæ­£çš„å…„å¼ŸèŠ‚ç‚¹åº”è¯¥æ˜¯çº¢å…„å¼ŸèŠ‚ç‚¹çš„å­èŠ‚ç‚¹
+			// æ—‹è½¬ï¼Œæ­¤æ—¶åªæ˜¯ä½¿å¾—å…„å¼ŸèŠ‚ç‚¹å’Œçˆ¶èŠ‚ç‚¹å½¢æˆçš„3èŠ‚ç‚¹çº¢è‰²é“¾æ¥ä½ç½®è°ƒæ¢ï¼Œä½†å…„å¼ŸèŠ‚ç‚¹å˜ä¸ºçœŸæ­£çš„å…„å¼ŸèŠ‚ç‚¹
 			sibling->parent->color = kRed;
 			sibling->color = kBlack;
 			RBEntry* oldSubRoot = sibling->parent;
@@ -355,9 +362,9 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 			sibling = GetSiblingEntry(backtrack);
 		}
 
-		// ÖÁ´ËĞÖµÜ½ÚµãÒ»¶¨ÎªºÚ
+		// è‡³æ­¤å…„å¼ŸèŠ‚ç‚¹ä¸€å®šä¸ºé»‘
 		
-		// Ö¶×Ó½ÚµãÎªºì£¬¼´ĞÖµÜ½ÚµãÊÇ3/4½ÚµãµÄÇé¿ö
+		// ä¾„å­èŠ‚ç‚¹ä¸ºçº¢ï¼Œå³å…„å¼ŸèŠ‚ç‚¹æ˜¯3/4èŠ‚ç‚¹çš„æƒ…å†µ
 		if (sibling->right && sibling->right->color == kRed || sibling->left && sibling->left->color == kRed) {
 			sibling->color = sibling->parent->color;
 			sibling->parent->color = kBlack;
@@ -388,13 +395,13 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
 		}
 		
 		if (sibling->parent->color == kRed) {
-			// ¸¸½ÚµãÎªºì£¬¼´¸¸½ÚµãÊÇ3/4½Úµã£¬·ÖÁÑÏÂ³ÁÓëĞÖµÜ½ÚµãºÏ²¢
+			// çˆ¶èŠ‚ç‚¹ä¸ºçº¢ï¼Œå³çˆ¶èŠ‚ç‚¹æ˜¯3/4èŠ‚ç‚¹ï¼Œåˆ†è£‚ä¸‹æ²‰ä¸å…„å¼ŸèŠ‚ç‚¹åˆå¹¶
 			sibling->color = kRed;
 			sibling->parent->color = kBlack;
 			break;
 		}
 		else {
-			// ¸¸½ÚµãÎªºÚ£¬¼´¸¸½ÚµãÊÇ2½Úµã£¬ĞÖµÜ½ÚµãÒ²ÊÇ2½Úµã£¬ºÏ²¢Á½¸ö½Úµã£¬´Ë´¦¸ß¶È-1£¬¼ÌĞø»ØËİÑ°Çó¸ß¶È²¹³¥
+			// çˆ¶èŠ‚ç‚¹ä¸ºé»‘ï¼Œå³çˆ¶èŠ‚ç‚¹æ˜¯2èŠ‚ç‚¹ï¼Œå…„å¼ŸèŠ‚ç‚¹ä¹Ÿæ˜¯2èŠ‚ç‚¹ï¼Œåˆå¹¶ä¸¤ä¸ªèŠ‚ç‚¹ï¼Œæ­¤å¤„é«˜åº¦-1ï¼Œç»§ç»­å›æº¯å¯»æ±‚é«˜åº¦è¡¥å¿
 			sibling->color = kRed;
 		}
 		
@@ -415,7 +422,7 @@ RBEntry* RBDeleteEntryByKey(RBTree* tree, void* key) {
 }
 
 /*
-* »ñÈ¡Ê÷½ÚµãÊıÁ¿
+* è·å–æ ‘èŠ‚ç‚¹æ•°é‡
 */
 static void RBGetEntryCountCallback(RBEntry* entry, void* arg) {
 	int* count = arg;

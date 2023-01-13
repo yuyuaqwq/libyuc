@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 楸奸奔
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 璇蜂繚鐣欐澹版槑
+*/
+
 #ifndef CUTILS_CONTAINER_STATIC_LIST_H_
 #define CUTILS_CONTAINER_STATIC_LIST_H_
 
@@ -15,7 +22,7 @@ typedef struct _StaticListHead {
 } StaticListHead;
 
 /*
-* 分配后此节点的值可以被覆盖，故可以使用union
+* 鍒嗛厤鍚庢鑺傜偣鐨勫�煎彲浠ヨ瑕嗙洊锛屾晠鍙互浣跨敤union
 */
 typedef struct _StaticListEntry {
 	int nextIndex;

@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #ifndef CUTILS_CONTAINER_QUEUE_H_
 #define CUTILS_CONTAINER_QUEUE_H_
 
@@ -11,14 +18,14 @@ extern "C" {
 
 typedef struct _Queue {
 	Array arr;
-	int head;		// headÖ¸Ïò¼´½«³ö¶ÓµÄÔªËØË÷Òı
-	int tail;		// tailÖ¸Ïò×î½üÈë¶ÓµÄÔªËØË÷ÒıµÄÏÂÒ»¸öË÷Òı
+	int head;		// headæŒ‡å‘å³å°†å‡ºé˜Ÿçš„å…ƒç´ ç´¢å¼•
+	int tail;		// tailæŒ‡å‘æœ€è¿‘å…¥é˜Ÿçš„å…ƒç´ ç´¢å¼•çš„ä¸‹ä¸€ä¸ªç´¢å¼•
 } Queue;
 
 //        t=h
-// ¶Ó¿Õ£º|   |   |   |
+// é˜Ÿç©ºï¼š|   |   |   |
 //             t   h
-// ¶ÓÂú£º| 3 |   | 1 | 2 |
+// é˜Ÿæ»¡ï¼š| 3 |   | 1 | 2 |
 
 void QueueInit(Queue* queue, size_t capacity, int objSize);
 void QueueRelease(Queue* queue);

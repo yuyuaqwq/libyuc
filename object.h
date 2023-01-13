@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 楸奸奔
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 璇蜂繚鐣欐澹版槑
+*/
+
 #ifndef CUTILS_OBJECT_H_
 #define CUTILS_OBJECT_H_
 
@@ -33,7 +40,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
-// 自定义比较函数对int等可以直接比较的类型来说会有较大的开销，可以考虑优化成没有自定义比较函数就把指针当成值来比较
+// 鑷畾涔夋瘮杈冨嚱鏁板int绛夊彲浠ョ洿鎺ユ瘮杈冪殑绫诲瀷鏉ヨ浼氭湁杈冨ぇ鐨勫紑閿�锛屽彲浠ヨ�冭檻浼樺寲鎴愭病鏈夎嚜瀹氫箟姣旇緝鍑芥暟灏辨妸鎸囬拡褰撴垚鍊兼潵姣旇緝
 typedef int (*CmpFunc)(const void* buf1_, const void* buf2_, size_t size);
 typedef uint32_t(*HashFunc)(const void* buf1_, size_t size);
 #define KEY_STRING_SIZE (-1)

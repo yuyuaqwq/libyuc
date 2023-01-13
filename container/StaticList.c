@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 鱼鱼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 请保留此声明
+*/
+
 #include "StaticList.h"
 
 void StaticListHeadInit(StaticListHead* head, size_t count, int objSize, int entryFieldOffset) {

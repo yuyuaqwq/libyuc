@@ -1,7 +1,14 @@
+/*
+* @yuyuaqwq - 楸奸奔
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 璇蜂繚鐣欐澹版槑
+*/
+
 #include "search.h"
 
 /*
-* 找到了返回正确下标，否则返回-1
+* 鎵惧埌浜嗚繑鍥炴纭笅鏍囷紝鍚﹀垯杩斿洖-1
 */
 int BinarySearch(int* array, int first, int last, int key) {
 	int mid;
@@ -21,7 +28,7 @@ int BinarySearch(int* array, int first, int last, int key) {
 }
 
 /*
-* 找到了返回正确下标，否则返回第一个小于或大于key的元素下标，(通常返回第一个大于key的元素下标，若所有元素都小于key，则返回最后一个元素的下标)
+* 鎵惧埌浜嗚繑鍥炴纭笅鏍囷紝鍚﹀垯杩斿洖绗竴涓皬浜庢垨澶т簬key鐨勫厓绱犱笅鏍囷紝(閫氬父杩斿洖绗竴涓ぇ浜巏ey鐨勫厓绱犱笅鏍囷紝鑻ユ墍鏈夊厓绱犻兘灏忎簬key锛屽垯杩斿洖鏈�鍚庝竴涓厓绱犵殑涓嬫爣)
 */
 int BinarySearch_Range(int* array, int first, int last, int key) {
 	int mid = 0;

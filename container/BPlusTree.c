@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "BPlusTree.h"
 #include "CUtils/container/array.h"
 
@@ -7,7 +14,7 @@ typedef enum _BPlusEntryType {
 } BPlusEntryType;
 
 static BPlusEntry* BPlusCreateIndexEntry(int m) {
-	// child Ó¦µ±ÊÇm¸ö£¬ËùÒÔ×îºó¶àÉêÇëÒ»¸ö
+	// child åº”å½“æ˜¯mä¸ªï¼Œæ‰€ä»¥æœ€åå¤šç”³è¯·ä¸€ä¸ª
 	BPlusEntry* entry = (BPlusEntry*)MemoryAlloc(sizeof(BPlusEntry) - sizeof(ListEntry) + (m - 1) * sizeof(BPlusIndexInternalEntry) + sizeof(struct _BPlusIndexEntry*));
 	entry->type = kIndex;
 	entry->parent = NULL;
@@ -31,18 +38,18 @@ static BPlusEntry* BPlusCreateLeafEntry(int m) {
 }
 
 /*
-* Ã»ÓĞÃ÷È·±ê×¼µÄË÷ÒıÊÇkeyË÷Òı
+* æ²¡æœ‰æ˜ç¡®æ ‡å‡†çš„ç´¢å¼•æ˜¯keyç´¢å¼•
 * 
-* Í¨³£Çé¿öÏÂ£¬¸¸½ÚµãÄÚ²¿½ÚµãÊÇ×ó¸¸Ë÷Òı£¬×Ó½ÚµãÊÇÓÒ×Ó½Úµã
-* ¼´Ä¬ÈÏÊÇkey[0] - child[1]¡¢key[1] - child[2]...
+* é€šå¸¸æƒ…å†µä¸‹ï¼Œçˆ¶èŠ‚ç‚¹å†…éƒ¨èŠ‚ç‚¹æ˜¯å·¦çˆ¶ç´¢å¼•ï¼Œå­èŠ‚ç‚¹æ˜¯å³å­èŠ‚ç‚¹
+* å³é»˜è®¤æ˜¯key[0] - child[1]ã€key[1] - child[2]...
 *         3     |    6    |    8
 *      /        \         \        \
 *   1|2         4|5        7        10|11
-* ÈçÉÏÃæ»­µÄÊ¾Àı£¬Ä¬ÈÏÊÇ3¶ÔÓ¦4|5£¬6¶ÔÓ¦7¡¢8¶ÔÓ¦10|11
+* å¦‚ä¸Šé¢ç”»çš„ç¤ºä¾‹ï¼Œé»˜è®¤æ˜¯3å¯¹åº”4|5ï¼Œ6å¯¹åº”7ã€8å¯¹åº”10|11
 */
 
 /*
-* »ñÈ¡×óĞÖµÜ½Úµã£¬Ã»ÓĞÔò·µ»ØNULL
+* è·å–å·¦å…„å¼ŸèŠ‚ç‚¹ï¼Œæ²¡æœ‰åˆ™è¿”å›NULL
 */
 static BPlusEntry* BPlusGetLeftSiblingEntry(BPlusTree* tree, BPlusEntry* entry, int leftParentIndex) {
 	BPlusEntry* parent = entry->parent;
@@ -56,7 +63,7 @@ static BPlusEntry* BPlusGetLeftSiblingEntry(BPlusTree* tree, BPlusEntry* entry, 
 }
 
 /*
-* »ñÈ¡ÓÒĞÖµÜ½Úµã£¬Ã»ÓĞÔò·µ»ØNULL
+* è·å–å³å…„å¼ŸèŠ‚ç‚¹ï¼Œæ²¡æœ‰åˆ™è¿”å›NULL
 */
 static BPlusEntry* BPlusGetRightSiblingEntry(BPlusTree* tree, BPlusEntry* entry, int leftParentIndex) {
 	BPlusEntry* parent = entry->parent;
@@ -70,7 +77,7 @@ static BPlusEntry* BPlusGetRightSiblingEntry(BPlusTree* tree, BPlusEntry* entry,
 }
 
 /*
-* ÏòÄÚ²¿½ÚµãÊı×éÖ¸¶¨Î»ÖÃ²åÈëkey¼°×Ó½Úµã(ÊÇË÷Òı½ÚµãÊ±)
+* å‘å†…éƒ¨èŠ‚ç‚¹æ•°ç»„æŒ‡å®šä½ç½®æ’å…¥keyåŠå­èŠ‚ç‚¹(æ˜¯ç´¢å¼•èŠ‚ç‚¹æ—¶)
 */
 static void BPlusInsertInternalEntry(BPlusEntry* entry, int keyIndex, int key, BPlusEntry* child, bool rightChild) {
 	if (entry->type == kLeaf) {
@@ -90,7 +97,7 @@ static void BPlusInsertInternalEntry(BPlusEntry* entry, int keyIndex, int key, B
 		index->indexInternalEntry[keyIndex].key = key;
 		child->parent = index;
 		if (!rightChild) {
-			// ÊÇÓÒ×Ó½Úµã£¬¶àÅ²Ò»¸ö£¬²¢ keyIndex-- Ê¹ÆäÖ¸ÏòÓÒ×Ó½Úµã
+			// æ˜¯å³å­èŠ‚ç‚¹ï¼Œå¤šæŒªä¸€ä¸ªï¼Œå¹¶ keyIndex-- ä½¿å…¶æŒ‡å‘å³å­èŠ‚ç‚¹
 			index->indexInternalEntry[keyIndex + 1].child = index->indexInternalEntry[keyIndex].child;
 			keyIndex--;
 		}
@@ -100,8 +107,8 @@ static void BPlusInsertInternalEntry(BPlusEntry* entry, int keyIndex, int key, B
 }
 
 /*
-* ´ÓÄÚ²¿½ÚµãÊı×éÖĞÉ¾³ıÖ¸¶¨Ë÷ÒıµÄÄÚ²¿½Úµã
-* ·µ»Ø±»É¾³ıÄÚ²¿½ÚµãµÄ×Ó½Úµã
+* ä»å†…éƒ¨èŠ‚ç‚¹æ•°ç»„ä¸­åˆ é™¤æŒ‡å®šç´¢å¼•çš„å†…éƒ¨èŠ‚ç‚¹
+* è¿”å›è¢«åˆ é™¤å†…éƒ¨èŠ‚ç‚¹çš„å­èŠ‚ç‚¹
 */
 static BPlusEntry* BPlusDeleteInternalEntry(BPlusEntry* entry, int keyIndex, int* key, bool rightChild) {
 	if (entry->type == kLeaf) {
@@ -141,11 +148,11 @@ static BPlusEntry* BPlusDeleteInternalEntry(BPlusEntry* entry, int keyIndex, int
 }
 
 /*
-* ·ÖÁÑ½Úµã
-* Í¬Ò»¸öÒ¶½Úµã¶à´Î·ÖÁÑ»áµ¼ÖÂÖØ¸´µÄkeyÉÏÉıÂğ£¿
-* Èç¹ûÒ¶½Úµã²»´æÔÚÏàÍ¬µÄkey£¬ÄÇÃ´ÊÇ²»»áµÄ
-* ÒòÎª·ÖÁÑºóÑ¡ÔñÓÒ½ÚµãµÄ×î×óÄÚ²¿½ÚµãµÄkey×÷ÎªÉÏÉıµÄkey
-* Õâ¸öÊ±ºòÎŞÂÛÔõÃ´²åÈëÄÚ²¿½Úµã¶¼²»»á²åÈëµ½¸Ã½Úµã×î×óÄÚ²¿½ÚµãµÄ×ó²à(±ÈËüĞ¡µÄ»á±»·Öµ½×ó²à½Úµã£¬ÒòÎª¸¸Ë÷ÒıÄÚ²¿½ÚµãkeyµÈÓÚ¸ÃÄÚ²¿½Úµã)£¬¸Ã½ÚµãÔÙ·ÖÁÑÒ²¾Í²»´æÔÚ×î×óÄÚ²¿½ÚµãÔÙ´ÎÉÏÉıµÄ¿ÉÄÜÁË
+* åˆ†è£‚èŠ‚ç‚¹
+* åŒä¸€ä¸ªå¶èŠ‚ç‚¹å¤šæ¬¡åˆ†è£‚ä¼šå¯¼è‡´é‡å¤çš„keyä¸Šå‡å—ï¼Ÿ
+* å¦‚æœå¶èŠ‚ç‚¹ä¸å­˜åœ¨ç›¸åŒçš„keyï¼Œé‚£ä¹ˆæ˜¯ä¸ä¼šçš„
+* å› ä¸ºåˆ†è£‚åé€‰æ‹©å³èŠ‚ç‚¹çš„æœ€å·¦å†…éƒ¨èŠ‚ç‚¹çš„keyä½œä¸ºä¸Šå‡çš„key
+* è¿™ä¸ªæ—¶å€™æ— è®ºæ€ä¹ˆæ’å…¥å†…éƒ¨èŠ‚ç‚¹éƒ½ä¸ä¼šæ’å…¥åˆ°è¯¥èŠ‚ç‚¹æœ€å·¦å†…éƒ¨èŠ‚ç‚¹çš„å·¦ä¾§(æ¯”å®ƒå°çš„ä¼šè¢«åˆ†åˆ°å·¦ä¾§èŠ‚ç‚¹ï¼Œå› ä¸ºçˆ¶ç´¢å¼•å†…éƒ¨èŠ‚ç‚¹keyç­‰äºè¯¥å†…éƒ¨èŠ‚ç‚¹)ï¼Œè¯¥èŠ‚ç‚¹å†åˆ†è£‚ä¹Ÿå°±ä¸å­˜åœ¨æœ€å·¦å†…éƒ¨èŠ‚ç‚¹å†æ¬¡ä¸Šå‡çš„å¯èƒ½äº†
 */
 static bool BPlusInsertEntry(BPlusTree* tree, BPlusEntry* entry, int key, BPlusEntry* rightChild);
 static void BPlusSplitEntry(BPlusTree* tree, BPlusEntry* entry, int insertIndex, int key, BPlusEntry* rightChild) {
@@ -157,17 +164,17 @@ static void BPlusSplitEntry(BPlusTree* tree, BPlusEntry* entry, int insertIndex,
 
 		ListInsertHead(&entry->leafListEntry, &newEntry->leafListEntry);
 
-		// Ô­µØ·ÖÁÑË¼Â·£ºmid½«Î´²åÈëµÄÄÚ²¿½ÚµãÒ²ËãÉÏ£¬ºÃ¼ÆËãnewCount£¬4½×²åÈëºó4½Úµã¾ÍÊÇ2(×ó2ÓÒ2)£¬5½×²åÈëºó5½Úµã»¹ÊÇ2(×ó2ÓÒ3)
-		// ¾ÍÊÇÌáÇ°ËãºÃÓÒ²àÓ¦µ±ÓĞ¶àÉÙ¸öÄÚ²¿½Úµã£¬¿½±´¹ıÈ¥£¬ÖĞ¼äÓöµ½ĞÂÄÚ²¿½Úµã²åÈë¾Í´úÌæÕâÒ»´ÎµÄ¿½±´£¬Ã»²åÈëÔÙ²åÈëµ½×ó²à
+		// åŸåœ°åˆ†è£‚æ€è·¯ï¼šmidå°†æœªæ’å…¥çš„å†…éƒ¨èŠ‚ç‚¹ä¹Ÿç®—ä¸Šï¼Œå¥½è®¡ç®—newCountï¼Œ4é˜¶æ’å…¥å4èŠ‚ç‚¹å°±æ˜¯2(å·¦2å³2)ï¼Œ5é˜¶æ’å…¥å5èŠ‚ç‚¹è¿˜æ˜¯2(å·¦2å³3)
+		// å°±æ˜¯æå‰ç®—å¥½å³ä¾§åº”å½“æœ‰å¤šå°‘ä¸ªå†…éƒ¨èŠ‚ç‚¹ï¼Œæ‹·è´è¿‡å»ï¼Œä¸­é—´é‡åˆ°æ–°å†…éƒ¨èŠ‚ç‚¹æ’å…¥å°±ä»£æ›¿è¿™ä¸€æ¬¡çš„æ‹·è´ï¼Œæ²¡æ’å…¥å†æ’å…¥åˆ°å·¦ä¾§
 		int mid = tree->m / 2;
-		newCount = entry->count + 1 - mid;		// +1ÊÇÒòÎªÕâ¸öÊ±ºòentry->count²¢Ã»ÓĞ°ÑÎ´²åÈëÄÚ²¿½ÚµãÒ²ËãÉÏ
+		newCount = entry->count + 1 - mid;		// +1æ˜¯å› ä¸ºè¿™ä¸ªæ—¶å€™entry->countå¹¶æ²¡æœ‰æŠŠæœªæ’å…¥å†…éƒ¨èŠ‚ç‚¹ä¹Ÿç®—ä¸Š
 		int i = newCount - 1, j = entry->count - 1;
 		bool insert = false;
 		for (; i >= 0; i--, j--) {
-			if (!insert && j+1 == insertIndex) {		// ÕâÀïj+1ÊÇÒòÎª£¬Ñ­»·µÄÊ±ºòj²¢Ã»ÓĞ°ÑÎ´²åÈëÄÚ²¿½ÚµãÒ²ËãÉÏ
+			if (!insert && j+1 == insertIndex) {		// è¿™é‡Œj+1æ˜¯å› ä¸ºï¼Œå¾ªç¯çš„æ—¶å€™jå¹¶æ²¡æœ‰æŠŠæœªæ’å…¥å†…éƒ¨èŠ‚ç‚¹ä¹Ÿç®—ä¸Š
 				entry->count++;
 				newEntry->leafInternalEntry[i].key = key;
-				j++;		// j²»¶¯
+				j++;		// jä¸åŠ¨
 				insert = true;
 				continue;
 			}
@@ -177,34 +184,34 @@ static void BPlusSplitEntry(BPlusTree* tree, BPlusEntry* entry, int insertIndex,
 		entry->count -= newCount;
 
 		if (!insert) {
-			// ĞÂÄÚ²¿½Úµã»¹Ã»ÓĞ²åÈë£¬½«Æä²åÈë
+			// æ–°å†…éƒ¨èŠ‚ç‚¹è¿˜æ²¡æœ‰æ’å…¥ï¼Œå°†å…¶æ’å…¥
 			BPlusInsertInternalEntry(entry, insertIndex, key, rightChild, true);
 		}
 		
-		// ´ÓmidÄÃµ½ÉÏÉıÄÚ²¿½Úµã
+		// ä»midæ‹¿åˆ°ä¸Šå‡å†…éƒ¨èŠ‚ç‚¹
 		key = newEntry->leafInternalEntry[0].key;
 	}
 	else {
 		newEntry = BPlusCreateIndexEntry(tree->m);
 
-		// Ô­µØ·ÖÁÑË¼Â·£ºmid½«Î´²åÈëµÄÄÚ²¿½ÚµãºÍ¼´½«ÉÏÉıµÄÄÚ²¿½Úµã¶¼ËãÉÏ£¬ºÃ¼ÆËãnewCount£¬4½×²åÈëºó4½Úµã¾ÍÊÇ4/2=2(×ó1ÓÒ2)£¬5½×²åÈëºó5½ÚµãÒ²ÊÇ2(×ó2ÓÒ2)£¬ÉÙÁËÒ»¸öÊÇÒòÎªÉÏÉıµÄÒ²ËãÉÏÁË
+		// åŸåœ°åˆ†è£‚æ€è·¯ï¼šmidå°†æœªæ’å…¥çš„å†…éƒ¨èŠ‚ç‚¹å’Œå³å°†ä¸Šå‡çš„å†…éƒ¨èŠ‚ç‚¹éƒ½ç®—ä¸Šï¼Œå¥½è®¡ç®—newCountï¼Œ4é˜¶æ’å…¥å4èŠ‚ç‚¹å°±æ˜¯4/2=2(å·¦1å³2)ï¼Œ5é˜¶æ’å…¥å5èŠ‚ç‚¹ä¹Ÿæ˜¯2(å·¦2å³2)ï¼Œå°‘äº†ä¸€ä¸ªæ˜¯å› ä¸ºä¸Šå‡çš„ä¹Ÿç®—ä¸Šäº†
 
-		// ÏÈ½«ºó°ë²¿·Ö¿½±´µ½ĞÂ½Úµã£¬Èç¹ûÖĞ¼äÓöµ½ÁËË÷ÒıµÄ²åÈë£¬ÄÇ¾ÍÒ»²¢²åÈë£¬×îºóµÄmidkeyÊÇentry->indexData[entry->count-1]£¬ÒòÎªÓÒ²àµÄÊıÁ¿ÊÇÌáÇ°ËãºÃµÄ£¬¶à³öÀ´µÄÒ»¶¨·Åµ½×ó²à
+		// å…ˆå°†ååŠéƒ¨åˆ†æ‹·è´åˆ°æ–°èŠ‚ç‚¹ï¼Œå¦‚æœä¸­é—´é‡åˆ°äº†ç´¢å¼•çš„æ’å…¥ï¼Œé‚£å°±ä¸€å¹¶æ’å…¥ï¼Œæœ€åçš„midkeyæ˜¯entry->indexData[entry->count-1]ï¼Œå› ä¸ºå³ä¾§çš„æ•°é‡æ˜¯æå‰ç®—å¥½çš„ï¼Œå¤šå‡ºæ¥çš„ä¸€å®šæ”¾åˆ°å·¦ä¾§
 		//  1 2       3 4
 		// / |  |      |  \	
-		// ´ËÊ±ĞÂ½ÚµãÈ±ÉÙÁËÒ»ÌõÁ´½Ó£¬ÎÒÃÇ×îÖÕÑ¡ÓÃ¾É½ÚµãµÄÄ©Î²ÄÚ²¿½Úµã×÷ÎªÉÏÉıÄÚ²¿½Úµã£¬¹Ê¾É½ÚµãµÄ×ó²àµÄÄ©Î²ÄÚ²¿½ÚµãµÄÓÒ×ÓÊ÷¾Í¿ÉÒÔ¹Ò½Óµ½ĞÂ½ÚµãÉÏ
+		// æ­¤æ—¶æ–°èŠ‚ç‚¹ç¼ºå°‘äº†ä¸€æ¡é“¾æ¥ï¼Œæˆ‘ä»¬æœ€ç»ˆé€‰ç”¨æ—§èŠ‚ç‚¹çš„æœ«å°¾å†…éƒ¨èŠ‚ç‚¹ä½œä¸ºä¸Šå‡å†…éƒ¨èŠ‚ç‚¹ï¼Œæ•…æ—§èŠ‚ç‚¹çš„å·¦ä¾§çš„æœ«å°¾å†…éƒ¨èŠ‚ç‚¹çš„å³å­æ ‘å°±å¯ä»¥æŒ‚æ¥åˆ°æ–°èŠ‚ç‚¹ä¸Š
 
 		int mid = (tree->m-1) / 2;
-		newCount = entry->count - mid;		// Õâ¸öÊ±ºòentry->count²¢Ã»ÓĞ°ÑÎ´²åÈëÄÚ²¿½ÚµãÒ²ËãÉÏ£¬µ«ÊÇ»áÉÏÉıÒ»¸öÄÚ²¿½Úµã£¬µÖÏû¹Ê²»¼ÆÈë
+		newCount = entry->count - mid;		// è¿™ä¸ªæ—¶å€™entry->countå¹¶æ²¡æœ‰æŠŠæœªæ’å…¥å†…éƒ¨èŠ‚ç‚¹ä¹Ÿç®—ä¸Šï¼Œä½†æ˜¯ä¼šä¸Šå‡ä¸€ä¸ªå†…éƒ¨èŠ‚ç‚¹ï¼ŒæŠµæ¶ˆæ•…ä¸è®¡å…¥
 		int i = newCount - 1, j = entry->count - 1;
 		bool insert = false;
 		for (; i >= 0; i--, j--) {
-			if (!insert && j+1 == insertIndex) {		// ÕâÀïj+1ÊÇÒòÎª£¬Ñ­»·µÄÊ±ºòj²¢Ã»ÓĞ°ÑÎ´²åÈëÄÚ²¿½ÚµãÒ²ËãÉÏ
+			if (!insert && j+1 == insertIndex) {		// è¿™é‡Œj+1æ˜¯å› ä¸ºï¼Œå¾ªç¯çš„æ—¶å€™jå¹¶æ²¡æœ‰æŠŠæœªæ’å…¥å†…éƒ¨èŠ‚ç‚¹ä¹Ÿç®—ä¸Š
 				entry->count++;
 				newEntry->indexInternalEntry[i].key = key;
 				newEntry->indexInternalEntry[i+1].child = rightChild;
 				rightChild->parent = newEntry;
-				j++;		// j²»¶¯
+				j++;		// jä¸åŠ¨
 				insert = true;
 				continue;
 			}
@@ -215,21 +222,21 @@ static void BPlusSplitEntry(BPlusTree* tree, BPlusEntry* entry, int insertIndex,
 		entry->count -= newCount;
 
 		if (!insert) {
-			// ĞÂÄÚ²¿½Úµã»¹Ã»ÓĞ²åÈë£¬½«Æä²åÈë
+			// æ–°å†…éƒ¨èŠ‚ç‚¹è¿˜æ²¡æœ‰æ’å…¥ï¼Œå°†å…¶æ’å…¥
 			BPlusInsertInternalEntry(entry, insertIndex, key, rightChild, true);
 		}
 
-		// ×îºó´Óentry->indexDataÄ©Î²ÄÃµ½ÉÏÉıÄÚ²¿½Úµã£¬½«ÆäÕª³ı
+		// æœ€åä»entry->indexDataæœ«å°¾æ‹¿åˆ°ä¸Šå‡å†…éƒ¨èŠ‚ç‚¹ï¼Œå°†å…¶æ‘˜é™¤
 		entry->count--;
 		key = entry->indexInternalEntry[entry->count].key;
 
-		// entry×îÓÒµÄÁ´½Ó½»¸ønewEntry
+		// entryæœ€å³çš„é“¾æ¥äº¤ç»™newEntry
 		newEntry->indexInternalEntry[0].child = entry->indexInternalEntry[entry->count+1].child;
 		newEntry->indexInternalEntry[0].child->parent = newEntry;
 	}
 	newEntry->count = newCount;
 
-	// ·ÖÁÑ³öµÄÄÚ²¿½ÚµãÏòÉÏ´«µİ
+	// åˆ†è£‚å‡ºçš„å†…éƒ¨èŠ‚ç‚¹å‘ä¸Šä¼ é€’
 	if (entry->parent == NULL) {
 		BPlusEntry* newIndex = BPlusCreateIndexEntry(tree->m);
 		entry->parent = newIndex;
@@ -243,7 +250,7 @@ static void BPlusSplitEntry(BPlusTree* tree, BPlusEntry* entry, int insertIndex,
 }
 
 /*
-* ²åÈë½Úµã
+* æ’å…¥èŠ‚ç‚¹
 */
 static bool BPlusInsertEntry(BPlusTree* tree, BPlusEntry* entry, int key, BPlusEntry* rightChild) {
 	if (entry->count == 0) {
@@ -260,41 +267,41 @@ static bool BPlusInsertEntry(BPlusTree* tree, BPlusEntry* entry, int key, BPlusE
 		insertIndex = BinarySearch_Range_CustomM(entry->indexInternalEntry, BPlusIndexInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
 		res = MemoryCmpR(&entry->indexInternalEntry[insertIndex].key, &key, sizeof(key));
 	}
-	//if (res == 0) {		// ÔÊĞí²åÈëÏàÍ¬µÄ½Úµã
+	//if (res == 0) {		// å…è®¸æ’å…¥ç›¸åŒçš„èŠ‚ç‚¹
 	//	return false;
 	//}
 	if (res < 0) {
-		insertIndex++;		// Èç¹ûËùÓĞ½Úµã¶¼Ğ¡ÓÚkey£¬ÄÇ¾Í×·¼Óµ½×îÎ²²¿
+		insertIndex++;		// å¦‚æœæ‰€æœ‰èŠ‚ç‚¹éƒ½å°äºkeyï¼Œé‚£å°±è¿½åŠ åˆ°æœ€å°¾éƒ¨
 	}
 
 	if (entry->count < tree->m - 1) {
-		// ÓĞ¿ÕÓàµÄÎ»ÖÃ²åÈë
+		// æœ‰ç©ºä½™çš„ä½ç½®æ’å…¥
 		BPlusInsertInternalEntry(entry, insertIndex, key, rightChild, true);
 		return true;
 	}
 
-	// Ã»ÓĞ¶àÓàÎ»ÖÃ£¬ĞèÒª·ÖÁÑÏòÉÏºÏ²¢
+	// æ²¡æœ‰å¤šä½™ä½ç½®ï¼Œéœ€è¦åˆ†è£‚å‘ä¸Šåˆå¹¶
 	BPlusSplitEntry(tree, entry, insertIndex, key, rightChild);
 	return true;
 }
 
 /*
-* ºÏ²¢½Úµã
+* åˆå¹¶èŠ‚ç‚¹
 *   2
 * 1   3
-* ¸¸¡¢×ó¡¢ÓÒµÄ¹ØÏµÈçÏÂ
+* çˆ¶ã€å·¦ã€å³çš„å…³ç³»å¦‚ä¸‹
 */
 static bool BPlusDeleteEntry(BPlusTree* tree, BPlusEntry* entry, int deleteIndex, Array* stack);
 static void BPlusMergeEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntry* right, int commonParentIndex, Array* stack) {
 	if (left->type == kLeaf) {
-		// ÊÇÒ¶×Ó½Úµã£¬½«right²¢ÈëleftÖĞ£¬²¢É¾³ırightµÄ¸¸Ë÷ÒıÄÚ²¿½Úµã
+		// æ˜¯å¶å­èŠ‚ç‚¹ï¼Œå°†rightå¹¶å…¥leftä¸­ï¼Œå¹¶åˆ é™¤rightçš„çˆ¶ç´¢å¼•å†…éƒ¨èŠ‚ç‚¹
 		for (int i = 0; i < right->count; i++) {
 			left->leafInternalEntry[left->count++].key = right->leafInternalEntry[i].key;
 		}
 	} else {
-		// ÊÇË÷Òı½Úµã£¬½«¼´½«±»É¾³ıµÄ¸¸Ë÷ÒıÄÚ²¿½Úµã(×Ó½Úµã¶ªÆú£¬ÒòÎª¸¸Ë÷Òı×Ó½Úµã¾ÍÖ¸Ïò×óºÍÓÒ)ºÍright¶¼²¢Èëµ½leftÖĞ£¬É¾³ırightµÄ¸¸Ë÷ÒıÄÚ²¿½Úµã
+		// æ˜¯ç´¢å¼•èŠ‚ç‚¹ï¼Œå°†å³å°†è¢«åˆ é™¤çš„çˆ¶ç´¢å¼•å†…éƒ¨èŠ‚ç‚¹(å­èŠ‚ç‚¹ä¸¢å¼ƒï¼Œå› ä¸ºçˆ¶ç´¢å¼•å­èŠ‚ç‚¹å°±æŒ‡å‘å·¦å’Œå³)å’Œrightéƒ½å¹¶å…¥åˆ°leftä¸­ï¼Œåˆ é™¤rightçš„çˆ¶ç´¢å¼•å†…éƒ¨èŠ‚ç‚¹
 		left->indexInternalEntry[left->count++].key = right->parent->indexInternalEntry[commonParentIndex].key;
-		// ÓÒ½Úµã»á¶à³öÒ»¸ö×Ó½Úµã£¬ÒòÎª¸¸½Úµã²»ĞèÒª´ø×Ó½ÚµãÏÂ½µ£¬ËùÒÔ¿ÉÒÔÖ±½Ó²¢µ½×ó½ÚµãÎ²²¿
+		// å³èŠ‚ç‚¹ä¼šå¤šå‡ºä¸€ä¸ªå­èŠ‚ç‚¹ï¼Œå› ä¸ºçˆ¶èŠ‚ç‚¹ä¸éœ€è¦å¸¦å­èŠ‚ç‚¹ä¸‹é™ï¼Œæ‰€ä»¥å¯ä»¥ç›´æ¥å¹¶åˆ°å·¦èŠ‚ç‚¹å°¾éƒ¨
 		left->indexInternalEntry[left->count].child = right->indexInternalEntry[0].child;		
 		right->indexInternalEntry[0].child->parent = left;
 		for (int i = 0; i < right->count; i++) {
@@ -308,7 +315,7 @@ static void BPlusMergeEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntry* right
 }
 
 /*
-* É¾³ıÖ¸¶¨½Úµã
+* åˆ é™¤æŒ‡å®šèŠ‚ç‚¹
 */
 static bool BPlusDeleteEntry(BPlusTree* tree, BPlusEntry* entry, int deleteIndex, Array* stack) {
 	BPlusDeleteInternalEntry(entry, deleteIndex, NULL, true);
@@ -318,7 +325,7 @@ static bool BPlusDeleteEntry(BPlusTree* tree, BPlusEntry* entry, int deleteIndex
 
 	int* leftParentIndex = ArrayPopTail(stack);
 	if (!leftParentIndex) {
-		// Ã»ÓĞ¸¸½Úµã¾ÍÒÑ¾­µ½¸ù½ÚµãÁË£¬ÊÇÒ¶×Ó½Úµã¾ÍÌø¹ı£¬ÊÇË÷Òı½ÚµãÔòÅĞ¶ÏÊÇ·ñÃ»ÓĞÈÎºÎ×Ó½ÚµãÁË£¬ÊÇÔò±ä¸üÓàÏÂ×îºóÒ»¸ö×Ó½ÚµãÎª¸ù½Úµã£¬·ñÔòÖ±½Ó½áÊø
+		// æ²¡æœ‰çˆ¶èŠ‚ç‚¹å°±å·²ç»åˆ°æ ¹èŠ‚ç‚¹äº†ï¼Œæ˜¯å¶å­èŠ‚ç‚¹å°±è·³è¿‡ï¼Œæ˜¯ç´¢å¼•èŠ‚ç‚¹åˆ™åˆ¤æ–­æ˜¯å¦æ²¡æœ‰ä»»ä½•å­èŠ‚ç‚¹äº†ï¼Œæ˜¯åˆ™å˜æ›´ä½™ä¸‹æœ€åä¸€ä¸ªå­èŠ‚ç‚¹ä¸ºæ ¹èŠ‚ç‚¹ï¼Œå¦åˆ™ç›´æ¥ç»“æŸ
 		if (entry->type == kIndex && entry->count == 0) {
 			BPlusEntry* child = entry->indexInternalEntry[0].child;
 			child->parent = NULL;
@@ -335,33 +342,33 @@ static bool BPlusDeleteEntry(BPlusTree* tree, BPlusEntry* entry, int deleteIndex
 		leftSibling = false;
 	}
 	if (sibling->count > (tree->m-1) / 2) {
-		// ÏòĞÖµÜ½è½Úµã
+		// å‘å…„å¼Ÿå€ŸèŠ‚ç‚¹
 		int key;
 		if (entry->type == kLeaf) {
-			// Ò¶×Ó½Úµã´¦Àí½Ï¼òµ¥£¬¿ÉÒÔÖ±½ÓÒÆ¶¯
+			// å¶å­èŠ‚ç‚¹å¤„ç†è¾ƒç®€å•ï¼Œå¯ä»¥ç›´æ¥ç§»åŠ¨
 			if (leftSibling) {
-				// ´Ó×óĞÖµÜ½ÚµãµÄÄ©Î²µÄÄÚ²¿½Úµã²åÈëµ½µ±Ç°½ÚµãµÄÍ·²¿²¢¸üĞÂ¸¸ÄÚ²¿½ÚµãkeyÎª½èÀ´µÄkey
+				// ä»å·¦å…„å¼ŸèŠ‚ç‚¹çš„æœ«å°¾çš„å†…éƒ¨èŠ‚ç‚¹æ’å…¥åˆ°å½“å‰èŠ‚ç‚¹çš„å¤´éƒ¨å¹¶æ›´æ–°çˆ¶å†…éƒ¨èŠ‚ç‚¹keyä¸ºå€Ÿæ¥çš„key
 				BPlusEntry* child = BPlusDeleteInternalEntry(sibling, sibling->count - 1, &key, true);
 				BPlusInsertInternalEntry(entry, 0, key, child, true);
 			}
 			else {
-				// ´ÓÓÒĞÖµÜ½ÚµãµÄÍ·²¿µÄÄÚ²¿½Úµã²åÈëµ½µ±Ç°½ÚµãµÄÎ²²¿²¢¸üĞÂ¸¸ÄÚ²¿½ÚµãkeyÎªÓÒĞÖµÜµÄĞÂÊ×ÄÚ²¿½Úµã
+				// ä»å³å…„å¼ŸèŠ‚ç‚¹çš„å¤´éƒ¨çš„å†…éƒ¨èŠ‚ç‚¹æ’å…¥åˆ°å½“å‰èŠ‚ç‚¹çš„å°¾éƒ¨å¹¶æ›´æ–°çˆ¶å†…éƒ¨èŠ‚ç‚¹keyä¸ºå³å…„å¼Ÿçš„æ–°é¦–å†…éƒ¨èŠ‚ç‚¹
 				BPlusEntry* child = BPlusDeleteInternalEntry(sibling, 0, &key, true);
 				BPlusInsertInternalEntry(entry, entry->count, key, child, true);
-				key = sibling->leafInternalEntry[0].key;		// ÓÒ½ÚµãµÄÍ·ÄÚ²¿½Úµãkey¿ÉÄÜÕıºÃºÍ¹²Í¬¸¸½ÚµãÏàµÈ(´ËÊ±ºÍË÷ÒıÏàµÈµÄkeyÅÜµ½×ó±ß£¬¾Í»áµ¼ÖÂÕÒ²»µ½)£¬Òò´Ëkey¸üĞÂÎªĞÂµÄÊ×ÄÚ²¿½ÚµãÊÇ×îºÃµÄ
-				++*leftParentIndex;		// µ±Ç°½ÚµãÊÇ×ó½Úµã£¬ÒªÕÒÓëĞÖµÜ½ÚµãµÄ¹²Í¬¸¸½ÚµãÀ´¸üĞÂ£¬ËùÒÔ++
+				key = sibling->leafInternalEntry[0].key;		// å³èŠ‚ç‚¹çš„å¤´å†…éƒ¨èŠ‚ç‚¹keyå¯èƒ½æ­£å¥½å’Œå…±åŒçˆ¶èŠ‚ç‚¹ç›¸ç­‰(æ­¤æ—¶å’Œç´¢å¼•ç›¸ç­‰çš„keyè·‘åˆ°å·¦è¾¹ï¼Œå°±ä¼šå¯¼è‡´æ‰¾ä¸åˆ°)ï¼Œå› æ­¤keyæ›´æ–°ä¸ºæ–°çš„é¦–å†…éƒ¨èŠ‚ç‚¹æ˜¯æœ€å¥½çš„
+				++*leftParentIndex;		// å½“å‰èŠ‚ç‚¹æ˜¯å·¦èŠ‚ç‚¹ï¼Œè¦æ‰¾ä¸å…„å¼ŸèŠ‚ç‚¹çš„å…±åŒçˆ¶èŠ‚ç‚¹æ¥æ›´æ–°ï¼Œæ‰€ä»¥++
 			}
 			
 		} else {
-			// Ë÷Òı½Úµã´¦Àí½Ï¸´ÔÓ£¬ĞèÒªÏÂ½µ¸¸½ÚµãµÄÖĞµ±Ç°½ÚµãºÍĞÖµÜ½ÚµãµÄ¹²Í¬ÄÚ²¿½Úµã£¬ÉÏÉıĞÖµÜ½Úµãµ½¹²Í¬¸¸½Úµã(¼´½»»»)
+			// ç´¢å¼•èŠ‚ç‚¹å¤„ç†è¾ƒå¤æ‚ï¼Œéœ€è¦ä¸‹é™çˆ¶èŠ‚ç‚¹çš„ä¸­å½“å‰èŠ‚ç‚¹å’Œå…„å¼ŸèŠ‚ç‚¹çš„å…±åŒå†…éƒ¨èŠ‚ç‚¹ï¼Œä¸Šå‡å…„å¼ŸèŠ‚ç‚¹åˆ°å…±åŒçˆ¶èŠ‚ç‚¹(å³äº¤æ¢)
 			if (leftSibling) {
-				// ×óĞÖµÜ½ÚµãµÄÄ©Î²ÄÚ²¿½ÚµãÉÏÉıµ½¸¸½ÚµãµÄÍ·²¿£¬¸¸½ÚµãµÄ¶ÔÓ¦ÄÚ²¿½ÚµãÏÂ½µµ½µ±Ç°½ÚµãµÄÍ·²¿£¬ÉÏÉıÄÚ²¿½ÚµãÆäÓÒ×Ó½Úµã¹ÒÔÚÏÂ½µµÄ¸¸½ÚµãÄÚ²¿½ÚµãµÄÓÒ²à
+				// å·¦å…„å¼ŸèŠ‚ç‚¹çš„æœ«å°¾å†…éƒ¨èŠ‚ç‚¹ä¸Šå‡åˆ°çˆ¶èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œçˆ¶èŠ‚ç‚¹çš„å¯¹åº”å†…éƒ¨èŠ‚ç‚¹ä¸‹é™åˆ°å½“å‰èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œä¸Šå‡å†…éƒ¨èŠ‚ç‚¹å…¶å³å­èŠ‚ç‚¹æŒ‚åœ¨ä¸‹é™çš„çˆ¶èŠ‚ç‚¹å†…éƒ¨èŠ‚ç‚¹çš„å³ä¾§
 				BPlusEntry* rightChild = BPlusDeleteInternalEntry(sibling, sibling->count - 1, &key, true);
 				BPlusInsertInternalEntry(entry, 0, entry->parent->indexInternalEntry[*leftParentIndex].key, rightChild, false);
 			} else {
-				// ÓÒĞÖµÜ½ÚµãµÄÍ·ÄÚ²¿½ÚµãÉÏÉıµ½¸¸½ÚµãµÄÍ·²¿£¬¸¸½ÚµãµÄ¶ÔÓ¦ÄÚ²¿½ÚµãÏÂ½µµ½µ±Ç°½ÚµãµÄÎ²²¿£¬ÉÏÉıÄÚ²¿½ÚµãÆä×ó×Ó½Úµã¹ÒÔÚÏÂ½µµÄ¸¸½ÚµãÄÚ²¿½ÚµãµÄ×ó²à
+				// å³å…„å¼ŸèŠ‚ç‚¹çš„å¤´å†…éƒ¨èŠ‚ç‚¹ä¸Šå‡åˆ°çˆ¶èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œçˆ¶èŠ‚ç‚¹çš„å¯¹åº”å†…éƒ¨èŠ‚ç‚¹ä¸‹é™åˆ°å½“å‰èŠ‚ç‚¹çš„å°¾éƒ¨ï¼Œä¸Šå‡å†…éƒ¨èŠ‚ç‚¹å…¶å·¦å­èŠ‚ç‚¹æŒ‚åœ¨ä¸‹é™çš„çˆ¶èŠ‚ç‚¹å†…éƒ¨èŠ‚ç‚¹çš„å·¦ä¾§
 				BPlusEntry* leftChild = BPlusDeleteInternalEntry(sibling, 0, &key, false);
-				++*leftParentIndex;		// µ±Ç°½ÚµãÊÇ×ó½Úµã£¬ÒªÕÒÓëĞÖµÜ½ÚµãµÄ¹²Í¬¸¸½ÚµãÀ´¸üĞÂ£¬ËùÒÔ++
+				++*leftParentIndex;		// å½“å‰èŠ‚ç‚¹æ˜¯å·¦èŠ‚ç‚¹ï¼Œè¦æ‰¾ä¸å…„å¼ŸèŠ‚ç‚¹çš„å…±åŒçˆ¶èŠ‚ç‚¹æ¥æ›´æ–°ï¼Œæ‰€ä»¥++
 				BPlusInsertInternalEntry(entry, entry->count, entry->parent->indexInternalEntry[*leftParentIndex].key, leftChild, true);
 			}
 		}
@@ -369,18 +376,18 @@ static bool BPlusDeleteEntry(BPlusTree* tree, BPlusEntry* entry, int deleteIndex
 		return true;
 	}
 
-	// ĞÖµÜ½Úµã²»¹»½è£¬ĞèÒªºÏ²¢(ºÏ²¢ÁËÒ²²»»á³¬¹ım-1£¬ÒòÎªÒ»±ß²»×ãm-1µÄÒ»°ë£¬Ò»±ßÊÇm-1µÄÒ»°ë£¬ÊÇË÷Òı½ÚµãºÏ²¢Ò²×ã¹»ÏÂ½µÒ»¸ö¸¸ÄÚ²¿½Úµã)
+	// å…„å¼ŸèŠ‚ç‚¹ä¸å¤Ÿå€Ÿï¼Œéœ€è¦åˆå¹¶(åˆå¹¶äº†ä¹Ÿä¸ä¼šè¶…è¿‡m-1ï¼Œå› ä¸ºä¸€è¾¹ä¸è¶³m-1çš„ä¸€åŠï¼Œä¸€è¾¹æ˜¯m-1çš„ä¸€åŠï¼Œæ˜¯ç´¢å¼•èŠ‚ç‚¹åˆå¹¶ä¹Ÿè¶³å¤Ÿä¸‹é™ä¸€ä¸ªçˆ¶å†…éƒ¨èŠ‚ç‚¹)
 	if (leftSibling) {
 		BPlusMergeEntry(tree, sibling, entry, *leftParentIndex, stack);
 	} else {
-		BPlusMergeEntry(tree, entry, sibling, *leftParentIndex + 1, stack);		// ÒªÇó¹²Í¬¸¸Ë÷Òı
+		BPlusMergeEntry(tree, entry, sibling, *leftParentIndex + 1, stack);		// è¦æ±‚å…±åŒçˆ¶ç´¢å¼•
 	}
 	return true;
 }
 
 /*
-* ¸ù¾İkey²éÕÒµ½Ö¸¶¨µÄÒ¶×Ó½Úµã
-* stack·µ»ØÃ¿Ò»²ã½ÚµãµÄ¸¸½ÚµãÄÚ²¿½Úµã(×ó¸¸)Ë÷Òı
+* æ ¹æ®keyæŸ¥æ‰¾åˆ°æŒ‡å®šçš„å¶å­èŠ‚ç‚¹
+* stackè¿”å›æ¯ä¸€å±‚èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹å†…éƒ¨èŠ‚ç‚¹(å·¦çˆ¶)ç´¢å¼•
 */
 static BPlusEntry* BPlusTreeFindLeaf(BPlusTree* tree, int key, Array* stack) {
 	BPlusEntry* cur = tree->root;
@@ -394,11 +401,11 @@ static BPlusEntry* BPlusTreeFindLeaf(BPlusTree* tree, int key, Array* stack) {
 			cur = cur->indexInternalEntry[i].child;
 		}
 		else {
-			// ÏàµÈµÄkeyÔÚÓÒ±ß£¬ÒòÎª·ÖÁÑµÄË÷ÒıÊÇÓÒÒ¶×ÓµÄµÚÒ»¸ö½ÚµãÉÏÉıµÄ
+			// ç›¸ç­‰çš„keyåœ¨å³è¾¹ï¼Œå› ä¸ºåˆ†è£‚çš„ç´¢å¼•æ˜¯å³å¶å­çš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ä¸Šå‡çš„
 			cur = cur->indexInternalEntry[++i].child;
 		}
 		if (stack) {
-			i--;		// ĞŞÕıÈëÕ»µÄ¸¸½ÚµãÄÚ²¿½ÚµãË÷Òı
+			i--;		// ä¿®æ­£å…¥æ ˆçš„çˆ¶èŠ‚ç‚¹å†…éƒ¨èŠ‚ç‚¹ç´¢å¼•
 			ArrayPushTail(stack, &i);
 		}
 	}

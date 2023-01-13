@@ -1,7 +1,14 @@
+/*
+* @yuyuaqwq - 楸奸奔
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 璇蜂繚鐣欐澹版槑
+*/
+
 #include "HashMap.h"
 
 /*
-* 主要哈希算法来源：笨方法学C
+* 涓昏鍝堝笇绠楁硶鏉ユ簮锛氱鏂规硶瀛
 */
 
 /**

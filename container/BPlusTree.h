@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_H_
 #define CUTILS_CONTAINER_BPLUS_TREE_H_
 
@@ -10,8 +17,8 @@ extern "C" {
 #endif
 
 
-// ½×(m)£¬4½×BÊ÷¿ÉÒÔÓĞ4¸ö×Ó½Úµã£¬3¸öÄÚ²¿½Úµã£¬m = t * 2
-// ¶È(t)£¬¼´³ı¸ù½ÚµãÍâ£¬Ã¿¸ö½Úµã×îÉÙÓĞt¸öÄÚ²¿½Úµã
+// é˜¶(m)ï¼Œ4é˜¶Bæ ‘å¯ä»¥æœ‰4ä¸ªå­èŠ‚ç‚¹ï¼Œ3ä¸ªå†…éƒ¨èŠ‚ç‚¹ï¼Œm = t * 2
+// åº¦(t)ï¼Œå³é™¤æ ¹èŠ‚ç‚¹å¤–ï¼Œæ¯ä¸ªèŠ‚ç‚¹æœ€å°‘æœ‰tä¸ªå†…éƒ¨èŠ‚ç‚¹
 
 
 typedef struct _BPlusLeafInternalEntry {
@@ -25,10 +32,10 @@ typedef struct _BPlusIndexInternalEntry {		// Internal
 
 
 typedef enum _BPlusEntryType BPlusEntryType;
-// ¿ÉÒÔÓÅ»¯µÄµã£ºchildºÍkey·Ö±ğºÏ²¢·Åµ½Ò»Æğ£¬¿ÉÒÔ¼Ó¿ì²éÕÒÒÔ¼°±ÜÃâÄÚ´æ¶ÔÆë
+// å¯ä»¥ä¼˜åŒ–çš„ç‚¹ï¼šchildå’Œkeyåˆ†åˆ«åˆå¹¶æ”¾åˆ°ä¸€èµ·ï¼Œå¯ä»¥åŠ å¿«æŸ¥æ‰¾ä»¥åŠé¿å…å†…å­˜å¯¹é½
 typedef struct _BPlusEntry {
 	BPlusEntryType type;
-	int count;		// child / obj¼ÆÊı
+	int count;		// child / objè®¡æ•°
 	struct _BPlusEntry* parent;
 	union {
 		BPlusIndexInternalEntry indexInternalEntry[];

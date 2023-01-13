@@ -1,7 +1,14 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "AVLTree.h"
 
 /*
-* ¸ù¾İ×óÓÒ×ÓÊ÷¸ß¶È»ñÈ¡½Úµã¸ß¶È
+* æ ¹æ®å·¦å³å­æ ‘é«˜åº¦è·å–èŠ‚ç‚¹é«˜åº¦
 */
 static int GetMaxHeight(AVLEntry* subRoot) {
 	int leftHeight = -1, rightHeight = -1;
@@ -11,8 +18,8 @@ static int GetMaxHeight(AVLEntry* subRoot) {
 }
 
 /*
-* ¸ù¾İ×óÓÒ×ÓÊ÷¸ß¶È¸üĞÂ½Úµã¸ß¶È
-* ¸üĞÂÍê³É·µ»Øtrue£¬ÎŞĞè¸üĞÂ·µ»Øfalse
+* æ ¹æ®å·¦å³å­æ ‘é«˜åº¦æ›´æ–°èŠ‚ç‚¹é«˜åº¦
+* æ›´æ–°å®Œæˆè¿”å›trueï¼Œæ— éœ€æ›´æ–°è¿”å›false
 */
 static int UpdateHeight(AVLEntry* subRoot) {
 	int newHeight = GetMaxHeight(subRoot);
@@ -24,7 +31,7 @@ static int UpdateHeight(AVLEntry* subRoot) {
 }
 
 /*
-* ¸ù¾İ×óÓÒ×ÓÊ÷¸ß¶È»ñÈ¡½ÚµãÆ½ºâÒò×Ó
+* æ ¹æ®å·¦å³å­æ ‘é«˜åº¦è·å–èŠ‚ç‚¹å¹³è¡¡å› å­
 */
 static int GetBalanceFactor(AVLEntry* subRoot) {
 	int leftHeight = -1, rightHeight = -1;
@@ -34,7 +41,7 @@ static int GetBalanceFactor(AVLEntry* subRoot) {
 }
 
 /*
-* ×óĞı×ÓÊ÷
+* å·¦æ—‹å­æ ‘
 */
 static AVLEntry* RotateLeft(AVLEntry* subRoot) {
 	AVLEntry* newSubRoot = subRoot->right;
@@ -66,7 +73,7 @@ static AVLEntry* RotateLeft(AVLEntry* subRoot) {
 }
 
 /*
-* ÓÒĞı×ÓÊ÷
+* å³æ—‹å­æ ‘
 */
 static AVLEntry* RotateRight(AVLEntry* subRoot) {
 	AVLEntry* newSubRoot = subRoot->left;
@@ -100,7 +107,7 @@ static AVLEntry* RotateRight(AVLEntry* subRoot) {
 }
 
 /*
-* ¸ù¾İÆ½ºâÒò×ÓÀ´Ğı×ª×ÓÊ÷
+* æ ¹æ®å¹³è¡¡å› å­æ¥æ—‹è½¬å­æ ‘
 */
 static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
 	AVLEntry* subRoot = *subRoot_;
@@ -109,33 +116,33 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
 	bool rotate = false;
 	AVLEntry* newSubRoot = NULL;
 	if (factor > 1) {
-		// ÊÇÊ§ºâ½Úµã£¬×ó×ÓÊ÷¸ß¶È¸ßÓÚÓÒ×ÓÊ÷¸ß¶È
+		// æ˜¯å¤±è¡¡èŠ‚ç‚¹ï¼Œå·¦å­æ ‘é«˜åº¦é«˜äºå³å­æ ‘é«˜åº¦
 
-		// ÅĞ¶ÏĞèÒªµ¥Ğı»¹ÊÇË«Ğı
+		// åˆ¤æ–­éœ€è¦å•æ—‹è¿˜æ˜¯åŒæ—‹
 		if (GetBalanceFactor(subRoot->left) < 0) {
-			// Ê§ºâ½ÚµãµÄ×ó×ÓÊ÷µÄÓÒ×ÓÊ÷¸üÉî£¬ÏÈ¶ÔÊ§ºâ½ÚµãµÄ×ó×ÓÊ÷×óĞı£¬ÔÙ¶ÔÊ§ºâ½ÚµãÓÒĞı
+			// å¤±è¡¡èŠ‚ç‚¹çš„å·¦å­æ ‘çš„å³å­æ ‘æ›´æ·±ï¼Œå…ˆå¯¹å¤±è¡¡èŠ‚ç‚¹çš„å·¦å­æ ‘å·¦æ—‹ï¼Œå†å¯¹å¤±è¡¡èŠ‚ç‚¹å³æ—‹
 			RotateLeft(subRoot->left);
 		}
-		// ´ËÊ±Ê§ºâ½ÚµãµÄ×ó×ÓÊ÷µÄ×ó×ÓÊ÷¸üÉî£¬ÓÒĞı¼´¿É
-		// ¿ÉÄÜÊ§ºâ½ÚµãÓë×ó½Úµã½»»»Î»ÖÃ£¬ĞèÒª±£´æ½á¹û£¬Èç¹ûÊÇÊ§ºâ½ÚµãÊÇ¸ù½ÚµãÔÙ·µ»ØĞÂµÄ¸ù½Úµã
+		// æ­¤æ—¶å¤±è¡¡èŠ‚ç‚¹çš„å·¦å­æ ‘çš„å·¦å­æ ‘æ›´æ·±ï¼Œå³æ—‹å³å¯
+		// å¯èƒ½å¤±è¡¡èŠ‚ç‚¹ä¸å·¦èŠ‚ç‚¹äº¤æ¢ä½ç½®ï¼Œéœ€è¦ä¿å­˜ç»“æœï¼Œå¦‚æœæ˜¯å¤±è¡¡èŠ‚ç‚¹æ˜¯æ ¹èŠ‚ç‚¹å†è¿”å›æ–°çš„æ ¹èŠ‚ç‚¹
 		newSubRoot = RotateRight(subRoot);
 		rotate = true;
 	} else if (factor < -1) {
-		// ÊÇÊ§ºâ½Úµã£¬ÓÒ×ÓÊ÷¸ß¶È¸ßÓÚ×ó×ÓÊ÷¸ß¶È
+		// æ˜¯å¤±è¡¡èŠ‚ç‚¹ï¼Œå³å­æ ‘é«˜åº¦é«˜äºå·¦å­æ ‘é«˜åº¦
 
-		// ÅĞ¶ÏĞèÒªµ¥Ğı»¹ÊÇË«Ğı
+		// åˆ¤æ–­éœ€è¦å•æ—‹è¿˜æ˜¯åŒæ—‹
 		if (GetBalanceFactor(subRoot->right) > 0) {
-			// Ê§ºâ½ÚµãµÄÓÒ×ÓÊ÷µÄ×ó×ÓÊ÷¸üÉî£¬ÏÈ¶ÔÊ§ºâ½ÚµãµÄÓÒ×ÓÊ÷ÓÒĞı£¬ÔÙ¶ÔÊ§ºâ½Úµã×óĞı
+			// å¤±è¡¡èŠ‚ç‚¹çš„å³å­æ ‘çš„å·¦å­æ ‘æ›´æ·±ï¼Œå…ˆå¯¹å¤±è¡¡èŠ‚ç‚¹çš„å³å­æ ‘å³æ—‹ï¼Œå†å¯¹å¤±è¡¡èŠ‚ç‚¹å·¦æ—‹
 			RotateRight(subRoot->right);
 		}
-		// ´ËÊ±Ê§ºâ½ÚµãµÄÓÒ×ÓÊ÷µÄÓÒ×ÓÊ÷¸üÉî£¬×óĞı¼´¿É
+		// æ­¤æ—¶å¤±è¡¡èŠ‚ç‚¹çš„å³å­æ ‘çš„å³å­æ ‘æ›´æ·±ï¼Œå·¦æ—‹å³å¯
 		newSubRoot = RotateLeft(subRoot);
 
 		rotate = true;
 	}
 
 	if (rotate) {
-		if (tree->root == subRoot) {		// Ô­À´µÄ×ÓÊ÷¸ù½Úµã¿ÉÄÜÊÇÕû¿ÃÊ÷µÄ¸ù½Úµã£¬Òò´ËÒª¼ì²é¸üĞÂ
+		if (tree->root == subRoot) {		// åŸæ¥çš„å­æ ‘æ ¹èŠ‚ç‚¹å¯èƒ½æ˜¯æ•´æ£µæ ‘çš„æ ¹èŠ‚ç‚¹ï¼Œå› æ­¤è¦æ£€æŸ¥æ›´æ–°
 			tree->root = newSubRoot;
 		}
 		*subRoot_ = newSubRoot;
@@ -145,14 +152,14 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
 }
 
 /*
-* ³õÊ¼»¯Ê÷
+* åˆå§‹åŒ–æ ‘
 */
 void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
 	BSTreeInit((BSTree*)tree, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*
-* ³õÊ¼»¯½Úµã
+* åˆå§‹åŒ–èŠ‚ç‚¹
 */
 void AVLEntryInit(AVLEntry* entry) {
 	BSEntryInit(&entry->bs);
@@ -160,17 +167,17 @@ void AVLEntryInit(AVLEntry* entry) {
 }
 
 /*
-* ´ÓÊ÷ÖĞ²éÕÒ½Úµã
-* ´æÔÚ·µ»Ø²éÕÒµ½µÄ½Úµã£¬²»´æÔÚ·µ»ØNULL
+* ä»æ ‘ä¸­æŸ¥æ‰¾èŠ‚ç‚¹
+* å­˜åœ¨è¿”å›æŸ¥æ‰¾åˆ°çš„èŠ‚ç‚¹ï¼Œä¸å­˜åœ¨è¿”å›NULL
 */
 AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key) {
 	return (AVLEntry*)BSFindEntryByKey((BSTree*)tree, key);
 }
 
 /*
-* ÏòÊ÷ÖĞ²åÈë½Úµã
-* ²»ÔÊĞí´æÔÚÖØ¸´½Úµã
-* ³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+* å‘æ ‘ä¸­æ’å…¥èŠ‚ç‚¹
+* ä¸å…è®¸å­˜åœ¨é‡å¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›trueï¼Œå¤±è´¥è¿”å›false
 */
 bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry) {
 	if (!BSInsertEntry((BSTree*)tree, &entry->bs)) {
@@ -179,16 +186,16 @@ bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry) {
 	entry->height = 0;
 	AVLEntry* cur = entry->parent;
 
-	// ²åÈë½Úµãºó¸ß¶È¿ÉÄÜ·¢Éú±ä»¯£¬»ØËİÎ¬»¤½Úµã¸ß¶È
+	// æ’å…¥èŠ‚ç‚¹åé«˜åº¦å¯èƒ½å‘ç”Ÿå˜åŒ–ï¼Œå›æº¯ç»´æŠ¤èŠ‚ç‚¹é«˜åº¦
 	int heightCount = 1;
 	while (cur) {
 		if (cur->height < heightCount) {
 			cur->height = heightCount;
 		} else {
-			break;		// ÖÁ´Ë¸ß¶ÈÎ´·¢Éú±ä»¯£¬²»ÔÙ»ØËİ
+			break;		// è‡³æ­¤é«˜åº¦æœªå‘ç”Ÿå˜åŒ–ï¼Œä¸å†å›æº¯
 		}
 		if (RotateByBalanceFactor(tree, &cur)) {
-			break;		// ²åÈëºóÈç¹ûĞı×ªÁË£¬¾Í²»ĞèÒªÔÙÏòÉÏ»ØËİÁË£¬ÒòÎªĞı×ª»áµ¼ÖÂÕâ¿Å×ÓÊ÷µÄ¸ß¶È²»±ä
+			break;		// æ’å…¥åå¦‚æœæ—‹è½¬äº†ï¼Œå°±ä¸éœ€è¦å†å‘ä¸Šå›æº¯äº†ï¼Œå› ä¸ºæ—‹è½¬ä¼šå¯¼è‡´è¿™é¢—å­æ ‘çš„é«˜åº¦ä¸å˜
 		}
 		cur = cur->parent;
 		heightCount++;
@@ -197,8 +204,8 @@ bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry) {
 }
 
 /*
-* ´ÓÊ÷ÖĞÉ¾³ı½Úµã
-* ³É¹¦·µ»Ø±»É¾³ıµÄ½Úµã£¬Ê§°Ü·µ»ØNULL
+* ä»æ ‘ä¸­åˆ é™¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›è¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œå¤±è´¥è¿”å›NULL
 */
 AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 	AVLEntry* backtrack = (AVLEntry*)BSDeleteEntry(tree, entry);
@@ -206,12 +213,12 @@ AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 		backtrack = backtrack->parent;
 	}
 	
-	// É¾³ı½Úµãºó¸ß¶È¿ÉÄÜ·¢Éú±ä»¯£¬»ØËİÎ¬»¤½Úµã¸ß¶È
+	// åˆ é™¤èŠ‚ç‚¹åé«˜åº¦å¯èƒ½å‘ç”Ÿå˜åŒ–ï¼Œå›æº¯ç»´æŠ¤èŠ‚ç‚¹é«˜åº¦
 	while (backtrack) {
 		if (UpdateHeight(backtrack) == false) {
-			// ¸¸½Úµã¸ß¶ÈÎ´±ä»¯ÔòËµÃ÷£¬¸¸½ÚµãµÄÁíÒ»×ÓÊ÷Éî¶È¸üÉî£¬Òª¼ì²éÊÇ·ñÊ§ºâ
+			// çˆ¶èŠ‚ç‚¹é«˜åº¦æœªå˜åŒ–åˆ™è¯´æ˜ï¼Œçˆ¶èŠ‚ç‚¹çš„å¦ä¸€å­æ ‘æ·±åº¦æ›´æ·±ï¼Œè¦æ£€æŸ¥æ˜¯å¦å¤±è¡¡
 			if (RotateByBalanceFactor(tree, &backtrack) == false) {
-				break;		// Î´Ê§ºâÔòÍ£Ö¹»ØËİ£¬´Óµ±Ç°½Úµã¿ªÊ¼²»»áÔÙÓ°ÏìÉÏ²ã½ÚµãµÄ¸ß¶È¡£
+				break;		// æœªå¤±è¡¡åˆ™åœæ­¢å›æº¯ï¼Œä»å½“å‰èŠ‚ç‚¹å¼€å§‹ä¸ä¼šå†å½±å“ä¸Šå±‚èŠ‚ç‚¹çš„é«˜åº¦ã€‚
 			}
 		}
 		else {}
@@ -221,8 +228,8 @@ AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 }
 
 /*
-* ´ÓÊ÷ÖĞ°´keyÉ¾³ı½Úµã
-* ³É¹¦·µ»Ø±»É¾³ıµÄ½Úµã£¬Ê§°Ü·µ»ØNULL
+* ä»æ ‘ä¸­æŒ‰keyåˆ é™¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›è¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œå¤±è´¥è¿”å›NULL
 */
 AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key) {
 	AVLEntry* entry = AVLFindEntryByKey(tree, key);
@@ -233,7 +240,7 @@ AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key) {
 }
 
 /*
-* »ñÈ¡Ê÷½ÚµãÊıÁ¿
+* è·å–æ ‘èŠ‚ç‚¹æ•°é‡
 */
 static void AVLGetEntryCountCallback(AVLEntry* entry, void* arg) {
 	int* count = arg;

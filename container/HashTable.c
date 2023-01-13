@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - é±¼é±¼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* è¯·ä¿ç•™æ­¤å£°æ˜
+*/
+
 #include "HashTable.h"
 
 
@@ -14,9 +21,9 @@ static void Resize(HashTable* table, size_t newCapacity) {
 	HashTable temp;
 	HashTableInit(&temp, newCapacity, table->keyFieldOffset, table->keyFieldSize, table->hashFunc, table->cmpFunc);
 	
-	// ÖØÓ³Éä
+	// é‡æ˜ å°„
 	
-	// ÓÅ»¯µãÖ®Ò»£¬±éÀúµÄÊ±ºò¿ÉÒÔË³´øÉ¾³ı½Úµã£¬¿ÉÒÔ½ÚÊ¡Ò»´Î²éÕÒ
+	// ä¼˜åŒ–ç‚¹ä¹‹ä¸€ï¼Œéå†çš„æ—¶å€™å¯ä»¥é¡ºå¸¦åˆ é™¤èŠ‚ç‚¹ï¼Œå¯ä»¥èŠ‚çœä¸€æ¬¡æŸ¥æ‰¾
 	HashTableIterator iter;
 	void* obj = HashTableFirst(table, &iter);
 	while (obj) {
@@ -134,7 +141,7 @@ bool HashTableInsert(HashTable* table, void* obj) {
 	table->bucket.count++;
 
 	if (GetCurrentLoadFator(table) >= table->loadFator) {
-		// ´¥·¢À©Èİ
+		// è§¦å‘æ‰©å®¹
 		Resize(table, table->bucket.capacity * 2);
 	}
 
@@ -187,7 +194,7 @@ void* HashTableDelete(HashTable* table, void* key) {
 }
 
 /*
-* ÏÖÔÚµÄµü´úË¼Â·ÊÇ±éÀú¿Õ¼äËùÓĞ½Úµã£¬ÁíÍâ¿ÉÒÔÓÃ¾²Ì¬Á´±íÁ¬½ÓËùÓĞÒÑÓ³ÉäµÄ½Úµã£¬µ«ĞèÒª¶îÍâ¿Õ¼ä
+* ç°åœ¨çš„è¿­ä»£æ€è·¯æ˜¯éå†ç©ºé—´æ‰€æœ‰èŠ‚ç‚¹ï¼Œå¦å¤–å¯ä»¥ç”¨é™æ€é“¾è¡¨è¿æ¥æ‰€æœ‰å·²æ˜ å°„çš„èŠ‚ç‚¹ï¼Œä½†éœ€è¦é¢å¤–ç©ºé—´
 */
 void* HashTableFirst(HashTable* table, HashTableIterator* iter) {
 	iter->table = table;

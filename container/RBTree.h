@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - 鱼鱼
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* 请保留此声明
+*/
+
 #ifndef CUTILS_CONTAINER_RBTREE_H_
 #define CUTILS_CONTAINER_RBTREE_H_
 
@@ -9,7 +16,7 @@ extern "C" {
 #endif
 
 /*
-* ��234��Ϊԭ�͵ĺ����ʵ��
+* 以234树为原型的红黑树实现
 */
 typedef enum _RBColor RBColor;
 typedef struct _RBEntry {

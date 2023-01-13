@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - И╠╪И╠╪
+* emali:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* Х╞╥Д©²Г∙≥Ф╜╓Её╟Ф≤▌
+*/
+
 #ifndef CUTILS_CONTAINER_HEAP_H_
 #define CUTILS_CONTAINER_HEAP_H_
 
@@ -9,7 +16,7 @@ extern "C" {
 #endif
 
 /*
-* д╛хон╙╢С╤╔╤яё╛©иртвт╤╗рЕCmpFuncрт╣ВуШн╙п║╤╔╤я
+* И╩≤Х╝╓Д╦╨Е╓╖И║╤Е═├О╪▄Е▐╞Д╩╔Х┤╙Е╝ Д╧┴CmpFuncД╩╔Х╟┐Ф∙╢Д╦╨Е╟▐И║╤Е═├
 */
 
 typedef struct _Heap {
