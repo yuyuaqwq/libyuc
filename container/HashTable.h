@@ -19,46 +19,46 @@ extern "C" {
 
 
 typedef enum {
-	kFree,
-	kObj,
-	kList,
+    kFree,
+    kObj,
+    kList,
 } HashEntryType;
 
 typedef struct _HashEntry {
-	HashEntryType type;
-	union {
-		void* obj;
-		SinglyListHead listHead;
-	};
-	
+    HashEntryType type;
+    union {
+        void* obj;
+        SinglyListHead listHead;
+    };
+    
 } HashEntry;
 
 typedef struct _HashDataList {
-	SinglyListEntry listEntry;
-	void* obj;
+    SinglyListEntry listEntry;
+    void* obj;
 } HashDataList;
 
 typedef struct _HashTable {
-	Array bucket;
-	// Array tempBucket;		// 保留，未来可能修改为逐渐搬迁
-	int keyFieldOffset;
-	int keyFieldSize;
-	int loadFator;
-	HashFunc hashFunc;
-	CmpFunc cmpFunc;
+    Array bucket;
+    // Array tempBucket;        // 保留，未来可能修改为逐渐搬迁
+    int keyFieldOffset;
+    int keyFieldSize;
+    int loadFator;
+    HashFunc hashFunc;
+    CmpFunc cmpFunc;
 } HashTable;
 
 typedef struct _HashTableIterator {
-	HashTable* table;
-	int curIndex;
-	HashDataList* curListEntry;
+    HashTable* table;
+    int curIndex;
+    HashDataList* curListEntry;
 #ifdef HASHTABLE_DATA_STATISTICS
-	int freeCount;
-	int objCount;
-	int listEntryCount;
-	int listHeadCount;
-	int maxListCount;
-	int curListCount;
+    int freeCount;
+    int objCount;
+    int listEntryCount;
+    int listHeadCount;
+    int maxListCount;
+    int curListCount;
 #endif // HASHTABLE_DATA_STATISTICS
 } HashTableIterator;
 

@@ -93,7 +93,7 @@ uint32_t Hashmap_djb_hash(const void* data, size_t size)
  *
  * copyright (c) 2014-2022 joseph werle <joseph.werle@gmail.com>
  */
-uint32_t Hashmap_murmurhash(const void* key_, uint32_t len/*, uint32_t seed*/) {
+uint32_t Hashmap_murmurhash(const void* key_, size_t len/*, uint32_t seed*/) {
     uint32_t seed = 0;
 
     char* key = (char*)key_;

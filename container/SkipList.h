@@ -19,24 +19,24 @@ extern "C" {
 * 跳表索引节点
 */
 typedef struct _SkipListLevel {
-	struct _SkipListEntry* next;		// 同索引层的下一节点
+    struct _SkipListEntry* next;        // 同索引层的下一节点
 } SkipListLevel;
 
 /*
 * 跳表节点，每个节点有随机的索引层数，所以用柔性数组动态分配
 */
 typedef struct _SkipListEntry {
-	void* obj;		// 修改为存储obj
-	SkipListLevel upper[];		// 节点的上层，是索引节点
+    void* obj;        // 修改为存储obj
+    SkipListLevel upper[];        // 节点的上层，是索引节点
 } SkipListEntry;
 
 typedef struct _SkipList {
-	SkipListEntry* head;
-	int level;
+    SkipListEntry* head;
+    int level;
 
-	int keyFieldOffset;
-	int keyFieldSize;
-	CmpFunc cmpFunc;
+    int keyFieldOffset;
+    int keyFieldSize;
+    CmpFunc cmpFunc;
 } SkipList;
 
 

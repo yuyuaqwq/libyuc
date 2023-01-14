@@ -20,16 +20,14 @@ extern "C" {
 */
 typedef enum _RBColor RBColor;
 typedef struct _RBEntry {
-	union {
-		struct {
-			struct _RBEntry* parent;
-			struct _RBEntry* left;
-			struct _RBEntry* right;
-		};
-		BSEntry bs;
-	};
-
-	enum _RBColor color;
+    union {
+        struct {
+            struct _RBEntry* parent_color;
+            struct _RBEntry* left;
+            struct _RBEntry* right;
+        };
+        BSEntry bs;
+    };
 } RBEntry;
 
 typedef BSTree RBTree;
@@ -42,6 +40,8 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry);
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry);
 RBEntry* RBDeleteEntryByKey(RBTree* tree, void* key);
 size_t RBGetEntryCount(RBTree* head);
+
+void PrintRB(RBTree* head, RBEntry* entry, int Level);
 
 #ifdef __cplusplus
 }

@@ -22,34 +22,34 @@ extern "C" {
 
 
 typedef struct _BPlusLeafInternalEntry {
-	int key;		// void* obj;
+    int key;        // void* obj;
 } BPlusLeafInternalEntry;
 
-typedef struct _BPlusIndexInternalEntry {		// Internal
-	struct _BPlusEntry* child;
-	int key;
+typedef struct _BPlusIndexInternalEntry {        // Internal
+    struct _BPlusEntry* child;
+    int key;
 } BPlusIndexInternalEntry;
 
 
 typedef enum _BPlusEntryType BPlusEntryType;
 // 可以优化的点：child和key分别合并放到一起，可以加快查找以及避免内存对齐
 typedef struct _BPlusEntry {
-	BPlusEntryType type;
-	int count;		// child / obj计数
-	struct _BPlusEntry* parent;
-	union {
-		BPlusIndexInternalEntry indexInternalEntry[];
-		struct {
-			ListEntry leafListEntry;
-			BPlusLeafInternalEntry leafInternalEntry[];
-		};
-	};
+    BPlusEntryType type;
+    int count;        // child / obj计数
+    struct _BPlusEntry* parent;
+    union {
+        BPlusIndexInternalEntry indexInternalEntry[];
+        struct {
+            ListEntry leafListEntry;
+            BPlusLeafInternalEntry leafInternalEntry[];
+        };
+    };
 } BPlusEntry;
 
 typedef struct _BPlusTree {
-	BPlusEntry* root;
-	ListHead listHead;
-	int m;
+    BPlusEntry* root;
+    ListHead listHead;
+    int m;
 } BPlusTree;
 
 

@@ -16,8 +16,8 @@ extern "C" {
 
 
 typedef struct _ListEntry {
-	struct _ListEntry* prev;
-	struct _ListEntry* next;
+    struct _ListEntry* prev;
+    struct _ListEntry* next;
 } ListEntry;
 
 typedef ListEntry ListHead;
@@ -32,16 +32,16 @@ ListEntry* ListRemoveHead(ListHead* head);
 ListEntry* ListRemoveTail(ListHead* head);
 size_t ListGetEntryCount(ListHead* head);
 #define ListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
-	retObj = NULL; \
-	ListEntry* cur = (head)->next; \
-	while ((head) != cur) { \
-		objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
-		if (tempObj->keyFieldName == (key)) { \
-			retObj = tempObj; \
-			break; \
-		} \
-		cur = cur->next; \
-	} \
+    retObj = NULL; \
+    ListEntry* cur = (head)->next; \
+    while ((head) != cur) { \
+        objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
+        if (tempObj->keyFieldName == (key)) { \
+            retObj = tempObj; \
+            break; \
+        } \
+        cur = cur->next; \
+    } \
 }
 
 ListEntry* ListFirst(ListHead* head);

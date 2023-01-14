@@ -16,17 +16,17 @@ extern "C" {
 
 
 typedef struct _BSEntry {
-	struct _BSEntry* parent;
-	struct _BSEntry* left;
-	struct _BSEntry* right;
+    struct _BSEntry* parent;
+    struct _BSEntry* left;
+    struct _BSEntry* right;
 } BSEntry;
 
 typedef struct _BSTree {
-	BSEntry* root;
-	int entryFieldOffset;
-	int keyFieldOffset;
-	int keyFieldSize;
-	CmpFunc cmpFunc;		// 间接调用增加一定开销
+    BSEntry* root;
+    int entryFieldOffset;
+    int keyFieldOffset;
+    int keyFieldSize;
+    CmpFunc cmpFunc;        // 间接调用增加一定开销
 } BSTree;
 
 void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);

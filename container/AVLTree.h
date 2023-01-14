@@ -16,15 +16,15 @@ extern "C" {
 #endif
 
 typedef struct _AVLEntry {
-	union {
-		struct {
-			struct _AVLEntry* parent;
-			struct _AVLEntry* left;
-			struct _AVLEntry* right;
-		};
-		BSEntry bs;
-	};
-	int height;
+    union {
+        struct {
+            struct _AVLEntry* parent;
+            struct _AVLEntry* left;
+            struct _AVLEntry* right; 
+        };
+        BSEntry bs;
+    };
+    int height;        // 这里如果换成平衡因子也可以嵌入到指针中，但是高度更易理解
 } AVLEntry;
 
 typedef BSTree AVLTree;
@@ -34,18 +34,18 @@ void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int ke
 void AVLEntryInit(AVLEntry* entry);
 AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key);
 #define AVLFindEntryByKeyM(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
-	retObj = NULL; \
-	AVLEntry* cur = (tree)->root; \
-	while (cur) { \
-		objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
-		if (tempObj->keyFieldName < (key)) { \
-			cur = cur->right; \
-		} else if (tempObj->keyFieldName > (key)) { \
-			cur = cur->left; \
-		} else { \
-			retObj = tempObj; break; \
-		} \
-	} \
+    retObj = NULL; \
+    AVLEntry* cur = (tree)->root; \
+    while (cur) { \
+        objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
+        if (tempObj->keyFieldName < (key)) { \
+            cur = cur->right; \
+        } else if (tempObj->keyFieldName > (key)) { \
+            cur = cur->left; \
+        } else { \
+            retObj = tempObj; break; \
+        } \
+    } \
 }
 bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry);
 AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry);

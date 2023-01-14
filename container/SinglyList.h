@@ -16,7 +16,7 @@ extern "C" {
 
 
 typedef struct _SinglyListEntry {
-	struct _SinglyListEntry* next;
+    struct _SinglyListEntry* next;
 } SinglyListEntry;
 
 typedef SinglyListEntry SinglyListHead;
@@ -31,16 +31,16 @@ SinglyListEntry* SinglyListFirst(SinglyListHead* head);
 SinglyListEntry* SinglyListNext(SinglyListEntry* entry);
 
 #define SinglyListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
-	retObj = NULL; \
-	SinglyListEntry* cur = (head)->next; \
-	while ((head) != cur) { \
-		objName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
-		if (tempObj->keyFieldName == (key)) { \
-			retObj = tempObj; \
-			break; \
-		} \
-		cur = cur->next; \
-	} \
+    retObj = NULL; \
+    SinglyListEntry* cur = (head)->next; \
+    while ((head) != cur) { \
+        objName* tempObj = GetObjFromField(cur, objName, entryFieldName); \
+        if (tempObj->keyFieldName == (key)) { \
+            retObj = tempObj; \
+            break; \
+        } \
+        cur = cur->next; \
+    } \
 }
 
 

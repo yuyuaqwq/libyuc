@@ -10,249 +10,249 @@
 
 
 static inline uint32_t GetIndex(HashTable* table, void* key) {
-	return table->hashFunc(key, table->keyFieldSize) % table->bucket.capacity;
+    return table->hashFunc(key, table->keyFieldSize) % table->bucket.capacity;
 }
 
 static inline int GetCurrentLoadFator(HashTable* table) {
-	return table->bucket.count * 100 / table->bucket.capacity;
+    return table->bucket.count * 100 / table->bucket.capacity;
 }
 
 static void Resize(HashTable* table, size_t newCapacity) {
-	HashTable temp;
-	HashTableInit(&temp, newCapacity, table->keyFieldOffset, table->keyFieldSize, table->hashFunc, table->cmpFunc);
-	
-	// 重映射
-	
-	// 优化点之一，遍历的时候可以顺带删除节点，可以节省一次查找
-	HashTableIterator iter;
-	void* obj = HashTableFirst(table, &iter);
-	while (obj) {
-		void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
-		HashTableDelete(table, key);
-		HashTableInsert(&temp, obj);
-		obj = HashTableNext(&iter);
-	}
+    HashTable temp;
+    HashTableInit(&temp, newCapacity, table->keyFieldOffset, table->keyFieldSize, table->hashFunc, table->cmpFunc);
+    
+    // 重映射
+    
+    // 优化点之一，遍历的时候可以顺带删除节点，可以节省一次查找
+    HashTableIterator iter;
+    void* obj = HashTableFirst(table, &iter);
+    while (obj) {
+        void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
+        HashTableDelete(table, key);
+        HashTableInsert(&temp, obj);
+        obj = HashTableNext(&iter);
+    }
 
-	DeleteObject_(table->bucket.objArr);
+    DeleteObject_(table->bucket.objArr);
 
-	MemoryCopy(table, &temp, sizeof(temp));
+    MemoryCopy(table, &temp, sizeof(temp));
 }
 
 
 void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashFunc hashFunc, CmpFunc cmpFunc) {
-	if (capacity == 0) {
-		capacity = HASHTABLE_DEFAULT_BUCKETS_SIZE;
-	}
-	ArrayInit(&table->bucket, capacity, sizeof(HashEntry));
-	// ArrayInit(&table->tempBucket, 0, sizeof(HashEntry));
+    if (capacity == 0) {
+        capacity = HASHTABLE_DEFAULT_BUCKETS_SIZE;
+    }
+    ArrayInit(&table->bucket, capacity, sizeof(HashEntry));
+    // ArrayInit(&table->tempBucket, 0, sizeof(HashEntry));
 
-	for (int i = 0; i < table->bucket.capacity; i++) {
-		HashEntryInit(ArrayAt(&table->bucket, i, HashEntry));
-	}
-	table->keyFieldOffset = keyFieldOffset;
-	table->keyFieldSize = keySize;
-	table->loadFator = HASHTABLE_DEFAULT_LOAD_FATOR;
-	if (hashFunc == NULL) {
-		hashFunc = Hashmap_jenkins_hash;
-	}
-	table->hashFunc = hashFunc;
-	if (cmpFunc == NULL) {
-		cmpFunc = MemoryCmp;
-	}
-	table->cmpFunc = cmpFunc;
+    for (int i = 0; i < table->bucket.capacity; i++) {
+        HashEntryInit(ArrayAt(&table->bucket, i, HashEntry));
+    }
+    table->keyFieldOffset = keyFieldOffset;
+    table->keyFieldSize = keySize;
+    table->loadFator = HASHTABLE_DEFAULT_LOAD_FATOR;
+    if (hashFunc == NULL) {
+        hashFunc = Hashmap_jenkins_hash;
+    }
+    table->hashFunc = hashFunc;
+    if (cmpFunc == NULL) {
+        cmpFunc = MemoryCmp;
+    }
+    table->cmpFunc = cmpFunc;
 }
 
 void HashEntryInit(HashEntry* entry) {
-	entry->type = kFree;
+    entry->type = kFree;
 }
 
 void HashTableRelease(HashTable* table, bool deleteObj) {
-	HashTableIterator iter;
-	void* obj = HashTableFirst(table, &iter);
-	while (obj) {
-		void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
-		HashTableDelete(table, key);
-		if (deleteObj) {
-			DeleteObject_(obj);
-		}
-		obj = HashTableNext(&iter);
-	}
-	ArrayRelease(&table->bucket);
+    HashTableIterator iter;
+    void* obj = HashTableFirst(table, &iter);
+    while (obj) {
+        void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
+        HashTableDelete(table, key);
+        if (deleteObj) {
+            DeleteObject_(obj);
+        }
+        obj = HashTableNext(&iter);
+    }
+    ArrayRelease(&table->bucket);
 }
 
 void* HashTableFind(HashTable* table, void* key) {
-	int index = GetIndex(table, key);
-	HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
-	if (entry->type == kObj) {
-		void* obj = entry->obj;
-		int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
-		if (res == 0) {
-			return obj;
-		}
-	}
-	else if (entry->type == kList) {
-		SinglyListEntry* cur = SinglyListFirst(&entry->listHead);
-		while (cur) {
-			void* obj = ((HashDataList*)cur)->obj;
-			int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
-			if (res == 0) {
-				return obj;
-			}
-			cur = SinglyListNext(cur);
-		}
-	}
-	return NULL;
+    int index = GetIndex(table, key);
+    HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
+    if (entry->type == kObj) {
+        void* obj = entry->obj;
+        int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+        if (res == 0) {
+            return obj;
+        }
+    }
+    else if (entry->type == kList) {
+        SinglyListEntry* cur = SinglyListFirst(&entry->listHead);
+        while (cur) {
+            void* obj = ((HashDataList*)cur)->obj;
+            int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+            if (res == 0) {
+                return obj;
+            }
+            cur = SinglyListNext(cur);
+        }
+    }
+    return NULL;
 }
 
 bool HashTableInsert(HashTable* table, void* obj) {
-	void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
-	int index = GetIndex(table, key);
-	HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
+    void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
+    int index = GetIndex(table, key);
+    HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
 
-	if (entry->type == kFree) {
-		entry->obj = obj;
-		entry->type = kObj;
-	}
-	else if (entry->type == kObj) {
-		int res = table->cmpFunc(GetFieldByFieldOffset(entry->obj, table->keyFieldOffset, void), key, table->keyFieldSize);
-		if (res == 0) {
-			return obj == entry->obj;
-		}
-		entry->type = kList;
+    if (entry->type == kFree) {
+        entry->obj = obj;
+        entry->type = kObj;
+    }
+    else if (entry->type == kObj) {
+        int res = table->cmpFunc(GetFieldByFieldOffset(entry->obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+        if (res == 0) {
+            return obj == entry->obj;
+        }
+        entry->type = kList;
 
-		void* oldObj = entry->obj;
+        void* oldObj = entry->obj;
 
-		SinglyListHeadInit(&entry->listHead);
+        SinglyListHeadInit(&entry->listHead);
 
-		HashDataList* listEntry = CreateObject(HashDataList);
-		listEntry->obj = oldObj;
-		SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-		
-		listEntry = CreateObject(HashDataList);
-		listEntry->obj = obj;
-		SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-	}
-	else if (entry->type == kList) {
-		HashDataList* listEntry = CreateObject(HashDataList);
-		listEntry->obj = obj;
-		SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-	}
+        HashDataList* listEntry = CreateObject(HashDataList);
+        listEntry->obj = oldObj;
+        SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
+        
+        listEntry = CreateObject(HashDataList);
+        listEntry->obj = obj;
+        SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
+    }
+    else if (entry->type == kList) {
+        HashDataList* listEntry = CreateObject(HashDataList);
+        listEntry->obj = obj;
+        SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
+    }
 
-	table->bucket.count++;
+    table->bucket.count++;
 
-	if (GetCurrentLoadFator(table) >= table->loadFator) {
-		// 触发扩容
-		Resize(table, table->bucket.capacity * 2);
-	}
+    if (GetCurrentLoadFator(table) >= table->loadFator) {
+        // 触发扩容
+        Resize(table, table->bucket.capacity * 2);
+    }
 
-	return true;
+    return true;
 }
 
 void* HashTableDelete(HashTable* table, void* key) {
-	int index = GetIndex(table, key);
-	HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
-	void* obj = NULL;
-	if (entry->type == kFree) {
-		return NULL;
-	}
-	else if (entry->type == kObj) {
-		obj = entry->obj;
-		int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
-		if (res != 0) {
-			return NULL;
-		}
-		entry->type = kFree;
-	}
-	else if (entry->type == kList) {
-		SinglyListEntry* prev = NULL;
-		SinglyListEntry* cur = SinglyListFirst(&entry->listHead);
-		while (cur) {
-			void* curObj = ((HashDataList*)cur)->obj;
-			int res = table->cmpFunc(GetFieldByFieldOffset(curObj, table->keyFieldOffset, void), key, table->keyFieldSize);
-			if (res == 0) {
-				obj = curObj;
-				if (prev) {
-					SinglyListRemoveEntry(prev, cur);
-				}
-				else {
-					SinglyListRemoveHead(&entry->listHead);
+    int index = GetIndex(table, key);
+    HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
+    void* obj = NULL;
+    if (entry->type == kFree) {
+        return NULL;
+    }
+    else if (entry->type == kObj) {
+        obj = entry->obj;
+        int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+        if (res != 0) {
+            return NULL;
+        }
+        entry->type = kFree;
+    }
+    else if (entry->type == kList) {
+        SinglyListEntry* prev = NULL;
+        SinglyListEntry* cur = SinglyListFirst(&entry->listHead);
+        while (cur) {
+            void* curObj = ((HashDataList*)cur)->obj;
+            int res = table->cmpFunc(GetFieldByFieldOffset(curObj, table->keyFieldOffset, void), key, table->keyFieldSize);
+            if (res == 0) {
+                obj = curObj;
+                if (prev) {
+                    SinglyListRemoveEntry(prev, cur);
+                }
+                else {
+                    SinglyListRemoveHead(&entry->listHead);
 
-					if (SinglyListIsEmpty(&entry->listHead)) {
-						entry->type = kObj;
-					}
-				}
-				DeleteObject_(cur);
-				break;
-			}
-			prev = cur;
-			cur = SinglyListNext(cur);
-		}
-	}
+                    if (SinglyListIsEmpty(&entry->listHead)) {
+                        entry->type = kObj;
+                    }
+                }
+                DeleteObject_(cur);
+                break;
+            }
+            prev = cur;
+            cur = SinglyListNext(cur);
+        }
+    }
 
-	table->bucket.count--;
-	return obj;
+    table->bucket.count--;
+    return obj;
 }
 
 /*
 * 现在的迭代思路是遍历空间所有节点，另外可以用静态链表连接所有已映射的节点，但需要额外空间
 */
 void* HashTableFirst(HashTable* table, HashTableIterator* iter) {
-	iter->table = table;
-	iter->curListEntry = NULL;
-	iter->curIndex = 0;
+    iter->table = table;
+    iter->curListEntry = NULL;
+    iter->curIndex = 0;
 #ifdef HASHTABLE_DATA_STATISTICS
-	iter->objCount = 0;
-	iter->freeCount = 0;
-	iter->listEntryCount = 0;
-	iter->listHeadCount = 0;
-	iter->maxListCount = 0;
-	iter->curListCount = 0;
+    iter->objCount = 0;
+    iter->freeCount = 0;
+    iter->listEntryCount = 0;
+    iter->listHeadCount = 0;
+    iter->maxListCount = 0;
+    iter->curListCount = 0;
 #endif // HASHTABLE_DATA_STATISTICS
-	return HashTableNext(iter);
+    return HashTableNext(iter);
 }
 
 void* HashTableNext(HashTableIterator* iter) {
-	if (iter->curListEntry) {
-		HashDataList* cur = iter->curListEntry;
-		iter->curListEntry = (HashDataList*)iter->curListEntry->listEntry.next;
-		if (iter->curListEntry == NULL) {
-			iter->curIndex++;
-		}
-		if (cur) {
+    if (iter->curListEntry) {
+        HashDataList* cur = iter->curListEntry;
+        iter->curListEntry = (HashDataList*)iter->curListEntry->listEntry.next;
+        if (iter->curListEntry == NULL) {
+            iter->curIndex++;
+        }
+        if (cur) {
 #ifdef HASHTABLE_DATA_STATISTICS
-			iter->curListCount++;
-			if (iter->curListCount > iter->maxListCount) {
-				iter->maxListCount = iter->curListCount;
-			}
-			iter->listEntryCount++;
+            iter->curListCount++;
+            if (iter->curListCount > iter->maxListCount) {
+                iter->maxListCount = iter->curListCount;
+            }
+            iter->listEntryCount++;
 #endif // HASHTABLE_DATA_STATISTICS
-			return cur->obj;
-		}
-	}
-	HashTable* table = iter->table;
-	for (; iter->curIndex < table->bucket.capacity; iter->curIndex++) {
-		HashEntry* entry = ArrayAt(&table->bucket, iter->curIndex, HashEntry);
-		if (entry->type == kFree) {
+            return cur->obj;
+        }
+    }
+    HashTable* table = iter->table;
+    for (; iter->curIndex < table->bucket.capacity; iter->curIndex++) {
+        HashEntry* entry = ArrayAt(&table->bucket, iter->curIndex, HashEntry);
+        if (entry->type == kFree) {
 #ifdef HASHTABLE_DATA_STATISTICS
-			iter->freeCount++;
+            iter->freeCount++;
 #endif // HASHTABLE_DATA_STATISTICS
-			continue;
-		}
-		if (entry->type == kObj) {
+            continue;
+        }
+        if (entry->type == kObj) {
 #ifdef HASHTABLE_DATA_STATISTICS
-			iter->objCount++;
+            iter->objCount++;
 #endif // HASHTABLE_DATA_STATISTICS
-			iter->curIndex++;
-			return entry->obj;
-		}
-		if (entry->type == kList) {
+            iter->curIndex++;
+            return entry->obj;
+        }
+        if (entry->type == kList) {
 #ifdef HASHTABLE_DATA_STATISTICS
-			iter->curListCount = 0;
-			iter->listHeadCount++;
+            iter->curListCount = 0;
+            iter->listHeadCount++;
 #endif // HASHTABLE_DATA_STATISTICS
-			iter->curListEntry = (HashDataList*)entry->listHead.next;
-			return HashTableNext(iter);
-		}
-	}
-	return NULL;
+            iter->curListEntry = (HashDataList*)entry->listHead.next;
+            return HashTableNext(iter);
+        }
+    }
+    return NULL;
 }

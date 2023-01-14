@@ -20,10 +20,10 @@ extern "C" {
 */
 
 typedef struct _Heap {
-	Vector vector;
-	uint32_t keyFieldOffset;
-	uint32_t keyFieldSize;
-	CmpFunc cmpFunc;
+    Vector vector;
+    uint32_t keyFieldOffset;
+    uint32_t keyFieldSize;
+    CmpFunc cmpFunc;
 } Heap;
 
 void HeapInit(Heap* heap, uint32_t high, uint32_t keyFieldOffset, uint32_t keyFieldSize, CmpFunc cmpFunc);

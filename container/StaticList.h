@@ -16,16 +16,16 @@ extern "C" {
 #endif
 
 typedef struct _StaticListHead {
-	Array array;
-	int entryFieldOffset;
-	int freeIndex;
+    Array array;
+    int entryFieldOffset;
+    int freeIndex;
 } StaticListHead;
 
 /*
 * 分配后此节点的值可以被覆盖，故可以使用union
 */
 typedef struct _StaticListEntry {
-	int nextIndex;
+    int nextIndex;
 } StaticListEntry;
 
 void StaticListHeadInit(StaticListHead* head, size_t count, int objSize, int entryFieldOffset);

@@ -17,7 +17,7 @@ extern "C" {
 
 
 typedef struct _Vector {
-	Array array;
+    Array array;
 } Vector;
 
 void VectorInit(Vector* vector, size_t capacity);
@@ -27,14 +27,14 @@ void VectorRelease(Vector* vector, bool deleteObj);
 #define VectorAt(vector, index, objName) (ArrayAt(&(vector)->array, index, objName*))
 
 #define VectorFindEntryByKeyM(vector, retObj, objName, keyFieldName, key) { \
-	retObj = NULL; \
-	for (int i = 0; i < (vector)->size; i++) { \
-		objName* tempObj = VectorAt((vector), objName, i); \
-		if (tempObj->keyFieldName == (key)) { \
-			retObj = tempObj; \
-			break; \
-		} \
-	} \
+    retObj = NULL; \
+    for (int i = 0; i < (vector)->size; i++) { \
+        objName* tempObj = VectorAt((vector), objName, i); \
+        if (tempObj->keyFieldName == (key)) { \
+            retObj = tempObj; \
+            break; \
+        } \
+    } \
 }
 
 int VectorPushTail(Vector* vector, void* obj);

@@ -17,9 +17,9 @@ extern "C" {
 
 
 typedef struct _Queue {
-	Array arr;
-	int head;		// head指向即将出队的元素索引
-	int tail;		// tail指向最近入队的元素索引的下一个索引
+    Array arr;
+    int head;        // head指向即将出队的元素索引
+    int tail;        // tail指向最近入队的元素索引的下一个索引
 } Queue;
 
 //        t=h

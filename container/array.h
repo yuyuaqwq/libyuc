@@ -16,10 +16,10 @@ extern "C" {
 
 
 typedef struct _Array {
-	size_t count;
-	size_t capacity;
-	void* objArr;
-	int objSize;
+    size_t count;
+    size_t capacity;
+    void* objArr;
+    int objSize;
 } Array;
 
 void ArrayInit(Array* arr, size_t capacity, int objByteCount);
@@ -27,14 +27,14 @@ void ArrayRelease(Array* arr);
 #define ArrayAt(arr, index, objName) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
 #define ArrayToCArr(arr, objName) ((objName*)(arr)->objArr))
 #define ArrayFindEntryByKeyM(arr, retObj, objName, keyFieldName, key) { \
-	retObj = NULL; \
-	for (int i = 0; i < (arr)->size; i++) { \
-		objName* tempObj = ArrayAt((arr), objName, i); \
-		if (tempObj->keyFieldName == (key)) { \
-			retObj = tempObj; \
-			break; \
-		} \
-	} \
+    retObj = NULL; \
+    for (int i = 0; i < (arr)->size; i++) { \
+        objName* tempObj = ArrayAt((arr), objName, i); \
+        if (tempObj->keyFieldName == (key)) { \
+            retObj = tempObj; \
+            break; \
+        } \
+    } \
 }
 int ArrayPushTail(Array* arr, void* obj);
 void* ArrayPopTail(Array* arr);
