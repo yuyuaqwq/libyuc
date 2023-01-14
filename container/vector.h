@@ -26,7 +26,7 @@ void VectorRelease(Vector* vector, bool deleteObj);
 
 #define VectorAt(vector, index, objName) (ArrayAt(&(vector)->array, index, objName*))
 
-#define VectorFindEntryByKeyM(vector, retObj, objName, keyFieldName, key) { \
+#define VectorFindEntryByField(vector, retObj, objName, keyFieldName, key) { \
     retObj = NULL; \
     for (int i = 0; i < (vector)->size; i++) { \
         objName* tempObj = VectorAt((vector), objName, i); \

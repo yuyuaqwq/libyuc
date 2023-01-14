@@ -260,11 +260,11 @@ static bool BPlusInsertEntry(BPlusTree* tree, BPlusEntry* entry, int key, BPlusE
     int insertIndex;
     int res;
     if (entry->type == kLeaf) {
-        insertIndex = BinarySearch_Range_CustomM(entry->leafInternalEntry, BPlusLeafInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
+        insertIndex = BinarySearchByField_Range_Custom(entry->leafInternalEntry, BPlusLeafInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
         res = MemoryCmpR(&entry->leafInternalEntry[insertIndex].key, &key, sizeof(key));
     }
     else {
-        insertIndex = BinarySearch_Range_CustomM(entry->indexInternalEntry, BPlusIndexInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
+        insertIndex = BinarySearchByField_Range_Custom(entry->indexInternalEntry, BPlusIndexInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
         res = MemoryCmpR(&entry->indexInternalEntry[insertIndex].key, &key, sizeof(key));
     }
     //if (res == 0) {        // 允许插入相同的节点
@@ -395,7 +395,7 @@ static BPlusEntry* BPlusTreeFindLeaf(BPlusTree* tree, int key, Array* stack) {
         //       4        8         12
         //    /       |        |       \
         // 3  4      6  7      10        15
-        int i = BinarySearch_Range_CustomM(cur->indexInternalEntry, BPlusIndexInternalEntry, key, 0, cur->count - 1, &key, MemoryCmpR);
+        int i = BinarySearchByField_Range_Custom(cur->indexInternalEntry, BPlusIndexInternalEntry, key, 0, cur->count - 1, &key, MemoryCmpR);
         
         if (key < cur->indexInternalEntry[i].key) {
             cur = cur->indexInternalEntry[i].child;
@@ -415,8 +415,8 @@ static BPlusEntry* BPlusTreeFindLeaf(BPlusTree* tree, int key, Array* stack) {
 
 
 void BPlusTreeInit(BPlusTree* tree, int m) {
-    if (m < 2) {
-        m = 2;
+    if (m < 3) {
+        m = 3;      // 最少3阶，否则无法正常分裂
     }
     tree->root = BPlusCreateLeafEntry(m);
     ListHeadInit(&tree->listHead);
@@ -426,7 +426,7 @@ void BPlusTreeInit(BPlusTree* tree, int m) {
 
 bool BPlusTreeFind(BPlusTree* tree, int key) {
     BPlusEntry* leaf = BPlusTreeFindLeaf(tree, key, NULL);
-    int index = BinarySearch_CustomM(leaf->leafInternalEntry, BPlusLeafInternalEntry, key, 0, leaf->count - 1, &key, MemoryCmpR);
+    int index = BinarySearchByField_Custom(leaf->leafInternalEntry, BPlusLeafInternalEntry, key, 0, leaf->count - 1, &key, MemoryCmpR);
     if (index == -1) {
         return false;
     }
@@ -443,7 +443,7 @@ bool BPlusTreeDelete(BPlusTree* tree, int key) {
     ArrayInit(&stack, 16, sizeof(int));
     BPlusEntry* leaf = BPlusTreeFindLeaf(tree, key, &stack);
 
-    int deleteIndex = BinarySearch_CustomM(leaf->leafInternalEntry, BPlusLeafInternalEntry, key, 0, leaf->count - 1, &key, MemoryCmpR);
+    int deleteIndex = BinarySearchByField_Custom(leaf->leafInternalEntry, BPlusLeafInternalEntry, key, 0, leaf->count - 1, &key, MemoryCmpR);
     if (deleteIndex == -1) {
         ArrayRelease(&stack);
         return false;
@@ -451,6 +451,5 @@ bool BPlusTreeDelete(BPlusTree* tree, int key) {
     bool success = BPlusDeleteEntry(tree, leaf, deleteIndex, &stack);
 
     ArrayRelease(&stack);
-
     return success;
 }

@@ -239,15 +239,3 @@ AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key) {
     return entry;
 }
 
-/*
-* 获取树节点数量
-*/
-static void AVLGetEntryCountCallback(AVLEntry* entry, void* arg) {
-    int* count = arg;
-    (*count)++;
-}
-size_t AVLGetEntryCount(AVLTree* head) {
-    int count = 0;
-    BSPreorder_Callback(head->root, AVLGetEntryCountCallback, &count);
-    return count;
-}

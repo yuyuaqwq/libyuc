@@ -33,15 +33,12 @@ typedef struct _RBEntry {
 typedef BSTree RBTree;
 
 void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-#define RBTreeInitM(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
+#define RBTreeInitByField(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void RBEntryInit(RBEntry* entry, RBColor color);
 RBEntry* RBFindEntryByKey(RBTree* tree, void* key);
 bool RBInsertEntry(RBTree* tree, RBEntry* entry);
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry);
 RBEntry* RBDeleteEntryByKey(RBTree* tree, void* key);
-size_t RBGetEntryCount(RBTree* head);
-
-void PrintRB(RBTree* head, RBEntry* entry, int Level);
 
 #ifdef __cplusplus
 }

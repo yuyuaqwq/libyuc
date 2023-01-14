@@ -23,7 +23,7 @@ uint32_t Hashmap_adler32_hash(const void* data, size_t size);
 
 uint32_t Hashmap_djb_hash(const void* data, size_t size);
 
-uint32_t Hashmap_murmurhash(const void* key_, uint32_t len);
+uint32_t Hashmap_murmurhash(const void* key_, size_t len);
 
 #ifdef __cplusplus
 }

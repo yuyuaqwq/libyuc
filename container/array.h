@@ -26,7 +26,7 @@ void ArrayInit(Array* arr, size_t capacity, int objByteCount);
 void ArrayRelease(Array* arr);
 #define ArrayAt(arr, index, objName) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
 #define ArrayToCArr(arr, objName) ((objName*)(arr)->objArr))
-#define ArrayFindEntryByKeyM(arr, retObj, objName, keyFieldName, key) { \
+#define ArrayFindEntryByKeyField(arr, retObj, objName, keyFieldName, key) { \
     retObj = NULL; \
     for (int i = 0; i < (arr)->size; i++) { \
         objName* tempObj = ArrayAt((arr), objName, i); \

@@ -30,7 +30,7 @@ size_t SinglyListGetCount(SinglyListHead* head);
 SinglyListEntry* SinglyListFirst(SinglyListHead* head);
 SinglyListEntry* SinglyListNext(SinglyListEntry* entry);
 
-#define SinglyListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
+#define SinglyListFindEntryByField(head, retObj, key, objName, entryFieldName, keyFieldName) { \
     retObj = NULL; \
     SinglyListEntry* cur = (head)->next; \
     while ((head) != cur) { \

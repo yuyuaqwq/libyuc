@@ -7,10 +7,11 @@
 
 #include "BSTree.h"
 
-
 /*
-* newEntry挂接到entry原来的位置
-* entry从树中摘除，但entry的parent、left和right不变
+* newEntry代替entry挂接到其父节点下
+* newEntry的左右子节点不变
+* entry从树中摘除
+* entry的parent、left和right不变
 */
 static void BSHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
     if (entry->parent) {
@@ -135,13 +136,8 @@ BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
     else {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
         BSEntry* minEntry = entry->right;
-        while (minEntry) {
-            if (minEntry->left) {
-                minEntry = minEntry->left;
-            }
-            else {
-                break;
-            }
+        while (minEntry->left) {
+            minEntry = minEntry->left;
         }
 
         // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
@@ -170,6 +166,19 @@ BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
         // 也可以选择直接交换两个节点的数据
     }
     return entry;
+}
+
+/*
+* 获取树的节点数量
+*/
+static void BSGetEntryCountCallback(BSEntry* entry, void* arg) {
+    int* count = arg;
+    (*count)++;
+}
+size_t BSGetEntryCount(BSTree* tree) {
+    int count = 0;
+    BSPreorder_Callback(tree->root, BSGetEntryCountCallback, &count);
+    return count;
 }
 
 

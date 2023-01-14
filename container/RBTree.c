@@ -100,8 +100,10 @@ static RBEntry* GetSiblingEntry(RBEntry* entry) {
 }
 
 /*
-* newEntry挂接到entry原来的位置
-* entry从树中摘除，但entry的parent、left和right不变
+* newEntry代替entry挂接到其父节点下
+* newEntry的左右子节点不变
+* entry从树中摘除
+* entry的parent、left和right不变
 */
 static void RBHitchEntry(RBTree* tree, RBEntry* entry, RBEntry* newEntry) {
     if (GetParent(entry)) {
@@ -135,7 +137,6 @@ void RBEntryInit(RBEntry* entry, RBColor color) {
     SetColor(entry, color);
 }
 
-
 /*
 * 从树中查找节点
 * 存在返回查找到的节点，不存在返回NULL
@@ -143,7 +144,6 @@ void RBEntryInit(RBEntry* entry, RBColor color) {
 RBEntry* RBFindEntryByKey(RBTree* tree, void* key) {
     return (RBEntry*)BSFindEntryByKey(tree, key);
 }
-
 
 /*
 * 向树中插入节点
@@ -215,7 +215,6 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
     return true;
 }
 
-
 /*
 * 从树中删除节点
 * 成功返回被删除的节点，失败返回NULL
@@ -224,6 +223,7 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
     RBEntry* backtrack = entry;        // 通常情况下是从被删除节点的父节点开始回溯
 
     // 出于性能考虑，RB找节点删除的逻辑还是单独写一份，差不了太多，但是RB回溯时需要保证entry还在树上(找兄弟节点)，回溯完才删除
+    // 第二点就是颜色被嵌入到了父节点当中(不过BS也可以在每次访问的时候处理一下)
     RBEntry* newEntry;
     if (entry->left == NULL && entry->right == NULL) {
         // 没有子节点，直接从父节点中摘除此节点
@@ -240,13 +240,8 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
     else {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
         RBEntry* minEntry = entry->right;
-        while (minEntry) {
-            if (minEntry->left) {
-                minEntry = minEntry->left;
-            }
-            else {
-                break;
-            }
+        while (minEntry->left) {
+            minEntry = minEntry->left;
         }
         RBColor temp = GetColor(minEntry);
         SetColor(minEntry, GetColor(entry));
@@ -314,7 +309,6 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
         }
 
         RBEntry* sibling = GetSiblingEntry(backtrack);
-
         if (GetColor(sibling) == kRed) {
             // 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
             // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，但兄弟节点变为真正的兄弟节点
@@ -357,7 +351,6 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
                 }
                 newSubRoot = RotateLeft(GetParent(sibling));
             }
-
             if (tree->root == oldSubRoot) {
                 tree->root = newSubRoot;
             }
@@ -374,15 +367,16 @@ RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
             // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，合并两个节点，此处高度-1，继续回溯寻求高度补偿
             SetColor(sibling, kRed);
         }
-        
         backtrack = GetParent(backtrack);
     }
-
     RBHitchEntry(tree, entry, newEntry);
-
     return entry;
 }
 
+/*
+* 从树中按key删除节点
+* 成功返回被删除的节点，失败返回NULL
+*/
 RBEntry* RBDeleteEntryByKey(RBTree* tree, void* key) {
     RBEntry* entry = RBFindEntryByKey(tree, key);
     if (entry) {
@@ -390,18 +384,3 @@ RBEntry* RBDeleteEntryByKey(RBTree* tree, void* key) {
     }
     return entry;
 }
-
-/*
-* 获取树节点数量
-*/
-static void RBGetEntryCountCallback(RBEntry* entry, void* arg) {
-    int* count = arg;
-    (*count)++;
-}
-size_t RBGetEntryCount(RBTree* head) {
-    int count = 0;
-    BSPreorder_Callback(head->root, RBGetEntryCountCallback, &count);
-    return count;
-}
-
-

@@ -31,7 +31,7 @@ ListEntry* ListRemoveEntry(ListEntry* entry, bool empty);
 ListEntry* ListRemoveHead(ListHead* head);
 ListEntry* ListRemoveTail(ListHead* head);
 size_t ListGetEntryCount(ListHead* head);
-#define ListFindEntryByKeyM(head, retObj, key, objName, entryFieldName, keyFieldName) { \
+#define ListFindEntryByField(head, retObj, key, objName, entryFieldName, keyFieldName) { \
     retObj = NULL; \
     ListEntry* cur = (head)->next; \
     while ((head) != cur) { \
