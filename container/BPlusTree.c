@@ -488,17 +488,13 @@ static PageId BPlusTreeFindLeaf(BPlusTree* tree, void* key, Array* stack) {
         // 3  4      6  7      10        15
         int i = BinarySearch_KeyAtCallback_Range(cur, GetIndexInternalKey, 0, cur->count - 1, key, tree->keySize, tree->cmpFunc);
         int res = tree->cmpFunc(GetIndexInternalKey(cur, i), key, sizeof(key));
-
-        if (res > 0) {
-            // 查找key较小，向左找，cur是i的左子节点，i是cur的右父索引
-            id = GetIndexInternalChildId(cur, i);
-            cur = PageGet(id);
-        } else {
+        if (res <= 0) {
             // 查找key较大，向右找，cur是i的右子节点，i是cur的左父索引
             // 相等的key也向右边找，因为分裂的索引是右叶子的第一个节点上升的
-            id = GetIndexInternalChildId(cur, ++i);
-            cur = PageGet(id);
-        }
+            ++i;
+        } else {} // 查找key较小，向左找，cur是i的左子节点，i是cur的右父索引
+        id = GetIndexInternalChildId(cur, i);
+        cur = PageGet(id);
         if (stack) {
             i--;        // 修正入栈的i为左父索引
             ArrayPushTail(stack, &i);
@@ -508,7 +504,9 @@ static PageId BPlusTreeFindLeaf(BPlusTree* tree, void* key, Array* stack) {
 }
 
 
-
+/*
+* 初始化B+树
+*/
 void BPlusTreeInit(BPlusTree* tree, int m, int keySize, CmpFunc cmpFunc) {
     if (m < 3) {
         m = 3;      // 最少3阶，否则无法正常分裂
@@ -524,6 +522,9 @@ void BPlusTreeInit(BPlusTree* tree, int m, int keySize, CmpFunc cmpFunc) {
     tree->cmpFunc = cmpFunc;
 }
 
+/*
+* 从B+树中查找指定key
+*/
 bool BPlusTreeFind(BPlusTree* tree, void* key) {
     BPlusEntry* leaf = PageGet(BPlusTreeFindLeaf(tree, key, NULL));
     int index = BinarySearch_KeyAtCallback(leaf, GetLeafInternalKey, 0, leaf->count - 1, key, tree->keySize, tree->cmpFunc);
@@ -533,10 +534,16 @@ bool BPlusTreeFind(BPlusTree* tree, void* key) {
     return true;
 }
 
+/*
+* 从B+树中插入指定key
+*/
 bool BPlusTreeInsert(BPlusTree* tree, void* key) {
     return BPlusInsertEntry(tree, BPlusTreeFindLeaf(tree, key, NULL), key, NULL);
 }
 
+/*
+* 从B+树中删除指定key
+*/
 bool BPlusTreeDelete(BPlusTree* tree, void* key) {
     Array stack;
     ArrayInit(&stack, 16, sizeof(int));
