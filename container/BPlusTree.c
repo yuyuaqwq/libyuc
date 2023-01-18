@@ -15,6 +15,7 @@ typedef enum _BPlusEntryType {
 
 
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK
+
 PageId PageAlloc(int m) {
     return (PageId)MemoryAlloc(sizeof(BPlusEntry) - sizeof(BPlusLeafListEntry) + (m - 1) * sizeof(BPlusIndexInternalEntry) + sizeof(struct _BPlusIndexEntry*));
 }
@@ -26,7 +27,37 @@ void PageFree(PageId id) {
 struct _BPlusEntry* PageGet(PageId id) {
     return (BPlusEntry*)id;
 }
+
 #endif // CUTILS_CONTAINER_BPLUS_TREE_DISK
+
+
+
+/*
+* 定位叶子节点和索引节点内部字段的相关接口
+*/
+static inline void* GetLeafInternalKey(BPlusEntry* leaf, int i) {
+    return &leaf->leafInternalEntry[i].key;
+}
+
+static inline void SetLeafInternalKey(BPlusEntry* leaf, int i, void* key) {
+    leaf->leafInternalEntry[i].key = *(Key*)key;
+}
+
+static inline PageId GetIndexInternalChildId(BPlusEntry* index, int i) {
+    return index->indexInternalEntry[i].childId;
+}
+
+static inline void SetIndexInternalChildId(BPlusEntry* index, int i, PageId id) {
+    index->indexInternalEntry[i].childId = id;
+}
+
+static inline void* GetIndexInternalKey(BPlusEntry* index, int i) {
+    return &index->indexInternalEntry[i].key;
+}
+
+static inline void SetIndexInternalKey(BPlusEntry* index, int i, void* key) {
+    index->indexInternalEntry[i].key = *(Key*)key;
+}
 
 
 
@@ -55,14 +86,6 @@ static void LeafListEntryRemoveTail(PageId entryId) {
 }
 
 
-static inline BPlusLeafInternalEntry* GetLeafInternalEntry(BPlusEntry* leaf, int i) {
-    return &leaf->leafInternalEntry[i];
-}
-
-static inline BPlusIndexInternalEntry* GetIndexInternalEntry(BPlusEntry* index, int i) {
-    return &index->indexInternalEntry[i];
-}
-
 
 static PageId BPlusCreateIndexEntry(int m) {
     // child 应当是m个，所以最后多申请一个
@@ -71,7 +94,7 @@ static PageId BPlusCreateIndexEntry(int m) {
     entry->type = kIndex;
     entry->parentId = NULL;
     for (int i = 0; i < m; i++) {
-        GetIndexInternalEntry(entry, i)->childId = NULL;
+        SetIndexInternalChildId(entry, i, NULL);
     }
     entry->count = 0;
     return entryId;
@@ -109,7 +132,7 @@ static PageId BPlusGetLeftSiblingEntry(BPlusTree* tree, PageId entryId, int left
         return NULL;
     }
     if (leftParentIndex > -1) {
-        return GetIndexInternalEntry(parent, leftParentIndex)->childId;
+        return GetIndexInternalChildId(parent, leftParentIndex);
     }
     return NULL;
 }
@@ -123,7 +146,7 @@ static PageId BPlusGetRightSiblingEntry(BPlusTree* tree, PageId entryId, int lef
         return NULL;
     }
     if (leftParentIndex < parent->count) {
-        return GetIndexInternalEntry(parent, leftParentIndex + 2)->childId;
+        return GetIndexInternalChildId(parent, leftParentIndex + 2);
     }
     return NULL;
 }
@@ -131,29 +154,29 @@ static PageId BPlusGetRightSiblingEntry(BPlusTree* tree, PageId entryId, int lef
 /*
 * 向内部节点数组指定位置插入key及子节点(是索引节点时)
 */
-static void BPlusInsertInternalEntry(PageId entryId, int keyIndex, Key key, PageId childId, bool rightChild) {
+static void BPlusInsertInternalEntry(PageId entryId, int keyIndex, void* key, PageId childId, bool rightChild) {
     if (PageGet(entryId)->type == kLeaf) {
         BPlusEntry* leaf = PageGet(entryId);
         for (int j = leaf->count - 1; j >= keyIndex; j--) {
-            GetLeafInternalEntry(leaf, j + 1)->key = GetLeafInternalEntry(leaf, j)->key;
+            SetLeafInternalKey(leaf, j + 1, GetLeafInternalKey(leaf, j));
         }
-        GetLeafInternalEntry(leaf, keyIndex)->key = key;
+        SetLeafInternalKey(leaf, keyIndex, key);
         leaf->count++;
     }
     else {
         BPlusEntry* index = PageGet(entryId);
         for (int j = index->count - 1; j >= keyIndex; j--) {
-            GetIndexInternalEntry(index, j + 1)->key = GetIndexInternalEntry(index, j)->key;
-            GetIndexInternalEntry(index, j + 2)->childId = GetIndexInternalEntry(index, j + 1)->childId;
+            SetIndexInternalKey(index, j + 1, GetIndexInternalKey(index, j));
+            SetIndexInternalChildId(index, j + 2, GetIndexInternalChildId(index, j + 1));
         }
-        GetIndexInternalEntry(index, keyIndex)->key = key;
+        SetIndexInternalKey(index, keyIndex, key);
         PageGet(childId)->parentId = entryId;
         if (!rightChild) {
             // 是右子节点，多挪一个，并 keyIndex-- 使其指向右子节点
-            GetIndexInternalEntry(index, keyIndex + 1)->childId = GetIndexInternalEntry(index, keyIndex)->childId;
+            SetIndexInternalChildId(index, keyIndex + 1, GetIndexInternalChildId(index, keyIndex));
             keyIndex--;
         }
-        GetIndexInternalEntry(index, keyIndex + 1)->childId = childId;
+        SetIndexInternalChildId(index, keyIndex + 1, childId);
         index->count++;
     }
 }
@@ -162,14 +185,14 @@ static void BPlusInsertInternalEntry(PageId entryId, int keyIndex, Key key, Page
 * 从内部节点数组中删除指定索引的内部节点
 * 返回被删除内部节点的子节点
 */
-static PageId BPlusDeleteInternalEntry(PageId entryId, int keyIndex, Key* key, bool rightChild) {
+static PageId BPlusDeleteInternalEntry(PageId entryId, int keyIndex, void** key, bool rightChild) {
     if (PageGet(entryId)->type == kLeaf) {
         BPlusEntry* leaf = PageGet(entryId);
         if (key) {
-            *key = GetLeafInternalEntry(leaf, keyIndex)->key;
+            *key = GetLeafInternalKey(leaf, keyIndex);
         }
         for (int i = keyIndex + 1; i < leaf->count; i++) {
-            GetLeafInternalEntry(leaf, i - 1)->key = GetLeafInternalEntry(leaf, i)->key;
+            SetLeafInternalKey(leaf, i - 1, GetLeafInternalKey(leaf, i));
         }
         leaf->count--;
         return NULL;
@@ -177,22 +200,22 @@ static PageId BPlusDeleteInternalEntry(PageId entryId, int keyIndex, Key* key, b
     else {
         BPlusEntry* index = PageGet(entryId);
         if (key) {
-            *key = GetIndexInternalEntry(index, keyIndex)->key;
+            *key = GetIndexInternalKey(index, keyIndex);
         }
         PageId deleteEntryId;
         if (rightChild) {
-            deleteEntryId = GetIndexInternalEntry(index, keyIndex + 1)->childId;
+            deleteEntryId = GetIndexInternalChildId(index, keyIndex + 1);
             for (int i = keyIndex + 1; i < index->count; i++) {
-                GetIndexInternalEntry(index, i - 1)->key = GetIndexInternalEntry(index, i)->key;
-                GetIndexInternalEntry(index, i)->childId = GetIndexInternalEntry(index, i + 1)->childId;
+                SetIndexInternalKey(index, i - 1, GetIndexInternalKey(index, i));
+                SetIndexInternalChildId(index, i, GetIndexInternalChildId(index, i + 1));
             }
         } else {
-            deleteEntryId = GetIndexInternalEntry(index, keyIndex)->childId;
+            deleteEntryId = GetIndexInternalChildId(index, keyIndex);
             for (int i = keyIndex + 1; i < index->count; i++) {
-                GetIndexInternalEntry(index, i - 1)->key = GetIndexInternalEntry(index, i)->key;
-                GetIndexInternalEntry(index, i - 1)->childId = GetIndexInternalEntry(index, i)->childId;
+                SetIndexInternalKey(index, i - 1, GetIndexInternalKey(index, i));
+                SetIndexInternalChildId(index, i - 1, GetIndexInternalChildId(index, i));
             }
-            GetIndexInternalEntry(index, index->count - 1)->childId = GetIndexInternalEntry(index, index->count)->childId;
+            SetIndexInternalChildId(index, index->count - 1, GetIndexInternalChildId(index, index->count));
         }
         index->count--;
         return deleteEntryId;
@@ -206,8 +229,8 @@ static PageId BPlusDeleteInternalEntry(PageId entryId, int keyIndex, Key* key, b
 * 因为分裂后选择右节点的最左内部节点的key作为上升的key
 * 这个时候无论怎么插入内部节点都不会插入到该节点最左内部节点的左侧(比它小的会被分到左侧节点，因为父索引内部节点key等于该内部节点)，该节点再分裂也就不存在最左内部节点再次上升的可能了
 */
-static bool BPlusInsertEntry(BPlusTree* tree, PageId entry, Key key, PageId rightChildId);
-static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Key key, PageId rightChildId) {
+static bool BPlusInsertEntry(BPlusTree* tree, PageId entry, void* key, PageId rightChildId);
+static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, void* key, PageId rightChildId) {
     BPlusEntry* entry = PageGet(entryId);
     BPlusEntry* rightChild = PageGet(rightChildId);
 
@@ -227,12 +250,12 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Ke
         for (; i >= 0; i--, j--) {
             if (!insert && j+1 == insertIndex) {        // 这里j+1是因为，循环的时候j并没有把未插入内部节点也算上
                 entry->count++;
-                GetLeafInternalEntry(right, i)->key = key;
+                SetLeafInternalKey(right, i, key);
                 j++;        // j不动
                 insert = true;
                 continue;
             }
-            GetLeafInternalEntry(right, i)->key = GetLeafInternalEntry(entry, j)->key;
+            SetLeafInternalKey(right, i, GetLeafInternalKey(entry, j));
         }
 
         entry->count -= rightCount;
@@ -243,7 +266,7 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Ke
         }
         
         // 从mid拿到上升内部节点
-        key = GetLeafInternalEntry(right, 0)->key;
+        key = GetLeafInternalKey(right, 0);
     }
     else {
         rightId = BPlusCreateIndexEntry(tree->m);
@@ -262,16 +285,16 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Ke
         for (; i >= 0; i--, j--) {
             if (!insert && j+1 == insertIndex) {        // 这里j+1是因为，循环的时候j并没有把未插入内部节点也算上
                 entry->count++;
-                GetIndexInternalEntry(right, i)->key = key;
-                GetIndexInternalEntry(right, i+1)->childId = rightChildId;
+                SetIndexInternalKey(right, i, key);
+                SetIndexInternalChildId(right, i+1, rightChildId);
                 rightChild->parentId = rightId;
                 j++;        // j不动
                 insert = true;
                 continue;
             }
-            GetIndexInternalEntry(right, i)->key = GetIndexInternalEntry(entry, j)->key;
-            GetIndexInternalEntry(right, i+1)->childId = GetIndexInternalEntry(entry, j+1)->childId;
-            PageGet(GetIndexInternalEntry(right, i + 1)->childId)->parentId = rightId;
+            SetIndexInternalKey(right, i, GetIndexInternalKey(entry, j));
+            SetIndexInternalChildId(right, i+1, GetIndexInternalChildId(entry, j+1));
+            PageGet(GetIndexInternalChildId(right, i + 1))->parentId = rightId;
         }
         entry->count -= rightCount;
 
@@ -282,11 +305,11 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Ke
 
         // 最后从entry->indexData末尾拿到上升内部节点，将其摘除
         entry->count--;
-        key = GetIndexInternalEntry(entry, entry->count)->key;
+        key = GetIndexInternalKey(entry, entry->count);
 
         // entry最右的链接交给newEntry
-        GetIndexInternalEntry(right, 0)->childId = GetIndexInternalEntry(entry, entry->count + 1)->childId;
-        PageGet(GetIndexInternalEntry(right, 0)->childId)->parentId = rightId;
+        SetIndexInternalChildId(right, 0, GetIndexInternalChildId(entry, entry->count + 1));
+        PageGet(GetIndexInternalChildId(right, 0))->parentId = rightId;
     }
     right->count = rightCount;
 
@@ -295,7 +318,7 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Ke
         PageId newIndexId = BPlusCreateIndexEntry(tree->m);
         entry->parentId = newIndexId;
         BPlusEntry* newIndex = PageGet(newIndexId);
-        GetIndexInternalEntry(newIndex, 0)->childId = entryId;
+        SetIndexInternalChildId(newIndex, 0, entryId);
         BPlusInsertInternalEntry(newIndexId, 0, key, rightId, true);
         tree->rootId = newIndexId;
     }
@@ -307,7 +330,7 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, Ke
 /*
 * 插入节点
 */
-static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, Key key, PageId rightChildId) {
+static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, void* key, PageId rightChildId) {
     BPlusEntry* entry = PageGet(entryId);
     if (entry->count == 0) {
         BPlusInsertInternalEntry(entryId, 0, key, rightChildId, true);
@@ -316,12 +339,12 @@ static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, Key key, PageId ri
     int insertIndex;
     int res;
     if (entry->type == kLeaf) {
-        insertIndex = BinarySearchByField_Range_Custom(entry->leafInternalEntry, BPlusLeafInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
-        res = MemoryCmpR(&GetLeafInternalEntry(entry, insertIndex)->key, &key, sizeof(key));
+        insertIndex = BinarySearch_KeyAtCallback_Range(entry, GetLeafInternalKey, 0, entry->count - 1, key, tree->keySize, tree->cmpFunc);
+        res = tree->cmpFunc(GetLeafInternalKey(entry, insertIndex), key, tree->keySize);
     }
     else {
-        insertIndex = BinarySearchByField_Range_Custom(entry->indexInternalEntry, BPlusIndexInternalEntry, key, 0, entry->count - 1, &key, MemoryCmpR);
-        res = MemoryCmpR(&GetIndexInternalEntry(entry, insertIndex)->key, &key, sizeof(key));
+        insertIndex = BinarySearch_KeyAtCallback_Range(entry, GetIndexInternalKey, 0, entry->count - 1, key, tree->keySize, tree->cmpFunc);
+        res = tree->cmpFunc(GetIndexInternalKey(entry, insertIndex), key, tree->keySize);
     }
     //if (res == 0) {        // 允许插入相同的节点
     //    return false;
@@ -356,19 +379,19 @@ static void BPlusMergeEntry(BPlusTree* tree, PageId leftId, PageId rightId, int 
         LeafListEntryRemoveTail(leftId);
         // 是叶子节点，将right并入left中，并删除right的父索引内部节点
         for (int i = 0; i < right->count; i++) {
-            GetLeafInternalEntry(left, left->count++)->key = GetLeafInternalEntry(right, i)->key;
+            SetLeafInternalKey(left, left->count++, GetLeafInternalKey(right, i));
         }
     } else {
         // 是索引节点，将即将被删除的父索引内部节点(子节点丢弃，因为父索引子节点就指向左和右)和right都并入到left中，删除right的父索引内部节点
-        GetIndexInternalEntry(left, left->count++)->key = GetIndexInternalEntry(PageGet(right->parentId), commonParentIndex)->key;
+        SetIndexInternalKey(left, left->count++, GetIndexInternalKey(PageGet(right->parentId), commonParentIndex));
         // 右节点会多出一个头部子节点，因为父节点不需要带子节点下降，所以可以直接并到左节点尾部
         
-        GetIndexInternalEntry(left, left->count)->childId = GetIndexInternalEntry(right, 0)->childId;
-        PageGet(GetIndexInternalEntry(right, 0)->childId)->parentId = leftId;
+        SetIndexInternalChildId(left, left->count, GetIndexInternalChildId(right, 0));
+        PageGet(GetIndexInternalChildId(right, 0))->parentId = leftId;
         for (int i = 0; i < right->count; i++) {
-            GetIndexInternalEntry(left, left->count++)->key = GetIndexInternalEntry(right, i)->key;
-            GetIndexInternalEntry(left, left->count)->childId = GetIndexInternalEntry(right, i+1)->childId;
-            PageGet(GetIndexInternalEntry(right, i+1)->childId)->parentId = leftId;
+            SetIndexInternalKey(left, left->count++, GetIndexInternalKey(right, i));
+            SetIndexInternalChildId(left, left->count, GetIndexInternalChildId(right, i+1));
+            PageGet(GetIndexInternalChildId(right, i+1))->parentId = leftId;
         }
     }
     // 合并就是从上面拿内部节点，已经拿了，要把删除也处理一下
@@ -391,7 +414,7 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
     if (!leftParentIndexPtr) {
         // 没有父节点就已经到根节点了，是叶子节点就跳过，是索引节点则判断是否没有任何子节点了，是则变更余下最后一个子节点为根节点，否则直接结束
         if (entry->type == kIndex && entry->count == 0) {
-            PageId childId = GetIndexInternalEntry(entry, 0)->childId;
+            PageId childId = GetIndexInternalChildId(entry, 0);
             BPlusEntry* child = PageGet(childId);
             child->parentId = NULL;
             tree->rootId = childId;
@@ -410,19 +433,19 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
     BPlusEntry* sibling = PageGet(siblingId);
     if (sibling->count > (tree->m-1) / 2) {
         // 向兄弟借节点
-        Key key;
+        void* newKey;
         if (entry->type == kLeaf) {
             // 叶子节点处理较简单，可以直接移动
             if (leftSibling) {
                 // 从左兄弟节点的末尾的内部节点插入到当前节点的头部并更新父内部节点key为借来的key
-                PageId childId = BPlusDeleteInternalEntry(siblingId, sibling->count - 1, &key, true);
-                BPlusInsertInternalEntry(entryId, 0, key, childId, true);
+                PageId childId = BPlusDeleteInternalEntry(siblingId, sibling->count - 1, &newKey, true);
+                BPlusInsertInternalEntry(entryId, 0, newKey, childId, true);
             }
             else {
                 // 从右兄弟节点的头部的内部节点插入到当前节点的尾部并更新父内部节点key为右兄弟的新首内部节点
-                PageId childId = BPlusDeleteInternalEntry(siblingId, 0, &key, true);
-                BPlusInsertInternalEntry(entryId, entry->count, key, childId, true);
-                key = GetIndexInternalEntry(sibling, 0)->key;         // 右节点的头内部节点key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首内部节点是最好的
+                PageId childId = BPlusDeleteInternalEntry(siblingId, 0, &newKey, true);
+                BPlusInsertInternalEntry(entryId, entry->count, newKey, childId, true);
+                newKey = GetLeafInternalKey(sibling, 0);         // 右节点的头内部节点key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首内部节点是最好的
                 ++leftParentIndex;        // 当前节点是左节点，要找与兄弟节点的共同父节点来更新，所以++
             }
         }
@@ -430,16 +453,16 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
             // 索引节点处理较复杂，需要下降父节点中当前节点和兄弟节点的共同父内部节点，上升兄弟的内部节点到共同父内部节点(即交换)
             if (leftSibling) {
                 // 左兄弟节点的末尾内部节点上升到父节点的头部，父节点的对应内部节点下降到当前节点的头部，上升内部节点其右子节点挂在下降的父节点内部节点的左侧
-                PageId rightChildId = BPlusDeleteInternalEntry(siblingId, sibling->count - 1, &key, true);
-                BPlusInsertInternalEntry(entryId, 0, GetIndexInternalEntry(PageGet(entry->parentId), leftParentIndex)->key, rightChildId, false);
+                PageId rightChildId = BPlusDeleteInternalEntry(siblingId, sibling->count - 1, &newKey, true);
+                BPlusInsertInternalEntry(entryId, 0, GetIndexInternalKey(PageGet(entry->parentId), leftParentIndex), rightChildId, false);
             } else {
                 // 右兄弟节点的头内部节点上升到父节点的头部，父节点的对应内部节点下降到当前节点的尾部，上升内部节点其左子节点挂在下降的父节点内部节点的右侧
-                PageId leftChildId = BPlusDeleteInternalEntry(siblingId, 0, &key, false);
+                PageId leftChildId = BPlusDeleteInternalEntry(siblingId, 0, &newKey, false);
                 leftParentIndex++;        // 当前节点是左节点，要找与兄弟节点的共同父节点来更新，所以++
-                BPlusInsertInternalEntry(entryId, entry->count, GetIndexInternalEntry(PageGet(entry->parentId), leftParentIndex)->key, leftChildId, true);
+                BPlusInsertInternalEntry(entryId, entry->count, GetIndexInternalKey(PageGet(entry->parentId), leftParentIndex), leftChildId, true);
             }
         }
-        GetIndexInternalEntry(PageGet(entry->parentId), leftParentIndex)->key = key;
+        SetIndexInternalKey(PageGet(entry->parentId), leftParentIndex, newKey);
         return true;
     }
 
@@ -456,24 +479,24 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
 * 根据key查找到指定的叶子节点
 * stack返回每一层节点的父节点内部节点(左父)索引
 */
-static PageId BPlusTreeFindLeaf(BPlusTree* tree, int key, Array* stack) {
+static PageId BPlusTreeFindLeaf(BPlusTree* tree, void* key, Array* stack) {
     PageId id = tree->rootId;
     BPlusEntry* cur = PageGet(id);
     while (cur && cur->type == kIndex) {
         //       4        8         12
         //    /       |        |       \
         // 3  4      6  7      10        15
-        int i = BinarySearchByField_Range_Custom(cur->indexInternalEntry, BPlusIndexInternalEntry, key, 0, cur->count - 1, &key, MemoryCmpR);
-        int res = MemoryCmpR(&GetIndexInternalEntry(cur, i)->key, &key, sizeof(key));
+        int i = BinarySearch_KeyAtCallback_Range(cur, GetIndexInternalKey, 0, cur->count - 1, key, tree->keySize, tree->cmpFunc);
+        int res = tree->cmpFunc(GetIndexInternalKey(cur, i), key, sizeof(key));
 
         if (res > 0) {
             // 查找key较小，向左找，cur是i的左子节点，i是cur的右父索引
-            id = GetIndexInternalEntry(cur, i)->childId;
+            id = GetIndexInternalChildId(cur, i);
             cur = PageGet(id);
         } else {
             // 查找key较大，向右找，cur是i的右子节点，i是cur的左父索引
             // 相等的key也向右边找，因为分裂的索引是右叶子的第一个节点上升的
-            id = GetIndexInternalEntry(cur, ++i)->childId;
+            id = GetIndexInternalChildId(cur, ++i);
             cur = PageGet(id);
         }
         if (stack) {
@@ -486,7 +509,7 @@ static PageId BPlusTreeFindLeaf(BPlusTree* tree, int key, Array* stack) {
 
 
 
-void BPlusTreeInit(BPlusTree* tree, int m) {
+void BPlusTreeInit(BPlusTree* tree, int m, int keySize, CmpFunc cmpFunc) {
     if (m < 3) {
         m = 3;      // 最少3阶，否则无法正常分裂
     }
@@ -494,27 +517,32 @@ void BPlusTreeInit(BPlusTree* tree, int m) {
     tree->leafListFirst = tree->rootId;
     LeafListEntryInit(tree->leafListFirst);
     tree->m = m;
+    tree->keySize = keySize;
+    if (cmpFunc == NULL) {
+        cmpFunc = MemoryCmpR;
+    }
+    tree->cmpFunc = cmpFunc;
 }
 
-bool BPlusTreeFind(BPlusTree* tree, Key key) {
+bool BPlusTreeFind(BPlusTree* tree, void* key) {
     BPlusEntry* leaf = PageGet(BPlusTreeFindLeaf(tree, key, NULL));
-    int index = BinarySearchByField_Custom(leaf->leafInternalEntry, BPlusLeafInternalEntry, key, 0, leaf->count - 1, &key, MemoryCmpR);
+    int index = BinarySearch_KeyAtCallback(leaf, GetLeafInternalKey, 0, leaf->count - 1, key, tree->keySize, tree->cmpFunc);
     if (index == -1) {
         return false;
     }
     return true;
 }
 
-bool BPlusTreeInsert(BPlusTree* tree, Key key) {
+bool BPlusTreeInsert(BPlusTree* tree, void* key) {
     return BPlusInsertEntry(tree, BPlusTreeFindLeaf(tree, key, NULL), key, NULL);
 }
 
-bool BPlusTreeDelete(BPlusTree* tree, Key key) {
+bool BPlusTreeDelete(BPlusTree* tree, void* key) {
     Array stack;
     ArrayInit(&stack, 16, sizeof(int));
     PageId leafId = BPlusTreeFindLeaf(tree, key, &stack);
     BPlusEntry* leaf = PageGet(leafId);
-    int deleteIndex = BinarySearchByField_Custom(leaf->leafInternalEntry, BPlusLeafInternalEntry, key, 0, leaf->count - 1, &key, MemoryCmpR);
+    int deleteIndex = BinarySearch_KeyAtCallback(leaf, GetLeafInternalKey, 0, leaf->count - 1, key, tree->keySize, tree->cmpFunc);
     if (deleteIndex == -1) {
         ArrayRelease(&stack);
         return false;

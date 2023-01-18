@@ -70,12 +70,14 @@ typedef struct _BPlusTree {
     PageId rootId;
     PageId leafListFirst;
     int m;
+    size_t keySize;
+    CmpFunc cmpFunc;
 } BPlusTree;
 
-void BPlusTreeInit(BPlusTree* tree, int m);
-bool BPlusTreeInsert(BPlusTree* tree, Key key);
-bool BPlusTreeFind(BPlusTree* tree, Key key);
-bool BPlusTreeDelete(BPlusTree* tree, Key key);
+void BPlusTreeInit(BPlusTree* tree, int m, int keySize, CmpFunc cmpFunc);
+bool BPlusTreeInsert(BPlusTree* tree, void* key);
+bool BPlusTreeFind(BPlusTree* tree, void* key);
+bool BPlusTreeDelete(BPlusTree* tree, void* key);
 
 #ifdef __cplusplus
 }

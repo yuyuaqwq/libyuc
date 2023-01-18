@@ -41,13 +41,14 @@ int BinarySearch_Range(int* array, int first, int last, int key) {
 }
 
 
-int BinarySearch_Custom(void* objArr, int objSize, int keyFieldOffset, int keyFieldSize, int first, int last, void* key, CmpFunc cmpFunc) {
+int BinarySearch_Object(void* objArr, int objSize, int first, int last, void* key, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc) {
     int mid;
     while (first <= last) {
         mid = first + (last - first) / 2;
         void* curObj = ObjArrAt(objArr, mid, objSize);
         void* curKey = GetFieldByFieldOffset(curObj, keyFieldOffset, void);
-        int res = cmpFunc(curKey, key, keyFieldSize);
+        int res;
+        res = cmpFunc(curKey, key, keyFieldSize);
         if (res > 0) {
             last = mid - 1;
         }
@@ -61,13 +62,47 @@ int BinarySearch_Custom(void* objArr, int objSize, int keyFieldOffset, int keyFi
     return -1;
 }
 
-int BinarySearch_Range_Custom(void* objArr, int objSize, int keyFieldOffset, int keyFieldSize, int first, int last, void* key, CmpFunc cmpFunc) {
+int BinarySearch_Object_Range(void* objArr, int objSize, int first, int last, void* key, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc) {
     int mid = 0;
     while (first < last) {
         mid = first + (last - first) / 2;
         void* curObj = ObjArrAt(objArr, mid, objSize);
         void* curKey = GetFieldByFieldOffset(curObj, keyFieldOffset, void);
-        if (cmpFunc(curKey, key, keyFieldSize) < 0) first = mid + 1;
+        int res;
+        res = cmpFunc(curKey, key, keyFieldSize);
+        if (res < 0) first = mid + 1;
+        else last = mid;
+    }
+    return first;
+}
+
+
+int BinarySearch_KeyAtCallback(void* objArr, ObjArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc) {
+    int mid;
+    while (first <= last) {
+        mid = first + (last - first) / 2;
+        void* curKey = keyAt(objArr, mid);
+        int res = cmpFunc(curKey, key, keySize);
+        if (res > 0) {
+            last = mid - 1;
+        }
+        else if (res < 0) {
+            first = mid + 1;
+        }
+        else {
+            return mid;
+        }
+    }
+    return -1;
+}
+
+int BinarySearch_KeyAtCallback_Range(void* objArr, ObjArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc) {
+    int mid = 0;
+    while (first < last) {
+        mid = first + (last - first) / 2;
+        void* curKey = keyAt(objArr, mid);
+        int res = cmpFunc(curKey, key, keySize);
+        if (res < 0) first = mid + 1;
         else last = mid;
     }
     return first;
