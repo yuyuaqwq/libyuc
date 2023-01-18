@@ -222,8 +222,7 @@ bool RBInsertEntry(RBTree* tree, RBEntry* entry) {
 RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry) {
     RBEntry* backtrack = entry;        // 通常情况下是从被删除节点的父节点开始回溯
 
-    // 出于性能考虑，RB找节点删除的逻辑还是单独写一份，差不了太多，但是RB回溯时需要保证entry还在树上(找兄弟节点)，回溯完才删除
-    // 第二点就是颜色被嵌入到了父节点当中(不过BS也可以在每次访问的时候处理一下)
+    // RB回溯时需要保证entry还在树上(找兄弟节点)，回溯完才删除
     RBEntry* newEntry;
     if (entry->left == NULL && entry->right == NULL) {
         // 没有子节点，直接从父节点中摘除此节点

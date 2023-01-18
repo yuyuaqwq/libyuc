@@ -15,12 +15,14 @@ extern "C" {
 #endif
 
 
+typedef struct _ListEntry ListHead;
+
 typedef struct _ListEntry {
     struct _ListEntry* prev;
     struct _ListEntry* next;
 } ListEntry;
 
-typedef ListEntry ListHead;
+
 
 void ListHeadInit(ListHead* head);
 void ListEntryInit(ListEntry* entry);

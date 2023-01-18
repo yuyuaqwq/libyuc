@@ -25,7 +25,7 @@ static SkipListEntry* SkipListCreateEntry(int level, void* obj) {
     return entry;
 }
 
-static forceinline SkipListEntry* SkipListFind_(SkipList* list, void* key, int* cmpRes, SkipListEntry** update) {
+static forceinline SkipListEntry* SkipListFindEntry(SkipList* list, void* key, int* cmpRes, SkipListEntry** update) {
     SkipListEntry* cur = list->head;
     // 从最顶层开始遍历，每趟循环都相当于下降一层索引
     for (int i = list->level - 1; i >= 0; i--) {
@@ -84,7 +84,7 @@ void SkipListRelease(SkipList* list, bool deleteObj) {
 
 void* SkipListFind(SkipList* list, void* key) {
     int cmpRes = 0;
-    SkipListEntry* cur = SkipListFind_(list, key, &cmpRes, NULL);
+    SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, NULL);
 
     cur = cur->upper[0].next;        // 刚出循环时cur还未更新
     // 查找出来，要么是所有索引层都找不到，要么是cur的key>=查找的key
@@ -101,7 +101,7 @@ bool SkipListInsert(SkipList* list, void* obj) {
     void* key = GetFieldByFieldOffset(obj, list->keyFieldOffset, void);
 
     int cmpRes = 0;
-    SkipListEntry* cur = SkipListFind_(list, key, &cmpRes, update);
+    SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, update);
 
     // cur此时的next要么指向NULL，要么>=key
     if (cur->upper[0].next && cmpRes == 0) {
@@ -134,7 +134,7 @@ void* SkipListDelete(SkipList* list, void* key) {
     SkipListEntry* update[SKIPLIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会删除索引
 
     int cmpRes = 0;
-    SkipListEntry* cur = SkipListFind_(list, key, &cmpRes, update);
+    SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, update);
     cur = cur->upper[0].next;
 
     if (!cur || cmpRes) {

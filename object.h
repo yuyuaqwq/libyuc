@@ -18,6 +18,9 @@
 extern "C" {
 #endif
 
+
+typedef intptr_t offset_t;
+
 #define MemoryAlloc(size) malloc((size))
 #define MemoryFree(ptr) free((ptr))
 #define MemoryCopy(dst, src, size) memcpy((void*)(dst), (void*)(src), (size))
