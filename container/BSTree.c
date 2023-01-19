@@ -64,6 +64,14 @@ BSEntry* BSFindEntryByKey(BSTree* tree, void* key) {
     while (cur) {
         void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
         int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+
+        //if (tree->keyFieldSize == sizeof(int32_t)) {
+        //    res = *GetFieldByFieldOffset(obj, tree->keyFieldOffset, int32_t) > *(int32_t*)key;
+        //    if (!res) {
+        //        res = *GetFieldByFieldOffset(obj, tree->keyFieldOffset, int32_t) == *(int32_t*)key ? 0 : -1;
+        //    }
+        //}
+
         if (res < 0) {
             cur = cur->right;
         }

@@ -24,7 +24,7 @@ typedef struct _AVLEntry {
         };
         BSEntry bs;
     };
-    int height;        // 这里如果换成平衡因子也可以嵌入到指针中，但是高度更易理解
+    int height;        // 这里如果换成平衡因子(2位即可)也可以嵌入到指针(低2位可以不用)中，但是高度更易理解
 } AVLEntry;
 
 typedef BSTree AVLTree;

@@ -22,7 +22,7 @@ typedef enum _RBColor RBColor;
 typedef struct _RBEntry {
     union {
         struct {
-            struct _RBEntry* parent_color;
+            struct _RBEntry* parent_color;      // 颜色嵌入到父节点指针的低1位
             struct _RBEntry* left;
             struct _RBEntry* right;
         };

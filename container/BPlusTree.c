@@ -28,37 +28,32 @@ struct _BPlusEntry* PageGet(PageId id) {
     return (BPlusEntry*)id;
 }
 
-#endif // CUTILS_CONTAINER_BPLUS_TREE_DISK
 
-
-
-/*
-* 定位叶子节点和索引节点内部字段的相关接口
-*/
-static inline void* GetLeafInternalKey(BPlusEntry* leaf, int i) {
+inline void* GetLeafInternalKey(BPlusEntry* leaf, int i) {
     return &leaf->leafInternalEntry[i].key;
 }
 
-static inline void SetLeafInternalKey(BPlusEntry* leaf, int i, void* key) {
+inline void SetLeafInternalKey(BPlusEntry* leaf, int i, void* key) {
     leaf->leafInternalEntry[i].key = *(Key*)key;
 }
 
-static inline PageId GetIndexInternalChildId(BPlusEntry* index, int i) {
+inline PageId GetIndexInternalChildId(BPlusEntry* index, int i) {
     return index->indexInternalEntry[i].childId;
 }
 
-static inline void SetIndexInternalChildId(BPlusEntry* index, int i, PageId id) {
+inline void SetIndexInternalChildId(BPlusEntry* index, int i, PageId id) {
     index->indexInternalEntry[i].childId = id;
 }
 
-static inline void* GetIndexInternalKey(BPlusEntry* index, int i) {
+inline void* GetIndexInternalKey(BPlusEntry* index, int i) {
     return &index->indexInternalEntry[i].key;
 }
 
-static inline void SetIndexInternalKey(BPlusEntry* index, int i, void* key) {
+inline void SetIndexInternalKey(BPlusEntry* index, int i, void* key) {
     index->indexInternalEntry[i].key = *(Key*)key;
 }
 
+#endif // CUTILS_CONTAINER_BPLUS_TREE_DISK
 
 
 static void LeafListEntryInit(PageId entryId) {
@@ -222,15 +217,18 @@ static PageId BPlusDeleteInternalEntry(PageId entryId, int keyIndex, void** key,
     }
 }
 
+
+
 /*
 * 分裂节点
+* 返回分裂后右侧新节点PageId，key会返回上升的key
+* 
 * 同一个叶节点多次分裂会导致重复的key上升吗？
 * 如果叶节点不存在相同的key，那么是不会的
 * 因为分裂后选择右节点的最左内部节点的key作为上升的key
 * 这个时候无论怎么插入内部节点都不会插入到该节点最左内部节点的左侧(比它小的会被分到左侧节点，因为父索引内部节点key等于该内部节点)，该节点再分裂也就不存在最左内部节点再次上升的可能了
 */
-static bool BPlusInsertEntry(BPlusTree* tree, PageId entry, void* key, PageId rightChildId);
-static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, void* key, PageId rightChildId) {
+static PageId BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, void** key_midKey, PageId rightChildId) {
     BPlusEntry* entry = PageGet(entryId);
     BPlusEntry* rightChild = PageGet(rightChildId);
 
@@ -250,7 +248,7 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, vo
         for (; i >= 0; i--, j--) {
             if (!insert && j+1 == insertIndex) {        // 这里j+1是因为，循环的时候j并没有把未插入内部节点也算上
                 entry->count++;
-                SetLeafInternalKey(right, i, key);
+                SetLeafInternalKey(right, i, *key_midKey);
                 j++;        // j不动
                 insert = true;
                 continue;
@@ -262,11 +260,11 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, vo
 
         if (!insert) {
             // 新内部节点还没有插入，将其插入
-            BPlusInsertInternalEntry(entryId, insertIndex, key, rightChildId, true);
+            BPlusInsertInternalEntry(entryId, insertIndex, *key_midKey, rightChildId, true);
         }
         
         // 从mid拿到上升内部节点
-        key = GetLeafInternalKey(right, 0);
+        *key_midKey = GetLeafInternalKey(right, 0);
     }
     else {
         rightId = BPlusCreateIndexEntry(tree->m);
@@ -285,7 +283,7 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, vo
         for (; i >= 0; i--, j--) {
             if (!insert && j+1 == insertIndex) {        // 这里j+1是因为，循环的时候j并没有把未插入内部节点也算上
                 entry->count++;
-                SetIndexInternalKey(right, i, key);
+                SetIndexInternalKey(right, i, *key_midKey);
                 SetIndexInternalChildId(right, i+1, rightChildId);
                 rightChild->parentId = rightId;
                 j++;        // j不动
@@ -300,32 +298,54 @@ static void BPlusSplitEntry(BPlusTree* tree, PageId entryId, int insertIndex, vo
 
         if (!insert) {
             // 新内部节点还没有插入，将其插入
-            BPlusInsertInternalEntry(entryId, insertIndex, key, rightChildId, true);
+            BPlusInsertInternalEntry(entryId, insertIndex, *key_midKey, rightChildId, true);
         }
 
         // 最后从entry->indexData末尾拿到上升内部节点，将其摘除
         entry->count--;
-        key = GetIndexInternalKey(entry, entry->count);
+        *key_midKey = GetIndexInternalKey(entry, entry->count);
 
         // entry最右的链接交给newEntry
         SetIndexInternalChildId(right, 0, GetIndexInternalChildId(entry, entry->count + 1));
         PageGet(GetIndexInternalChildId(right, 0))->parentId = rightId;
     }
     right->count = rightCount;
+    return rightId;
+}
 
-    // 分裂出的内部节点向上传递
-    if (entry->parentId == NULL) {
-        PageId newIndexId = BPlusCreateIndexEntry(tree->m);
-        entry->parentId = newIndexId;
-        BPlusEntry* newIndex = PageGet(newIndexId);
-        SetIndexInternalChildId(newIndex, 0, entryId);
-        BPlusInsertInternalEntry(newIndexId, 0, key, rightId, true);
-        tree->rootId = newIndexId;
+/*
+* 合并节点
+*   2
+* 1   3
+* 父、左、右的关系如下
+*/
+static void BPlusMergeEntry(BPlusTree* tree, PageId leftId, PageId rightId, int commonParentIndex, Array* stack) {
+    BPlusEntry* left = PageGet(leftId);
+    BPlusEntry* right = PageGet(rightId);
+
+    if (left->type == kLeaf) {
+        LeafListEntryRemoveTail(leftId);
+        // 是叶子节点，将right并入left中，并删除right的父索引内部节点
+        for (int i = 0; i < right->count; i++) {
+            SetLeafInternalKey(left, left->count++, GetLeafInternalKey(right, i));
+        }
     }
     else {
-        BPlusInsertEntry(tree, entry->parentId, key, rightId);
+        // 是索引节点，将即将被删除的父索引内部节点(子节点丢弃，因为父索引子节点就指向左和右)和right都并入到left中，删除right的父索引内部节点
+        SetIndexInternalKey(left, left->count++, GetIndexInternalKey(PageGet(right->parentId), commonParentIndex));
+        // 右节点搬迁后会多出一个头部子节点，因为父节点不需要带子节点下降，所以可以直接插入到左节点尾部
+        SetIndexInternalChildId(left, left->count, GetIndexInternalChildId(right, 0));
+        PageGet(GetIndexInternalChildId(right, 0))->parentId = leftId;
+        for (int i = 0; i < right->count; i++) {
+            SetIndexInternalKey(left, left->count++, GetIndexInternalKey(right, i));
+            SetIndexInternalChildId(left, left->count, GetIndexInternalChildId(right, i + 1));
+            PageGet(GetIndexInternalChildId(right, i + 1))->parentId = leftId;
+        }
     }
+    PageFree(rightId);
+    // 合并部分完成，删除部分交给调用者
 }
+
 
 /*
 * 插入节点
@@ -359,44 +379,26 @@ static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, void* key, PageId 
         return true;
     }
 
-    // 没有多余位置，需要分裂向上合并
-    BPlusSplitEntry(tree, entryId, insertIndex, key, rightChildId);
-    return true;
-}
 
-/*
-* 合并节点
-*   2
-* 1   3
-* 父、左、右的关系如下
-*/
-static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, Array* stack);
-static void BPlusMergeEntry(BPlusTree* tree, PageId leftId, PageId rightId, int commonParentIndex, Array* stack) {
-    BPlusEntry* left = PageGet(leftId);
-    BPlusEntry* right = PageGet(rightId);
 
-    if (left->type == kLeaf) {
-        LeafListEntryRemoveTail(leftId);
-        // 是叶子节点，将right并入left中，并删除right的父索引内部节点
-        for (int i = 0; i < right->count; i++) {
-            SetLeafInternalKey(left, left->count++, GetLeafInternalKey(right, i));
-        }
-    } else {
-        // 是索引节点，将即将被删除的父索引内部节点(子节点丢弃，因为父索引子节点就指向左和右)和right都并入到left中，删除right的父索引内部节点
-        SetIndexInternalKey(left, left->count++, GetIndexInternalKey(PageGet(right->parentId), commonParentIndex));
-        // 右节点会多出一个头部子节点，因为父节点不需要带子节点下降，所以可以直接并到左节点尾部
-        
-        SetIndexInternalChildId(left, left->count, GetIndexInternalChildId(right, 0));
-        PageGet(GetIndexInternalChildId(right, 0))->parentId = leftId;
-        for (int i = 0; i < right->count; i++) {
-            SetIndexInternalKey(left, left->count++, GetIndexInternalKey(right, i));
-            SetIndexInternalChildId(left, left->count, GetIndexInternalChildId(right, i+1));
-            PageGet(GetIndexInternalChildId(right, i+1))->parentId = leftId;
-        }
+    // 没有多余位置，需要分裂向上插入
+    // BPlusSplitEntry(tree, entryId, insertIndex, key, rightChildId);
+
+    PageId rightId = BPlusSplitEntry(tree, entryId, insertIndex, &key, rightChildId);
+    // 分裂出的内部节点向上传递
+    if (entry->parentId == NULL) {
+        PageId newIndexId = BPlusCreateIndexEntry(tree->m);
+        entry->parentId = newIndexId;
+        BPlusEntry* newIndex = PageGet(newIndexId);
+        SetIndexInternalChildId(newIndex, 0, entryId);
+        BPlusInsertInternalEntry(newIndexId, 0, key, rightId, true);
+        tree->rootId = newIndexId;
     }
-    // 合并就是从上面拿内部节点，已经拿了，要把删除也处理一下
-    BPlusDeleteEntry(tree, left->parentId, commonParentIndex, stack);
-    PageFree(rightId);
+    else {
+        BPlusInsertEntry(tree, entry->parentId, key, rightId);
+    }
+
+    return true;
 }
 
 /*
@@ -469,9 +471,13 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
     // 兄弟节点不够借，需要合并(合并了也不会超过m-1，因为一边不足m-1的一半，一边是m-1的一半，是索引节点合并也足够下降一个父内部节点)
     if (leftSibling) {
         BPlusMergeEntry(tree, siblingId, entryId, leftParentIndex, stack);
+        // 合并就是从父亲中拿内部节点，已经拿了，要把删除也处理一下
+        BPlusDeleteEntry(tree, sibling->parentId, leftParentIndex, stack);
     } else {
         BPlusMergeEntry(tree, entryId, siblingId, leftParentIndex + 1, stack);        // 要求共同父索引
+        BPlusDeleteEntry(tree, entry->parentId, leftParentIndex + 1, stack);
     }
+
     return true;
 }
 

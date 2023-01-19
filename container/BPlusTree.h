@@ -33,6 +33,8 @@ void PageFree(PageId id);
 struct _BPlusEntry* PageGet(PageId id);
 
 
+
+
 // 阶(m)，4阶B树可以有4个子节点，3个内部节点，m = t * 2
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
 
@@ -73,6 +75,20 @@ typedef struct _BPlusTree {
     size_t keySize;
     CmpFunc cmpFunc;
 } BPlusTree;
+
+
+
+/*
+* 定位叶子节点和索引节点内部字段的相关接口
+*/
+inline void* GetLeafInternalKey(BPlusEntry* leaf, int i);
+inline void SetLeafInternalKey(BPlusEntry* leaf, int i, void* key);
+inline PageId GetIndexInternalChildId(BPlusEntry* index, int i);
+inline void SetIndexInternalChildId(BPlusEntry* index, int i, PageId id);
+inline void* GetIndexInternalKey(BPlusEntry* index, int i);
+inline void SetIndexInternalKey(BPlusEntry* index, int i, void* key);
+
+
 
 void BPlusTreeInit(BPlusTree* tree, int m, int keySize, CmpFunc cmpFunc);
 bool BPlusTreeInsert(BPlusTree* tree, void* key);

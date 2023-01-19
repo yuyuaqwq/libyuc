@@ -18,7 +18,6 @@
 extern "C" {
 #endif
 
-
 typedef intptr_t offset_t;
 
 #define MemoryAlloc(size) malloc((size))
@@ -35,18 +34,18 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define CreateMultipleObjByCount(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
 #define CreateMultipleObjByByteCount(objByteCount, count) (MemoryAlloc((objByteCount) * (count)))
 #define DeleteObject_(obj) (MemoryFree(obj))
-
 #define ObjArrAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
+
 #define GetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
 #define GetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
 #define GetFieldByFieldOffset(obj, fieldOffset, objName) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
 #define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
-// 自定义比较函数对int等可以直接比较的类型来说会有较大的开销，可以考虑优化成没有自定义比较函数就把指针当成值来比较
+// 自定义比较函数和自定义哈希函数存在一定的额外开销
+// 另一种是通过宏实现通用容器，但是不好调试
 typedef int (*CmpFunc)(const void* buf1_, const void* buf2_, size_t size);
 typedef uint32_t(*HashFunc)(const void* buf1_, size_t size);
-#define KEY_STRING_SIZE (-1)
 
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline
