@@ -22,7 +22,6 @@ int BinarySearch_Object(void* objArr, int keyFieldSize, int low, int high, void*
 int BinarySearch_Object_Range(void* objArr, int objSize, int low, int high, void* key, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc);
 #define BinarySearchByField_Object_Range(objArr, objName, keyFieldName, low, high, key, cmpFunc) BinarySearch_Object_Range((objArr), sizeof(objName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), (low), (high), (key), (cmpFunc));
 
-typedef void* ObjArrAtFunc(void* objArr, int i);
 int BinarySearch_KeyAtCallback(void* objArr, ObjArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc);
 int BinarySearch_KeyAtCallback_Range(void* objArr, ObjArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc);
 

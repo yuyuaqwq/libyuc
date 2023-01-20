@@ -55,10 +55,6 @@ static void ShiftDown(Heap* heap, uint32_t now) {
     }
 }
 
-void Heapify() {
-
-}
-
 void HeapInit(Heap* heap, uint32_t high, uint32_t keyFieldOffset, uint32_t keyFieldSize, CmpFunc cmpFunc) {
     size_t capacity = 1;
     for (uint32_t i = 0; i < high; i++) {

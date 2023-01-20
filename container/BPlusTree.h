@@ -9,7 +9,7 @@
 #define CUTILS_CONTAINER_BPLUS_TREE_H_
 
 #include "CUtils/object.h"
-#include "CUtils/algorithm/search.h"
+#include "CUtils/algorithm/BinarySearch.h"
 
 #ifdef __cplusplus
 extern "C" {

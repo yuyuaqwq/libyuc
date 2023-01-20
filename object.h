@@ -31,8 +31,8 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
 #define CreateObject(objName) ((objName*)MemoryAlloc(sizeof(objName)))
-#define CreateMultipleObjByCount(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
-#define CreateMultipleObjByByteCount(objByteCount, count) (MemoryAlloc((objByteCount) * (count)))
+#define CreateObjArr(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
+#define CreateObjArrByObjSize(objSize, count) (MemoryAlloc((objSize) * (count)))
 #define DeleteObject_(obj) (MemoryFree(obj))
 #define ObjArrAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
 
@@ -42,10 +42,11 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
-// 自定义比较函数和自定义哈希函数存在一定的额外开销
+// 自定义比较/哈希/访问器存在一定的额外开销
 // 另一种是通过宏实现通用容器，但是不好调试
 typedef int (*CmpFunc)(const void* buf1_, const void* buf2_, size_t size);
 typedef uint32_t(*HashFunc)(const void* buf1_, size_t size);
+typedef void* (*ObjArrAtFunc)(void* objArr, int i);
 
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline
