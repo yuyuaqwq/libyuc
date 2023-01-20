@@ -31,7 +31,7 @@ C语言便携工具类支持
 - AVLTree
   - 平衡二叉树
 - RBTree
-  - 红黑树
+  - 以234树为原型的红黑树
 - BPlusTree
   - B+树
 - Heap
