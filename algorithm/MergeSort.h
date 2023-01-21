@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
-* emali:1454832774@qq.com
+* @yuyuaqwq - ï¿½ï¿½ï¿½ï¿½
+* email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* ï¿½ë±£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 
 #ifndef CUTILS_ALGORITHM_MERGE_SORT_H_
