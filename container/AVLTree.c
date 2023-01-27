@@ -34,7 +34,6 @@ inline void AVLEntrySetBalanceFactor(AVLEntry* entry, int balanceFactor) {
     entry->parent_balanceFactor = (AVLEntry*)(((uintptr_t)AVLEntryGetParent(entry)) | ((uintptr_t)balanceFactor) & 0x3);
 }
 
-
 #else
 /*
 * 获取父节点
@@ -85,8 +84,6 @@ static bool UpdateHeight(AVLEntry* subRoot) {
 }
 
 #endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
-
-
 
 /*
 * 左旋子树
@@ -184,7 +181,6 @@ static void AVLTreeHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* newEntry
 }
 
 
-
 #ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
 /*
 * 旋转平衡因子调整(右旋为例)：
@@ -248,14 +244,6 @@ static void AVLTreeHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* newEntry
 * 依据是o4，1时(o3和o2，o2要给o6做左子节点)置为-1
 *
 */
-
-/*
-* 初始化节点
-*/
-void AVLEntryInit(AVLEntry* entry) {
-    BSEntryInit(&entry->bse);
-    AVLEntrySetBalanceFactor(entry, 0);
-}
 
 /*
 * 根据平衡因子来旋转子树
@@ -377,138 +365,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
 
     return heightUpdate;
 }
-
-/*
-* 向树中插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
-*/
-bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry) {
-    if (!BSTreeInsertEntry((BSTree*)tree, &entry->bse)) {
-        return false;
-    }
-    AVLEntrySetBalanceFactor(entry, 0);
-    AVLEntry* cur = AVLEntryGetParent(entry);
-    AVLEntry* child = entry;
-    bool rotate = false;
-    // 插入节点后平衡因子可能发生变化，回溯维护平衡因子
-    while (cur) {
-        int curBF = AVLEntryGetBalanceFactor(cur);
-        int childBF = AVLEntryGetBalanceFactor(child);
-        if (child == cur->left) curBF++;        // 新节点插入到当前节点的左子树
-        else curBF--;       // 新节点插入到当前节点的右子树
-
-        if (RotateByBalanceFactor(tree, &cur, curBF) || curBF == 0) {
-            // 旋转后当前节点高度不变，或原先高度就不变，停止回溯
-            break;
-        }
-        child = cur;
-        cur = AVLEntryGetParent(cur);
-    }
-    return true;
-}
-
-/*
-* 从树中删除节点
-* 成功返回被删除的节点，失败返回NULL
-*/
-AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
-    // 从entry的父节点开始回溯
-    AVLEntry* cur;
-    bool isLeft;
-    if (entry->left != NULL && entry->right != NULL) {
-        // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
-        AVLEntry* minEntry = entry->right;
-        while (minEntry->left) {
-            minEntry = minEntry->left;
-        }
-
-        isLeft = AVLEntryGetParent(minEntry)->left == minEntry;
-
-        AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(entry));
-
-        // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
-        minEntry->left = entry->left;
-        if (entry->left) {
-            AVLEntrySetParent(entry->left, minEntry);
-        }
-
-        // 最小节点可能是待删除节点的右节点
-        if (AVLEntryGetParent(minEntry) != entry) {
-            // 将minEntry从原先的位置摘除，用其右子树代替
-            AVLEntryGetParent(minEntry)->left = minEntry->right;
-            if (minEntry->right) {
-                AVLEntrySetParent(minEntry->right, AVLEntryGetParent(minEntry));
-            }
-            // 最小节点继承待删除节点的右子树
-            minEntry->right = entry->right;
-            if (entry->right) {
-                AVLEntrySetParent(entry->right, minEntry);
-            }
-            cur = AVLEntryGetParent(minEntry);
-        }
-        else {
-            cur = minEntry;
-        }
-
-        // 最后进行挂接
-        AVLTreeHitchEntry(tree, entry, minEntry);
-    }
-    else {
-        cur = AVLEntryGetParent(entry);
-        if (cur) {
-            isLeft = cur->left == entry;
-        }
-
-        if (entry->left == NULL) {
-            // 只有右子节点
-            AVLTreeHitchEntry(tree, entry, entry->right);
-        }
-        else if (entry->right == NULL) {
-            AVLTreeHitchEntry(tree, entry, entry->left);
-        }
-        else {
-            // 没有子节点，直接从父节点中摘除此节点
-            AVLTreeHitchEntry(tree, entry, NULL);
-        }
-    }
-    
-    AVLEntry* child = entry;
-
-    // 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子
-    AVLEntry* newSubRoot = NULL;
-    while (cur) {
-        int curBF = AVLEntryGetBalanceFactor(cur);
-        if (isLeft) curBF--;
-        else curBF++;
-
-        if (curBF != 0) {
-            if (RotateByBalanceFactor(tree, &cur, curBF) == false) {
-                // 另一侧高度相等或更深且无需旋转，则当前节点高度不变
-                break;
-            }
-        } else {
-            AVLEntrySetBalanceFactor(cur, curBF);
-        }
-
-        child = cur;
-        cur = AVLEntryGetParent(cur);
-        if (cur) {
-            isLeft = cur->left == child;
-        }
-    }
-    return entry;
-}
-
 #else
-/*
-* 初始化节点
-*/
-void AVLEntryInit(AVLEntry* entry) {
-    BSEntryInit(&entry->bse);
-    entry->height = 0;
-}
-
 /*
 * 根据平衡因子来旋转子树
 * 旋转(子树高度变化)返回true，未旋转(子树高度未变化)返回false
@@ -563,6 +420,37 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
     return rotate;
 }
 
+#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+
+
+/*
+* 初始化AVL树
+*/
+void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+    BSTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+}
+
+/*
+* 初始化节点
+*/
+void AVLEntryInit(AVLEntry* entry) {
+    BSEntryInit(&entry->bse);
+#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+    AVLEntrySetBalanceFactor(entry, 0);
+#else
+    entry->height = 0;
+#endif
+    
+}
+
+/*
+* 从树中查找节点
+* 存在返回查找到的节点，不存在返回NULL
+*/
+AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key) {
+    return (AVLEntry*)BSTreeFindEntryByKey(&tree->bst, key);
+}
+
 /*
 * 向树中插入节点
 * 不允许存在重复节点
@@ -572,8 +460,28 @@ bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry) {
     if (!BSTreeInsertEntry(&tree->bst, &entry->bse)) {
         return false;
     }
+#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+    AVLEntrySetBalanceFactor(entry, 0);
+    AVLEntry* cur = AVLEntryGetParent(entry);
+    AVLEntry* child = entry;
+    bool rotate = false;
+    // 插入节点后平衡因子可能发生变化，回溯维护平衡因子
+    while (cur) {
+        int curBF = AVLEntryGetBalanceFactor(cur);
+        int childBF = AVLEntryGetBalanceFactor(child);
+        if (child == cur->left) curBF++;        // 新节点插入到当前节点的左子树
+        else curBF--;       // 新节点插入到当前节点的右子树
+
+        if (RotateByBalanceFactor(tree, &cur, curBF) || curBF == 0) {
+            // 旋转后当前节点高度不变，或原先高度就不变，停止回溯
+            break;
+        }
+        child = cur;
+        cur = AVLEntryGetParent(cur);
+    }
+#else
     entry->height = 0;
-    AVLEntry* cur = entry->parent;
+    AVLEntry* cur = AVLEntryGetParent(entry);
 
     // 插入节点后高度可能发生变化，回溯维护节点高度
     int heightCount = 1;
@@ -585,8 +493,9 @@ bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry) {
         if (RotateByBalanceFactor(tree, &cur)) {
             break;        // 插入后如果旋转了，就不需要再向上回溯了，因为旋转会导致这颗子树的高度不变
         }
-        cur = cur->parent;
+        cur = AVLEntryGetParent(cur);
     }
+#endif
     return true;
 }
 
@@ -597,6 +506,7 @@ bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry) {
 AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
     // 从entry的父节点开始回溯
     AVLEntry* cur;
+    bool isLeft;
     if (entry->left != NULL && entry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
         AVLEntry* minEntry = entry->right;
@@ -604,27 +514,33 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
             minEntry = minEntry->left;
         }
 
+        isLeft = AVLEntryGetParent(minEntry)->left == minEntry;
+
+#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+        AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(entry));
+#else
         minEntry->height = entry->height;
+#endif
 
         // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
         minEntry->left = entry->left;
         if (entry->left) {
-            entry->left->parent = minEntry;
+            AVLEntrySetParent(entry->left, minEntry);
         }
 
         // 最小节点可能是待删除节点的右节点
-        if (minEntry->parent != entry) {
+        if (AVLEntryGetParent(minEntry) != entry) {
             // 将minEntry从原先的位置摘除，用其右子树代替
-            minEntry->parent->left = minEntry->right;
+            AVLEntryGetParent(minEntry)->left = minEntry->right;
             if (minEntry->right) {
-                minEntry->right->parent = minEntry->parent;
+                AVLEntrySetParent(minEntry->right, AVLEntryGetParent(minEntry));
             }
             // 最小节点继承待删除节点的右子树
             minEntry->right = entry->right;
             if (entry->right) {
-                entry->right->parent = minEntry;
+                AVLEntrySetParent(entry->right, minEntry);
             }
-            cur = minEntry->parent;
+            cur = AVLEntryGetParent(minEntry);
         }
         else {
             cur = minEntry;
@@ -634,10 +550,13 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         AVLTreeHitchEntry(tree, entry, minEntry);
     }
     else {
-        cur = entry->parent;
+        cur = AVLEntryGetParent(entry);
+        if (cur) {
+            isLeft = cur->left == entry;
+        }
+
         if (entry->left == NULL) {
             // 只有右子节点
-            // 值得说明的是右子节点没有子节点(有子节点的话就已经失衡了，因为没有左子节点，右子节点还有子节点就会形成0 - 2)
             AVLTreeHitchEntry(tree, entry, entry->right);
         }
         else if (entry->right == NULL) {
@@ -649,6 +568,34 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         }
     }
 
+#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+    AVLEntry* child = entry;
+
+    // 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子
+    AVLEntry* newSubRoot = NULL;
+    while (cur) {
+        int curBF = AVLEntryGetBalanceFactor(cur);
+        if (isLeft) curBF--;
+        else curBF++;
+
+        if (curBF != 0) {
+            if (RotateByBalanceFactor(tree, &cur, curBF) == false) {
+                // 另一侧高度相等或更深且无需旋转，则当前节点高度不变
+                break;
+            }
+        }
+        else {
+            AVLEntrySetBalanceFactor(cur, curBF);
+        }
+
+        child = cur;
+        cur = AVLEntryGetParent(cur);
+        if (cur) {
+            isLeft = cur->left == child;
+        }
+    }
+
+#else
     // 删除节点后高度可能发生变化，回溯维护节点高度
     while (cur) {
         if (UpdateHeight(cur) == false) {
@@ -657,31 +604,11 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
                 break;        // 未失衡则停止回溯，从当前节点开始不会再影响上层节点的高度，旋转后要继续回溯，因为旋转可能会使得当前子树高度降低。
             }
         }
-        cur = cur->parent;
+        cur = AVLEntryGetParent(cur);
     }
+#endif
     return entry;
 }
-
-#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
-
-
-/*
-* 初始化AVL树
-*/
-void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-    BSTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
-}
-
-
-/*
-* 从树中查找节点
-* 存在返回查找到的节点，不存在返回NULL
-*/
-AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key) {
-    return (AVLEntry*)BSTreeFindEntryByKey(&tree->bst, key);
-}
-
-
 
 /*
 * 从树中按key删除节点

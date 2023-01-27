@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-// #define CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_       // 是否存储高度，存储平衡因子可以节省空间
+#define CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_       // 是否存储高度，存储平衡因子可以节省空间
 
 #ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
 /*
