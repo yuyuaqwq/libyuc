@@ -31,26 +31,10 @@ typedef struct _AVLEntry {
         BSEntry bse;
     };
 } AVLEntry;
-
-typedef struct _AVLTree {
-    union {
-        struct {
-            AVLEntry* root;
-            int entryFieldOffset;
-            int keyFieldOffset;
-            int keyFieldSize;
-            CmpFunc cmpFunc;        // 间接调用增加一定开销
-        };
-        BSTree bst;
-    };
-} AVLTree;
-
 #else
-
 /*
 * 存储高度的AVL树
 */
-
 typedef struct _AVLEntry {
     union {
         struct {
@@ -62,6 +46,7 @@ typedef struct _AVLEntry {
     };
     int height;        // 这里如果换成平衡因子(2位即可)也可以嵌入到指针(低2位可以不用)中，高度更易理解与实现
 } AVLEntry;
+#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
 
 typedef struct _AVLTree {
     union {
@@ -75,8 +60,6 @@ typedef struct _AVLTree {
         BSTree bst;
     };
 } AVLTree;
-
-#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
 
 void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define AVLTreeInitByField(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
