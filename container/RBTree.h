@@ -5,8 +5,8 @@
 * 请保留此声明
 */
 
-#ifndef CUTILS_CONTAINER_RBTREE_H_
-#define CUTILS_CONTAINER_RBTREE_H_
+#ifndef CUTILS_CONTAINER_RB_TREE_H_
+#define CUTILS_CONTAINER_RB_TREE_H_
 
 #include "CUtils/object.h"
 #include "CUtils/container/BSTree.h"
@@ -15,10 +15,12 @@
 extern "C" {
 #endif
 
+
 /*
 * 以234树为原型的红黑树实现
 */
 typedef enum _RBColor RBColor;
+
 typedef struct _RBEntry {
     union {
         struct {
@@ -26,22 +28,39 @@ typedef struct _RBEntry {
             struct _RBEntry* left;
             struct _RBEntry* right;
         };
-        BSEntry bs;
+        BSEntry bse;
     };
 } RBEntry;
 
-typedef BSTree RBTree;
+typedef struct _RBTree {
+    union {
+        struct {
+            RBEntry* root;
+            int entryFieldOffset;
+            int keyFieldOffset;
+            int keyFieldSize;
+            CmpFunc cmpFunc;        // 间接调用增加一定开销
+        };
+        BSTree bst;
+    };
+} RBTree;
 
 void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define RBTreeInitByField(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void RBEntryInit(RBEntry* entry, RBColor color);
-RBEntry* RBFindEntryByKey(RBTree* tree, void* key);
-bool RBInsertEntry(RBTree* tree, RBEntry* entry);
-RBEntry* RBDeleteEntry(RBTree* tree, RBEntry* entry);
-RBEntry* RBDeleteEntryByKey(RBTree* tree, void* key);
+RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key);
+bool RBTreeInsertEntry(RBTree* tree, RBEntry* entry);
+RBEntry* RBTreeDeleteEntry(RBTree* tree, RBEntry* entry);
+RBEntry* RBTreeDeleteEntryByKey(RBTree* tree, void* key);
+
+
+inline RBColor RBEntryGetColor(RBEntry* entry);
+inline void RBEntrySetColor(RBEntry* entry, RBColor color);
+inline RBEntry* RBEntryGetParent(RBEntry* entry);
+inline void RBEntrySetParent(RBEntry* entry, RBEntry* parent);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_RBTREE_H_
+#endif // CUTILS_CONTAINER_RB_TREE_H_

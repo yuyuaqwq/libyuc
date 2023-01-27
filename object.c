@@ -25,11 +25,11 @@ void MemoryCopyR(void* dst_, void* src_, size_t size) {
     }
 }
 
-int MemoryCmp(const void* buf1_, const void* buf2_, size_t size) {
+offset_t MemoryCmp(const void* buf1_, const void* buf2_, size_t size) {
     return memcmp(buf1_, buf2_, size);
 }
 
-int MemoryCmpR(const void* buf1_, const void* buf2_, size_t size) {
+offset_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size) {
     uint8_t* buf1 = buf1_;
     uint8_t* buf2 = buf2_;
     while (size-- != 0) {
@@ -40,3 +40,15 @@ int MemoryCmpR(const void* buf1_, const void* buf2_, size_t size) {
     }
     return 0;
 }
+
+
+
+
+void* MemoryAlloc(size_t size) {
+    return malloc(size);
+}
+
+void MemoryFree(void* ptr) {
+    return free(ptr);
+}
+

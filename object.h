@@ -20,8 +20,8 @@ extern "C" {
 
 typedef intptr_t offset_t;
 
-#define MemoryAlloc(size) malloc((size))
-#define MemoryFree(ptr) free((ptr))
+void* MemoryAlloc(size_t size);
+void MemoryFree(void* ptr);
 #define MemoryCopy(dst, src, size) memcpy((void*)(dst), (void*)(src), (size))
 void MemoryCopyR(void* dst_, void* src_, size_t size);
 #define MemorySet(dst, val, size) memset((void*)(dst), (val), (size))
@@ -42,11 +42,32 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
-// 自定义比较/哈希/访问器存在一定的额外开销
+
+
+
+// 内存分配/比较/哈希/数组访问器存在一定的额外开销
 // 另一种是通过宏实现通用容器，但是不好调试
-typedef int (*CmpFunc)(const void* buf1_, const void* buf2_, size_t size);
-typedef uint32_t(*HashFunc)(const void* buf1_, size_t size);
-typedef void* (*ObjArrAtFunc)(void* objArr, int i);
+typedef void* (*MemAllocFunc)(size_t size);
+typedef void (*MemFreeFunc)(void* ptr);
+typedef struct _MemAllocTor {
+	MemAllocFunc Alloc;
+	MemFreeFunc Free;
+} MemAllocTor;
+
+typedef int (*CmpFunc)(const void* buf1, const void* buf2, size_t size);;
+typedef struct _CmpTor {
+	CmpFunc Cmp;
+} CmpTor;
+
+typedef uint32_t(*HashU32Func)(const void* buf, size_t size);
+typedef struct _HashTor {
+	HashU32Func HashU32;
+} HashTor;
+
+typedef void* (*ArrAtFunc)(void* arr, int i);
+typedef struct _AtTor {
+	ArrAtFunc ArrAt;
+} AtTor;
 
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline

@@ -8,6 +8,7 @@
 #include "BPlusTree.h"
 #include "CUtils/container/array.h"
 
+
 typedef enum _BPlusEntryType {
     kIndex,
     kLeaf,
@@ -17,6 +18,7 @@ typedef enum _BPlusEntryType {
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK
 
 PageId PageAlloc(int m) {
+    // child 应当是m个，所以最后多申请一个
     return (PageId)MemoryAlloc(sizeof(BPlusEntry) - sizeof(BPlusLeafListEntry) + (m - 1) * sizeof(BPlusIndexInternalEntry) + sizeof(struct _BPlusIndexEntry*));
 }
 
@@ -83,7 +85,7 @@ static void LeafListEntryRemoveTail(PageId entryId) {
 
 
 static PageId BPlusCreateIndexEntry(int m) {
-    // child 应当是m个，所以最后多申请一个
+    
     PageId entryId = PageAlloc(m);
     BPlusEntry* entry = PageGet(entryId);
     entry->type = kIndex;
@@ -108,7 +110,7 @@ static PageId BPlusCreateLeafEntry(int m) {
 }
 
 /*
-* 没有明确标准的索引是key索引
+* 源代码中没有明确标准的索引指的是key索引
 * 
 * 通常情况下，父节点内部节点是左父索引，子节点是右子节点
 * 即默认是key[0] - child[1]、key[1] - child[2]...
@@ -348,7 +350,7 @@ static void BPlusMergeEntry(BPlusTree* tree, PageId leftId, PageId rightId, int 
 
 
 /*
-* 插入节点
+* 向节点插入内部节点
 */
 static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, void* key, PageId rightChildId) {
     BPlusEntry* entry = PageGet(entryId);
@@ -402,7 +404,7 @@ static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, void* key, PageId 
 }
 
 /*
-* 删除指定节点
+* 删除指定节点的内部节点
 */
 static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, Array* stack) {
     BPlusEntry* entry = PageGet(entryId);
@@ -471,7 +473,7 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
     // 兄弟节点不够借，需要合并(合并了也不会超过m-1，因为一边不足m-1的一半，一边是m-1的一半，是索引节点合并也足够下降一个父内部节点)
     if (leftSibling) {
         BPlusMergeEntry(tree, siblingId, entryId, leftParentIndex, stack);
-        // 合并就是从父亲中拿内部节点，已经拿了，要把删除也处理一下
+        // 合并需要从父亲节点中拿一个内部节点(即两个子节点的公共父内部节点)，已经拿了，要把删除也处理一下
         BPlusDeleteEntry(tree, sibling->parentId, leftParentIndex, stack);
     } else {
         BPlusMergeEntry(tree, entryId, siblingId, leftParentIndex + 1, stack);        // 要求共同父索引
@@ -515,7 +517,7 @@ static PageId BPlusTreeFindLeaf(BPlusTree* tree, void* key, Array* stack) {
 */
 void BPlusTreeInit(BPlusTree* tree, int m, int keySize, CmpFunc cmpFunc) {
     if (m < 3) {
-        m = 3;      // 最少3阶，否则无法正常分裂
+        m = 3;      // 最少3阶，否则索引节点分裂会出现一侧没有节点的情况
     }
     tree->rootId = BPlusCreateLeafEntry(m);
     tree->leafListFirst = tree->rootId;
@@ -551,6 +553,7 @@ bool BPlusTreeInsert(BPlusTree* tree, void* key) {
 * 从B+树中删除指定key
 */
 bool BPlusTreeDelete(BPlusTree* tree, void* key) {
+    
     Array stack;
     ArrayInit(&stack, 16, sizeof(int));
     PageId leafId = BPlusTreeFindLeaf(tree, key, &stack);

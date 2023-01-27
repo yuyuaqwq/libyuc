@@ -13,7 +13,7 @@
 * entry从树中摘除
 * entry的parent、left和right不变
 */
-static void BSHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
+static void BSTreeHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
     if (entry->parent) {
         if (entry->parent->left == entry) {
             entry->parent->left = newEntry;
@@ -59,7 +59,7 @@ void BSEntryInit(BSEntry* entry) {
 * 从树中查找节点
 * 存在返回查找到的节点，不存在返回NULL
 */
-BSEntry* BSFindEntryByKey(BSTree* tree, void* key) {
+BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key) {
     BSEntry* cur = tree->root;
     while (cur) {
         void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
@@ -90,7 +90,7 @@ BSEntry* BSFindEntryByKey(BSTree* tree, void* key) {
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool BSInsertEntry(BSTree* tree, BSEntry* entry) {
+bool BSTreeInsertEntry(BSTree* tree, BSEntry* entry) {
     BSEntry* root = tree->root;
     BSEntryInit(entry);
     if (root == NULL) {
@@ -129,19 +129,8 @@ bool BSInsertEntry(BSTree* tree, BSEntry* entry) {
 * 从树中删除节点
 * 成功返回被删除的节点，失败返回NULL
 */
-BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
-    if (entry->left == NULL && entry->right == NULL) {
-        // 没有子节点，直接从父节点中摘除此节点
-        BSHitchEntry(tree, entry, NULL);
-    }
-    else if (entry->left == NULL) {
-        // 只有右子节点，那说明右子节点没有子节点(有子节点的话就已经失衡了，因为没有左子节点，右子节点还有子节点就会形成0 - 2)
-        BSHitchEntry(tree, entry, entry->right);
-    }
-    else if (entry->right == NULL) {
-        BSHitchEntry(tree, entry, entry->left);
-    }
-    else {
+BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
+    if (entry->left != NULL && entry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
         BSEntry* minEntry = entry->right;
         while (minEntry->left) {
@@ -166,12 +155,30 @@ BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
             if (entry->right) {
                 entry->right->parent = minEntry;
             }
+            // 如果需要回溯，这里对应entry的父亲是minEntry的父亲的情况，但不能直接修改entry的parent，因为还没挂接
+        }
+        else {
+            // 如果需要回溯，这里对应entry的父亲是minEntry的情况，但不能直接修改entry的parent，因为还没挂接
         }
 
         // 最后进行挂接
-        BSHitchEntry(tree, entry, minEntry);
+        BSTreeHitchEntry(tree, entry, minEntry);
 
         // 也可以选择直接交换两个节点的数据
+        
+    }
+    else {
+        if (entry->left == NULL) {
+            // 只有右子节点
+            BSTreeHitchEntry(tree, entry, entry->right);
+        }
+        else if (entry->right == NULL) {
+            BSTreeHitchEntry(tree, entry, entry->left);
+        }
+        else {
+            // 没有子节点，直接从父节点中摘除此节点
+            BSTreeHitchEntry(tree, entry, NULL);
+        }
     }
     return entry;
 }
@@ -179,18 +186,18 @@ BSEntry* BSDeleteEntry(BSTree* tree, BSEntry* entry) {
 /*
 * 获取树的节点数量
 */
-static void BSGetEntryCountCallback(BSEntry* entry, void* arg) {
+static void BSTreeGetEntryCountCallback(BSEntry* entry, void* arg) {
     int* count = arg;
     (*count)++;
 }
-size_t BSGetEntryCount(BSTree* tree) {
+size_t BSTreeGetEntryCount(BSTree* tree) {
     int count = 0;
-    BSPreorder_Callback(tree->root, BSGetEntryCountCallback, &count);
+    BSTreePreorder_Callback(tree->root, BSTreeGetEntryCountCallback, &count);
     return count;
 }
 
 
-BSEntry* BSFirst(BSTree* tree) {
+BSEntry* BSTreeFirst(BSTree* tree) {
     BSEntry* cur = tree->root;
     if (!cur) {
         return NULL;
@@ -200,7 +207,7 @@ BSEntry* BSFirst(BSTree* tree) {
     return cur;
 }
 
-BSEntry* BSLast(BSTree* tree) {
+BSEntry* BSTreeLast(BSTree* tree) {
     BSEntry* cur = tree->root;
     if (!cur) {
         return NULL;
@@ -210,7 +217,7 @@ BSEntry* BSLast(BSTree* tree) {
     return cur;
 }
 
-BSEntry* BSNext(BSEntry* entry) {
+BSEntry* BSTreeNext(BSEntry* entry) {
     if (entry->right) {
         entry = entry->right;
         while (entry->left)
@@ -223,7 +230,7 @@ BSEntry* BSNext(BSEntry* entry) {
     return parent;
 }
 
-BSEntry* BSPrev(BSEntry* entry) {
+BSEntry* BSTreePrev(BSEntry* entry) {
     if (entry->left) {
         entry = entry->left;
         while (entry->right) {
@@ -244,31 +251,31 @@ BSEntry* BSPrev(BSEntry* entry) {
 * 前序遍历
 * 先根再右再左
 */
-void BSPreorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg) {
+void BSTreePreorder_Callback(BSEntry* entry, BSTreeTraversalCallback callback, void* arg) {
     if (!entry) return;
     callback(entry, arg);
-    BSPreorder_Callback(entry->left, callback, arg);
-    BSPreorder_Callback(entry->right, callback, arg);
+    BSTreePreorder_Callback(entry->left, callback, arg);
+    BSTreePreorder_Callback(entry->right, callback, arg);
 }
 
 /*
 * 中序遍历
 * 先左再根再右
 */
-void BSMiddleorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg) {
+void BSTreeMiddleorder_Callback(BSEntry* entry, BSTreeTraversalCallback callback, void* arg) {
     if (!entry) return;
-    BSMiddleorder_Callback(entry->left, callback, arg);
+    BSTreeMiddleorder_Callback(entry->left, callback, arg);
     callback(entry, arg);
-    BSMiddleorder_Callback(entry->right, callback, arg);
+    BSTreeMiddleorder_Callback(entry->right, callback, arg);
 }
 
 /*
 * 后序遍历
 * 先左再右再根
 */
-void BSPostorder_Callback(BSEntry* entry, BSTraversalCallback callback, void* arg) {
+void BSTreePostorder_Callback(BSEntry* entry, BSTreeTraversalCallback callback, void* arg) {
     if (!entry) return;
-    BSPostorder_Callback(entry->left, callback, arg);
-    BSPostorder_Callback(entry->right, callback, arg);
+    BSTreePostorder_Callback(entry->left, callback, arg);
+    BSTreePostorder_Callback(entry->right, callback, arg);
     callback(entry, arg);
 }

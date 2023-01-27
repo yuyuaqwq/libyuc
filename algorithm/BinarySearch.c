@@ -77,7 +77,7 @@ int BinarySearch_Object_Range(void* objArr, int objSize, int first, int last, vo
 }
 
 
-int BinarySearch_KeyAtCallback(void* objArr, ObjArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc) {
+int BinarySearch_KeyAtCallback(void* objArr, ArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc) {
     int mid;
     while (first <= last) {
         mid = first + (last - first) / 2;
@@ -96,7 +96,7 @@ int BinarySearch_KeyAtCallback(void* objArr, ObjArrAtFunc keyAt, int first, int 
     return -1;
 }
 
-int BinarySearch_KeyAtCallback_Range(void* objArr, ObjArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc) {
+int BinarySearch_KeyAtCallback_Range(void* objArr, ArrAtFunc keyAt, int first, int last, void* key, int keySize, CmpFunc cmpFunc) {
     int mid = 0;
     while (first < last) {
         mid = first + (last - first) / 2;

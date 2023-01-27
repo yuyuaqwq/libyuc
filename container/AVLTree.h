@@ -15,27 +15,78 @@
 extern "C" {
 #endif
 
+#define CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_       // 是否存储高度，存储平衡因子可以节省空间
+
+#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+/*
+* 嵌入平衡因子的AVL树
+*/
+typedef struct _AVLEntry {
+    union {
+        struct {
+            struct _AVLEntry* parent_balanceFactor;
+            struct _AVLEntry* left;
+            struct _AVLEntry* right;
+        };
+        BSEntry bse;
+    };
+} AVLEntry;
+
+typedef struct _AVLTree {
+    union {
+        struct {
+            AVLEntry* root;
+            int entryFieldOffset;
+            int keyFieldOffset;
+            int keyFieldSize;
+            CmpFunc cmpFunc;        // 间接调用增加一定开销
+        };
+        BSTree bst;
+    };
+} AVLTree;
+
+#else // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+
+/*
+* 存储高度的AVL树
+*/
+
 typedef struct _AVLEntry {
     union {
         struct {
             struct _AVLEntry* parent;
             struct _AVLEntry* left;
-            struct _AVLEntry* right; 
+            struct _AVLEntry* right;
         };
-        BSEntry bs;
+        BSEntry bse;
     };
-    int height;        // 这里如果换成平衡因子(2位即可)也可以嵌入到指针(低2位可以不用)中，但是高度更易理解
+    int height;        // 这里如果换成平衡因子(2位即可)也可以嵌入到指针(低2位可以不用)中，高度更易理解与实现
 } AVLEntry;
 
-typedef BSTree AVLTree;
+typedef struct _AVLTree {
+    union {
+        struct {
+            AVLEntry* root;
+            int entryFieldOffset;
+            int keyFieldOffset;
+            int keyFieldSize;
+            CmpFunc cmpFunc;        // 间接调用增加一定开销
+        };
+        BSTree bst;
+    };
+} AVLTree;
+
+#endif
 
 void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define AVLTreeInitByField(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void AVLEntryInit(AVLEntry* entry);
-AVLEntry* AVLFindEntryByKey(AVLTree* tree, void* key);
-bool AVLInsertEntry(AVLTree* tree, AVLEntry* entry);
-AVLEntry* AVLDeleteEntry(AVLTree* tree, AVLEntry* entry);
-AVLEntry* AVLDeleteEntryByKey(AVLTree* tree, void* key);
+AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key);
+bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry);
+AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key);
+
+AVLEntry* AVLEntryGetParent(AVLEntry* entry);
+int AVLEntryGetBalanceFactor(AVLEntry* entry);
 
 #ifdef __cplusplus
 }

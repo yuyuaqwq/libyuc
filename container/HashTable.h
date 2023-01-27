@@ -44,7 +44,7 @@ typedef struct _HashTable {
     int keyFieldOffset;
     int keyFieldSize;
     int loadFator;
-    HashFunc hashFunc;
+    HashU32Func hashFunc;
     CmpFunc cmpFunc;
 } HashTable;
 
@@ -67,7 +67,7 @@ typedef struct _HashTableIterator {
 #define HASHTABLE_DEFAULT_BUCKETS_SIZE 16
 #define HASHTABLE_DEFAULT_LOAD_FATOR 75//%
 
-void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashFunc hashFunc, CmpFunc cmpFunc);
+void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc);
 void HashEntryInit(HashEntry* entry);
 void HashTableRelease(HashTable* table, bool deleteObj);
 void* HashTableFind(HashTable* table, void* key);

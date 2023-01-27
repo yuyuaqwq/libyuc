@@ -39,7 +39,7 @@ static void Resize(HashTable* table, size_t newCapacity) {
 }
 
 
-void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashFunc hashFunc, CmpFunc cmpFunc) {
+void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc) {
     if (capacity == 0) {
         capacity = HASHTABLE_DEFAULT_BUCKETS_SIZE;
     }

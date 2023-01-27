@@ -42,7 +42,7 @@ typedef struct _BPlusLeafInternalEntry {
     Key key;
 } BPlusLeafInternalEntry;
 
-typedef struct _BPlusIndexInternalEntry {        // Internal
+typedef struct _BPlusIndexInternalEntry {       // Internal 
     PageId childId;
     Key key;
 } BPlusIndexInternalEntry;
