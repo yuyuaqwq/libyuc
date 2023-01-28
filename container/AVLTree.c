@@ -521,12 +521,6 @@ void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 
         isLeft = AVLEntryGetParent(minEntry)->left == minEntry;
 
-#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
-        AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(entry));
-#else
-        minEntry->height = entry->height;
-#endif
-
         // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
         minEntry->left = entry->left;
         if (entry->left) {
@@ -550,6 +544,12 @@ void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         else {
             cur = minEntry;
         }
+
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
+        AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(entry));
+#else
+        minEntry->height = entry->height;
+#endif
 
         // 最后进行挂接
         AVLTreeHitchEntry(tree, entry, minEntry);

@@ -45,6 +45,11 @@ static forceinline SkipListEntry* SkipListFindEntry(SkipList* list, void* key, i
 
         if (*cmpRes == 0) {
             // 不支持重复key，当前索引层找到了就不再需要下降了
+            if (update) {
+                for (i--; i >= 0; i--) {
+                    update[i] = cur;
+                }
+            }
             break;
         }
 
