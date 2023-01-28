@@ -560,11 +560,11 @@ void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
             isLeft = cur->left == entry;
         }
 
-        if (entry->left == NULL) {
+        if (entry->right != NULL) {
             // 只有右子节点
             AVLTreeHitchEntry(tree, entry, entry->right);
         }
-        else if (entry->right == NULL) {
+        else if (entry->left != NULL) {
             AVLTreeHitchEntry(tree, entry, entry->left);
         }
         else {

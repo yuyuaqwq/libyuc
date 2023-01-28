@@ -182,11 +182,11 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
         
     }
     else {
-        if (entry->left == NULL) {
+        if (entry->right != NULL) {
             // 只有右子节点
             BSTreeHitchEntry(tree, entry, entry->right);
         }
-        else if (entry->right == NULL) {
+        else if (entry->left != NULL) {
             BSTreeHitchEntry(tree, entry, entry->left);
         }
         else {
@@ -274,11 +274,11 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent) {
 
     }
     else {
-        if (entry->left == NULL) {
+        if (entry->right != NULL) {
             // 只有右子节点
             BSTreeHitchEntry(tree, entry, entryParent, entry->right);
         }
-        else if (entry->right == NULL) {
+        else if (entry->left != NULL) {
             BSTreeHitchEntry(tree, entry, entryParent, entry->left);
         }
         else {
