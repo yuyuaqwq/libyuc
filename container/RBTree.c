@@ -323,7 +323,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
     // 回溯维护删除黑色节点，即没有子节点(2节点)的情况
     while (parent) {
         if (RBEntryGetParent(parent) == NULL) {
-            // 没有父节点，回溯到根节点了，直接染黑
+            // 父节点没有父节点，回溯到根节点了，直接染黑
             RBEntrySetColor(parent, kBlack);
             break;
         }
@@ -385,7 +385,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             break;
         }
         else {
-            // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，合并两个节点，此处高度-1，继续回溯寻求高度补偿
+            // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，合并两个节点，即相当于向上删除一个父节点，继续回溯
             RBEntrySetColor(sibling, kRed);
         }
         RBEntry* child = parent;
