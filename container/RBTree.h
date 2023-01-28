@@ -49,8 +49,9 @@ void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keyS
 #define RBTreeInitByField(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void RBEntryInit(RBEntry* entry, RBColor color);
 RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key);
-bool RBTreeInsertEntry(RBTree* tree, RBEntry* entry);
-RBEntry* RBTreeDeleteEntry(RBTree* tree, RBEntry* entry);
+void RBTreeInsertEntryBalance(RBTree* tree, RBEntry* entry);
+bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry);
+void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry);
 RBEntry* RBTreeDeleteEntryByKey(RBTree* tree, void* key);
 
 

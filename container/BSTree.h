@@ -15,10 +15,10 @@ extern "C" {
 #endif
 
 
-
+#define CUTILS_CONTAINER_BS_TREE_NO_PARENT
 
 typedef struct _BSEntry {
-#ifndef CUTILS_CONTAINER_BSTREE_NO_PARENT
+#ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
     struct _BSEntry* parent;
 #endif
     struct _BSEntry* left;
@@ -53,7 +53,7 @@ BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key);
     } \
 }
 bool BSTreeInsertEntry(BSTree* tree, BSEntry* entry);
-BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry);
+BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent);
 size_t BSTreeGetEntryCount(BSTree* tree);
 
 BSEntry* BSTreeFirst(BSTree* tree);

@@ -149,15 +149,9 @@ RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key) {
 }
 
 /*
-* 向树中插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
+* 向树中插入节点后的平衡操作
 */
-bool RBTreeInsertEntry(RBTree* tree, RBEntry* entry) {
-    if (!BSTreeInsertEntry(&tree->bst, &entry->bse)) {
-        return false;
-    }
-
+void RBTreeInsertEntryBalance(RBTree* tree, RBEntry* entry) {
     RBEntry* cur = RBEntryGetParent(entry);
     if (cur == NULL) {
         RBEntrySetColor(entry, kBlack);
@@ -215,14 +209,25 @@ bool RBTreeInsertEntry(RBTree* tree, RBEntry* entry) {
         }
         cur = RBEntryGetParent(cur);
     }
+}
+
+/*
+* 向树中插入节点
+* 不允许存在重复节点
+* 成功返回true，失败返回false
+*/
+bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry) {
+    if (!BSTreeInsertEntry(&tree->bst, &entry->bse)) {
+        return false;
+    }
+    RBTreeInsertEntryBalance(tree, entry);
     return true;
 }
 
 /*
 * 从树中删除节点
-* 成功返回被删除的节点，失败返回NULL
 */
-RBEntry* RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
+void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
     RBEntry* cur = entry;        // 通常情况下是从被删除节点的父节点开始回溯
 
     // RB回溯时需要保证entry还在树上(找兄弟节点)，回溯完才删除
@@ -246,7 +251,7 @@ RBEntry* RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
         // 这里需要临时将entry也挂接到minEntry的位置，回溯用
         RBEntry* oldParent, * oldRight = minEntry->right;
         // 最小节点可能是待删除节点的右节点
-        if (RBEntryGetParent(minEntry) != entry) {
+        if (entry->right != minEntry) {
             oldParent = RBEntryGetParent(minEntry);        // 挂接minEntry之前记录
 
             // 将最小节点从原先的位置摘除，用entry代替
@@ -375,7 +380,6 @@ RBEntry* RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
     }
 
     RBTreeHitchEntry(tree, entry, newEntry);
-    return entry;
 }
 
 /*

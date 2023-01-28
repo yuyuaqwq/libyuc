@@ -553,7 +553,6 @@ bool BPlusTreeInsert(BPlusTree* tree, void* key) {
 * 从B+树中删除指定key
 */
 bool BPlusTreeDelete(BPlusTree* tree, void* key) {
-    
     Array stack;
     ArrayInit(&stack, 16, sizeof(int));
     PageId leafId = BPlusTreeFindLeaf(tree, key, &stack);

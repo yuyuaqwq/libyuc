@@ -1,7 +1,7 @@
 #include "AVLTree.h"
 
 
-#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 /*
 * 获取父节点
 */
@@ -83,7 +83,7 @@ static bool UpdateHeight(AVLEntry* subRoot) {
     return false;
 }
 
-#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 
 /*
 * 左旋子树
@@ -112,10 +112,10 @@ static AVLEntry* RotateLeft(AVLEntry* subRoot) {
 
     newSubRoot->left = subRoot;
 
-#ifdef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifdef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
     UpdateHeight(subRoot);
     UpdateHeight(newSubRoot);
-#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 
 
     return newSubRoot;
@@ -148,10 +148,10 @@ static AVLEntry* RotateRight(AVLEntry* subRoot) {
 
     newSubRoot->right = subRoot;
 
-#ifdef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifdef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
     UpdateHeight(subRoot);
     UpdateHeight(newSubRoot);
-#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 
     return newSubRoot;
 
@@ -181,7 +181,7 @@ static void AVLTreeHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* newEntry
 }
 
 
-#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 /*
 * 旋转平衡因子调整(右旋为例)：
 * 单旋情况：
@@ -420,7 +420,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
     return rotate;
 }
 
-#endif // CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 
 
 /*
@@ -435,7 +435,7 @@ void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int ke
 */
 void AVLEntryInit(AVLEntry* entry) {
     BSEntryInit(&entry->bse);
-#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
     AVLEntrySetBalanceFactor(entry, 0);
 #else
     entry->height = 0;
@@ -452,19 +452,13 @@ AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key) {
 }
 
 /*
-* 向树中插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
+* 向树中插入节点后的平衡操作
 */
-bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry) {
-    if (!BSTreeInsertEntry(&tree->bst, &entry->bse)) {
-        return false;
-    }
-#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+void AVLTreeInsertEntryBalance(AVLTree* tree, AVLEntry* entry) {
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
     AVLEntrySetBalanceFactor(entry, 0);
     AVLEntry* cur = AVLEntryGetParent(entry);
     AVLEntry* child = entry;
-    bool rotate = false;
     // 插入节点后平衡因子可能发生变化，回溯维护平衡因子
     while (cur) {
         int curBF = AVLEntryGetBalanceFactor(cur);
@@ -496,14 +490,25 @@ bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry) {
         cur = AVLEntryGetParent(cur);
     }
 #endif
+}
+
+/*
+* 从树中按key插入节点
+* 不允许存在重复节点
+* 成功返回true，失败返回false
+*/
+bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry) {
+    if (!BSTreeInsertEntry(&tree->bst, &entry->bse)) {
+        return false;
+    }
+    AVLTreeInsertEntryBalance(tree, entry);
     return true;
 }
 
 /*
 * 从树中删除节点
-* 成功返回被删除的节点，失败返回NULL
 */
-AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
+void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
     // 从entry的父节点开始回溯
     AVLEntry* cur;
     bool isLeft;
@@ -516,7 +521,7 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 
         isLeft = AVLEntryGetParent(minEntry)->left == minEntry;
 
-#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
         AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(entry));
 #else
         minEntry->height = entry->height;
@@ -529,7 +534,7 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         }
 
         // 最小节点可能是待删除节点的右节点
-        if (AVLEntryGetParent(minEntry) != entry) {
+        if (entry->right != minEntry) {
             // 将minEntry从原先的位置摘除，用其右子树代替
             AVLEntryGetParent(minEntry)->left = minEntry->right;
             if (minEntry->right) {
@@ -568,7 +573,7 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         }
     }
 
-#ifndef CUTILS_CONTAINER_AVLTREE_STORAGE_HEIGHT_H_
+#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
     AVLEntry* child = entry;
 
     // 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子
@@ -607,7 +612,6 @@ AVLEntry* AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         cur = AVLEntryGetParent(cur);
     }
 #endif
-    return entry;
 }
 
 /*
