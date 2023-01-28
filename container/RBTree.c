@@ -252,7 +252,6 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             RBEntrySetParent(entry->left, minEntry);
         }
 
-        
         RBEntry* oldRight = minEntry->right;
 
         // 最小节点可能是待删除节点的右节点
@@ -319,7 +318,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
         }
     }
 
-    RBEntry* newSubRoot = NULL;
+    RBEntry* newSubRoot;
     // 回溯维护删除黑色节点，即没有子节点(2节点)的情况
     while (parent) {
         RBEntry* sibling = isLeft ? parent->right : parent->left;
