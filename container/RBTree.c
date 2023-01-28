@@ -228,69 +228,67 @@ bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry) {
 * 从树中删除节点
 */
 void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
-    RBEntry* cur = entry;        // 通常情况下是从被删除节点的父节点开始回溯
-
-    // RB回溯时需要保证entry还在树上(找兄弟节点)，回溯完才删除
-    RBEntry* newEntry;
+    // 从entry的父节点开始回溯
+    RBEntry* cur;
+    bool isLeft;
     if (entry->left != NULL && entry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
         RBEntry* minEntry = entry->right;
         while (minEntry->left) {
             minEntry = minEntry->left;
         }
-        RBColor temp = RBEntryGetColor(minEntry);
+
+        isLeft = RBEntryGetParent(minEntry)->left == minEntry;
+
         RBEntrySetColor(minEntry, RBEntryGetColor(entry));
-        RBEntrySetColor(entry, temp);
 
         // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
         minEntry->left = entry->left;
-        if (minEntry->left) {
-            RBEntrySetParent(minEntry->left, minEntry);
+        if (entry->left) {
+            RBEntrySetParent(entry->left, minEntry);
         }
 
-        // 这里需要临时将entry也挂接到minEntry的位置，回溯用
-        RBEntry* oldParent, * oldRight = minEntry->right;
         // 最小节点可能是待删除节点的右节点
         if (entry->right != minEntry) {
-            oldParent = RBEntryGetParent(minEntry);        // 挂接minEntry之前记录
-
-            // 将最小节点从原先的位置摘除，用entry代替
-            RBEntryGetParent(minEntry)->left = entry;
+            // 将minEntry从原先的位置摘除，用其右子树代替
+            RBEntryGetParent(minEntry)->left = minEntry->right;
             if (minEntry->right) {
-                RBEntrySetParent(minEntry->right, entry);
+                RBEntrySetParent(minEntry->right, AVLEntryGetParent(minEntry));
             }
             // 最小节点继承待删除节点的右子树
             minEntry->right = entry->right;
             if (entry->right) {
                 RBEntrySetParent(entry->right, minEntry);
             }
+            cur = RBEntryGetParent(minEntry);
         }
         else {
-            oldParent = minEntry;        // 最小节点的父亲就是待删除节点，交换位置后最小节点就是待删除节点的父亲，因此从这里回溯
-            minEntry->right = entry;
+            cur = minEntry;
         }
 
+        // 最后进行挂接
         RBTreeHitchEntry(tree, entry, minEntry);
-
-        // 将entry临时挂接到minEntry的位置
-        RBEntrySetParent(entry, oldParent);
-        entry->left = NULL; entry->right = oldRight;
-        newEntry = oldRight;
     }
     else {
+        cur = RBEntryGetParent(entry);
+        if (cur) {
+            isLeft = cur->left == entry;
+        }
+
         if (entry->left == NULL) {
-            // 挂接右子节点
-            newEntry = entry->right;
+            // 只有右子节点
+            RBTreeHitchEntry(tree, entry, entry->right);
         }
         else if (entry->right == NULL) {
-            // 挂接左子节点
-            newEntry = entry->left;
+            RBTreeHitchEntry(tree, entry, entry->left);
         }
         else {
             // 没有子节点，直接从父节点中摘除此节点
-            newEntry = NULL;
+            RBTreeHitchEntry(tree, entry, NULL);
         }
     }
+
+
 
     if (entry) {
         if (RBEntryGetColor(entry) == kRed) {
@@ -317,22 +315,23 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             break;
         }
 
-        RBEntry* sibling = GetSiblingEntry(cur);
+        RBEntry* sibling = isLeft ? cur->right : cur->left;
         if (RBEntryGetColor(sibling) == kRed) {
             // 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
-            // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，但兄弟节点变为真正的兄弟节点
-            RBEntrySetColor(RBEntryGetParent(sibling), kRed);
-            RBEntrySetColor(sibling, kBlack);
+            // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点
             RBEntry* oldSubRoot = RBEntryGetParent(sibling);
-            if (RBEntryGetParent(sibling)->left == sibling){
-                newSubRoot = RotateRight(RBEntryGetParent(sibling));
+            RBEntrySetColor(oldSubRoot, kRed);
+            RBEntrySetColor(sibling, kBlack);
+            if (oldSubRoot->left == sibling){
+                newSubRoot = RotateRight(oldSubRoot);
+                sibling = oldSubRoot->left;     // 下降后挂接过来的节点
             } else {
-                newSubRoot = RotateLeft(RBEntryGetParent(sibling));
+                newSubRoot = RotateLeft(oldSubRoot);
+                sibling = oldSubRoot->right;     // 下降后挂接过来的节点
             }
             if (tree->root == oldSubRoot) {
                 tree->root = newSubRoot;
             }
-            sibling = GetSiblingEntry(cur);
         }
 
         // 至此兄弟节点一定为黑
@@ -376,10 +375,13 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，合并两个节点，此处高度-1，继续回溯寻求高度补偿
             RBEntrySetColor(sibling, kRed);
         }
+        RBEntry* child = cur;
         cur = RBEntryGetParent(cur);
+        if (cur) {
+            isLeft = cur->left == child;
+        }
     }
 
-    RBTreeHitchEntry(tree, entry, newEntry);
 }
 
 /*

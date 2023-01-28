@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 
-#define CUTILS_CONTAINER_BS_TREE_NO_PARENT
+// #define CUTILS_CONTAINER_BS_TREE_NO_PARENT
 
 typedef struct _BSEntry {
 #ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
