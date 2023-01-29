@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "BubbleSort.h"
+#include "bubble_sort.h"
 
 /*
 * 冒泡排序

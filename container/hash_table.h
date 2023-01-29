@@ -9,9 +9,9 @@
 #define CUTILS_CONTAINER_HASHTABLE_H_
 
 #include "CUtils/object.h"
-#include "CUtils/algorithm/HashMap.h"
+#include "CUtils/algorithm/hash_map.h"
 #include "CUtils/container/array.h"
-#include "CUtils/container/SinglyList.h"
+#include "CUtils/container/singly_list.h"
 
 #ifdef __cplusplus
 extern "C" {

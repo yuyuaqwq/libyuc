@@ -9,7 +9,7 @@
 #define CUTILS_CONTAINER_AVLTREE_H_
 
 #include "CUtils/object.h"
-#include "CUtils/container/BSTree.h"
+#include "CUtils/container/bs_tree.h"
 
 #ifdef __cplusplus
 extern "C" {

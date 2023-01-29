@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "MergeSort.h"
+#include "merge_sort.h"
 
 /*
 * 归并排序

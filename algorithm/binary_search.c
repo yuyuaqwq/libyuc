@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "BinarySearch.h"
+#include "binary_search.h"
 
 /*
 * 找到了返回正确下标，否则返回-1

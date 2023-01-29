@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "HashMap.h"
+#include "hash_map.h"
 
 /*
 * 主要哈希算法来源：笨方法学C
