@@ -15,13 +15,13 @@ void BitmapInit(Bitmap* bitmap, size_t bitCount) {
 	}
 }
 
-bool BitmapGet(Bitmap* bitmap, offset_t bitPos) {
+bool BitmapGet(Bitmap* bitmap, ptrdiff_t bitPos) {
 	uint8_t entry = ArrayAt(&bitmap->arr, bitPos / 8, uint8_t);
 	uint8_t pos = bitPos % 8;
 	return entry & ((uint8_t)1 << pos);
 }
 
-void BitmapSet(Bitmap* bitmap, offset_t bitPos, bool value) {
+void BitmapSet(Bitmap* bitmap, ptrdiff_t bitPos, bool value) {
 	uint8_t* entry = ArrayAt(&bitmap->arr, bitPos / 8, uint8_t);
 	uint8_t pos = bitPos % 8;
 	if (value) {

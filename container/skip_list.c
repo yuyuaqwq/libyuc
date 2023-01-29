@@ -43,16 +43,7 @@ static forceinline SkipListEntry* SkipListFindEntry(SkipList* list, void* key, i
             update[i] = cur;        // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
         }
 
-        if (*cmpRes == 0) {
-            // 不支持重复key，当前索引层找到了就不再需要下降了
-            if (update) {
-                for (i--; i >= 0; i--) {
-                    update[i] = cur;
-                }
-            }
-            break;
-        }
-
+        // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
     }
     return cur;
 }
@@ -60,7 +51,6 @@ static forceinline SkipListEntry* SkipListFindEntry(SkipList* list, void* key, i
 void SkipListInit(SkipList* list, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc) {
     list->level = 1;
     list->head = SkipListCreateEntry(SKIPLIST_MAX_LEVEL, 0);
-
     for (int i = 0; i < SKIPLIST_MAX_LEVEL; i++) {
         list->head->upper[i].next = NULL;
     }
@@ -86,7 +76,6 @@ void SkipListRelease(SkipList* list, bool deleteObj) {
     }
 }
 
-
 void* SkipListFind(SkipList* list, void* key) {
     int cmpRes = 0;
     SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, NULL);
@@ -106,7 +95,7 @@ bool SkipListInsert(SkipList* list, void* obj) {
     void* key = GetFieldByFieldOffset(obj, list->keyFieldOffset, void);
 
     int cmpRes = 0;
-    SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, update);
+    SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, update, NULL);
 
     // cur此时的next要么指向NULL，要么>=key
     if (cur->upper[0].next && cmpRes == 0) {

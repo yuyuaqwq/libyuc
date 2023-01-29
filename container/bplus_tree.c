@@ -39,6 +39,10 @@ inline void SetLeafInternalKey(BPlusEntry* leaf, int i, void* key) {
     leaf->leafInternalEntry[i].key = *(Key*)key;
 }
 
+inline void SwapLeafInternalKey(BPlusEntry* leaf, int i, int j) {
+    MemorySwap(GetLeafInternalKey(leaf, i), GetLeafInternalKey(leaf, j), sizeof(Key));
+}
+
 inline PageId GetIndexInternalChildId(BPlusEntry* index, int i) {
     return index->indexInternalEntry[i].childId;
 }
@@ -53,6 +57,10 @@ inline void* GetIndexInternalKey(BPlusEntry* index, int i) {
 
 inline void SetIndexInternalKey(BPlusEntry* index, int i, void* key) {
     index->indexInternalEntry[i].key = *(Key*)key;
+}
+
+inline void SwapIndexInternalKey(BPlusEntry* index, int i, int j) {
+    MemorySwap(GetIndexInternalKey(index, i), GetIndexInternalKey(index, j), sizeof(Key));
 }
 
 #endif // CUTILS_CONTAINER_BPLUS_TREE_DISK
@@ -185,36 +193,49 @@ static void BPlusInsertInternalEntry(PageId entryId, int keyIndex, void* key, Pa
 static PageId BPlusDeleteInternalEntry(PageId entryId, int keyIndex, void** key, bool rightChild) {
     if (PageGet(entryId)->type == kLeaf) {
         BPlusEntry* leaf = PageGet(entryId);
-        if (key) {
-            *key = GetLeafInternalKey(leaf, keyIndex);
-        }
         for (int i = keyIndex + 1; i < leaf->count; i++) {
-            SetLeafInternalKey(leaf, i - 1, GetLeafInternalKey(leaf, i));
+            if (key) {
+                SwapLeafInternalKey(leaf, i - 1, i);        // 该key暂时不能被覆盖
+            } else {
+                SetLeafInternalKey(leaf, i - 1, GetLeafInternalKey(leaf, i));
+            }
         }
         leaf->count--;
+        if (key) {
+            *key = GetLeafInternalKey(leaf, leaf->count);
+        }
         return NULL;
     }
     else {
         BPlusEntry* index = PageGet(entryId);
-        if (key) {
-            *key = GetIndexInternalKey(index, keyIndex);
-        }
+        
         PageId deleteEntryId;
         if (rightChild) {
             deleteEntryId = GetIndexInternalChildId(index, keyIndex + 1);
             for (int i = keyIndex + 1; i < index->count; i++) {
-                SetIndexInternalKey(index, i - 1, GetIndexInternalKey(index, i));
+                if (key) {
+                    SwapIndexInternalKey(index, i - 1, i);        // 该key暂时不能被覆盖
+                } else {
+                    SetIndexInternalKey(index, i - 1, GetIndexInternalKey(index, i));
+                }
                 SetIndexInternalChildId(index, i, GetIndexInternalChildId(index, i + 1));
             }
         } else {
             deleteEntryId = GetIndexInternalChildId(index, keyIndex);
             for (int i = keyIndex + 1; i < index->count; i++) {
-                SetIndexInternalKey(index, i - 1, GetIndexInternalKey(index, i));
+                if (key) {
+                    SwapIndexInternalKey(index, i - 1, i);        // 该key暂时不能被覆盖
+                } else {
+                    SetIndexInternalKey(index, i - 1, GetIndexInternalKey(index, i));
+                }
                 SetIndexInternalChildId(index, i - 1, GetIndexInternalChildId(index, i));
             }
             SetIndexInternalChildId(index, index->count - 1, GetIndexInternalChildId(index, index->count));
         }
         index->count--;
+        if (key) {
+            *key = GetIndexInternalKey(index, index->count);
+        }
         return deleteEntryId;
     }
 }

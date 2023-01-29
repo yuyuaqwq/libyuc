@@ -21,9 +21,9 @@ typedef struct _Bitmap {
 
 void BitmapInit(Bitmap* bitmap, size_t bitCount);
 
-bool BitmapGet(Bitmap* bitmap, offset_t bitPos);
+bool BitmapGet(Bitmap* bitmap, ptrdiff_t bitPos);
 
-void BitmapSet(Bitmap* bitmap, offset_t bitPos, bool value);
+void BitmapSet(Bitmap* bitmap, ptrdiff_t bitPos, bool value);
 
 #ifdef __cplusplus
 }

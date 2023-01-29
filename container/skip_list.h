@@ -33,7 +33,6 @@ typedef struct _SkipListEntry {
 typedef struct _SkipList {
     SkipListEntry* head;
     int level;
-
     int keyFieldOffset;
     int keyFieldSize;
     CmpFunc cmpFunc;

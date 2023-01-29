@@ -18,15 +18,13 @@
 extern "C" {
 #endif
 
-typedef intptr_t offset_t;
-
 void* MemoryAlloc(size_t size);
 void MemoryFree(void* ptr);
 #define MemoryCopy(dst, src, size) memcpy((void*)(dst), (void*)(src), (size))
 void MemoryCopyR(void* dst_, void* src_, size_t size);
 #define MemorySet(dst, val, size) memset((void*)(dst), (val), (size))
-int MemoryCmp(const void* buf1_, const void* buf2_, size_t size);
-int MemoryCmpR(const void* buf1_, const void* buf2_, size_t size);
+ptrdiff_t MemoryCmp(const void* buf1_, const void* buf2_, size_t size);
+ptrdiff_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size);
 void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
