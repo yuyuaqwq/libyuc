@@ -373,14 +373,18 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             break;
         }
         
-        if (RBEntryGetColor(RBEntryGetParent(sibling)) == kRed) {
+        if (RBEntryGetColor(parent) == kRed) {
             // 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
+            //    |5|8|               |5|
+            //   /  |  \     ->      /   \
+            //  3   6  -9-          3   |6|8|
             RBEntrySetColor(sibling, kRed);
-            RBEntrySetColor(RBEntryGetParent(sibling), kBlack);
+            RBEntrySetColor(parent, kBlack);
             break;
         }
         else {
             // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
+            // 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红
             RBEntrySetColor(sibling, kRed);
         }
         RBEntry* child = parent;
