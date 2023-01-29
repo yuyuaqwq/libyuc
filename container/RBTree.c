@@ -365,7 +365,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
                 }
                 newSubRoot = RotateLeft(parent);
             }
-            // 该节点可能会接替原先的子根节点，也要接替颜色
+            // 该节点会接替原先的子根节点，也要接替颜色
             RBEntrySetColor(sibling, parentColor);
             if (tree->root == oldSubRoot) {
                 tree->root = newSubRoot;
