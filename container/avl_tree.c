@@ -372,19 +372,20 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
 #else
 /*
 * 根据平衡因子来旋转子树
-* 旋转(子树高度变化)返回true，未旋转(子树高度未变化)返回false
+* 子树高度变化返回true，子树高度未变化返回false
 */
 static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
     AVLEntry* subRoot = *subRoot_;
 
     int factor = AVLEntryGetBalanceFactor(subRoot);
     bool rotate = false;
+    bool hightUpdate = true;
     AVLEntry* newSubRoot = NULL;
-    if (factor > 1) {
+    if (factor == 2) {
         // 是失衡节点(最小失衡子树的根节点)，左子树高度高于右子树高度
 
         // 判断需要单旋还是双旋
-        if (AVLEntryGetBalanceFactor(subRoot->left) < 0) {
+        if (AVLEntryGetBalanceFactor(subRoot->left) == -1) {
             // 失衡节点的左子树的右子树更深，先对失衡节点的左子树左旋，再对失衡节点右旋
             //      o
             //  o
@@ -392,16 +393,19 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
             // 需要先左旋转
             RotateLeft(subRoot->left);
         }
+        else if (AVLEntryGetBalanceFactor(subRoot->left) == 0) {
+            hightUpdate = false;        // 删除时可能出现的情况，旋转后高度不变
+        }
         // 此时失衡节点的左子树的左子树更深，右旋即可
         // 可能失衡节点与左节点交换位置，需要保存结果，如果是失衡节点是根节点再返回新的根节点
         newSubRoot = RotateRight(subRoot);
         rotate = true;
     }
-    else if (factor < -1) {
+    else if (factor == -2) {
         // 是失衡节点，右子树高度高于左子树高度
 
         // 判断需要单旋还是双旋
-        if (AVLEntryGetBalanceFactor(subRoot->right) > 0) {
+        if (AVLEntryGetBalanceFactor(subRoot->right) == 1) {
             // 失衡节点的右子树的左子树更深，先对失衡节点的右子树右旋，再对失衡节点左旋
             //    o
             //        o
@@ -409,9 +413,15 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
             // 需要先右旋转
             RotateRight(subRoot->right);
         }
+        else if (AVLEntryGetBalanceFactor(subRoot->right) == 0) {
+            hightUpdate = false;        // 删除时可能出现的情况，旋转后高度不变
+        }
         // 此时失衡节点的右子树的右子树更深，左旋即可
         newSubRoot = RotateLeft(subRoot);
         rotate = true;
+    }
+    else {
+        hightUpdate = false;
     }
 
     if (rotate) {
@@ -421,7 +431,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
         *subRoot_ = newSubRoot;
     }
 
-    return rotate;
+    return hightUpdate;
 }
 
 #endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
