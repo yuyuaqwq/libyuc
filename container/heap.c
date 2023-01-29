@@ -7,9 +7,13 @@
 
 #include "heap.h"
 
+/*
+* 为了可以实现数组原地建堆，下标从0开始
+*/
+
 static void ShiftUp(Heap* heap, uint32_t now) {
     Vector* vec = &heap->vector;
-    uint32_t next = now / 2;
+    uint32_t next = (now - 1) / 2;      // now / 2
     
     while (next > 0) {
         void** objParent = VectorAt(vec, next, void);
@@ -25,13 +29,13 @@ static void ShiftUp(Heap* heap, uint32_t now) {
         *objParent = *objChild;
         *objChild = temp;
         now = next;
-        next = now / 2;
+        next = (now - 1) / 2;      // now / 2
     }
 }
 
 static void ShiftDown(Heap* heap, uint32_t now) {
     Vector* vec = &heap->vector;
-    uint32_t next = now * 2;
+    uint32_t next = (now + 1) * 2 - 1;      // now * 2
     while (next < VectorGetCount(&heap->vector)) {
         void** objParent = VectorAt(vec, now, void);
         void* keyParent = GetFieldByFieldOffset(*objParent, heap->keyFieldOffset, void);
@@ -51,7 +55,7 @@ static void ShiftDown(Heap* heap, uint32_t now) {
         *objParent = *objChild;
         *objChild = temp;
         now = next;
-        next = now * 2;
+        next = (now + 1) * 2 - 1;      // now * 2
     }
 }
 
@@ -61,7 +65,7 @@ void HeapInit(Heap* heap, uint32_t high, uint32_t keyFieldOffset, uint32_t keyFi
         capacity *= 2;
     }
     VectorInit(&heap->vector, capacity);
-    VectorPushTail(&heap->vector, NULL);        // 简单起见，下标从1开始
+    // VectorPushTail(&heap->vector, NULL);
 
     heap->keyFieldOffset = keyFieldOffset;
     heap->keyFieldSize = keyFieldSize;
@@ -82,19 +86,19 @@ void HeapInsert(Heap* heap, void* obj) {
 }
 
 void* HeapGetTop(Heap* heap) {
-    if (VectorGetCount(&heap->vector) <= 1) {
+    if (VectorGetCount(&heap->vector) == 0) {       // <= 1
         return NULL;
     }
-    return *VectorAt(&heap->vector, 1, void);
+    return *VectorAt(&heap->vector, 0, void);       // 1
 }
 
 void* HeapPopTop(Heap* heap) {
-    if (VectorGetCount(&heap->vector) <= 1) {
+    if (VectorGetCount(&heap->vector) == 0) {       // <= 1
         return NULL;
     }
-    void* topObj = *VectorAt(&heap->vector, 1, void);
+    void* topObj = *VectorAt(&heap->vector, 0, void);       // 1
     void* tailObj = VectorPopTail(&heap->vector);
-    *VectorAt(&heap->vector, 1, void) = tailObj;
-    ShiftDown(heap, 1);
+    *VectorAt(&heap->vector, 0, void) = tailObj;       // 1
+    ShiftDown(heap, 0);       // 1
     return topObj;
 }

@@ -342,7 +342,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
 
         // 至此兄弟节点一定为黑
         
-        // 侄子节点为红，即兄弟节点是3/4节点的情况，向兄弟借节点
+        // 侄子节点为红，即兄弟节点是3/4节点的情况，向兄弟借节点(上升兄弟节点，下降父亲节点)
         if (sibling->right && RBEntryGetColor(sibling->right) == kRed || sibling->left && RBEntryGetColor(sibling->left) == kRed) {
             RBColor parentColor = RBEntryGetColor(parent);
             RBEntrySetColor(parent, kBlack);
@@ -374,13 +374,13 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
         }
         
         if (RBEntryGetColor(RBEntryGetParent(sibling)) == kRed) {
-            // 父节点为红，即父节点是3/4节点，分裂下沉与兄弟节点合并
+            // 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
             RBEntrySetColor(sibling, kRed);
             RBEntrySetColor(RBEntryGetParent(sibling), kBlack);
             break;
         }
         else {
-            // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，合并两个节点，相当于删除了父节点，继续回溯
+            // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
             RBEntrySetColor(sibling, kRed);
         }
         RBEntry* child = parent;

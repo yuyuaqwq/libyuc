@@ -261,7 +261,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
         AVLEntry* child = subRoot->left;
         int childBF = AVLEntryGetBalanceFactor(child);
         // 判断需要单旋还是双旋
-        if (childBF < 0) {      // childBF == -1
+        if (childBF == -1) {
             // 失衡节点的左子树的右子树更深，先对失衡节点的左子树左旋，再对失衡节点右旋
             //      o
             //  o
@@ -295,7 +295,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
             AVLEntrySetBalanceFactor(child, -1);
             AVLEntrySetBalanceFactor(subRoot, 1);
         }
-        else {      // childBF == 1
+        else {
             // 此时失衡节点的左子树的左子树更深，右旋即可
             // 可能失衡节点与左节点交换位置，需要保存结果，如果是失衡节点是根节点再返回新的根节点
             newSubRoot = RotateRight(subRoot);
@@ -309,7 +309,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
         AVLEntry* child = subRoot->right;
         int childBF = AVLEntryGetBalanceFactor(child);
         // 判断需要单旋还是双旋
-        if (childBF > 0) {      // childBF == 1
+        if (childBF == 1) {      // childBF == 1
             // 失衡节点的右子树的左子树更深，先对失衡节点的右子树右旋，再对失衡节点左旋
             //    o
             //        o

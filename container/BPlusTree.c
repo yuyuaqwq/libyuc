@@ -397,10 +397,8 @@ static bool BPlusInsertEntry(BPlusTree* tree, PageId entryId, void* key, PageId 
         tree->rootId = newIndexId;
     }
     else {
-        BPlusInsertEntry(tree, entry->parentId, key, rightId);
+        return BPlusInsertEntry(tree, entry->parentId, key, rightId);
     }
-
-    return true;
 }
 
 /*
@@ -474,13 +472,11 @@ static bool BPlusDeleteEntry(BPlusTree* tree, PageId entryId, int deleteIndex, A
     if (leftSibling) {
         BPlusMergeEntry(tree, siblingId, entryId, leftParentIndex, stack);
         // 合并需要从父亲节点中拿一个内部节点(即两个子节点的公共父内部节点)，已经拿了，要把删除也处理一下
-        BPlusDeleteEntry(tree, sibling->parentId, leftParentIndex, stack);
+        return BPlusDeleteEntry(tree, sibling->parentId, leftParentIndex, stack);     // 尾递归优化
     } else {
         BPlusMergeEntry(tree, entryId, siblingId, leftParentIndex + 1, stack);        // 要求共同父索引
-        BPlusDeleteEntry(tree, entry->parentId, leftParentIndex + 1, stack);
+        return BPlusDeleteEntry(tree, entry->parentId, leftParentIndex + 1, stack);     // 尾递归优化
     }
-
-    return true;
 }
 
 /*
