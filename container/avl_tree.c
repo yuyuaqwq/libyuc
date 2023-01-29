@@ -290,6 +290,10 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
         }
         else if (childBF == 0) {
             // 删除节点时可能出现的情况，即右子树的右子树高度低于左子树的左子树1，旋转过来并不完美平衡
+            //      o
+            //   o
+            // o   o
+
             //       o4, 2
             // o3, 0       o2(1)
             heightUpdate = false;       // 这种情况的旋转不会改变该子树的高度
@@ -340,6 +344,10 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
         }
         else if (childBF == 0) {
             // 删除节点时可能出现的情况，即左子树的左子树高度低于右子树的右子树1，旋转过来并不完美平衡
+            //    o
+            //        o
+            //      o   o
+
             //       o4, -2
             // o2(1)       o3, 0
             heightUpdate = false;       // 这种情况的旋转不会改变该子树的高度
@@ -394,6 +402,9 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
             RotateLeft(subRoot->left);
         }
         else if (AVLEntryGetBalanceFactor(subRoot->left) == 0) {
+            //      o
+            //   o
+            // o   o
             hightUpdate = false;        // 删除时可能出现的情况，旋转后高度不变
         }
         // 此时失衡节点的左子树的左子树更深，右旋即可
@@ -414,6 +425,9 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
             RotateRight(subRoot->right);
         }
         else if (AVLEntryGetBalanceFactor(subRoot->right) == 0) {
+            //    o
+            //        o
+            //      o   o
             hightUpdate = false;        // 删除时可能出现的情况，旋转后高度不变
         }
         // 此时失衡节点的右子树的右子树更深，左旋即可
