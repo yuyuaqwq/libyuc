@@ -45,20 +45,21 @@ typedef struct _RBTree {
     };
 } RBTree;
 
+RBColor RBEntryGetColor(RBEntry* entry);
+void RBEntrySetColor(RBEntry* entry, RBColor color);
+RBEntry* RBEntryGetParent(RBEntry* entry);
+void RBEntrySetParent(RBEntry* entry, RBEntry* parent);
+
 void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define RBTreeInitByField(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void RBEntryInit(RBEntry* entry, RBColor color);
 RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key);
-void RBTreeInsertEntryBalance(RBTree* tree, RBEntry* entry);
+void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* entry);
 bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry);
+void RBTreeDeleteEntryFixup(RBTree* tree, RBEntry* entry, RBEntry* parent, RBEntry* left, RBEntry* right, RBColor color, bool isLeft);
 void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry);
 RBEntry* RBTreeDeleteEntryByKey(RBTree* tree, void* key);
 
-
-inline RBColor RBEntryGetColor(RBEntry* entry);
-inline void RBEntrySetColor(RBEntry* entry, RBColor color);
-inline RBEntry* RBEntryGetParent(RBEntry* entry);
-inline void RBEntrySetParent(RBEntry* entry, RBEntry* parent);
 
 #ifdef __cplusplus
 }

@@ -151,7 +151,7 @@ RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key) {
 /*
 * 向树中插入节点后的平衡操作
 */
-void RBTreeInsertEntryBalance(RBTree* tree, RBEntry* entry) {
+void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* entry) {
     RBEntry* cur = RBEntryGetParent(entry);
     if (cur == NULL) {
         RBEntrySetColor(entry, kBlack);
@@ -223,11 +223,117 @@ void RBTreeInsertEntryBalance(RBTree* tree, RBEntry* entry) {
 * 成功返回true，失败返回false
 */
 bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry) {
-    if (!BSTreeInsertEntry(&tree->bst, &entry->bse)) {
+    if (!BSTreeInsertEntryByKey(&tree->bst, &entry->bse)) {
         return false;
     }
-    RBTreeInsertEntryBalance(tree, entry);
+    RBTreeInsertEntryFixup(tree, entry);
     return true;
+}
+
+
+/*
+* 向树中删除节点后的平衡操作
+*/
+void RBTreeDeleteEntryFixup(RBTree* tree, RBEntry* entry, RBEntry* parent, RBEntry* left, RBEntry* right, RBColor color, bool isLeft) {
+    if (entry) {
+        if (color == kRed) {
+            // 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除
+            parent = NULL;
+        }
+        // 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可
+        else if (left) {
+            RBEntrySetColor(left, kBlack);
+            parent = NULL;
+        }
+        else if (right) {
+            RBEntrySetColor(right, kBlack);
+            parent = NULL;
+        }
+    }
+
+    RBEntry* newSubRoot;
+    // 回溯维护删除黑色节点，即没有子节点(2节点)的情况
+    while (parent) {
+        RBEntry* sibling = isLeft ? parent->right : parent->left;
+        if (RBEntryGetColor(sibling) == kRed) {
+            // 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
+            // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点
+            RBEntry* oldSubRoot = RBEntryGetParent(sibling);
+            RBEntrySetColor(oldSubRoot, kRed);
+            RBEntrySetColor(sibling, kBlack);
+            if (oldSubRoot->left == sibling) {
+                newSubRoot = RotateRight(oldSubRoot);
+                sibling = oldSubRoot->left;     // 下降后挂接过来的节点
+            }
+            else {
+                newSubRoot = RotateLeft(oldSubRoot);
+                sibling = oldSubRoot->right;     // 下降后挂接过来的节点
+            }
+            if (tree->root == oldSubRoot) {
+                tree->root = newSubRoot;
+            }
+        }
+
+        // 至此兄弟节点一定为黑
+
+        // 侄子节点为红，即兄弟节点是3/4节点的情况，向兄弟借节点(上升兄弟节点，下降父亲节点)
+        if (sibling->right && RBEntryGetColor(sibling->right) == kRed || sibling->left && RBEntryGetColor(sibling->left) == kRed) {
+            RBColor parentColor = RBEntryGetColor(parent);
+            RBEntrySetColor(parent, kBlack);
+            RBEntry* oldSubRoot = parent;
+            if (parent->left == sibling) {
+                if (!sibling->left || RBEntryGetColor(sibling->left) == kBlack) {
+                    RBEntrySetColor(sibling->right, kBlack);
+                    sibling = RotateLeft(sibling);
+                }
+                else {
+                    RBEntrySetColor(sibling->left, kBlack);
+                }
+                newSubRoot = RotateRight(parent);
+            }
+            else {
+                if (!sibling->right || RBEntryGetColor(sibling->right) == kBlack) {
+                    RBEntrySetColor(sibling->left, kBlack);
+                    sibling = RotateRight(sibling);
+                }
+                else {
+                    RBEntrySetColor(sibling->right, kBlack);
+                }
+                newSubRoot = RotateLeft(parent);
+            }
+            // 该节点会接替原先的子根节点，也要接替颜色
+            RBEntrySetColor(sibling, parentColor);
+            if (tree->root == oldSubRoot) {
+                tree->root = newSubRoot;
+            }
+            break;
+        }
+
+        if (RBEntryGetColor(parent) == kRed) {
+            // 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
+            //    |5|8|               |5|
+            //   /  |  \     ->      /   \
+            //  3   6  -9-          3   |6|8|
+            RBEntrySetColor(sibling, kRed);
+            RBEntrySetColor(parent, kBlack);
+            break;
+        }
+        else {
+            // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
+            // 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红
+            RBEntrySetColor(sibling, kRed);
+        }
+        RBEntry* child = parent;
+        parent = RBEntryGetParent(parent);
+        if (parent) {
+            isLeft = parent->left == child;
+        }
+    }
+
+    if (tree->root && RBEntryGetColor(tree->root) == kRed) {
+        // 根节点染黑
+        RBEntrySetColor(tree->root, kBlack);
+    }
 }
 
 /*
@@ -287,6 +393,8 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
         parent = RBEntryGetParent(entry);
         if (parent) {
             isLeft = parent->left == entry;
+        } else {
+            isLeft = false;
         }
 
         if (entry->right != NULL) {
@@ -301,103 +409,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             RBTreeHitchEntry(tree, entry, NULL);
         }
     }
-
-    if (entry) {
-        if (RBEntryGetColor(entry) == kRed) {
-            // 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除
-            parent = NULL;
-        }
-        // 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可
-        else if (entry->left) {
-            RBEntrySetColor(entry->left, kBlack);
-            parent = NULL;
-        }
-        else if (entry->right) {
-            RBEntrySetColor(entry->right, kBlack);
-            parent = NULL;
-        }
-    }
-
-    RBEntry* newSubRoot;
-    // 回溯维护删除黑色节点，即没有子节点(2节点)的情况
-    while (parent) {
-        RBEntry* sibling = isLeft ? parent->right : parent->left;
-        if (RBEntryGetColor(sibling) == kRed) {
-            // 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
-            // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点
-            RBEntry* oldSubRoot = RBEntryGetParent(sibling);
-            RBEntrySetColor(oldSubRoot, kRed);
-            RBEntrySetColor(sibling, kBlack);
-            if (oldSubRoot->left == sibling){
-                newSubRoot = RotateRight(oldSubRoot);
-                sibling = oldSubRoot->left;     // 下降后挂接过来的节点
-            } else {
-                newSubRoot = RotateLeft(oldSubRoot);
-                sibling = oldSubRoot->right;     // 下降后挂接过来的节点
-            }
-            if (tree->root == oldSubRoot) {
-                tree->root = newSubRoot;
-            }
-        }
-
-        // 至此兄弟节点一定为黑
-        
-        // 侄子节点为红，即兄弟节点是3/4节点的情况，向兄弟借节点(上升兄弟节点，下降父亲节点)
-        if (sibling->right && RBEntryGetColor(sibling->right) == kRed || sibling->left && RBEntryGetColor(sibling->left) == kRed) {
-            RBColor parentColor = RBEntryGetColor(parent);
-            RBEntrySetColor(parent, kBlack);
-            RBEntry* oldSubRoot = parent;
-            if (parent->left == sibling) {
-                if (!sibling->left || RBEntryGetColor(sibling->left) == kBlack) {
-                    RBEntrySetColor(sibling->right, kBlack);
-                    sibling = RotateLeft(sibling);
-                } else {
-                    RBEntrySetColor(sibling->left, kBlack);
-                }
-                newSubRoot = RotateRight(parent);
-            }
-            else {
-                if (!sibling->right || RBEntryGetColor(sibling->right) == kBlack) {
-                    RBEntrySetColor(sibling->left, kBlack);
-                    sibling = RotateRight(sibling);
-                } else {
-                    RBEntrySetColor(sibling->right, kBlack);
-                }
-                newSubRoot = RotateLeft(parent);
-            }
-            // 该节点会接替原先的子根节点，也要接替颜色
-            RBEntrySetColor(sibling, parentColor);
-            if (tree->root == oldSubRoot) {
-                tree->root = newSubRoot;
-            }
-            break;
-        }
-        
-        if (RBEntryGetColor(parent) == kRed) {
-            // 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
-            //    |5|8|               |5|
-            //   /  |  \     ->      /   \
-            //  3   6  -9-          3   |6|8|
-            RBEntrySetColor(sibling, kRed);
-            RBEntrySetColor(parent, kBlack);
-            break;
-        }
-        else {
-            // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
-            // 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红
-            RBEntrySetColor(sibling, kRed);
-        }
-        RBEntry* child = parent;
-        parent = RBEntryGetParent(parent);
-        if (parent) {
-            isLeft = parent->left == child;
-        }
-    }
-
-    if (tree->root && RBEntryGetColor(tree->root) == kRed) {
-        // 根节点染黑
-        RBEntrySetColor(tree->root, kBlack);
-    }
+    RBTreeDeleteEntryFixup(tree, entry, parent, entry->left, entry->right, RBEntryGetColor(entry), isLeft);
 }
 
 /*

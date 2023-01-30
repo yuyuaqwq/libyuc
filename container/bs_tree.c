@@ -105,7 +105,7 @@ BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key) {
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool BSTreeInsertEntry(BSTree* tree, BSEntry* entry) {
+bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry) {
     BSEntryInit(entry);
     if (tree->root == NULL) {
         tree->root = entry;
@@ -202,7 +202,7 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool BSTreeInsertEntry(BSTree* tree, BSEntry* cur, BSEntry* entry) {
+bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry, BSEntry* cur) {
     if (tree->root == NULL) {
         BSEntryInit(entry);
         tree->root = entry;
@@ -214,26 +214,23 @@ bool BSTreeInsertEntry(BSTree* tree, BSEntry* cur, BSEntry* entry) {
     if (cur == NULL) cur == tree->root;
     void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
     int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
-    if (res < 0) {
-        if (!cur->right) {
-            BSEntryInit(entry);
-            cur->right = entry;
-            return true;
-        } else {
-            return BSTreeInsertEntry(tree, cur->right, entry);
-        }
+    if (res == 0) {
+        return false;
     }
-    else if (res > 0) {
-        if (!cur->left) {
-            BSEntryInit(entry);
-            cur->left = entry;
-            return true;
-        } else {
-            return BSTreeInsertEntry(tree, cur->left, entry);
+    else if (res < 0) {
+        if (cur->right) {
+            return BSTreeInsertEntryByKey(tree, entry, cur->right);
         }
+        cur->right = entry;
     }
-    return false;
-
+    else {
+        if (cur->left) {
+            return BSTreeInsertEntryByKey(tree, entry, cur->left);
+        }
+        cur->left = entry;
+    }
+    BSEntryInit(entry);
+    return true;
 }
 
 /*
@@ -266,12 +263,10 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent) {
         else {
             // 如果需要回溯，这里对应entry的父亲是minEntry的情况，但不能直接修改entry的parent，因为还没挂接
         }
-
         // 最后进行挂接
         BSTreeHitchEntry(tree, entry, entryParent, minEntry);
 
         // 也可以选择直接交换两个节点的数据
-
     }
     else {
         if (entry->right != NULL) {
@@ -304,54 +299,55 @@ size_t BSTreeGetEntryCount(BSTree* tree) {
 }
 
 
-//BSEntry* BSTreeFirst(BSTree* tree) {
-//    BSEntry* cur = tree->root;
-//    if (!cur) {
-//        return NULL;
-//    }
-//    while (cur->left)
-//        cur = cur->left;
-//    return cur;
-//}
-//
-//BSEntry* BSTreeLast(BSTree* tree) {
-//    BSEntry* cur = tree->root;
-//    if (!cur) {
-//        return NULL;
-//    }
-//    while (cur->right)
-//        cur = cur->right;
-//    return cur;
-//}
-//
-//BSEntry* BSTreeNext(BSEntry* entry) {
-//    if (entry->right) {
-//        entry = entry->right;
-//        while (entry->left)
-//            entry = entry->left;
-//        return entry;
-//    }
-//    BSEntry* parent;
-//    while ((parent = entry->parent) && entry == parent->right)
-//        entry = parent;
-//    return parent;
-//}
-//
-//BSEntry* BSTreePrev(BSEntry* entry) {
-//    if (entry->left) {
-//        entry = entry->left;
-//        while (entry->right) {
-//            entry = entry->right;
-//        }
-//        return entry;
-//    }
-//    BSEntry* parent;
-//    while ((parent = entry->parent) && entry == parent->left) {
-//        entry = parent;
-//    }
-//    return parent;
-//}
+#ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
+BSEntry* BSTreeFirst(BSTree* tree) {
+    BSEntry* cur = tree->root;
+    if (!cur) {
+        return NULL;
+    }
+    while (cur->left)
+        cur = cur->left;
+    return cur;
+}
 
+BSEntry* BSTreeLast(BSTree* tree) {
+    BSEntry* cur = tree->root;
+    if (!cur) {
+        return NULL;
+    }
+    while (cur->right)
+        cur = cur->right;
+    return cur;
+}
+
+BSEntry* BSTreeNext(BSEntry* entry) {
+    if (entry->right) {
+        entry = entry->right;
+        while (entry->left)
+            entry = entry->left;
+        return entry;
+    }
+    BSEntry* parent;
+    while ((parent = entry->parent) && entry == parent->right)
+        entry = parent;
+    return parent;
+}
+
+BSEntry* BSTreePrev(BSEntry* entry) {
+    if (entry->left) {
+        entry = entry->left;
+        while (entry->right) {
+            entry = entry->right;
+        }
+        return entry;
+    }
+    BSEntry* parent;
+    while ((parent = entry->parent) && entry == parent->left) {
+        entry = parent;
+    }
+    return parent;
+}
+#endif // CUTILS_CONTAINER_BS_TREE_NO_PARENT
 
 
 /*
