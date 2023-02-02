@@ -1,6 +1,4 @@
-#include "avl_tree.h"
-
-#ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
+#include <CUtils/container/avl_tree.h>
 
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 /*
@@ -99,51 +97,21 @@ inline void AVLEntrySetLeft(AVLEntry* entry, AVLEntry* left) {
     entry->left = left;
 }
 
-#else
 /*
-* 获取左子节点
+* 获取右子节点
 */
-inline AVLEntry* AVLEntryGetLeft(AVLEntry* entry) {
-    return (AVLEntry*)(((uintptr_t)entry->left_balanceFactor) & (~((uintptr_t)0x3)));
-}
-
-/*
-* 设置左子节点
-*/
-inline void AVLEntrySetLeft(AVLEntry* entry, AVLEntry* left) {
-    entry->left_balanceFactor = (AVLEntry*)(((uintptr_t)left) | ((uintptr_t)entry->left_balanceFactor & 0x3));
-}
-
-/*
-* 获取节点平衡因子
-*/
-inline int AVLEntryGetBalanceFactor(AVLEntry* entry) {
-    int ret = (int)(((uintptr_t)entry->left_balanceFactor) & 0x3);
-    if (ret == 3) {
-        ret = -1;
-    }
-    return ret;
-}
-
-/*
-* 设置节点平衡因子
-*/
-inline void AVLEntrySetBalanceFactor(AVLEntry* entry, int balanceFactor) {
-    entry->left_balanceFactor = (AVLEntry*)(((uintptr_t)AVLEntryGetLeft(entry)) | ((uintptr_t)balanceFactor) & 0x3);
-}
-#endif // CUTILS_CONTAINER_BS_TREE_NO_PARENT
-
 inline AVLEntry* AVLEntryGetRight(AVLEntry* entry) {
     return entry->right;
 }
 
+/*
+* 设置右子节点
+*/
 inline void AVLEntrySetRight(AVLEntry* entry, AVLEntry* right) {
     entry->right = right;
 }
 
 
-
-#ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
 /*
 * 左旋子树
 */
@@ -175,7 +143,6 @@ static AVLEntry* RotateLeft(AVLEntry* subRoot) {
     UpdateHeight(subRoot);
     UpdateHeight(newSubRoot);
 #endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
-
 
     return newSubRoot;
 }
@@ -238,56 +205,8 @@ static void AVLTreeHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* newEntry
         tree->root = newEntry;
     }
 }
-#else
-
-/*
-* 左旋子树
-*/
-static AVLEntry* RotateLeft(AVLEntry* subRoot, AVLEntry* subRootParent) {
-    AVLEntry* newSubRoot = AVLEntryGetRight(subRoot);
-    if (newSubRoot == NULL) {
-        return subRoot;
-    }
-    if (subRootParent) {
-        if (AVLEntryGetLeft(subRootParent) == subRoot) {
-            AVLEntrySetLeft(subRootParent, newSubRoot);
-        }
-        else {
-            AVLEntrySetRight(subRootParent, newSubRoot);
-        }
-    }
-    AVLEntrySetRight(subRoot, AVLEntryGetLeft(newSubRoot));
-    AVLEntrySetLeft(newSubRoot, subRoot);
-    return newSubRoot;
-}
-
-/*
-* 右旋子树
-*/
-static AVLEntry* RotateRight(AVLEntry* subRoot, AVLEntry* subRootParent) {
-    AVLEntry* newSubRoot = AVLEntryGetLeft(subRoot);
-    if (newSubRoot == NULL) {
-        return subRoot;
-    }
-    if (subRootParent) {
-        if (AVLEntryGetLeft(subRootParent) == subRoot) {
-            AVLEntrySetLeft(subRootParent, newSubRoot);
-        }
-        else {
-            AVLEntrySetRight(subRootParent, newSubRoot);
-        }
-    }
-    AVLEntrySetLeft(subRoot, AVLEntryGetRight(newSubRoot));
-    AVLEntrySetRight(newSubRoot, subRoot);
-    return newSubRoot;
-
-}
-
-#endif // CUTILS_CONTAINER_BS_TREE_NO_PARENT
 
 
-
-#ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
 
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 /*
@@ -423,7 +342,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
         AVLEntry* child = subRoot->right;
         int childBF = AVLEntryGetBalanceFactor(child);
         // 判断需要单旋还是双旋
-        if (childBF == 1) {      // childBF == 1
+        if (childBF == 1) {
             // 失衡节点的右子树的左子树更深，先对失衡节点的右子树右旋，再对失衡节点左旋
             //    o
             //        o
@@ -558,8 +477,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_) {
 
 #endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 
-#else 
-#endif
+
 
 /*
 * 初始化AVL树
@@ -573,12 +491,11 @@ void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int ke
 */
 void AVLEntryInit(AVLEntry* entry) {
     BSEntryInit(&entry->bse);
-#ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
+#if !defined(CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_)
     AVLEntrySetBalanceFactor(entry, 0);
 #else
     entry->height = 0;
 #endif
-    
 }
 
 /*
@@ -589,21 +506,16 @@ AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key) {
     return (AVLEntry*)BSTreeFindEntryByKey(&tree->bst, key);
 }
 
-
-
-#ifndef CUTILS_CONTAINER_BS_TREE_NO_PARENT
 /*
 * 向树中插入节点后的平衡操作
 */
 void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* entry) {
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
-    AVLEntrySetBalanceFactor(entry, 0);
     AVLEntry* cur = AVLEntryGetParent(entry);
     AVLEntry* child = entry;
     // 插入节点后平衡因子可能发生变化，回溯维护平衡因子
     while (cur) {
         int curBF = AVLEntryGetBalanceFactor(cur);
-        int childBF = AVLEntryGetBalanceFactor(child);
         if (child == cur->left) curBF++;        // 新节点插入到当前节点的左子树
         else curBF--;       // 新节点插入到当前节点的右子树
 
@@ -615,7 +527,6 @@ void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* entry) {
         cur = AVLEntryGetParent(cur);
     }
 #else
-    entry->height = 0;
     AVLEntry* cur = AVLEntryGetParent(entry);
 
     // 插入节点后高度可能发生变化，回溯维护节点高度
@@ -649,10 +560,8 @@ bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry) {
 /*
 * 从树中删除节点的平衡操作
 */
-void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* entry, AVLEntry* parent, bool isLeft) {
+void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* parent, bool isLeft) {
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
-    AVLEntry* child = entry;
-
     // 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子
     AVLEntry* newSubRoot = NULL;
     while (parent) {
@@ -670,10 +579,10 @@ void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* entry, AVLEntry* parent, b
             AVLEntrySetBalanceFactor(parent, curBF);
         }
 
-        child = parent;
+        AVLEntry* temp = parent;
         parent = AVLEntryGetParent(parent);
         if (parent) {
-            isLeft = parent->left == child;
+            isLeft = parent->left == temp;
         }
     }
 
@@ -761,7 +670,7 @@ void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
         }
     }
 
-    AVLTreeDeleteEntryFixup(tree, entry, parent, isLeft);
+    AVLTreeDeleteEntryFixup(tree, parent, isLeft);
 }
 
 /*
@@ -777,76 +686,3 @@ AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key) {
 }
 
 
-#else 
-
-
-
-/*
-* 向树中插入节点后的平衡操作
-* 继续平衡返回true，无需平衡返回false
-*/
-bool AVLTreeInsertEntryBalance(AVLTree* tree, AVLEntry* entry, AVLEntry* parent) {
-    AVLEntrySetBalanceFactor(entry, 0);
-    // 插入节点后平衡因子可能发生变化，回溯维护平衡因子
-    int curBF = AVLEntryGetBalanceFactor(parent);
-    int childBF = AVLEntryGetBalanceFactor(entry);
-    if (entry == AVLEntryGetLeft(parent)) curBF++;        // 新节点插入到当前节点的左子树
-    else curBF--;       // 新节点插入到当前节点的右子树
-
-    if (RotateByBalanceFactor(tree, &parent, curBF) || curBF == 0) {
-        // 旋转后当前节点高度不变，或原先高度就不变，停止回溯
-        return false;
-    }
-    return true;
-}
-
-/*
-* 递归向树中插入节点
-*/
-bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* cur) {
-
-}
-/*
-* 从树中按key插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
-*/
-bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry, AVLEntry* cur) {
-    if (tree->root == NULL) {
-        AVLEntryInit(entry);
-        tree->root = entry;
-        return true;
-    }
-    void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
-    void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
-
-    if (cur == NULL) cur == tree->root;
-    void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-    int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
-    bool ret = true;
-    if (res == 0) {
-        return false;
-    }
-    else if (res < 0) {
-        if (AVLEntryGetRight(cur)) {
-            ret = AVLTreeInsertEntryByKey(tree, entry, AVLEntryGetRight(cur));
-        } else{
-            AVLEntrySetRight(cur, entry);
-            AVLEntryInit(entry);
-        }
-    }
-    else {
-        if (AVLEntryGetLeft(cur)) {
-            ret = AVLTreeInsertEntryByKey(tree, entry, AVLEntryGetLeft(cur));
-        }
-        else {
-            AVLEntrySetLeft(cur, entry);
-            AVLEntryInit(entry);
-        }
-    }
-    if (ret) {
-        AVLTreeInsertEntryBalance(tree, entry);
-    }
-    return ret;
-}
-#endif // CUTILS_CONTAINER_BS_TREE_NO_PARENT

@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "array.h"
+#include <CUtils/container/array.h>
 
 void ArrayExpand(Array* arr, size_t targetCount) {
     size_t oldCapacity = arr->capacity;

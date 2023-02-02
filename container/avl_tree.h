@@ -8,17 +8,15 @@
 #ifndef CUTILS_CONTAINER_AVLTREE_H_
 #define CUTILS_CONTAINER_AVLTREE_H_
 
-#include "CUtils/object.h"
-#include "CUtils/container/bs_tree.h"
+#include <CUtils/object.h>
+#include <CUtils/container/bs_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_       // 是否存储高度，存储平衡因子可以节省空间
+// #define CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_       // 是否存储高度，存储平衡因子可以节省空间
 
-
-#if !defined(CUTILS_CONTAINER_BS_TREE_NO_PARENT)
 #if !defined(CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_)
 /*
 * 嵌入平衡因子的AVL树
@@ -50,25 +48,6 @@ typedef struct _AVLEntry {
 } AVLEntry;
 #endif // CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
 
-AVLEntry* AVLEntryGetParent(AVLEntry* entry);
-
-#else
-
-/*
-* 无父结点嵌入平衡因子的AVL树
-*/
-typedef struct _AVLEntry {
-    union {
-        struct {
-            struct _AVLEntry* left_balanceFactor;     // 平衡因子嵌入到左指针低2位
-            struct _AVLEntry* right;
-        };
-        BSEntry bse;
-    };
-} AVLEntry;
-
-#endif // CUTILS_CONTAINER_BS_TREE_NO_PARENT
-
 typedef struct _AVLTree {
     union {
         struct {
@@ -82,17 +61,21 @@ typedef struct _AVLTree {
     };
 } AVLTree;
 
+AVLEntry* AVLEntryGetParent(AVLEntry* entry);
 AVLEntry* AVLEntryGetLeft(AVLEntry* entry);
 AVLEntry* AVLEntryGetRight(AVLEntry* entry);
 int AVLEntryGetBalanceFactor(AVLEntry* entry);
+
+
+void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* entry);
+void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* parent, bool isLeft);
+
 
 void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define AVLTreeInitByField(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void AVLEntryInit(AVLEntry* entry);
 AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key);
-void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* entry);
 bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry);
-void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* entry, AVLEntry* parent, bool isLeft);
 void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry);
 AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key);
 

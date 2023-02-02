@@ -223,7 +223,7 @@ void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* entry) {
 * 成功返回true，失败返回false
 */
 bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry) {
-    if (!BSTreeInsertEntryByKey(&tree->bst, &entry->bse)) {
+    if (!BSTreeInsertEntryByKey(&tree->bst, &entry->bse, NULL)) {
         return false;
     }
     RBTreeInsertEntryFixup(tree, entry);
@@ -365,7 +365,7 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry) {
             // 将minEntry从原先的位置摘除，用其右子树代替
             RBEntryGetParent(minEntry)->left = minEntry->right;
             if (minEntry->right) {
-                RBEntrySetParent(minEntry->right, AVLEntryGetParent(minEntry));
+                RBEntrySetParent(minEntry->right, RBEntryGetParent(minEntry));
             }
             // 最小节点继承待删除节点的右子树
             minEntry->right = entry->right;
