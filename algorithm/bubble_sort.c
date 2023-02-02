@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "bubble_sort.h"
+#include <CUtils/algorithm/bubble_sort.h>
 
 /*
 * 冒泡排序

@@ -8,7 +8,7 @@
 #ifndef CUTILS_CONTAINER_ARRAY_H_
 #define CUTILS_CONTAINER_ARRAY_H_
 
-#include "CUtils/object.h"
+#include <CUtils/object.h>
 
 #ifdef __cplusplus
 extern "C" {

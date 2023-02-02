@@ -8,7 +8,7 @@
 #ifndef CUTILS_ALGORITHM_SEARCH_H_
 #define CUTILS_ALGORITHM_SEARCH_H_
 
-#include "CUtils/object.h"
+#include <CUtils/object.h>
 
 #ifdef __cplusplus
 extern "C" {

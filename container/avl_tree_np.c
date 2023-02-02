@@ -1,37 +1,37 @@
 #include <CUtils/container/avl_tree_np.h>
 
 /*
-* »ñÈ¡×ó×Ó½Úµã
+* èŽ·å–å·¦å­èŠ‚ç‚¹
 */
-inline AVLEntry* AVLEntryGetLeft(AVLEntry* entry) {
-    return (AVLEntry*)(((uintptr_t)entry->left_balanceFactor) & (~((uintptr_t)0x3)));
+inline AVLEntryNp* AVLEntryNpGetLeft(AVLEntryNp* entry) {
+    return (AVLEntryNp*)(((uintptr_t)entry->left_balanceFactor) & (~((uintptr_t)0x3)));
 }
 
 /*
-* ÉèÖÃ×ó×Ó½Úµã
+* è®¾ç½®å·¦å­èŠ‚ç‚¹
 */
-inline void AVLEntrySetLeft(AVLEntry* entry, AVLEntry* left) {
-    entry->left_balanceFactor = (AVLEntry*)(((uintptr_t)left) | ((uintptr_t)entry->left_balanceFactor & 0x3));
+inline void AVLEntryNpSetLeft(AVLEntryNp* entry, AVLEntryNp* left) {
+    entry->left_balanceFactor = (AVLEntryNp*)(((uintptr_t)left) | ((uintptr_t)entry->left_balanceFactor & 0x3));
 }
 
 /*
-* »ñÈ¡ÓÒ×Ó½Úµã
+* èŽ·å–å³å­èŠ‚ç‚¹
 */
-inline AVLEntry* AVLEntryGetRight(AVLEntry* entry) {
+inline AVLEntryNp* AVLEntryNpGetRight(AVLEntryNp* entry) {
     return entry->right;
 }
 
 /*
-* ÉèÖÃÓÒ×Ó½Úµã
+* è®¾ç½®å³å­èŠ‚ç‚¹
 */
-inline void AVLEntrySetRight(AVLEntry* entry, AVLEntry* right) {
+inline void AVLEntryNpSetRight(AVLEntryNp* entry, AVLEntryNp* right) {
     entry->right = right;
 }
 
 /*
-* »ñÈ¡½ÚµãÆ½ºâÒò×Ó
+* èŽ·å–èŠ‚ç‚¹å¹³è¡¡å› å­
 */
-inline int AVLEntryGetBalanceFactor(AVLEntry* entry) {
+inline int AVLEntryNpGetBalanceFactor(AVLEntryNp* entry) {
     int ret = (int)(((uintptr_t)entry->left_balanceFactor) & 0x3);
     if (ret == 3) {
         ret = -1;
@@ -40,66 +40,66 @@ inline int AVLEntryGetBalanceFactor(AVLEntry* entry) {
 }
 
 /*
-* ÉèÖÃ½ÚµãÆ½ºâÒò×Ó
+* è®¾ç½®èŠ‚ç‚¹å¹³è¡¡å› å­
 */
-inline void AVLEntrySetBalanceFactor(AVLEntry* entry, int balanceFactor) {
-    entry->left_balanceFactor = (AVLEntry*)(((uintptr_t)AVLEntryGetLeft(entry)) | ((uintptr_t)balanceFactor) & 0x3);
+inline void AVLEntryNpSetBalanceFactor(AVLEntryNp* entry, int balanceFactor) {
+    entry->left_balanceFactor = (AVLEntryNp*)(((uintptr_t)AVLEntryNpGetLeft(entry)) | ((uintptr_t)balanceFactor) & 0x3);
 }
 
 
 /*
-* ×óÐý×ÓÊ÷
+* å·¦æ—‹å­æ ‘
 */
-static AVLEntry* RotateLeft(AVLEntry* subRoot, AVLEntry* subRootParent) {
-    AVLEntry* newSubRoot = AVLEntryGetRight(subRoot);
+static AVLEntryNp* RotateLeft(AVLEntryNp* subRoot, AVLEntryNp* subRootParent) {
+    AVLEntryNp* newSubRoot = AVLEntryNpGetRight(subRoot);
     if (newSubRoot == NULL) {
         return subRoot;
     }
     if (subRootParent) {
-        if (AVLEntryGetLeft(subRootParent) == subRoot) {
-            AVLEntrySetLeft(subRootParent, newSubRoot);
+        if (AVLEntryNpGetLeft(subRootParent) == subRoot) {
+            AVLEntryNpSetLeft(subRootParent, newSubRoot);
         }
         else {
-            AVLEntrySetRight(subRootParent, newSubRoot);
+            AVLEntryNpSetRight(subRootParent, newSubRoot);
         }
     }
-    AVLEntrySetRight(subRoot, AVLEntryGetLeft(newSubRoot));
-    AVLEntrySetLeft(newSubRoot, subRoot);
+    AVLEntryNpSetRight(subRoot, AVLEntryNpGetLeft(newSubRoot));
+    AVLEntryNpSetLeft(newSubRoot, subRoot);
     return newSubRoot;
 }
 
 /*
-* ÓÒÐý×ÓÊ÷
+* å³æ—‹å­æ ‘
 */
-static AVLEntry* RotateRight(AVLEntry* subRoot, AVLEntry* subRootParent) {
-    AVLEntry* newSubRoot = AVLEntryGetLeft(subRoot);
+static AVLEntryNp* RotateRight(AVLEntryNp* subRoot, AVLEntryNp* subRootParent) {
+    AVLEntryNp* newSubRoot = AVLEntryNpGetLeft(subRoot);
     if (newSubRoot == NULL) {
         return subRoot;
     }
     if (subRootParent) {
-        if (AVLEntryGetLeft(subRootParent) == subRoot) {
-            AVLEntrySetLeft(subRootParent, newSubRoot);
+        if (AVLEntryNpGetLeft(subRootParent) == subRoot) {
+            AVLEntryNpSetLeft(subRootParent, newSubRoot);
         }
         else {
-            AVLEntrySetRight(subRootParent, newSubRoot);
+            AVLEntryNpSetRight(subRootParent, newSubRoot);
         }
     }
-    AVLEntrySetLeft(subRoot, AVLEntryGetRight(newSubRoot));
-    AVLEntrySetRight(newSubRoot, subRoot);
+    AVLEntryNpSetLeft(subRoot, AVLEntryNpGetRight(newSubRoot));
+    AVLEntryNpSetRight(newSubRoot, subRoot);
     return newSubRoot;
 
 }
 
 /*
-* newEntry´úÌæentry¹Ò½Óµ½Æä¸¸½ÚµãÏÂ
-* newEntryµÄ×óÓÒ×Ó½Úµã²»±ä
-* entry´ÓÊ÷ÖÐÕª³ý
-* entryµÄleftºÍright²»±ä
+* newEntryä»£æ›¿entryæŒ‚æŽ¥åˆ°å…¶çˆ¶èŠ‚ç‚¹ä¸‹
+* newEntryçš„å·¦å³å­èŠ‚ç‚¹ä¸å˜
+* entryä»Žæ ‘ä¸­æ‘˜é™¤
+* entryçš„leftå’Œrightä¸å˜
 */
-static void AVLTreeHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* entryParent, AVLEntry* newEntry) {
+static void AVLTreeNpHitchEntry(AVLTreeNp* tree, AVLEntryNp* entry, AVLEntryNp* entryParent, AVLEntryNp* newEntry) {
     if (entryParent) {
-        if (AVLEntryGetLeft(entryParent) == entry) {
-            AVLEntrySetLeft(entryParent, newEntry);
+        if (AVLEntryNpGetLeft(entryParent) == entry) {
+            AVLEntryNpSetLeft(entryParent, newEntry);
         }
         else {
             entryParent->right = newEntry;
@@ -112,93 +112,92 @@ static void AVLTreeHitchEntry(AVLTree* tree, AVLEntry* entry, AVLEntry* entryPar
 
 
 /*
-* ¸ù¾ÝÆ½ºâÒò×ÓÀ´Ðý×ª×ÓÊ÷
-* ²¢¸ºÔð¸üÐÂÆ½ºâÒò×Ó
-* ×ÓÊ÷¸ß¶È±ä»¯·µ»Øtrue£¬¸ß¶ÈÎ´±ä»¯·µ»Øfalse
+* æ ¹æ®å¹³è¡¡å› å­æ¥æ—‹è½¬å­æ ‘
+* å¹¶è´Ÿè´£æ›´æ–°å¹³è¡¡å› å­
+* å­æ ‘é«˜åº¦å˜åŒ–è¿”å›žtrueï¼Œé«˜åº¦æœªå˜åŒ–è¿”å›žfalse
 */
-static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** unbalancedEntry, AVLEntry* subRoot, int curBF, AVLEntry* parent) {
+static bool RotateByBalanceFactor(AVLTreeNp* tree, AVLEntryNp* subRoot, int curBF, AVLEntryNp* parent) {
     bool rotate = false;
     bool heightUpdate = true;
-    AVLEntry* newSubRoot = NULL;
+    AVLEntryNp* newSubRoot = NULL;
     if (curBF > 1) {
-        AVLEntry* child = AVLEntryGetLeft(subRoot);
-        int childBF = AVLEntryGetBalanceFactor(child);
+        AVLEntryNp* child = AVLEntryNpGetLeft(subRoot);
+        int childBF = AVLEntryNpGetBalanceFactor(child);
         if (childBF == -1) {
-            int rightBF = AVLEntryGetBalanceFactor(child->right);
+            int rightBF = AVLEntryNpGetBalanceFactor(child->right);
             if (child->right) {
-                AVLEntrySetBalanceFactor(child->right, 0);
+                AVLEntryNpSetBalanceFactor(child->right, 0);
             }
             RotateLeft(child, subRoot);
             newSubRoot = RotateRight(subRoot, parent);
 
             if (rightBF == -1) {
-                AVLEntrySetBalanceFactor(child, 1);
-                AVLEntrySetBalanceFactor(subRoot, 0);
+                AVLEntryNpSetBalanceFactor(child, 1);
+                AVLEntryNpSetBalanceFactor(subRoot, 0);
             }
             else {
-                AVLEntrySetBalanceFactor(child, 0);
+                AVLEntryNpSetBalanceFactor(child, 0);
                 if (rightBF == 1) {
-                    AVLEntrySetBalanceFactor(subRoot, -1);
+                    AVLEntryNpSetBalanceFactor(subRoot, -1);
                 }
                 else {
-                    AVLEntrySetBalanceFactor(subRoot, 0);
+                    AVLEntryNpSetBalanceFactor(subRoot, 0);
                 }
             }
         }
         else if (childBF == 0) {
             heightUpdate = false;
             newSubRoot = RotateRight(subRoot, parent);
-            AVLEntrySetBalanceFactor(child, -1);
-            AVLEntrySetBalanceFactor(subRoot, 1);
+            AVLEntryNpSetBalanceFactor(child, -1);
+            AVLEntryNpSetBalanceFactor(subRoot, 1);
         }
         else {
             newSubRoot = RotateRight(subRoot, parent);
-            AVLEntrySetBalanceFactor(child, 0);
-            AVLEntrySetBalanceFactor(subRoot, 0);
+            AVLEntryNpSetBalanceFactor(child, 0);
+            AVLEntryNpSetBalanceFactor(subRoot, 0);
         }
         rotate = true;
     }
     else if (curBF < -1) {
-        AVLEntry* child = subRoot->right;
-        int childBF = AVLEntryGetBalanceFactor(child);
+        AVLEntryNp* child = subRoot->right;
+        int childBF = AVLEntryNpGetBalanceFactor(child);
         if (childBF == 1) {
-            int leftBF = AVLEntryGetBalanceFactor(AVLEntryGetLeft(child));
-            if (AVLEntryGetLeft(child)) {
-                AVLEntrySetBalanceFactor(AVLEntryGetLeft(child), 0);
+            int leftBF = AVLEntryNpGetBalanceFactor(AVLEntryNpGetLeft(child));
+            if (AVLEntryNpGetLeft(child)) {
+                AVLEntryNpSetBalanceFactor(AVLEntryNpGetLeft(child), 0);
             }
             RotateRight(child, subRoot);
             newSubRoot = RotateLeft(subRoot, parent);
             if (leftBF == 1) {
-                AVLEntrySetBalanceFactor(child, -1);
-                AVLEntrySetBalanceFactor(subRoot, 0);
+                AVLEntryNpSetBalanceFactor(child, -1);
+                AVLEntryNpSetBalanceFactor(subRoot, 0);
             }
             else {
-                AVLEntrySetBalanceFactor(child, 0);
+                AVLEntryNpSetBalanceFactor(child, 0);
                 if (leftBF == -1) {
-                    AVLEntrySetBalanceFactor(subRoot, 1);
+                    AVLEntryNpSetBalanceFactor(subRoot, 1);
                 }
                 else {
-                    AVLEntrySetBalanceFactor(subRoot, 0);
+                    AVLEntryNpSetBalanceFactor(subRoot, 0);
                 }
             }
         }
         else if (childBF == 0) {
             heightUpdate = false;
             newSubRoot = RotateLeft(subRoot, parent);
-            AVLEntrySetBalanceFactor(child, 1);
-            AVLEntrySetBalanceFactor(subRoot, -1);
+            AVLEntryNpSetBalanceFactor(child, 1);
+            AVLEntryNpSetBalanceFactor(subRoot, -1);
         }
         else {
             newSubRoot = RotateLeft(subRoot, parent);
-            AVLEntrySetBalanceFactor(child, 0);
-            AVLEntrySetBalanceFactor(subRoot, 0);
+            AVLEntryNpSetBalanceFactor(child, 0);
+            AVLEntryNpSetBalanceFactor(subRoot, 0);
         }
         rotate = true;
     }
     else {
         heightUpdate = false;
-        if (unbalancedEntry) *unbalancedEntry = subRoot;
-        AVLEntrySetBalanceFactor(subRoot, curBF);
+        AVLEntryNpSetBalanceFactor(subRoot, curBF);
     }
     if (rotate) {
         if (tree->root == subRoot) {
@@ -210,200 +209,204 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** unbalancedEntry, AVL
 
 
 /*
-* ³õÊ¼»¯AVLÊ÷
+* åˆå§‹åŒ–AVLæ ‘
 */
-void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-    BSTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+void AVLTreeNpInit(AVLTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+    BSTreeNpInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*
-* ³õÊ¼»¯½Úµã
+* åˆå§‹åŒ–èŠ‚ç‚¹
 */
-void AVLEntryInit(AVLEntry* entry) {
-    BSEntryInit(&entry->bse);
-    AVLEntrySetBalanceFactor(entry, 0);
+void AVLEntryNpInit(AVLEntryNp* entry) {
+    BSEntryNpInit(&entry->bse);
+    AVLEntryNpSetBalanceFactor(entry, 0);
 }
 
 
 
 
 /*
-* ÏòÊ÷ÖÐ²åÈë½ÚµãºóµÄÆ½ºâ²Ù×÷
-* ¼ÌÐøÆ½ºâ·µ»Øtrue£¬ÎÞÐèÆ½ºâ·µ»Øfalse
+* å‘æ ‘ä¸­æ’å…¥èŠ‚ç‚¹åŽçš„å¹³è¡¡æ“ä½œ
+* ç»§ç»­å¹³è¡¡è¿”å›žtrueï¼Œæ— éœ€å¹³è¡¡è¿”å›žfalse
 */
-bool AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry** unbalancedEntry, AVLEntry* cur, AVLEntry* curParent) {
-    // ²åÈë½ÚµãºóÆ½ºâÒò×Ó¿ÉÄÜ·¢Éú±ä»¯£¬»ØËÝÎ¬»¤Æ½ºâÒò×Ó
-    int curBF = AVLEntryGetBalanceFactor(cur);
-    if (AVLEntryGetLeft(cur) == *unbalancedEntry) curBF++;        // ÐÂ½Úµã²åÈëµ½µ±Ç°½ÚµãµÄ×ó×ÓÊ÷
-    else curBF--;       // ÐÂ½Úµã²åÈëµ½µ±Ç°½ÚµãµÄÓÒ×ÓÊ÷
+bool AVLTreeNpInsertEntryFixup(AVLTreeNp* tree, bool isCurLeft, AVLEntryNp* cur, AVLEntryNp* curParent) {
+    // æ’å…¥èŠ‚ç‚¹åŽå¹³è¡¡å› å­å¯èƒ½å‘ç”Ÿå˜åŒ–ï¼Œå›žæº¯ç»´æŠ¤å¹³è¡¡å› å­
+    int curBF = AVLEntryNpGetBalanceFactor(cur);
+    if (isCurLeft) curBF++;        // æ–°èŠ‚ç‚¹æ’å…¥åˆ°å½“å‰èŠ‚ç‚¹çš„å·¦å­æ ‘
+    else curBF--;       // æ–°èŠ‚ç‚¹æ’å…¥åˆ°å½“å‰èŠ‚ç‚¹çš„å³å­æ ‘
 
-    if (RotateByBalanceFactor(tree, unbalancedEntry, cur, curBF, curParent) || curBF == 0) {
-        // Ðý×ªºóµ±Ç°½Úµã¸ß¶È²»±ä£¬»òÔ­ÏÈ¸ß¶È¾Í²»±ä£¬Í£Ö¹»ØËÝ
+    if (RotateByBalanceFactor(tree, cur, curBF, curParent) || curBF == 0) {
+        // æ—‹è½¬åŽå½“å‰èŠ‚ç‚¹é«˜åº¦ä¸å˜ï¼Œæˆ–åŽŸå…ˆé«˜åº¦å°±ä¸å˜ï¼Œåœæ­¢å›žæº¯
         return false;
     }
     return true;
 }
 
 /*
-* µÝ¹é²éÕÒ²¢²åÈë½Úµã
+* é€’å½’æŸ¥æ‰¾å¹¶æ’å…¥èŠ‚ç‚¹
 */
-bool AVLTreeInsertEntry(AVLTree* tree, AVLEntry** unbalancedEntry, AVLEntry* cur, AVLEntry* curParent) {
-    void* obj = GetObjByFieldOffset(*unbalancedEntry, tree->entryFieldOffset, void);
+bool AVLTreeNpInsertEntry(AVLTreeNp* tree, AVLEntryNp* entry, AVLEntryNp* cur, AVLEntryNp* curParent) {
+    void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
     void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
 
     void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
     int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
     bool ret = true;
+    bool isCurLeft;
     if (res == 0) {
         return false;
     }
     else if (res < 0) {
-        if (AVLEntryGetRight(cur)) {
-            ret = AVLTreeInsertEntry(tree, unbalancedEntry, AVLEntryGetRight(cur), cur);
+        if (AVLEntryNpGetRight(cur)) {
+            ret = AVLTreeNpInsertEntry(tree, entry, AVLEntryNpGetRight(cur), cur);
         }
         else {
-            AVLEntrySetRight(cur, *unbalancedEntry);
+            AVLEntryNpSetRight(cur, entry);
         }
+        isCurLeft = false;
     }
     else {
-        if (AVLEntryGetLeft(cur)) {
-            ret = AVLTreeInsertEntry(tree, unbalancedEntry, AVLEntryGetLeft(cur), cur);
+        if (AVLEntryNpGetLeft(cur)) {
+            ret = AVLTreeNpInsertEntry(tree, entry, AVLEntryNpGetLeft(cur), cur);
         }
         else {
-            AVLEntrySetLeft(cur, *unbalancedEntry);
+            AVLEntryNpSetLeft(cur, entry);
         }
+        isCurLeft = true;
     }
     if (ret) {
-        ret = AVLTreeInsertEntryFixup(tree, unbalancedEntry, cur, curParent);
+        ret = AVLTreeNpInsertEntryFixup(tree, isCurLeft, cur, curParent);
     }
     return ret;
 }
 
 /*
-* ´ÓÊ÷ÖÐ°´key²åÈë½Úµã
-* ²»ÔÊÐí´æÔÚÖØ¸´½Úµã
-* ³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+* ä»Žæ ‘ä¸­æŒ‰keyæ’å…¥èŠ‚ç‚¹
+* ä¸å…è®¸å­˜åœ¨é‡å¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›žtrueï¼Œå¤±è´¥è¿”å›žfalse
 */
-bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry) {
-    AVLEntryInit(entry);
+bool AVLTreeNpInsertEntryByKey(AVLTreeNp* tree, AVLEntryNp* entry) {
+    AVLEntryNpInit(entry);
     if (tree->root == NULL) {
         tree->root = entry;
         return true;
     }
-    return AVLTreeInsertEntry(tree, &entry, tree->root, NULL);
+    return AVLTreeNpInsertEntry(tree, entry, tree->root, NULL);
 }
 
 
 
 /*
-* ´ÓÊ÷ÖÐÉ¾³ý½ÚµãµÄÆ½ºâ²Ù×÷
+* ä»Žæ ‘ä¸­åˆ é™¤èŠ‚ç‚¹çš„å¹³è¡¡æ“ä½œ
 */
-bool AVLTreeDeleteEntryFixup(AVLTree* tree, bool isCurLeft, AVLEntry* cur, AVLEntry* curParent) {
-    // É¾³ý½Úµãºó½ÚµãÆ½ºâÒò×Ó¿ÉÄÜ·¢Éú±ä»¯£¬»ØËÝÎ¬»¤½ÚµãÆ½ºâÒò×Ó
-    AVLEntry* newSubRoot = NULL;
-    int curBF = AVLEntryGetBalanceFactor(cur);
+bool AVLTreeNpDeleteEntryFixup(AVLTreeNp* tree, bool isCurLeft, AVLEntryNp* cur, AVLEntryNp* curParent) {
+    // åˆ é™¤èŠ‚ç‚¹åŽèŠ‚ç‚¹å¹³è¡¡å› å­å¯èƒ½å‘ç”Ÿå˜åŒ–ï¼Œå›žæº¯ç»´æŠ¤èŠ‚ç‚¹å¹³è¡¡å› å­
+    AVLEntryNp* newSubRoot = NULL;
+    int curBF = AVLEntryNpGetBalanceFactor(cur);
     if (isCurLeft) curBF--;
     else curBF++;
 
     if (curBF != 0) {
-        if (RotateByBalanceFactor(tree, NULL, cur, curBF, curParent) == false) {
-            // ÁíÒ»²à¸ß¶ÈÏàµÈ»ò¸üÉîÇÒÎÞÐèÐý×ª£¬Ôòµ±Ç°½Úµã¸ß¶È²»±ä
+        if (RotateByBalanceFactor(tree, cur, curBF, curParent) == false) {
+            // å¦ä¸€ä¾§é«˜åº¦ç›¸ç­‰æˆ–æ›´æ·±ä¸”æ— éœ€æ—‹è½¬ï¼Œåˆ™å½“å‰èŠ‚ç‚¹é«˜åº¦ä¸å˜
             return false;
         }
     }
     else {
-        AVLEntrySetBalanceFactor(cur, curBF);
+        AVLEntryNpSetBalanceFactor(cur, curBF);
     }
     return true;
 }
 
-
-static bool DeleteMinEntry(AVLTree* tree, AVLEntry* cur, AVLEntry** curParent, AVLEntry** delete_minEntry, AVLEntry* deleteParent) {
-    if (AVLEntryGetLeft(cur)) {
-        if (DeleteMinEntry(tree, AVLEntryGetLeft(cur), &cur, delete_minEntry, deleteParent)) {
-            return AVLTreeDeleteEntryFixup(tree, true, cur, *curParent);
+/*
+* é€’å½’æŸ¥æ‰¾æœ€å°èŠ‚ç‚¹å¹¶åˆ é™¤å¾…åˆ é™¤èŠ‚ç‚¹ï¼Œå°†æœ€å°èŠ‚ç‚¹æŒ‚æŽ¥åˆ°å¾…åˆ é™¤èŠ‚ç‚¹çš„ä½ç½®
+* delete_minEntryä¼ å…¥å¾…åˆ é™¤èŠ‚ç‚¹ï¼Œè¿”å›žä»£æ›¿å…¶çš„æœ€å°èŠ‚ç‚¹
+*/
+static bool DeleteMinEntry(AVLTreeNp* tree, AVLEntryNp* cur, AVLEntryNp** curParent, AVLEntryNp** delete_minEntry, AVLEntryNp* deleteParent) {
+    if (AVLEntryNpGetLeft(cur)) {
+        if (DeleteMinEntry(tree, AVLEntryNpGetLeft(cur), &cur, delete_minEntry, deleteParent)) {
+            return AVLTreeNpDeleteEntryFixup(tree, true, cur, *curParent);
         }
     } else {
-        // ×îÐ¡½Úµã¼Ì³Ð´ýÉ¾³ý½ÚµãµÄ×ó×ÓÊ÷£¬ÒòÎª×îÐ¡½Úµã¿Ï¶¨Ã»ÓÐ×ó½Úµã£¬ËùÒÔÖ±½Ó¸³Öµ
-        AVLEntrySetLeft(cur, AVLEntryGetLeft(*delete_minEntry));
+        // æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å·¦å­æ ‘ï¼Œå› ä¸ºæœ€å°èŠ‚ç‚¹è‚¯å®šæ²¡æœ‰å·¦èŠ‚ç‚¹ï¼Œæ‰€ä»¥ç›´æŽ¥èµ‹å€¼
+        AVLEntryNpSetLeft(cur, AVLEntryNpGetLeft(*delete_minEntry));
 
-        // ×îÐ¡½Úµã¹Ò½Óµ½ÐèÒªÉ¾³ýµÄÎ»ÖÃ
-        AVLTreeHitchEntry(tree, *delete_minEntry, deleteParent, cur);
+        // æœ€å°èŠ‚ç‚¹æŒ‚æŽ¥åˆ°éœ€è¦åˆ é™¤çš„ä½ç½®
+        AVLTreeNpHitchEntry(tree, *delete_minEntry, deleteParent, cur);
 
-        AVLEntrySetBalanceFactor(cur, AVLEntryGetBalanceFactor(*delete_minEntry));
+        AVLEntryNpSetBalanceFactor(cur, AVLEntryNpGetBalanceFactor(*delete_minEntry));
 
-        // ×îÐ¡½Úµã¿ÉÄÜÊÇ´ýÉ¾³ý½ÚµãµÄÓÒ½Úµã
-        if (AVLEntryGetRight(*delete_minEntry) != cur) {
-            // ½«minEntry´ÓÔ­ÏÈµÄÎ»ÖÃÕª³ý£¬ÓÃÆäÓÒ×ÓÊ÷´úÌæ
-            AVLEntrySetLeft(*curParent, cur->right);
+        // æœ€å°èŠ‚ç‚¹å¯èƒ½æ˜¯å¾…åˆ é™¤èŠ‚ç‚¹çš„å³èŠ‚ç‚¹
+        if (AVLEntryNpGetRight(*delete_minEntry) != cur) {
+            // å°†minEntryä»ŽåŽŸå…ˆçš„ä½ç½®æ‘˜é™¤ï¼Œç”¨å…¶å³å­æ ‘ä»£æ›¿
+            AVLEntryNpSetLeft(*curParent, cur->right);
 
-            // ×îÐ¡½Úµã¼Ì³Ð´ýÉ¾³ý½ÚµãµÄÓÒ×ÓÊ÷
+            // æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å³å­æ ‘
             cur->right = (*delete_minEntry)->right;
         } else {
-            *curParent = cur;       // curParent¿ÉÄÜÖ¸Ïò½«Òª·µ»ØµÄminEntry£¬Ò²¿ÉÄÜÊÇÉÏ²ãDeleteMinEntryµÄcur
+            *curParent = cur;       // curParentå¯èƒ½æŒ‡å‘AVLTreeNpDeleteEntryçš„curï¼Œä¹Ÿå¯èƒ½æ˜¯ä¸Šå±‚DeleteMinEntryçš„cur
         }
-        *delete_minEntry = cur;     // ·µ»Ø×îÐ¡½Úµã
+        *delete_minEntry = cur;     // è¿”å›žæœ€å°èŠ‚ç‚¹
         return true;
     }
 }
 
 /*
-* µÝ¹é²éÕÒ²¢É¾³ý½Úµã
+* é€’å½’æŸ¥æ‰¾å¹¶åˆ é™¤èŠ‚ç‚¹
 */
-bool AVLTreeDeleteEntry(AVLTree* tree, void* key, AVLEntry* cur, AVLEntry** curParent, AVLEntry** deleteEntry) {
+bool AVLTreeNpDeleteEntry(AVLTreeNp* tree, void* key, AVLEntryNp* cur, AVLEntryNp** curParent, AVLEntryNp** deleteEntry) {
     void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
     int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
     bool ret;
     bool isCurLeft;
     if (res > 0) {
-        ret = AVLTreeDeleteEntry(tree, key, AVLEntryGetLeft(cur), &cur, deleteEntry);
+        ret = AVLTreeNpDeleteEntry(tree, key, AVLEntryNpGetLeft(cur), &cur, deleteEntry);
         isCurLeft = true;
     }
     else if (res < 0) {
-        ret = AVLTreeDeleteEntry(tree, key, cur->right, &cur, deleteEntry);
+        ret = AVLTreeNpDeleteEntry(tree, key, cur->right, &cur, deleteEntry);
         isCurLeft = false;
     }
     else {
         *deleteEntry = cur;
-        if (AVLEntryGetLeft(cur) != NULL && AVLEntryGetRight(cur) != NULL) {
-            // ÓÐ×óÓÒ¸÷ÓÐ×Ó½Úµã£¬ÕÒµ±Ç°½ÚµãµÄÓÒ×ÓÊ÷ÖÐ×îÐ¡µÄ½Úµã£¬ÓÃ×îÐ¡½ÚµãÌæ»»µ½µ±Ç°½ÚµãËùÔÚµÄÎ»ÖÃ£¬Õª³ýµ±Ç°½Úµã£¬Ïàµ±ÓÚÒÆ³ýÁË×îÐ¡½Úµã
-            // µÝ¹éÕÒ×î×ó
-            AVLEntry* minEntry = cur;       // ´«ÈëÉ¾³ý½Úµã£¬·µ»Ø×îÐ¡½Úµã
-            // Ö®ËùÒÔ¶¼´«µÝminEntryµÄµØÖ·£¬ÊÇÎªÁË±£Ö¤Ìæ»»×îÐ¡½Úµãºó£¬µÚÒ»²ãµ÷ÓÃÕ»ÉÏµÄcurParentÒ²»áÍ¬²½Îª×îÐ¡½Úµã
-            ret = DeleteMinEntry(tree, AVLEntryGetRight(cur), &minEntry, &minEntry, *curParent);
-            cur = minEntry;     // µ±Ç°½Úµã±äÎª×îÐ¡½Úµã
+        if (AVLEntryNpGetLeft(cur) != NULL && AVLEntryNpGetRight(cur) != NULL) {
+            // æœ‰å·¦å³å„æœ‰å­èŠ‚ç‚¹ï¼Œæ‰¾å½“å‰èŠ‚ç‚¹çš„å³å­æ ‘ä¸­æœ€å°çš„èŠ‚ç‚¹ï¼Œç”¨æœ€å°èŠ‚ç‚¹æ›¿æ¢åˆ°å½“å‰èŠ‚ç‚¹æ‰€åœ¨çš„ä½ç½®ï¼Œæ‘˜é™¤å½“å‰èŠ‚ç‚¹ï¼Œç›¸å½“äºŽç§»é™¤äº†æœ€å°èŠ‚ç‚¹
+            // é€’å½’åˆ é™¤æœ€å°èŠ‚ç‚¹
+            // ä¹‹æ‰€ä»¥éƒ½ä¼ é€’curçš„åœ°å€ï¼Œæ˜¯ä¸ºäº†ä¿è¯æ›¿æ¢æœ€å°èŠ‚ç‚¹åŽï¼Œå›žæº¯æ—¶ç¬¬ä¸€å±‚è°ƒç”¨æ ˆä¸Šçš„curParentä¹Ÿä¼šåŒæ­¥ä¸ºæœ€å°èŠ‚ç‚¹
+            ret = DeleteMinEntry(tree, AVLEntryNpGetRight(cur), &cur, &cur, *curParent);
             isCurLeft = false;
         }
         else {
             if (cur->right != NULL) {
-                // Ö»ÓÐÓÒ×Ó½Úµã
-                AVLTreeHitchEntry(tree, cur, *curParent, cur->right);
+                // åªæœ‰å³å­èŠ‚ç‚¹
+                AVLTreeNpHitchEntry(tree, cur, *curParent, cur->right);
                 isCurLeft = false;
             }
-            else if (AVLEntryGetLeft(cur) != NULL) {
-                AVLTreeHitchEntry(tree, cur, *curParent, AVLEntryGetLeft(cur));
+            else if (AVLEntryNpGetLeft(cur) != NULL) {
+                AVLTreeNpHitchEntry(tree, cur, *curParent, AVLEntryNpGetLeft(cur));
                 isCurLeft = true;
             }
             else {
-                // Ã»ÓÐ×Ó½Úµã£¬Ö±½Ó´Ó¸¸½ÚµãÖÐÕª³ý´Ë½Úµã
-                AVLTreeHitchEntry(tree, cur, *curParent, NULL);
+                // æ²¡æœ‰å­èŠ‚ç‚¹ï¼Œç›´æŽ¥ä»Žçˆ¶èŠ‚ç‚¹ä¸­æ‘˜é™¤æ­¤èŠ‚ç‚¹
+                AVLTreeNpHitchEntry(tree, cur, *curParent, NULL);
                 return true;
             }
             ret = true;
         }
     }
     if (ret) {
-        ret = AVLTreeDeleteEntryFixup(tree, isCurLeft, cur, *curParent);
+        ret = AVLTreeNpDeleteEntryFixup(tree, isCurLeft, cur, *curParent);
     }
     return ret;
 }
 
 /*
-* ´ÓÊ÷ÖÐ°´keyÉ¾³ý½Úµã
-* ³É¹¦·µ»Ø±»É¾³ýµÄ½Úµã£¬Ê§°Ü·µ»ØNULL
+* ä»Žæ ‘ä¸­æŒ‰keyåˆ é™¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›žè¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œå¤±è´¥è¿”å›žNULL
 */
-AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key) {
-    AVLEntry* deleteEntry, * curParent = NULL;
-    AVLTreeDeleteEntry(tree, key, tree->root, &curParent, &deleteEntry);
+AVLEntryNp* AVLTreeNpDeleteEntryByKey(AVLTreeNp* tree, void* key) {
+    AVLEntryNp* deleteEntry, * curParent = NULL;
+    AVLTreeNpDeleteEntry(tree, key, tree->root, &curParent, &deleteEntry);
     return deleteEntry;
 }

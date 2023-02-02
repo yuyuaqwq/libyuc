@@ -8,8 +8,8 @@
 #ifndef CUTILS_CONTAINER_RB_TREE_H_
 #define CUTILS_CONTAINER_RB_TREE_H_
 
-#include "CUtils/object.h"
-#include "CUtils/container/bs_tree.h"
+#include <CUtils/object.h>
+#include <CUtils/container/bs_tree.h>
 
 #ifdef __cplusplus
 extern "C" {

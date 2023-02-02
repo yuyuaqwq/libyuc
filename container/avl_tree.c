@@ -509,10 +509,10 @@ AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key) {
 /*
 * 向树中插入节点后的平衡操作
 */
-void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* entry) {
+void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* insertEntry) {
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
-    AVLEntry* cur = AVLEntryGetParent(entry);
-    AVLEntry* child = entry;
+    AVLEntry* cur = AVLEntryGetParent(insertEntry);
+    AVLEntry* child = insertEntry;
     // 插入节点后平衡因子可能发生变化，回溯维护平衡因子
     while (cur) {
         int curBF = AVLEntryGetBalanceFactor(cur);
@@ -549,40 +549,40 @@ void AVLTreeInsertEntryFixup(AVLTree* tree, AVLEntry* entry) {
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry) {
-    if (!BSTreeInsertEntryByKey(&tree->bst, &entry->bse)) {
+bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* insertEntry) {
+    if (!BSTreeInsertEntryByKey(&tree->bst, &insertEntry->bse)) {
         return false;
     }
-    AVLTreeInsertEntryFixup(tree, entry);
+    AVLTreeInsertEntryFixup(tree, insertEntry);
     return true;
 }
 
 /*
 * 从树中删除节点的平衡操作
 */
-void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* parent, bool isLeft) {
+void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* cur, bool isCurLeft) {
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
     // 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子
     AVLEntry* newSubRoot = NULL;
-    while (parent) {
-        int curBF = AVLEntryGetBalanceFactor(parent);
-        if (isLeft) curBF--;
+    while (cur) {
+        int curBF = AVLEntryGetBalanceFactor(cur);
+        if (isCurLeft) curBF--;
         else curBF++;
 
         if (curBF != 0) {
-            if (RotateByBalanceFactor(tree, &parent, curBF) == false) {
+            if (RotateByBalanceFactor(tree, &cur, curBF) == false) {
                 // 另一侧高度相等或更深且无需旋转，则当前节点高度不变
                 break;
             }
         }
         else {
-            AVLEntrySetBalanceFactor(parent, curBF);
+            AVLEntrySetBalanceFactor(cur, curBF);
         }
 
-        AVLEntry* temp = parent;
-        parent = AVLEntryGetParent(parent);
-        if (parent) {
-            isLeft = parent->left == temp;
+        AVLEntry* temp = cur;
+        cur = AVLEntryGetParent(cur);
+        if (cur) {
+            isCurLeft = cur->left == temp;
         }
     }
 
@@ -603,74 +603,74 @@ void AVLTreeDeleteEntryFixup(AVLTree* tree, AVLEntry* parent, bool isLeft) {
 /*
 * 从树中删除节点
 */
-void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
+void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* deleteEntry) {
     // 从entry的父节点开始回溯
-    AVLEntry* parent;
-    bool isLeft;
-    if (entry->left != NULL && entry->right != NULL) {
+    AVLEntry* cur;
+    bool isCurLeft;
+    if (deleteEntry->left != NULL && deleteEntry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
-        AVLEntry* minEntry = entry->right;
+        AVLEntry* minEntry = deleteEntry->right;
         while (minEntry->left) {
             minEntry = minEntry->left;
         }
 
-        isLeft = AVLEntryGetParent(minEntry)->left == minEntry;
+        isCurLeft = AVLEntryGetParent(minEntry)->left == minEntry;
 
         // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
-        minEntry->left = entry->left;
-        if (entry->left) {
-            AVLEntrySetParent(entry->left, minEntry);
+        minEntry->left = deleteEntry->left;
+        if (deleteEntry->left) {
+            AVLEntrySetParent(deleteEntry->left, minEntry);
         }
 
         // 最小节点可能是待删除节点的右节点
-        if (entry->right != minEntry) {
+        if (deleteEntry->right != minEntry) {
             // 将minEntry从原先的位置摘除，用其右子树代替
             AVLEntryGetParent(minEntry)->left = minEntry->right;
             if (minEntry->right) {
                 AVLEntrySetParent(minEntry->right, AVLEntryGetParent(minEntry));
             }
             // 最小节点继承待删除节点的右子树
-            minEntry->right = entry->right;
-            if (entry->right) {
-                AVLEntrySetParent(entry->right, minEntry);
+            minEntry->right = deleteEntry->right;
+            if (deleteEntry->right) {
+                AVLEntrySetParent(deleteEntry->right, minEntry);
             }
-            parent = AVLEntryGetParent(minEntry);
+            cur = AVLEntryGetParent(minEntry);
         }
         else {
-            parent = minEntry;
+            cur = minEntry;
         }
 
 #ifndef CUTILS_CONTAINER_AVL_TREE_STORAGE_HEIGHT_H_
-        AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(entry));
+        AVLEntrySetBalanceFactor(minEntry, AVLEntryGetBalanceFactor(deleteEntry));
 #else
         minEntry->height = entry->height;
 #endif
 
         // 最后进行挂接
-        AVLTreeHitchEntry(tree, entry, minEntry);
+        AVLTreeHitchEntry(tree, deleteEntry, minEntry);
     }
     else {
-        parent = AVLEntryGetParent(entry);
-        if (parent) {
-            isLeft = parent->left == entry;
+        cur = AVLEntryGetParent(deleteEntry);
+        if (cur) {
+            isCurLeft = cur->left == deleteEntry;
         } else {
-            isLeft = false;
+            isCurLeft = false;
         }
 
-        if (entry->right != NULL) {
+        if (deleteEntry->right != NULL) {
             // 只有右子节点
-            AVLTreeHitchEntry(tree, entry, entry->right);
+            AVLTreeHitchEntry(tree, deleteEntry, deleteEntry->right);
         }
-        else if (entry->left != NULL) {
-            AVLTreeHitchEntry(tree, entry, entry->left);
+        else if (deleteEntry->left != NULL) {
+            AVLTreeHitchEntry(tree, deleteEntry, deleteEntry->left);
         }
         else {
             // 没有子节点，直接从父节点中摘除此节点
-            AVLTreeHitchEntry(tree, entry, NULL);
+            AVLTreeHitchEntry(tree, deleteEntry, NULL);
         }
     }
 
-    AVLTreeDeleteEntryFixup(tree, parent, isLeft);
+    AVLTreeDeleteEntryFixup(tree, cur, isCurLeft);
 }
 
 /*
@@ -678,11 +678,11 @@ void AVLTreeDeleteEntry(AVLTree* tree, AVLEntry* entry) {
 * 成功返回被删除的节点，失败返回NULL
 */
 AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key) {
-    AVLEntry* entry = AVLTreeFindEntryByKey(tree, key);
-    if (entry) {
-        AVLTreeDeleteEntry(tree, entry);
+    AVLEntry* deleteEntry = AVLTreeFindEntryByKey(tree, key);
+    if (deleteEntry) {
+        AVLTreeDeleteEntry(tree, deleteEntry);
     }
-    return entry;
+    return deleteEntry;
 }
 
 

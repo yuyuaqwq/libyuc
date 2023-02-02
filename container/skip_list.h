@@ -8,7 +8,7 @@
 #ifndef CUTILS_CONTAINER_SKIP_LIST_H_
 #define CUTILS_CONTAINER_SKIP_LIST_H_
 
-#include "CUtils/object.h"
+#include <CUtils/object.h>
 
 #ifdef __cplusplus
 extern "C" {

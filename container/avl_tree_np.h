@@ -1,10 +1,10 @@
 
 
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - é±¼é±¼
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* è¯·ä¿ç•™æ­¤å£°æ˜
 */
 
 #ifndef CUTILS_CONTAINER_AVLTREE_NP_H_
@@ -18,41 +18,41 @@ extern "C" {
 #endif
 
 /*
-* ÎŞ¸¸½áµãÇ¶ÈëÆ½ºâÒò×ÓµÄAVLÊ÷
+* æ— çˆ¶ç»“ç‚¹åµŒå…¥å¹³è¡¡å› å­çš„AVLæ ‘
 */
-typedef struct _AVLEntry {
+typedef struct _AVLEntryNp {
     union {
         struct {
-            struct _AVLEntry* left_balanceFactor;     // Æ½ºâÒò×ÓÇ¶Èëµ½×óÖ¸ÕëµÍ2Î»
-            struct _AVLEntry* right;
+            struct _AVLEntryNp* left_balanceFactor;     // å¹³è¡¡å› å­åµŒå…¥åˆ°å·¦æŒ‡é’ˆä½2ä½
+            struct _AVLEntryNp* right;
         };
-        BSEntry bse;
+        BSEntryNp bse;
     };
-} AVLEntry;
+} AVLEntryNp;
 
-typedef struct _AVLTree {
+typedef struct _AVLTreeNp {
     union {
         struct {
-            AVLEntry* root;
+            AVLEntryNp* root;
             int entryFieldOffset;
             int keyFieldOffset;
             int keyFieldSize;
-            CmpFunc cmpFunc;        // ¼ä½Óµ÷ÓÃÔö¼ÓÒ»¶¨¿ªÏú
+            CmpFunc cmpFunc;        // é—´æ¥è°ƒç”¨å¢åŠ ä¸€å®šå¼€é”€
         };
-        BSTree bst;
+        BSTreeNp bst;
     };
-} AVLTree;
+} AVLTreeNp;
 
-AVLEntry* AVLEntryGetLeft(AVLEntry* entry);
-AVLEntry* AVLEntryGetRight(AVLEntry* entry);
-int AVLEntryGetBalanceFactor(AVLEntry* entry);
+AVLEntryNp* AVLEntryNpGetLeft(AVLEntryNp* entry);
+AVLEntryNp* AVLEntryNpGetRight(AVLEntryNp* entry);
+int AVLEntryNpGetBalanceFactor(AVLEntryNp* entry);
 
-void AVLTreeInit(AVLTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-#define AVLTreeInitByField(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
-void AVLEntryInit(AVLEntry* entry);
-AVLEntry* AVLTreeFindEntryByKey(AVLTree* tree, void* key);
-bool AVLTreeInsertEntryByKey(AVLTree* tree, AVLEntry* entry);
-AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key);
+void AVLTreeNpInit(AVLTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+#define AVLTreeNpInitByField(tree, objName, entryFieldName, keyFieldName) AVLTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
+void AVLEntryNpInit(AVLEntryNp* entry);
+AVLEntryNp* AVLTreeNpFindEntryByKey(AVLTreeNp* tree, void* key);
+bool AVLTreeNpInsertEntryByKey(AVLTreeNp* tree, AVLEntryNp* entry);
+AVLEntryNp* AVLTreeNpDeleteEntryByKey(AVLTreeNp* tree, void* key);
 
 
 #ifdef __cplusplus

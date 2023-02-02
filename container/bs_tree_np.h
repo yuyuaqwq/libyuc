@@ -14,25 +14,25 @@
 extern "C" {
 #endif
 
-typedef struct _BSEntry {
-    struct _BSEntry* left;
-    struct _BSEntry* right;
-} BSEntry;
+typedef struct _BSEntryNp {
+    struct _BSEntryNp* left;
+    struct _BSEntryNp* right;
+} BSEntryNp;
 
-typedef struct _BSTree {
-    BSEntry* root;
+typedef struct _BSTreeNp {
+    BSEntryNp* root;
     int entryFieldOffset;
     int keyFieldOffset;
     int keyFieldSize;
     CmpFunc cmpFunc;        // 间接调用增加一定开销
-} BSTree;
+} BSTreeNp;
 
-void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-void BSEntryInit(BSEntry* entry);
-BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key);
-#define BSTreeFindEntryByField(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
+void BSTreeNpInit(BSTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+void BSEntryNpInit(BSEntryNp* entry);
+BSEntryNp* BSTreeNpFindEntryByKey(BSTreeNp* tree, void* key);
+#define BSTreeNpFindEntryByField(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
 retObj = NULL; \
-BSEntry* cur = (BSEntry*)((tree)->root); \
+BSEntryNp* cur = (BSEntryNp*)((tree)->root); \
 while (cur) { \
     objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
     if (tempObj->keyFieldName < (key)) { \
@@ -44,9 +44,9 @@ while (cur) { \
     } \
 } \
 }
-bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry);
-BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent);
-size_t BSTreeGetEntryCount(BSTree* tree);
+bool BSTreeNpInsertEntryByKey(BSTreeNp* tree, BSEntryNp* entry);
+BSEntryNp* BSTreeNpDeleteEntry(BSTreeNp* tree, BSEntryNp* entry, BSEntryNp* entryParent);
+size_t BSTreeNpGetEntryCount(BSTreeNp* tree);
 
 
 #ifdef __cplusplus

@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "heap.h"
+#include <CUtils/container/heap.h>
 
 /*
 * 为了可以实现数组原地建堆，下标从0开始

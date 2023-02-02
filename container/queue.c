@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "queue.h"
+#include <CUtils/container/queue.h>
 
 static void QueueExpand(Queue* queue, size_t targetSize) {
     Array* arr = &queue->arr;

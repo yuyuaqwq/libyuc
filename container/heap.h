@@ -8,8 +8,8 @@
 #ifndef CUTILS_CONTAINER_HEAP_H_
 #define CUTILS_CONTAINER_HEAP_H_
 
-#include "CUtils/object.h"
-#include "CUtils/container/vector.h"
+#include <CUtils/object.h>
+#include <CUtils/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {

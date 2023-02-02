@@ -8,7 +8,7 @@
 #ifndef CUTILS_ALGORITHM_QUICK_SORT_H_
 #define CUTILS_ALGORITHM_QUICK_SORT_H_
 
-#include "CUtils/object.h"
+#include <CUtils/object.h>
 
 
 #ifdef __cplusplus

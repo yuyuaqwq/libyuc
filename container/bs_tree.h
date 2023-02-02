@@ -8,7 +8,7 @@
 #ifndef CUTILS_CONTAINER_BS_TREE_H_
 #define CUTILS_CONTAINER_BS_TREE_H_
 
-#include "CUtils/object.h"
+#include <CUtils/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,9 +56,6 @@ BSEntry* BSTreeFirst(BSTree* tree);
 BSEntry* BSTreeLast(BSTree* tree);
 BSEntry* BSTreeNext(BSEntry* entry);
 BSEntry* BSTreePrev(BSEntry* entry);
-
-
-
 
 
 #ifdef __cplusplus

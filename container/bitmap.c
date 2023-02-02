@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "bitmap.h"
+#include <CUtils/container/bitmap.h>
 
 void BitmapInit(Bitmap* bitmap, size_t bitCount) {
 	int byteCount = bitCount / 8 + (bitCount % 8 ? 1 : 0);

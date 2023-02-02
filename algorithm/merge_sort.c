@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "merge_sort.h"
+#include <CUtils/algorithm/merge_sort.h>
 
 /*
 * 归并排序

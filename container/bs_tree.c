@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "CUtils\container\bs_tree.h"
+#include <CUtils\container\bs_tree.h>
 
 /*
 * newEntry代替entry挂接到其父节点下
@@ -112,8 +112,6 @@ bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry) {
         }
     }
     entry->parent = cur;
-
-    BSTreeInsertEntry(tree, &entry, tree->root, NULL);
     return true;
 }
 
@@ -185,7 +183,11 @@ static void BSTreeGetEntryCountCallback(BSEntry* entry, void* arg) {
 }
 size_t BSTreeGetEntryCount(BSTree* tree) {
     int count = 0;
-    BSTreePreorder_Callback(tree->root, BSTreeGetEntryCountCallback, &count);
+    BSEntry* entry = BSTreeFirst(tree);
+    while (entry) {
+        count++;
+        entry = BSTreeNext(entry);
+    }
     return count;
 }
 

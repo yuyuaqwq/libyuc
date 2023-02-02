@@ -8,10 +8,10 @@
 #ifndef CUTILS_CONTAINER_HASHTABLE_H_
 #define CUTILS_CONTAINER_HASHTABLE_H_
 
-#include "CUtils/object.h"
-#include "CUtils/algorithm/hash_map.h"
-#include "CUtils/container/array.h"
-#include "CUtils/container/singly_list.h"
+#include <CUtils/object.h>
+#include <CUtils/algorithm/hash_map.h>
+#include <CUtils/container/array.h>
+#include <CUtils/container/singly_list.h>
 
 #ifdef __cplusplus
 extern "C" {

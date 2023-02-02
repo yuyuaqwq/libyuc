@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include "vector.h"
+#include <CUtils/container/vector.h>
 
 
 void VectorExpand(Vector* vector, size_t targetCount) {

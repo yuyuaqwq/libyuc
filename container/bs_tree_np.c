@@ -1,12 +1,12 @@
-#include "CUtils\container\bs_tree_np.h"
+#include <CUtils\container\bs_tree_np.h>
 
 /*
-* newEntry´úÌæentry¹Ò½Óµ½parentÏÂ
-* newEntryµÄ×óÓÒ×Ó½Úµã²»±ä
-* entry´ÓÊ÷ÖĞÕª³ı
-* entryµÄleftºÍright²»±ä
+* newEntryä»£æ›¿entryæŒ‚æ¥åˆ°parentä¸‹
+* newEntryçš„å·¦å³å­èŠ‚ç‚¹ä¸å˜
+* entryä»æ ‘ä¸­æ‘˜é™¤
+* entryçš„leftå’Œrightä¸å˜
 */
-static void BSTreeHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent, BSEntry* newEntry) {
+static void BSTreeNpHitchEntry(BSTreeNp* tree, BSEntryNp* entry, BSEntryNp* entryParent, BSEntryNp* newEntry) {
     if (entryParent) {
         if (entryParent->left == entry) {
             entryParent->left = newEntry;
@@ -21,9 +21,9 @@ static void BSTreeHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent,
 }
 
 /*
-* ³õÊ¼»¯Ê÷
+* åˆå§‹åŒ–æ ‘
 */
-void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+void BSTreeNpInit(BSTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
     tree->root = NULL;
     tree->entryFieldOffset = entryFieldOffset;
     tree->keyFieldOffset = keyFieldOffset;
@@ -35,19 +35,19 @@ void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keyS
 }
 
 /*
-* ³õÊ¼»¯½Úµã
+* åˆå§‹åŒ–èŠ‚ç‚¹
 */
-void BSEntryInit(BSEntry* entry) {
+void BSEntryNpInit(BSEntryNp* entry) {
     entry->left = NULL;
     entry->right = NULL;
 }
 
 
 /*
-* µİ¹éÏòÊ÷ÖĞ²åÈë½Úµã
+* é€’å½’å‘æ ‘ä¸­æ’å…¥èŠ‚ç‚¹
 */
-bool BSTreeInsertEntry(BSTree* tree, BSEntry* entry, BSEntry* cur) {
-    void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
+bool BSTreeNpInsertEntry(BSTreeNp* tree, BSEntryNp* insertEntry, BSEntryNp* cur) {
+    void* obj = GetObjByFieldOffset(insertEntry, tree->entryFieldOffset, void);
     void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
 
     void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
@@ -57,80 +57,80 @@ bool BSTreeInsertEntry(BSTree* tree, BSEntry* entry, BSEntry* cur) {
     }
     else if (res < 0) {
         if (cur->right) {
-            return BSTreeInsertEntry(tree, entry, cur->right);
+            return BSTreeNpInsertEntry(tree, insertEntry, cur->right);
         }
-        cur->right = entry;
+        cur->right = insertEntry;
     }
     else {
         if (cur->left) {
-            return BSTreeInsertEntry(tree, entry, cur->left);
+            return BSTreeNpInsertEntry(tree, insertEntry, cur->left);
         }
-        cur->left = entry;
+        cur->left = insertEntry;
     }
     return true;
 }
 
 /*
-* ÏòÊ÷ÖĞ²åÈë½Úµã
-* ²»ÔÊĞí´æÔÚÖØ¸´½Úµã
-* ³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+* å‘æ ‘ä¸­æ’å…¥èŠ‚ç‚¹
+* ä¸å…è®¸å­˜åœ¨é‡å¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›trueï¼Œå¤±è´¥è¿”å›false
 */
-bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry) {
-    BSEntryInit(entry);
+bool BSTreeNpInsertEntryByKey(BSTreeNp* tree, BSEntryNp* insertEntry) {
+    BSEntryNpInit(insertEntry);
     if (tree->root == NULL) {
-        tree->root = entry;
+        tree->root = insertEntry;
         return true;
     }
-    return BSTreeInsertEntry(tree, entry, tree->root);
+    return BSTreeNpInsertEntry(tree, insertEntry, tree->root);
 }
 
 /*
-* ´ÓÊ÷ÖĞÉ¾³ı½Úµã
-* ³É¹¦·µ»Ø±»É¾³ıµÄ½Úµã£¬Ê§°Ü·µ»ØNULL
+* ä»æ ‘ä¸­åˆ é™¤èŠ‚ç‚¹
+* æˆåŠŸè¿”å›è¢«åˆ é™¤çš„èŠ‚ç‚¹ï¼Œå¤±è´¥è¿”å›NULL
 */
-BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry, BSEntry* entryParent) {
-    if (entry->left != NULL && entry->right != NULL) {
-        // ÓĞ×óÓÒ¸÷ÓĞ×Ó½Úµã£¬ÕÒµ±Ç°½ÚµãµÄÓÒ×ÓÊ÷ÖĞ×îĞ¡µÄ½Úµã£¬ÓÃ×îĞ¡½ÚµãÌæ»»µ½µ±Ç°½ÚµãËùÔÚµÄÎ»ÖÃ£¬Õª³ıµ±Ç°½Úµã£¬Ïàµ±ÓÚÒÆ³ıÁË×îĞ¡½Úµã
-        BSEntry* minEntry = entry->right;
-        BSEntry* minParent = NULL;
+BSEntryNp* BSTreeNpDeleteEntry(BSTreeNp* tree, BSEntryNp* deleteEntry, BSEntryNp* deleteParent) {
+    if (deleteEntry->left != NULL && deleteEntry->right != NULL) {
+        // æœ‰å·¦å³å„æœ‰å­èŠ‚ç‚¹ï¼Œæ‰¾å½“å‰èŠ‚ç‚¹çš„å³å­æ ‘ä¸­æœ€å°çš„èŠ‚ç‚¹ï¼Œç”¨æœ€å°èŠ‚ç‚¹æ›¿æ¢åˆ°å½“å‰èŠ‚ç‚¹æ‰€åœ¨çš„ä½ç½®ï¼Œæ‘˜é™¤å½“å‰èŠ‚ç‚¹ï¼Œç›¸å½“äºç§»é™¤äº†æœ€å°èŠ‚ç‚¹
+        BSEntryNp* minEntry = deleteEntry->right;
+        BSEntryNp* minParent = NULL;
         while (minEntry->left) {
             minParent = minEntry;
             minEntry = minEntry->left;
         }
 
-        // ×îĞ¡½Úµã¼Ì³Ğ´ıÉ¾³ı½ÚµãµÄ×ó×ÓÊ÷£¬ÒòÎª×îĞ¡½Úµã¿Ï¶¨Ã»ÓĞ×ó½Úµã£¬ËùÒÔÖ±½Ó¸³Öµ
-        minEntry->left = entry->left;
+        // æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å·¦å­æ ‘ï¼Œå› ä¸ºæœ€å°èŠ‚ç‚¹è‚¯å®šæ²¡æœ‰å·¦èŠ‚ç‚¹ï¼Œæ‰€ä»¥ç›´æ¥èµ‹å€¼
+        minEntry->left = deleteEntry->left;
 
-        // ×îĞ¡½Úµã¿ÉÄÜÊÇ´ıÉ¾³ı½ÚµãµÄÓÒ½Úµã
-        if (entry->right != minEntry) {
-            // ½«minEntry´ÓÔ­ÏÈµÄÎ»ÖÃÕª³ı£¬ÓÃÆäÓÒ×ÓÊ÷´úÌæ
+        // æœ€å°èŠ‚ç‚¹å¯èƒ½æ˜¯å¾…åˆ é™¤èŠ‚ç‚¹çš„å³èŠ‚ç‚¹
+        if (deleteEntry->right != minEntry) {
+            // å°†minEntryä»åŸå…ˆçš„ä½ç½®æ‘˜é™¤ï¼Œç”¨å…¶å³å­æ ‘ä»£æ›¿
             minParent->left = minEntry->right;
 
-            // ×îĞ¡½Úµã¼Ì³Ğ´ıÉ¾³ı½ÚµãµÄÓÒ×ÓÊ÷
-            minEntry->right = entry->right;
+            // æœ€å°èŠ‚ç‚¹ç»§æ‰¿å¾…åˆ é™¤èŠ‚ç‚¹çš„å³å­æ ‘
+            minEntry->right = deleteEntry->right;
 
-            // Èç¹ûĞèÒª»ØËİ£¬ÕâÀï¶ÔÓ¦entryµÄ¸¸Ç×ÊÇminEntryµÄ¸¸Ç×µÄÇé¿ö£¬µ«²»ÄÜÖ±½ÓĞŞ¸ÄentryµÄparent£¬ÒòÎª»¹Ã»¹Ò½Ó
+            // å¦‚æœéœ€è¦å›æº¯ï¼Œè¿™é‡Œå¯¹åº”entryçš„çˆ¶äº²æ˜¯minEntryçš„çˆ¶äº²çš„æƒ…å†µï¼Œä½†ä¸èƒ½ç›´æ¥ä¿®æ”¹entryçš„parentï¼Œå› ä¸ºè¿˜æ²¡æŒ‚æ¥
         }
         else {
-            // Èç¹ûĞèÒª»ØËİ£¬ÕâÀï¶ÔÓ¦entryµÄ¸¸Ç×ÊÇminEntryµÄÇé¿ö£¬µ«²»ÄÜÖ±½ÓĞŞ¸ÄentryµÄparent£¬ÒòÎª»¹Ã»¹Ò½Ó
+            // å¦‚æœéœ€è¦å›æº¯ï¼Œè¿™é‡Œå¯¹åº”entryçš„çˆ¶äº²æ˜¯minEntryçš„æƒ…å†µï¼Œä½†ä¸èƒ½ç›´æ¥ä¿®æ”¹entryçš„parentï¼Œå› ä¸ºè¿˜æ²¡æŒ‚æ¥
         }
-        // ×îºó½øĞĞ¹Ò½Ó
-        BSTreeHitchEntry(tree, entry, entryParent, minEntry);
+        // æœ€åè¿›è¡ŒæŒ‚æ¥
+        BSTreeNpHitchEntry(tree, deleteEntry, deleteParent, minEntry);
 
-        // Ò²¿ÉÒÔÑ¡ÔñÖ±½Ó½»»»Á½¸ö½ÚµãµÄÊı¾İ
+        // ä¹Ÿå¯ä»¥é€‰æ‹©ç›´æ¥äº¤æ¢ä¸¤ä¸ªèŠ‚ç‚¹çš„æ•°æ®
     }
     else {
-        if (entry->right != NULL) {
-            // Ö»ÓĞÓÒ×Ó½Úµã
-            BSTreeHitchEntry(tree, entry, entryParent, entry->right);
+        if (deleteEntry->right != NULL) {
+            // åªæœ‰å³å­èŠ‚ç‚¹
+            BSTreeNpHitchEntry(tree, deleteEntry, deleteParent, deleteEntry->right);
         }
-        else if (entry->left != NULL) {
-            BSTreeHitchEntry(tree, entry, entryParent, entry->left);
+        else if (deleteEntry->left != NULL) {
+            BSTreeNpHitchEntry(tree, deleteEntry, deleteParent, deleteEntry->left);
         }
         else {
-            // Ã»ÓĞ×Ó½Úµã£¬Ö±½Ó´Ó¸¸½ÚµãÖĞÕª³ı´Ë½Úµã
-            BSTreeHitchEntry(tree, entry, entryParent, NULL);
+            // æ²¡æœ‰å­èŠ‚ç‚¹ï¼Œç›´æ¥ä»çˆ¶èŠ‚ç‚¹ä¸­æ‘˜é™¤æ­¤èŠ‚ç‚¹
+            BSTreeNpHitchEntry(tree, deleteEntry, deleteParent, NULL);
         }
     }
-    return entry;
+    return deleteEntry;
 }
