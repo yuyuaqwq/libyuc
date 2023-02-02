@@ -59,6 +59,7 @@ typedef struct _BPlusEntry {
     BPlusEntryType type;
     int count;        // child / obj计数
     PageId parentId;
+    int leftParentIndex;        // 父节点的左内部索引，child[0]时，leftParentIndex为-1
     union {
         BPlusIndexInternalEntry indexInternalEntry[];
         struct {
@@ -76,7 +77,7 @@ typedef struct _BPlusTree {
     CmpFunc cmpFunc;
 } BPlusTree;
 
-
+const PageId kBPlusInvalidPageId = -1;
 
 /*
 * 定位叶子节点和索引节点内部字段的相关接口
