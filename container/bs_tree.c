@@ -177,10 +177,6 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
 /*
 * 获取树的节点数量
 */
-static void BSTreeGetEntryCountCallback(BSEntry* entry, void* arg) {
-    int* count = arg;
-    (*count)++;
-}
 size_t BSTreeGetEntryCount(BSTree* tree) {
     int count = 0;
     BSEntry* entry = BSTreeFirst(tree);

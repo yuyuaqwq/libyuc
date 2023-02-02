@@ -283,7 +283,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
     bool rotate = false;
     bool heightUpdate = true;
     AVLEntry* newSubRoot = NULL;
-    if (curBF > 1) {
+    if (curBF == 2) {
         // 是失衡节点(最小失衡子树的根节点)，左子树高度高于右子树高度
         AVLEntry* child = subRoot->left;
         int childBF = AVLEntryGetBalanceFactor(child);
@@ -337,7 +337,7 @@ static bool RotateByBalanceFactor(AVLTree* tree, AVLEntry** subRoot_, int curBF)
         }
         rotate = true;
     }
-    else if (curBF < -1) {
+    else if (curBF == -2) {
         // 是失衡节点，右子树高度高于左子树高度
         AVLEntry* child = subRoot->right;
         int childBF = AVLEntryGetBalanceFactor(child);
@@ -684,5 +684,3 @@ AVLEntry* AVLTreeDeleteEntryByKey(AVLTree* tree, void* key) {
     }
     return deleteEntry;
 }
-
-

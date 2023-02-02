@@ -224,7 +224,26 @@ void AVLEntryNpInit(AVLEntryNp* entry) {
 }
 
 
-
+/*
+* 从树中查找节点
+*/
+AVLEntryNp* AVLTreeNpFindEntryByKey(AVLTreeNp* tree, void* key) {
+    AVLEntryNp* cur = tree->root;
+    while (cur) {
+        void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
+        int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+        if (res < 0) {
+            cur = cur->right;
+        }
+        else if (res > 0) {
+            cur = AVLEntryNpGetLeft(cur);
+        }
+        else {
+            return cur;
+        }
+    }
+    return NULL;
+}
 
 /*
 * 向树中插入节点后的平衡操作
