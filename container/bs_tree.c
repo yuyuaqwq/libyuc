@@ -13,7 +13,7 @@
 * entry从树中摘除
 * entry的parent、left和right不变
 */
-static void BSTreeHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
+static void BsTreeHitchEntry(BsTree* tree, BsEntry* entry, BsEntry* newEntry) {
     if (entry->parent) {
         if (entry->parent->left == entry) {
             entry->parent->left = newEntry;
@@ -34,7 +34,7 @@ static void BSTreeHitchEntry(BSTree* tree, BSEntry* entry, BSEntry* newEntry) {
 /*
 * 初始化树
 */
-void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+void BsTreeInit(BsTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
     tree->root = NULL;
     tree->entryFieldOffset = entryFieldOffset;
     tree->keyFieldOffset = keyFieldOffset;
@@ -48,7 +48,7 @@ void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keyS
 /*
 * 初始化节点
 */
-void BSEntryInit(BSEntry* entry) {
+void BsEntryInit(BsEntry* entry) {
     entry->left = NULL;
     entry->right = NULL;
     entry->parent = NULL;
@@ -58,8 +58,8 @@ void BSEntryInit(BSEntry* entry) {
 * 从树中查找节点
 * 存在返回查找到的节点，不存在返回NULL
 */
-BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key) {
-    BSEntry* cur = tree->root;
+BsEntry* BsTreeFindEntryByKey(BsTree* tree, void* key) {
+    BsEntry* cur = tree->root;
     while (cur) {
         void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
         int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
@@ -81,15 +81,15 @@ BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key) {
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry) {
-    BSEntryInit(entry);
+bool BsTreeInsertEntryByKey(BsTree* tree, BsEntry* entry) {
+    BsEntryInit(entry);
     if (tree->root == NULL) {
         tree->root = entry;
         return true;
     }
     void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
     void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
-    BSEntry* cur = tree->root;
+    BsEntry* cur = tree->root;
     while (cur) {
         void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
         int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
@@ -119,10 +119,10 @@ bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry) {
 * 从树中删除节点
 * 成功返回被删除的节点，失败返回NULL
 */
-BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
+BsEntry* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry) {
     if (entry->left != NULL && entry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
-        BSEntry* minEntry = entry->right;
+        BsEntry* minEntry = entry->right;
         while (minEntry->left) {
             minEntry = minEntry->left;
         }
@@ -152,7 +152,7 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
         }
 
         // 最后进行挂接
-        BSTreeHitchEntry(tree, entry, minEntry);
+        BsTreeHitchEntry(tree, entry, minEntry);
 
         // 也可以选择直接交换两个节点的数据
         
@@ -160,14 +160,14 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
     else {
         if (entry->right != NULL) {
             // 只有右子节点
-            BSTreeHitchEntry(tree, entry, entry->right);
+            BsTreeHitchEntry(tree, entry, entry->right);
         }
         else if (entry->left != NULL) {
-            BSTreeHitchEntry(tree, entry, entry->left);
+            BsTreeHitchEntry(tree, entry, entry->left);
         }
         else {
             // 没有子节点，直接从父节点中摘除此节点
-            BSTreeHitchEntry(tree, entry, NULL);
+            BsTreeHitchEntry(tree, entry, NULL);
         }
     }
     return entry;
@@ -177,20 +177,20 @@ BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry) {
 /*
 * 获取树的节点数量
 */
-size_t BSTreeGetEntryCount(BSTree* tree) {
+size_t BsTreeGetEntryCount(BsTree* tree) {
     int count = 0;
-    BSEntry* entry = BSTreeFirst(tree);
+    BsEntry* entry = BsTreeFirst(tree);
     while (entry) {
         count++;
-        entry = BSTreeNext(entry);
+        entry = BsTreeNext(entry);
     }
     return count;
 }
 
 
 
-BSEntry* BSTreeFirst(BSTree* tree) {
-    BSEntry* cur = tree->root;
+BsEntry* BsTreeFirst(BsTree* tree) {
+    BsEntry* cur = tree->root;
     if (!cur) {
         return NULL;
     }
@@ -199,8 +199,8 @@ BSEntry* BSTreeFirst(BSTree* tree) {
     return cur;
 }
 
-BSEntry* BSTreeLast(BSTree* tree) {
-    BSEntry* cur = tree->root;
+BsEntry* BsTreeLast(BsTree* tree) {
+    BsEntry* cur = tree->root;
     if (!cur) {
         return NULL;
     }
@@ -209,20 +209,20 @@ BSEntry* BSTreeLast(BSTree* tree) {
     return cur;
 }
 
-BSEntry* BSTreeNext(BSEntry* entry) {
+BsEntry* BsTreeNext(BsEntry* entry) {
     if (entry->right) {
         entry = entry->right;
         while (entry->left)
             entry = entry->left;
         return entry;
     }
-    BSEntry* parent;
+    BsEntry* parent;
     while ((parent = entry->parent) && entry == parent->right)
         entry = parent;
     return parent;
 }
 
-BSEntry* BSTreePrev(BSEntry* entry) {
+BsEntry* BsTreePrev(BsEntry* entry) {
     if (entry->left) {
         entry = entry->left;
         while (entry->right) {
@@ -230,7 +230,7 @@ BSEntry* BSTreePrev(BSEntry* entry) {
         }
         return entry;
     }
-    BSEntry* parent;
+    BsEntry* parent;
     while ((parent = entry->parent) && entry == parent->left) {
         entry = parent;
     }
@@ -239,36 +239,36 @@ BSEntry* BSTreePrev(BSEntry* entry) {
 
 
 
-typedef bool (*BSTreeTraversalCallback)(BSEntry* entry, void* arg);
+typedef bool (*BsTreeTraversalCallback)(BsEntry* entry, void* arg);
 /*
 * 前序遍历
 * 先根再右再左
 */
-static void BSTreePreorder_Callback(BSEntry* entry, BSTreeTraversalCallback callback, void* arg) {
+static void BsTreePreorder_Callback(BsEntry* entry, BsTreeTraversalCallback callback, void* arg) {
     if (!entry) return;
     callback(entry, arg);
-    BSTreePreorder_Callback(entry->left, callback, arg);
-    BSTreePreorder_Callback(entry->right, callback, arg);
+    BsTreePreorder_Callback(entry->left, callback, arg);
+    BsTreePreorder_Callback(entry->right, callback, arg);
 }
 
 /*
 * 中序遍历
 * 先左再根再右
 */
-static void BSTreeMiddleorder_Callback(BSEntry* entry, BSTreeTraversalCallback callback, void* arg) {
+static void BsTreeMiddleorder_Callback(BsEntry* entry, BsTreeTraversalCallback callback, void* arg) {
     if (!entry) return;
-    BSTreeMiddleorder_Callback(entry->left, callback, arg);
+    BsTreeMiddleorder_Callback(entry->left, callback, arg);
     callback(entry, arg);
-    BSTreeMiddleorder_Callback(entry->right, callback, arg);
+    BsTreeMiddleorder_Callback(entry->right, callback, arg);
 }
 
 /*
 * 后序遍历
 * 先左再右再根
 */
-static void BSTreePostorder_Callback(BSEntry* entry, BSTreeTraversalCallback callback, void* arg) {
+static void BsTreePostorder_Callback(BsEntry* entry, BsTreeTraversalCallback callback, void* arg) {
     if (!entry) return;
-    BSTreePostorder_Callback(entry->left, callback, arg);
-    BSTreePostorder_Callback(entry->right, callback, arg);
+    BsTreePostorder_Callback(entry->left, callback, arg);
+    BsTreePostorder_Callback(entry->right, callback, arg);
     callback(entry, arg);
 }

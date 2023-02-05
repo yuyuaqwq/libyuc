@@ -8,8 +8,8 @@
 #include <CUtils/container/vector.h>
 
 
-void VectorExpand(Vector* vector, size_t targetCount) {
-    ArrayExpand(&vector->array, targetCount);
+void VectorExpand(Vector* vector, size_t addCount) {
+    ArrayExpand(&vector->array, addCount);
 }
 
 void VectorInit(Vector* vector, size_t capacity) {

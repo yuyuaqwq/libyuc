@@ -7,25 +7,8 @@
 
 #include <CUtils/container/array.h>
 
-void ArrayExpand(Array* arr, size_t targetCount) {
-    size_t oldCapacity = arr->capacity;
 
-    if (arr->capacity == 0) {
-        arr->capacity = 1;
-    }
-    while (arr->capacity < targetCount) {
-        arr->capacity *= 2;
-    }
 
-    if (oldCapacity != arr->capacity) {
-        void* newBuf = CreateObjArrByObjSize(arr->objSize, arr->capacity);
-        if (arr->objArr) {
-            MemoryCopy(newBuf, arr->objArr, arr->objSize * arr->count);
-            DeleteObject_(arr->objArr);
-        }
-        arr->objArr = newBuf;
-    }
-}
 
 void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
     arr->capacity = 0;
@@ -33,7 +16,7 @@ void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
     arr->objArr = NULL;
     arr->objSize = objByteCount;
     if (capacity != 0) {
-        ArrayExpand(arr, capacity);
+        ArrayResetCapacity(arr, capacity);
     }
 }
 
@@ -48,7 +31,7 @@ void ArrayRelease(Array* arr) {
 
 int ArrayPushTail(Array* arr, void* obj) {
     if (arr->capacity <= arr->count) {
-        ArrayExpand(arr, arr->count + 1);
+        ArrayExpand(arr, 1);
     }
     MemoryCopy(ArrayAt(arr, arr->count++, void), obj, arr->objSize);
     return arr->count - 1;
@@ -81,4 +64,26 @@ size_t ArrayGetCapacity(Array* arr) {
 
 void ArraySetCapacity(Array* arr, size_t capacity) {
     arr->capacity = capacity;
+}
+
+void ArrayResetCapacity(Array* arr, size_t capacity) {
+    void* newBuf = CreateObjArrByObjSize(arr->objSize, capacity);
+    if (arr->objArr) {
+        MemoryCopy(newBuf, arr->objArr, arr->objSize * arr->count);
+        DeleteObject_(arr->objArr);
+    }
+    arr->objArr = newBuf;
+    arr->capacity = capacity;
+}
+
+void ArrayExpand(Array* arr, size_t addCount) {
+    size_t curCapacity = arr->capacity;
+    size_t targetCount = curCapacity + addCount;
+    if (curCapacity == 0) {
+        curCapacity = 1;
+    }
+    while (curCapacity < targetCount) {
+        curCapacity *= 2;
+    }
+    ArrayResetCapacity(arr, curCapacity);
 }

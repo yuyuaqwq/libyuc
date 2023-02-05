@@ -41,10 +41,6 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
 
 
-
-
-// 内存分配/比较/哈希/数组访问器存在一定的额外开销
-// 另一种是通过宏实现通用容器，但是不好调试
 typedef void* (*MemAllocFunc)(size_t size);
 typedef void (*MemFreeFunc)(void* ptr);
 typedef struct _MemAllocTor {
@@ -62,10 +58,10 @@ typedef struct _HashTor {
 	HashU32Func HashU32;
 } HashTor;
 
-typedef void* (*ArrAtFunc)(void* arr, int i);
-typedef struct _AtTor {
-	ArrAtFunc ArrAt;
-} AtTor;
+typedef void* (*RandomAtFunc)(void* arr, int i);
+typedef struct _RandomAtTor {
+	RandomAtFunc ArrAt;
+} RandomAtTor;
 
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline

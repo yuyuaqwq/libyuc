@@ -27,11 +27,11 @@ typedef struct _ListEntry {
 void ListHeadInit(ListHead* head);
 void ListEntryInit(ListEntry* entry);
 bool ListIsEmpty(ListHead* entry);
-void ListInsertHead(ListHead* head, ListEntry* entry);
-void ListInsertTail(ListHead* head, ListEntry* entry);
-ListEntry* ListRemoveEntry(ListEntry* entry, bool empty);
-ListEntry* ListRemoveHead(ListHead* head);
-ListEntry* ListRemoveTail(ListHead* head);
+void ListInsertNext(ListEntry* head, ListEntry* entry);
+void ListInsertPrev(ListEntry* head, ListEntry* entry);
+ListEntry* ListRemoveEntry(ListEntry* entry, bool init);
+ListEntry* ListRemoveNext(ListEntry* head);
+ListEntry* ListRemovePrev(ListEntry* head);
 size_t ListGetEntryCount(ListHead* head);
 #define ListFindEntryByField(head, retObj, key, objName, entryFieldName, keyFieldName) { \
     retObj = NULL; \

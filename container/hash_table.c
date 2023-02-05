@@ -7,7 +7,11 @@
 
 #include <CUtils/container/hash_table.h>
 
-
+typedef enum _HashEntryType {
+    kFree,
+    kObj,
+    kList,
+} HashEntryType;
 
 static inline uint32_t GetIndex(HashTable* table, void* key) {
     return table->hashFunc(key, table->keyFieldSize) % table->bucket.capacity;
@@ -19,7 +23,7 @@ static inline int GetCurrentLoadFator(HashTable* table) {
 
 static void Resize(HashTable* table, size_t newCapacity) {
     HashTable temp;
-    HashTableInit(&temp, newCapacity, table->keyFieldOffset, table->keyFieldSize, table->hashFunc, table->cmpFunc);
+    HashTableInit(&temp, newCapacity, table->loadFator, table->keyFieldOffset, table->keyFieldSize, table->hashFunc, table->cmpFunc);
     
     // 重映射
     
@@ -33,13 +37,12 @@ static void Resize(HashTable* table, size_t newCapacity) {
         obj = HashTableNext(&iter);
     }
 
-    DeleteObject_(table->bucket.objArr);
-
+    ArrayRelease(&table->bucket);
     MemoryCopy(table, &temp, sizeof(temp));
 }
 
 
-void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc) {
+void HashTableInit(HashTable* table, size_t capacity, uint32_t loadFator, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc) {
     if (capacity == 0) {
         capacity = HASHTABLE_DEFAULT_BUCKETS_SIZE;
     }
@@ -49,9 +52,12 @@ void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySi
     for (int i = 0; i < table->bucket.capacity; i++) {
         HashEntryInit(ArrayAt(&table->bucket, i, HashEntry));
     }
+    if (loadFator == 0) {
+        loadFator = HASHTABLE_DEFAULT_LOAD_FACTOR;
+    }
+    table->loadFator = loadFator;
     table->keyFieldOffset = keyFieldOffset;
     table->keyFieldSize = keySize;
-    table->loadFator = HASHTABLE_DEFAULT_LOAD_FATOR;
     if (hashFunc == NULL) {
         hashFunc = Hashmap_jenkins_hash;
     }
@@ -79,6 +85,15 @@ void HashTableRelease(HashTable* table, bool deleteObj) {
     }
     ArrayRelease(&table->bucket);
 }
+
+size_t HashTableGetCount(HashTable* table) {
+    return ArrayGetCount(&table->bucket);
+}
+
+size_t HashTableGetCapacity(HashTable* table) {
+    return ArrayGetCapacity(&table->bucket);
+}
+
 
 void* HashTableFind(HashTable* table, void* key) {
     int index = GetIndex(table, key);
@@ -142,7 +157,7 @@ bool HashTableInsert(HashTable* table, void* obj) {
 
     if (GetCurrentLoadFator(table) >= table->loadFator) {
         // 触发扩容
-        Resize(table, table->bucket.capacity * 2);
+        Resize(table, table->bucket.capacity * HASHTABLE_DEFAULT_EXPANSION_FACTOR);
     }
 
     return true;
@@ -192,6 +207,7 @@ void* HashTableDelete(HashTable* table, void* key) {
     table->bucket.count--;
     return obj;
 }
+
 
 /*
 * 现在的迭代思路是遍历空间所有节点，另外可以用静态链表连接所有已映射的节点，但需要额外空间

@@ -10,32 +10,32 @@
 typedef enum {
     kBlack,
     kRed,
-} RBColor;
+} RbColor;
 
 
 /*
 * 左旋子树
 */
-static RBEntry* RotateLeft(RBEntry* subRoot) {
-    RBEntry* newSubRoot = subRoot->right;
+static RbEntry* RotateLeft(RbEntry* subRoot) {
+    RbEntry* newSubRoot = subRoot->right;
     if (newSubRoot == NULL) {
         return subRoot;
     }
 
-    RBEntrySetParent(newSubRoot, RBEntryGetParent(subRoot));
-    if (RBEntryGetParent(subRoot)) {
-        if (RBEntryGetParent(subRoot)->left == subRoot) {
-            RBEntryGetParent(subRoot)->left = newSubRoot;
+    RbEntrySetParent(newSubRoot, RbEntryGetParent(subRoot));
+    if (RbEntryGetParent(subRoot)) {
+        if (RbEntryGetParent(subRoot)->left == subRoot) {
+            RbEntryGetParent(subRoot)->left = newSubRoot;
         }
         else {
-            RBEntryGetParent(subRoot)->right = newSubRoot;
+            RbEntryGetParent(subRoot)->right = newSubRoot;
         }
     }
-    RBEntrySetParent(subRoot, newSubRoot);
+    RbEntrySetParent(subRoot, newSubRoot);
 
     subRoot->right = newSubRoot->left;
     if (subRoot->right) {
-        RBEntrySetParent(subRoot->right, subRoot);
+        RbEntrySetParent(subRoot->right, subRoot);
     }
 
     newSubRoot->left = subRoot;
@@ -46,26 +46,26 @@ static RBEntry* RotateLeft(RBEntry* subRoot) {
 /*
 * 右旋子树
 */
-static RBEntry* RotateRight(RBEntry* subRoot) {
-    RBEntry* newSubRoot = subRoot->left;
+static RbEntry* RotateRight(RbEntry* subRoot) {
+    RbEntry* newSubRoot = subRoot->left;
     if (newSubRoot == NULL) {
         return subRoot;
     }
 
-    RBEntrySetParent(newSubRoot, RBEntryGetParent(subRoot));
-    if (RBEntryGetParent(subRoot)) {
-        if (RBEntryGetParent(subRoot)->left == subRoot) {
-            RBEntryGetParent(subRoot)->left = newSubRoot;
+    RbEntrySetParent(newSubRoot, RbEntryGetParent(subRoot));
+    if (RbEntryGetParent(subRoot)) {
+        if (RbEntryGetParent(subRoot)->left == subRoot) {
+            RbEntryGetParent(subRoot)->left = newSubRoot;
         }
         else {
-            RBEntryGetParent(subRoot)->right = newSubRoot;
+            RbEntryGetParent(subRoot)->right = newSubRoot;
         }
     }
-    RBEntrySetParent(subRoot, newSubRoot);
+    RbEntrySetParent(subRoot, newSubRoot);
 
     subRoot->left = newSubRoot->right;
     if (subRoot->left) {
-        RBEntrySetParent(subRoot->left, subRoot);
+        RbEntrySetParent(subRoot->left, subRoot);
     }
 
     newSubRoot->right = subRoot;
@@ -76,11 +76,11 @@ static RBEntry* RotateRight(RBEntry* subRoot) {
 /*
 * 取兄弟节点
 */
-static RBEntry* GetSiblingEntry(RBEntry* entry) {
-    if (RBEntryGetParent(entry)->left == entry) {
-        return RBEntryGetParent(entry)->right;
+static RbEntry* GetSiblingEntry(RbEntry* entry) {
+    if (RbEntryGetParent(entry)->left == entry) {
+        return RbEntryGetParent(entry)->right;
     }
-    return RBEntryGetParent(entry)->left;
+    return RbEntryGetParent(entry)->left;
 }
 
 /*
@@ -89,17 +89,17 @@ static RBEntry* GetSiblingEntry(RBEntry* entry) {
 * entry从树中摘除
 * entry的parent、left和right不变
 */
-static void RBTreeHitchEntry(RBTree* tree, RBEntry* entry, RBEntry* newEntry) {
-    if (RBEntryGetParent(entry)) {
-        if (RBEntryGetParent(entry)->left == entry) {
-            RBEntryGetParent(entry)->left = newEntry;
+static void RbTreeHitchEntry(RbTree* tree, RbEntry* entry, RbEntry* newEntry) {
+    if (RbEntryGetParent(entry)) {
+        if (RbEntryGetParent(entry)->left == entry) {
+            RbEntryGetParent(entry)->left = newEntry;
         }
         else {
-            RBEntryGetParent(entry)->right = newEntry;
+            RbEntryGetParent(entry)->right = newEntry;
         }
     }
     if (newEntry) {
-        RBEntrySetParent(newEntry, RBEntryGetParent(entry));
+        RbEntrySetParent(newEntry, RbEntryGetParent(entry));
     }
     if (tree->root == entry) {
         tree->root = newEntry;
@@ -108,35 +108,35 @@ static void RBTreeHitchEntry(RBTree* tree, RBEntry* entry, RBEntry* newEntry) {
 
 
 
-inline RBColor RBEntryGetColor(RBEntry* entry) {
-    return (RBColor)(((uintptr_t)entry->parent_color) & 0x1);
+inline RbColor RbEntryGetColor(RbEntry* entry) {
+    return (RbColor)(((uintptr_t)entry->parent_color) & 0x1);
 }
 
-inline void RBEntrySetColor(RBEntry* entry, RBColor color) {
-    entry->parent_color = (RBEntry*)(((uintptr_t)RBEntryGetParent(entry)) | ((uintptr_t)color));
+inline void RbEntrySetColor(RbEntry* entry, RbColor color) {
+    entry->parent_color = (RbEntry*)(((uintptr_t)RbEntryGetParent(entry)) | ((uintptr_t)color));
 }
 
-inline RBEntry* RBEntryGetParent(RBEntry* entry) {
-    return (RBEntry*)(((uintptr_t)entry->parent_color) & (~((uintptr_t)0x1)));
+inline RbEntry* RbEntryGetParent(RbEntry* entry) {
+    return (RbEntry*)(((uintptr_t)entry->parent_color) & (~((uintptr_t)0x1)));
 }
 
-inline void RBEntrySetParent(RBEntry* entry, RBEntry* parent) {
-    entry->parent_color = (RBEntry*)(((uintptr_t)parent) | ((uintptr_t)RBEntryGetColor(entry)));
+inline void RbEntrySetParent(RbEntry* entry, RbEntry* parent) {
+    entry->parent_color = (RbEntry*)(((uintptr_t)parent) | ((uintptr_t)RbEntryGetColor(entry)));
 }
 
-inline RBEntry* RBEntryGetLeft(RBEntry* entry) {
+inline RbEntry* RbEntryGetLeft(RbEntry* entry) {
     return entry->left;
 }
 
-inline void RBEntrySetLeft(RBEntry* entry, RBEntry* left) {
+inline void RbEntrySetLeft(RbEntry* entry, RbEntry* left) {
     entry->left = left;
 }
 
-inline RBEntry* RBEntryGetRight(RBEntry* entry) {
+inline RbEntry* RbEntryGetRight(RbEntry* entry) {
     return entry->right;
 }
 
-inline void RBEntrySetRight(RBEntry* entry, RBEntry* right) {
+inline void RbEntrySetRight(RbEntry* entry, RbEntry* right) {
     entry->right = right;
 }
 
@@ -145,61 +145,61 @@ inline void RBEntrySetRight(RBEntry* entry, RBEntry* right) {
 /*
 * 初始化树
 */
-void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-    BSTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+void RbTreeInit(RbTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+    BsTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
 }
 
 /*
 * 初始化节点
 */
-void RBEntryInit(RBEntry* entry, RBColor color) {
-    BSEntryInit(&entry->bse);
-    RBEntrySetColor(entry, color);
+void RbEntryInit(RbEntry* entry, RbColor color) {
+    BsEntryInit(&entry->bse);
+    RbEntrySetColor(entry, color);
 }
 
 /*
 * 从树中查找节点
 * 存在返回查找到的节点，不存在返回NULL
 */
-RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key) {
-    return (RBEntry*)BSTreeFindEntryByKey(&tree->bst, key);
+RbEntry* RbTreeFindEntryByKey(RbTree* tree, void* key) {
+    return (RbEntry*)BsTreeFindEntryByKey(&tree->bst, key);
 }
 
 /*
 * 向树中插入节点后的平衡操作
 */
-void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* insertEntry) {
-    RBEntry* cur = RBEntryGetParent(insertEntry);
+void RbTreeInsertEntryFixup(RbTree* tree, RbEntry* insertEntry) {
+    RbEntry* cur = RbEntryGetParent(insertEntry);
     if (cur == NULL) {
-        RBEntrySetColor(insertEntry, kBlack);
+        RbEntrySetColor(insertEntry, kBlack);
         return true;
     }
-    RBEntrySetColor(insertEntry, kRed);
+    RbEntrySetColor(insertEntry, kRed);
 
     // 开始回溯维护
     while (cur) {
-        if (RBEntryGetColor(cur) == kBlack) {
+        if (RbEntryGetColor(cur) == kBlack) {
             // 当前节点(插入节点的父节点)是黑色，啥都不用做(是2节点/3节点的插入，直接合并)
             break;
         }
 
-        if (RBEntryGetParent(cur) == NULL) {
+        if (RbEntryGetParent(cur) == NULL) {
             // 没有父节点，回溯到根节点了，直接染黑
-            RBEntrySetColor(cur, kBlack);
+            RbEntrySetColor(cur, kBlack);
             break;
         }
-        RBEntry* sibling = GetSiblingEntry(cur);
+        RbEntry* sibling = GetSiblingEntry(cur);
         
-        if (sibling && RBEntryGetColor(sibling) == kRed) {
+        if (sibling && RbEntryGetColor(sibling) == kRed) {
             // 兄弟节点是红色，说明是4节点的插入，分裂(红黑树的体现就是变色)，父节点向上插入，继续回溯
-            RBEntrySetColor(cur, kBlack);
-            RBEntrySetColor(sibling, kBlack);
-            insertEntry = RBEntryGetParent(cur);       // 更新为该节点向上插入
-            if (RBEntryGetParent(insertEntry) == NULL) {
-                RBEntrySetColor(insertEntry, kBlack);     // 根节点，染黑并结束
+            RbEntrySetColor(cur, kBlack);
+            RbEntrySetColor(sibling, kBlack);
+            insertEntry = RbEntryGetParent(cur);       // 更新为该节点向上插入
+            if (RbEntryGetParent(insertEntry) == NULL) {
+                RbEntrySetColor(insertEntry, kBlack);     // 根节点，染黑并结束
                 break;
             }
-            RBEntrySetColor(insertEntry, kRed);
+            RbEntrySetColor(insertEntry, kRed);
             cur = insertEntry;
         }
         else {
@@ -207,9 +207,9 @@ void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* insertEntry) {
             //         10b               5b    
             //      5r     20b  ->   !2r     10r    
             //  !2r                             20b
-            RBEntry* newSubRoot;
-            RBEntry* oldSubRoot = RBEntryGetParent(cur);
-            if (RBEntryGetParent(cur)->left == cur) {
+            RbEntry* newSubRoot;
+            RbEntry* oldSubRoot = RbEntryGetParent(cur);
+            if (RbEntryGetParent(cur)->left == cur) {
                 if (cur->right == insertEntry) {
                     RotateLeft(cur);
                 }
@@ -221,8 +221,8 @@ void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* insertEntry) {
                 }
                 newSubRoot = RotateLeft(oldSubRoot);
             }
-            RBEntrySetColor(newSubRoot, kBlack);
-            RBEntrySetColor(oldSubRoot, kRed);
+            RbEntrySetColor(newSubRoot, kBlack);
+            RbEntrySetColor(oldSubRoot, kRed);
 
             if (tree->root == oldSubRoot) {        // 原来的子树根节点可能是整棵树的根节点，因此要检查更新
                 tree->root = newSubRoot;
@@ -230,7 +230,7 @@ void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* insertEntry) {
 
             break;        // 只是并入，未分裂，向上没有改变颜色，不再需要回溯
         }
-        cur = RBEntryGetParent(cur);
+        cur = RbEntryGetParent(cur);
     }
 }
 
@@ -239,11 +239,11 @@ void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* insertEntry) {
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* insertEntry) {
-    if (!BSTreeInsertEntryByKey(&tree->bst, &insertEntry->bse, NULL)) {
+bool RbTreeInsertEntryByKey(RbTree* tree, RbEntry* insertEntry) {
+    if (!BsTreeInsertEntryByKey(&tree->bst, &insertEntry->bse, NULL)) {
         return false;
     }
-    RBTreeInsertEntryFixup(tree, insertEntry);
+    RbTreeInsertEntryFixup(tree, insertEntry);
     return true;
 }
 
@@ -251,7 +251,7 @@ bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* insertEntry) {
 /*
 * 向树中删除节点后的平衡操作
 */
-void RBTreeDeleteEntryFixup(RBTree* tree, RBEntry* deleteEntry, RBEntry* cur, RBEntry* deleteLeft, RBEntry* deleteRight, RBColor deleteColor, bool isCurLeft) {
+void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* deleteEntry, RbEntry* cur, RbEntry* deleteLeft, RbEntry* deleteRight, RbColor deleteColor, bool isCurLeft) {
     if (deleteEntry) {
         if (deleteColor == kRed) {
             // 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除
@@ -259,25 +259,25 @@ void RBTreeDeleteEntryFixup(RBTree* tree, RBEntry* deleteEntry, RBEntry* cur, RB
         }
         // 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可
         else if (deleteLeft) {
-            RBEntrySetColor(deleteLeft, kBlack);
+            RbEntrySetColor(deleteLeft, kBlack);
             cur = NULL;
         }
         else if (deleteRight) {
-            RBEntrySetColor(deleteRight, kBlack);
+            RbEntrySetColor(deleteRight, kBlack);
             cur = NULL;
         }
     }
 
-    RBEntry* newSubRoot;
+    RbEntry* newSubRoot;
     // 回溯维护删除黑色节点，即没有子节点(2节点)的情况
     while (cur) {
-        RBEntry* sibling = isCurLeft ? cur->right : cur->left;
-        if (RBEntryGetColor(sibling) == kRed) {
+        RbEntry* sibling = isCurLeft ? cur->right : cur->left;
+        if (RbEntryGetColor(sibling) == kRed) {
             // 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
             // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点
-            RBEntry* oldSubRoot = RBEntryGetParent(sibling);
-            RBEntrySetColor(oldSubRoot, kRed);
-            RBEntrySetColor(sibling, kBlack);
+            RbEntry* oldSubRoot = RbEntryGetParent(sibling);
+            RbEntrySetColor(oldSubRoot, kRed);
+            RbEntrySetColor(sibling, kBlack);
             if (oldSubRoot->left == sibling) {
                 newSubRoot = RotateRight(oldSubRoot);
                 sibling = oldSubRoot->left;     // 下降后挂接过来的节点
@@ -294,120 +294,120 @@ void RBTreeDeleteEntryFixup(RBTree* tree, RBEntry* deleteEntry, RBEntry* cur, RB
         // 至此兄弟节点一定为黑
 
         // 侄子节点为红，即兄弟节点是3/4节点的情况，向兄弟借节点(上升兄弟节点，下降父亲节点)
-        if (sibling->right && RBEntryGetColor(sibling->right) == kRed || sibling->left && RBEntryGetColor(sibling->left) == kRed) {
-            RBColor parentColor = RBEntryGetColor(cur);
-            RBEntrySetColor(cur, kBlack);
-            RBEntry* oldSubRoot = cur;
+        if (sibling->right && RbEntryGetColor(sibling->right) == kRed || sibling->left && RbEntryGetColor(sibling->left) == kRed) {
+            RbColor parentColor = RbEntryGetColor(cur);
+            RbEntrySetColor(cur, kBlack);
+            RbEntry* oldSubRoot = cur;
             if (cur->left == sibling) {
-                if (!sibling->left || RBEntryGetColor(sibling->left) == kBlack) {
-                    RBEntrySetColor(sibling->right, kBlack);
+                if (!sibling->left || RbEntryGetColor(sibling->left) == kBlack) {
+                    RbEntrySetColor(sibling->right, kBlack);
                     sibling = RotateLeft(sibling);
                 }
                 else {
-                    RBEntrySetColor(sibling->left, kBlack);
+                    RbEntrySetColor(sibling->left, kBlack);
                 }
                 newSubRoot = RotateRight(cur);
             }
             else {
-                if (!sibling->right || RBEntryGetColor(sibling->right) == kBlack) {
-                    RBEntrySetColor(sibling->left, kBlack);
+                if (!sibling->right || RbEntryGetColor(sibling->right) == kBlack) {
+                    RbEntrySetColor(sibling->left, kBlack);
                     sibling = RotateRight(sibling);
                 }
                 else {
-                    RBEntrySetColor(sibling->right, kBlack);
+                    RbEntrySetColor(sibling->right, kBlack);
                 }
                 newSubRoot = RotateLeft(cur);
             }
             // 该节点会接替原先的子根节点，也要接替颜色
-            RBEntrySetColor(sibling, parentColor);
+            RbEntrySetColor(sibling, parentColor);
             if (tree->root == oldSubRoot) {
                 tree->root = newSubRoot;
             }
             break;
         }
 
-        if (RBEntryGetColor(cur) == kRed) {
+        if (RbEntryGetColor(cur) == kRed) {
             // 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
             //    |5|8|               |5|
             //   /  |  \     ->      /   \
             //  3   6  -9-          3   |6|8|
-            RBEntrySetColor(sibling, kRed);
-            RBEntrySetColor(cur, kBlack);
+            RbEntrySetColor(sibling, kRed);
+            RbEntrySetColor(cur, kBlack);
             break;
         }
         else {
             // 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
             // 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红
-            RBEntrySetColor(sibling, kRed);
+            RbEntrySetColor(sibling, kRed);
         }
-        RBEntry* child = cur;
-        cur = RBEntryGetParent(cur);
+        RbEntry* child = cur;
+        cur = RbEntryGetParent(cur);
         if (cur) {
             isCurLeft = cur->left == child;
         }
     }
 
-    if (tree->root && RBEntryGetColor(tree->root) == kRed) {
+    if (tree->root && RbEntryGetColor(tree->root) == kRed) {
         // 根节点染黑
-        RBEntrySetColor(tree->root, kBlack);
+        RbEntrySetColor(tree->root, kBlack);
     }
 }
 
 /*
 * 从树中删除节点
 */
-void RBTreeDeleteEntry(RBTree* tree, RBEntry* deleteEntry) {
+void RbTreeDeleteEntry(RbTree* tree, RbEntry* deleteEntry) {
     // 从entry的父节点开始回溯
-    RBEntry* cur;
+    RbEntry* cur;
     bool isCurLeft;
     if (deleteEntry->left != NULL && deleteEntry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
-        RBEntry* minEntry = deleteEntry->right;
+        RbEntry* minEntry = deleteEntry->right;
         while (minEntry->left) {
             minEntry = minEntry->left;
         }
 
-        isCurLeft = RBEntryGetParent(minEntry)->left == minEntry;
+        isCurLeft = RbEntryGetParent(minEntry)->left == minEntry;
 
         // 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值
         minEntry->left = deleteEntry->left;
         if (deleteEntry->left) {
-            RBEntrySetParent(deleteEntry->left, minEntry);
+            RbEntrySetParent(deleteEntry->left, minEntry);
         }
 
-        RBEntry* oldRight = minEntry->right;
+        RbEntry* oldRight = minEntry->right;
 
         // 最小节点可能是待删除节点的右节点
         if (deleteEntry->right != minEntry) {
             // 将minEntry从原先的位置摘除，用其右子树代替
-            RBEntryGetParent(minEntry)->left = minEntry->right;
+            RbEntryGetParent(minEntry)->left = minEntry->right;
             if (minEntry->right) {
-                RBEntrySetParent(minEntry->right, RBEntryGetParent(minEntry));
+                RbEntrySetParent(minEntry->right, RbEntryGetParent(minEntry));
             }
             // 最小节点继承待删除节点的右子树
             minEntry->right = deleteEntry->right;
             if (deleteEntry->right) {
-                RBEntrySetParent(deleteEntry->right, minEntry);
+                RbEntrySetParent(deleteEntry->right, minEntry);
             }
-            cur = RBEntryGetParent(minEntry);
+            cur = RbEntryGetParent(minEntry);
         }
         else {
             cur = minEntry;
         }
 
-        RBColor oldColor = RBEntryGetColor(minEntry);
-        RBEntrySetColor(minEntry, RBEntryGetColor(deleteEntry));
+        RbColor oldColor = RbEntryGetColor(minEntry);
+        RbEntrySetColor(minEntry, RbEntryGetColor(deleteEntry));
 
         // 红黑树另外需要使entry的子节点同步为minEntry原来的子节点，在判断是否存在子节点时使用
         deleteEntry->left = NULL;
         deleteEntry->right = oldRight;
-        RBEntrySetColor(deleteEntry, oldColor);
+        RbEntrySetColor(deleteEntry, oldColor);
 
         // 最后进行挂接
-        RBTreeHitchEntry(tree, deleteEntry, minEntry);
+        RbTreeHitchEntry(tree, deleteEntry, minEntry);
     }
     else {
-        cur = RBEntryGetParent(deleteEntry);
+        cur = RbEntryGetParent(deleteEntry);
         if (cur) {
             isCurLeft = cur->left == deleteEntry;
         } else {
@@ -416,27 +416,27 @@ void RBTreeDeleteEntry(RBTree* tree, RBEntry* deleteEntry) {
 
         if (deleteEntry->right != NULL) {
             // 只有右子节点
-            RBTreeHitchEntry(tree, deleteEntry, deleteEntry->right);
+            RbTreeHitchEntry(tree, deleteEntry, deleteEntry->right);
         }
         else if (deleteEntry->left != NULL) {
-            RBTreeHitchEntry(tree, deleteEntry, deleteEntry->left);
+            RbTreeHitchEntry(tree, deleteEntry, deleteEntry->left);
         }
         else {
             // 没有子节点，直接从父节点中摘除此节点
-            RBTreeHitchEntry(tree, deleteEntry, NULL);
+            RbTreeHitchEntry(tree, deleteEntry, NULL);
         }
     }
-    RBTreeDeleteEntryFixup(tree, deleteEntry, cur, deleteEntry->left, deleteEntry->right, RBEntryGetColor(deleteEntry), isCurLeft);
+    RbTreeDeleteEntryFixup(tree, deleteEntry, cur, deleteEntry->left, deleteEntry->right, RbEntryGetColor(deleteEntry), isCurLeft);
 }
 
 /*
 * 从树中按key删除节点
 * 成功返回被删除的节点，失败返回NULL
 */
-RBEntry* RBTreeDeleteEntryByKey(RBTree* tree, void* key) {
-    RBEntry* entry = RBTreeFindEntryByKey(tree, key);
+RbEntry* RbTreeDeleteEntryByKey(RbTree* tree, void* key) {
+    RbEntry* entry = RbTreeFindEntryByKey(tree, key);
     if (entry) {
-        RBTreeDeleteEntry(tree, entry);
+        RbTreeDeleteEntry(tree, entry);
     }
     return entry;
 }

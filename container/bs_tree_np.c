@@ -6,7 +6,7 @@
 * entry从树中摘除
 * entry的left和right不变
 */
-static void BSTreeNpHitchEntry(BSTreeNp* tree, BSEntryNp* entry, BSEntryNp* entryParent, BSEntryNp* newEntry) {
+static void BsTreeNpHitchEntry(BsTreeNp* tree, BsEntryNp* entry, BsEntryNp* entryParent, BsEntryNp* newEntry) {
     if (entryParent) {
         if (entryParent->left == entry) {
             entryParent->left = newEntry;
@@ -23,7 +23,7 @@ static void BSTreeNpHitchEntry(BSTreeNp* tree, BSEntryNp* entry, BSEntryNp* entr
 /*
 * 初始化树
 */
-void BSTreeNpInit(BSTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+void BsTreeNpInit(BsTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
     tree->root = NULL;
     tree->entryFieldOffset = entryFieldOffset;
     tree->keyFieldOffset = keyFieldOffset;
@@ -37,7 +37,7 @@ void BSTreeNpInit(BSTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int 
 /*
 * 初始化节点
 */
-void BSEntryNpInit(BSEntryNp* entry) {
+void BsEntryNpInit(BsEntryNp* entry) {
     entry->left = NULL;
     entry->right = NULL;
 }
@@ -46,7 +46,7 @@ void BSEntryNpInit(BSEntryNp* entry) {
 /*
 * 递归向树中插入节点
 */
-bool BSTreeNpInsertEntry(BSTreeNp* tree, BSEntryNp* insertEntry, BSEntryNp* cur) {
+bool BsTreeNpInsertEntry(BsTreeNp* tree, BsEntryNp* insertEntry, BsEntryNp* cur) {
     void* obj = GetObjByFieldOffset(insertEntry, tree->entryFieldOffset, void);
     void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
 
@@ -57,13 +57,13 @@ bool BSTreeNpInsertEntry(BSTreeNp* tree, BSEntryNp* insertEntry, BSEntryNp* cur)
     }
     else if (res < 0) {
         if (cur->right) {
-            return BSTreeNpInsertEntry(tree, insertEntry, cur->right);
+            return BsTreeNpInsertEntry(tree, insertEntry, cur->right);
         }
         cur->right = insertEntry;
     }
     else {
         if (cur->left) {
-            return BSTreeNpInsertEntry(tree, insertEntry, cur->left);
+            return BsTreeNpInsertEntry(tree, insertEntry, cur->left);
         }
         cur->left = insertEntry;
     }
@@ -75,11 +75,11 @@ bool BSTreeNpInsertEntry(BSTreeNp* tree, BSEntryNp* insertEntry, BSEntryNp* cur)
 * 不允许存在重复节点
 * 成功返回true，失败返回false
 */
-bool BSTreeNpInsertEntryByKey(BSTreeNp* tree, BSEntryNp* insertEntry) {
-    BSEntryNpInit(insertEntry);
+bool BsTreeNpInsertEntryByKey(BsTreeNp* tree, BsEntryNp* insertEntry) {
+    BsEntryNpInit(insertEntry);
     if (tree->root == NULL) {
         tree->root = insertEntry;
         return true;
     }
-    return BSTreeNpInsertEntry(tree, insertEntry, tree->root);
+    return BsTreeNpInsertEntry(tree, insertEntry, tree->root);
 }

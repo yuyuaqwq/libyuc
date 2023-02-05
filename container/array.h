@@ -42,7 +42,8 @@ size_t ArrayGetCount(Array* arr);
 void ArraySetCount(Array* arr, size_t count);
 size_t ArrayGetCapacity(Array* arr);
 void ArraySetCapacity(Array* arr, size_t capacity);
-void ArrayExpand(Array* arr, size_t targetCount);
+void ArrayResetCapacity(Array* arr, size_t capacity);
+void ArrayExpand(Array* arr, size_t addCount);
 void ArraySwapEntry(Array* arr, int index1, int index2);
 
 #ifdef __cplusplus

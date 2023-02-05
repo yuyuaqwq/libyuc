@@ -19,46 +19,46 @@ extern "C" {
 /*
 * 以234树为原型的红黑树实现
 */
-typedef enum _RBColor RBColor;
+typedef enum _RbColor RbColor;
 
-typedef struct _RBEntry {
+typedef struct _RbEntry {
     union {
         struct {
-            struct _RBEntry* parent_color;      // 颜色嵌入到父节点指针的低1位
-            struct _RBEntry* left;
-            struct _RBEntry* right;
+            struct _RbEntry* parent_color;      // 颜色嵌入到父节点指针的低1位
+            struct _RbEntry* left;
+            struct _RbEntry* right;
         };
-        BSEntry bse;
+        BsEntry bse;
     };
-} RBEntry;
+} RbEntry;
 
-typedef struct _RBTree {
+typedef struct _RbTree {
     union {
         struct {
-            RBEntry* root;
+            RbEntry* root;
             int entryFieldOffset;
             int keyFieldOffset;
             int keyFieldSize;
             CmpFunc cmpFunc;        // 间接调用增加一定开销
         };
-        BSTree bst;
+        BsTree bst;
     };
-} RBTree;
+} RbTree;
 
-RBColor RBEntryGetColor(RBEntry* entry);
-void RBEntrySetColor(RBEntry* entry, RBColor color);
-RBEntry* RBEntryGetParent(RBEntry* entry);
-void RBEntrySetParent(RBEntry* entry, RBEntry* parent);
+RbColor RbEntryGetColor(RbEntry* entry);
+void RbEntrySetColor(RbEntry* entry, RbColor color);
+RbEntry* RbEntryGetParent(RbEntry* entry);
+void RbEntrySetParent(RbEntry* entry, RbEntry* parent);
 
-void RBTreeInit(RBTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-#define RBTreeInitByField(tree, objName, entryFieldName, keyFieldName) RBTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
-void RBEntryInit(RBEntry* entry, RBColor color);
-RBEntry* RBTreeFindEntryByKey(RBTree* tree, void* key);
-void RBTreeInsertEntryFixup(RBTree* tree, RBEntry* entry);
-bool RBTreeInsertEntryByKey(RBTree* tree, RBEntry* entry);
-void RBTreeDeleteEntryFixup(RBTree* tree, RBEntry* entry, RBEntry* parent, RBEntry* left, RBEntry* right, RBColor color, bool isLeft);
-void RBTreeDeleteEntry(RBTree* tree, RBEntry* entry);
-RBEntry* RBTreeDeleteEntryByKey(RBTree* tree, void* key);
+void RbTreeInit(RbTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+#define RbTreeInitByField(tree, objName, entryFieldName, keyFieldName) RbTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
+void RbEntryInit(RbEntry* entry, RbColor color);
+RbEntry* RbTreeFindEntryByKey(RbTree* tree, void* key);
+void RbTreeInsertEntryFixup(RbTree* tree, RbEntry* entry);
+bool RbTreeInsertEntryByKey(RbTree* tree, RbEntry* entry);
+void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* entry, RbEntry* parent, RbEntry* left, RbEntry* right, RbColor color, bool isLeft);
+void RbTreeDeleteEntry(RbTree* tree, RbEntry* entry);
+RbEntry* RbTreeDeleteEntryByKey(RbTree* tree, void* key);
 
 
 #ifdef __cplusplus

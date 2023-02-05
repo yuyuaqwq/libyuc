@@ -14,29 +14,29 @@
 extern "C" {
 #endif
 
-typedef struct _BSEntry {
-    struct _BSEntry* parent;
-    struct _BSEntry* left;
-    struct _BSEntry* right;
-} BSEntry;
+typedef struct _BsEntry {
+    struct _BsEntry* parent;
+    struct _BsEntry* left;
+    struct _BsEntry* right;
+} BsEntry;
 
 
-typedef struct _BSTree {
-    BSEntry* root;
+typedef struct _BsTree {
+    BsEntry* root;
     int entryFieldOffset;
     int keyFieldOffset;
     int keyFieldSize;
     CmpFunc cmpFunc;        // 间接调用增加一定开销
-} BSTree;
+} BsTree;
 
 
 
-void BSTreeInit(BSTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-void BSEntryInit(BSEntry* entry);
-BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key);
-#define BSTreeFindEntryByField(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
+void BsTreeInit(BsTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
+void BsEntryInit(BsEntry* entry);
+BsEntry* BsTreeFindEntryByKey(BsTree* tree, void* key);
+#define BsTreeFindEntryByField(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
     retObj = NULL; \
-    BSEntry* cur = (BSEntry*)((tree)->root); \
+    BsEntry* cur = (BsEntry*)((tree)->root); \
     while (cur) { \
         objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
         if (tempObj->keyFieldName < (key)) { \
@@ -48,14 +48,14 @@ BSEntry* BSTreeFindEntryByKey(BSTree* tree, void* key);
         } \
     } \
 }
-bool BSTreeInsertEntryByKey(BSTree* tree, BSEntry* entry);
-BSEntry* BSTreeDeleteEntry(BSTree* tree, BSEntry* entry);
-size_t BSTreeGetEntryCount(BSTree* tree);
+bool BsTreeInsertEntryByKey(BsTree* tree, BsEntry* entry);
+BsEntry* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry);
+size_t BsTreeGetEntryCount(BsTree* tree);
 
-BSEntry* BSTreeFirst(BSTree* tree);
-BSEntry* BSTreeLast(BSTree* tree);
-BSEntry* BSTreeNext(BSEntry* entry);
-BSEntry* BSTreePrev(BSEntry* entry);
+BsEntry* BsTreeFirst(BsTree* tree);
+BsEntry* BsTreeLast(BsTree* tree);
+BsEntry* BsTreeNext(BsEntry* entry);
+BsEntry* BsTreePrev(BsEntry* entry);
 
 
 #ifdef __cplusplus

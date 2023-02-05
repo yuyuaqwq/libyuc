@@ -18,11 +18,7 @@ extern "C" {
 #endif
 
 
-typedef enum {
-    kFree,
-    kObj,
-    kList,
-} HashEntryType;
+typedef enum _HashEntryType HashEntryType;
 
 typedef struct _HashEntry {
     HashEntryType type;
@@ -30,7 +26,6 @@ typedef struct _HashEntry {
         void* obj;
         SinglyListHead listHead;
     };
-    
 } HashEntry;
 
 typedef struct _HashDataList {
@@ -41,9 +36,9 @@ typedef struct _HashDataList {
 typedef struct _HashTable {
     Array bucket;
     // Array tempBucket;        // 保留，未来可能修改为逐渐搬迁
+    uint32_t loadFator;
     int keyFieldOffset;
     int keyFieldSize;
-    int loadFator;
     HashU32Func hashFunc;
     CmpFunc cmpFunc;
 } HashTable;
@@ -65,14 +60,18 @@ typedef struct _HashTableIterator {
 // #define HASHTABLE_DATA_STATISTICS
 
 #define HASHTABLE_DEFAULT_BUCKETS_SIZE 16
-#define HASHTABLE_DEFAULT_LOAD_FATOR 75//%
+#define HASHTABLE_DEFAULT_LOAD_FACTOR 75//%
+#define HASHTABLE_DEFAULT_EXPANSION_FACTOR 2
 
-void HashTableInit(HashTable* table, int capacity, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc);
+void HashTableInit(HashTable* table, size_t capacity, uint32_t loadFator, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc);
 void HashEntryInit(HashEntry* entry);
 void HashTableRelease(HashTable* table, bool deleteObj);
+size_t HashTableGetCount(HashTable* table);
+size_t HashTableGetCapacity(HashTable* table);
 void* HashTableFind(HashTable* table, void* key);
 bool HashTableInsert(HashTable* table, void* obj);
 void* HashTableDelete(HashTable* table, void* key);
+
 
 void* HashTableNext(HashTableIterator* iter);
 void* HashTableFirst(HashTable* table, HashTableIterator* iter);

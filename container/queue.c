@@ -7,9 +7,9 @@
 
 #include <CUtils/container/queue.h>
 
-static void QueueExpand(Queue* queue, size_t targetSize) {
+static void QueueExpand(Queue* queue, size_t addCount) {
     Array* arr = &queue->arr;
-    ArrayExpand(arr, targetSize + 1);
+    ArrayExpand(arr, addCount);
     if (queue->head > queue->tail) {
         size_t copyCount = arr->count - queue->head;
         if (copyCount != 0) {
@@ -68,7 +68,7 @@ size_t QueueGetFreeCount(Queue* queue) {
 
 void QueueEnqueue(Queue* queue, void* entry) {
     if (QueueIsFull(queue)) {
-        QueueExpand(queue, QueueGetEntryCount(queue) + 1);
+        QueueExpand(queue, 1);
     }
     MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
     queue->tail++;
@@ -77,7 +77,7 @@ void QueueEnqueue(Queue* queue, void* entry) {
 
 void QueueEnqueueByCount(Queue* queue, void* entry, size_t count) {
     if (QueueGetFreeCount(queue) < count) {
-        QueueExpand(queue, QueueGetEntryCount(queue) + count);
+        QueueExpand(queue, count);
     }
     MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
     queue->tail += count;

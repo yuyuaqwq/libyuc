@@ -20,7 +20,7 @@ bool ListIsEmpty(ListHead* head) {
     return head->next == head && head->prev == head;
 }
 
-void ListInsertHead(ListHead* head, ListEntry* entry) {
+void ListInsertNext(ListEntry* head, ListEntry* entry) {
     ListEntry* old = head->next;
     head->next = entry;
     entry->prev = head;
@@ -28,7 +28,7 @@ void ListInsertHead(ListHead* head, ListEntry* entry) {
     old->prev = entry;
 }
 
-void ListInsertTail(ListHead* head, ListEntry* entry) {
+void ListInsertPrev(ListEntry* head, ListEntry* entry) {
     ListEntry* old = head->prev;
     head->prev = entry;
     entry->next = head;
@@ -36,22 +36,22 @@ void ListInsertTail(ListHead* head, ListEntry* entry) {
     old->next = entry;
 }
 
-ListEntry* ListRemoveEntry(ListEntry* entry, bool empty) {
+ListEntry* ListRemoveEntry(ListEntry* entry, bool init) {
     ListEntry* prev = entry->prev;
     ListEntry* next = entry->next;
     prev->next = next;
     next->prev = prev;
-    if (empty) {
+    if (init) {
         ListEntryInit(entry);
     }
     return entry;
 }
 
-ListEntry* ListRemoveHead(ListHead* head) {
+ListEntry* ListRemoveNext(ListEntry* head) {
     return ListRemoveEntry(head->next, true);
 }
 
-ListEntry* ListRemoveTail(ListHead* head) {
+ListEntry* ListRemovePrev(ListEntry* head) {
     return ListRemoveEntry(head->prev, true);
 }
 
