@@ -26,11 +26,11 @@ C语言便携工具类支持
 - HashTable
   - 存储对象指针的链式哈希表
 ## 树
-- BSTree
+- BsTree
   - 二叉搜索树
-- AVLTree
+- AvlTree
   - 存储高度/嵌入平衡因子/无父结点的平衡二叉树
-- RBTree
+- RbTree
   - 以234树为原型，嵌入颜色的红黑树
 - BPlusTree
   - B+树
