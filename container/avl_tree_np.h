@@ -50,9 +50,9 @@ int AvlEntryNpGetBalanceFactor(AvlEntryNp* entry);
 void AvlTreeNpInit(AvlTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define AvlTreeNpInitByField(tree, objName, entryFieldName, keyFieldName) AvlTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void AvlEntryNpInit(AvlEntryNp* entry);
-AvlEntryNp* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key);
+void* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key);
 bool AvlTreeNpInsertEntryByKey(AvlTreeNp* tree, AvlEntryNp* entry);
-AvlEntryNp* AvlTreeNpDeleteEntryByKey(AvlTreeNp* tree, void* key);
+void* AvlTreeNpDeleteEntryByKey(AvlTreeNp* tree, void* key);
 
 
 #ifdef __cplusplus

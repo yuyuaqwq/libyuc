@@ -29,7 +29,6 @@ typedef struct _BsTreeNp {
 
 void BsTreeNpInit(BsTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 void BsEntryNpInit(BsEntryNp* entry);
-BsEntryNp* BsTreeNpFindEntryByKey(BsTreeNp* tree, void* key);
 #define BsTreeNpFindEntryByField(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
 retObj = NULL; \
 BsEntryNp* cur = (BsEntryNp*)((tree)->root); \
@@ -45,9 +44,6 @@ while (cur) { \
 } \
 }
 bool BsTreeNpInsertEntryByKey(BsTreeNp* tree, BsEntryNp* entry);
-BsEntryNp* BsTreeNpDeleteEntry(BsTreeNp* tree, BsEntryNp* entry, BsEntryNp* entryParent);
-size_t BsTreeNpGetEntryCount(BsTreeNp* tree);
-
 
 #ifdef __cplusplus
 }

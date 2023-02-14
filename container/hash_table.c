@@ -123,7 +123,6 @@ bool HashTableInsert(HashTable* table, void* obj) {
     void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
     int index = GetIndex(table, key);
     HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
-
     if (entry->type == kFree) {
         entry->obj = obj;
         entry->type = kObj;
@@ -134,15 +133,11 @@ bool HashTableInsert(HashTable* table, void* obj) {
             return obj == entry->obj;
         }
         entry->type = kList;
-
         void* oldObj = entry->obj;
-
         SinglyListHeadInit(&entry->listHead);
-
         HashDataList* listEntry = CreateObject(HashDataList);
         listEntry->obj = oldObj;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-        
         listEntry = CreateObject(HashDataList);
         listEntry->obj = obj;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
@@ -152,14 +147,11 @@ bool HashTableInsert(HashTable* table, void* obj) {
         listEntry->obj = obj;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
     }
-
     table->bucket.count++;
-
     if (GetCurrentLoadFator(table) >= table->loadFator) {
         // 触发扩容
         Resize(table, table->bucket.capacity * HASHTABLE_DEFAULT_EXPANSION_FACTOR);
     }
-
     return true;
 }
 
@@ -184,26 +176,25 @@ void* HashTableDelete(HashTable* table, void* key) {
         while (cur) {
             void* curObj = ((HashDataList*)cur)->obj;
             int res = table->cmpFunc(GetFieldByFieldOffset(curObj, table->keyFieldOffset, void), key, table->keyFieldSize);
-            if (res == 0) {
-                obj = curObj;
-                if (prev) {
-                    SinglyListRemoveEntry(prev, cur);
-                }
-                else {
-                    SinglyListRemoveHead(&entry->listHead);
-
-                    if (SinglyListIsEmpty(&entry->listHead)) {
-                        entry->type = kObj;
-                    }
-                }
-                DeleteObject_(cur);
-                break;
+            if (res != 0) {
+                prev = cur;
+                cur = SinglyListNext(cur);
+                continue;
             }
-            prev = cur;
-            cur = SinglyListNext(cur);
+            obj = curObj;
+            if (prev) {
+                SinglyListRemoveEntry(prev, cur);
+            }
+            else {
+                SinglyListRemoveHead(&entry->listHead);
+                if (SinglyListIsEmpty(&entry->listHead)) {
+                    entry->type = kObj;
+                }
+            }
+            DeleteObject_(cur);
+            break;
         }
     }
-
     table->bucket.count--;
     return obj;
 }

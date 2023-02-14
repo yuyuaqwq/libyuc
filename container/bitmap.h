@@ -19,11 +19,16 @@ typedef struct _Bitmap {
 	Array arr;
 } Bitmap;
 
-void BitmapInit(Bitmap* bitmap, size_t bitCount);
-
-bool BitmapGet(Bitmap* bitmap, ptrdiff_t bitPos);
-
+void BitmapInit(Bitmap* bitmap, size_t bit_count);
+bool BitmapGet(Bitmap* bitmap, ptrdiff_t bit_idx);
 void BitmapSet(Bitmap* bitmap, ptrdiff_t bitPos, bool value);
+size_t BitmapGetBitCount(Bitmap* bitmap);
+size_t BitmapGetByteCount(Bitmap* bitmap);
+ptrdiff_t BitmapFindBit(Bitmap* bitmap, ptrdiff_t bit_start, bool val);
+ptrdiff_t BitmapAlloc(Bitmap* bitmap, size_t bit_count);
+void BitmapFree(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count);
+
+extern const ptrdiff_t kBitmapInvalidIndex;
 
 #ifdef __cplusplus
 }

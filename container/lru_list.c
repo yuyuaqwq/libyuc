@@ -6,17 +6,20 @@ void LruListInit(LruList* list, size_t capacity, int lru_entry_field_offset, int
 	list->lru_entry_field_offset = lru_entry_field_offset;
 }
 
-void* LruListGet(LruList* list, void* key) {
+void* LruListGet(LruList* list, void* key, bool put_first) {
 	void* obj = HashTableFind(&list->hash_table, key);
 	if (!obj) {
 		return NULL;
 	}
-	LruEntry* entry = GetFieldByFieldOffset(obj, list->lru_entry_field_offset, LruEntry);
-	ListInsertNext(&list->list_head, ListRemoveEntry(&entry->list_entry, true));
+	if (put_first) {
+		LruEntry* entry = GetFieldByFieldOffset(obj, list->lru_entry_field_offset, LruEntry);
+		ListInsertNext(&list->list_head, ListRemoveEntry(&entry->list_entry, true));
+	}
 	return obj;
 }
 
-void* LruListPut(LruList* list, void* obj) {
+void* LruListPut(LruList* list, LruEntry* entry) {
+	void* obj = GetObjByFieldOffset(entry, list->lru_entry_field_offset, void);
 	void* key = GetFieldByFieldOffset(obj, list->hash_table.keyFieldOffset, void);
 	void* del_obj = HashTableFind(&list->hash_table, key);
 	if (del_obj) {

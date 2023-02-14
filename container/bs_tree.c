@@ -56,9 +56,9 @@ void BsEntryInit(BsEntry* entry) {
 
 /*
 * 从树中查找节点
-* 存在返回查找到的节点，不存在返回NULL
+* 存在返回查找到的节点对应的对象，不存在返回NULL
 */
-BsEntry* BsTreeFindEntryByKey(BsTree* tree, void* key) {
+void* BsTreeFindEntryByKey(BsTree* tree, void* key) {
     BsEntry* cur = tree->root;
     while (cur) {
         void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
@@ -70,7 +70,7 @@ BsEntry* BsTreeFindEntryByKey(BsTree* tree, void* key) {
             cur = cur->left;
         }
         else {
-            return cur;
+            return GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
         }
     }
     return NULL;
@@ -119,7 +119,7 @@ bool BsTreeInsertEntryByKey(BsTree* tree, BsEntry* entry) {
 * 从树中删除节点
 * 成功返回被删除的节点，失败返回NULL
 */
-BsEntry* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry) {
+void* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry) {
     if (entry->left != NULL && entry->right != NULL) {
         // 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点
         BsEntry* minEntry = entry->right;
@@ -170,7 +170,7 @@ BsEntry* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry) {
             BsTreeHitchEntry(tree, entry, NULL);
         }
     }
-    return entry;
+    return GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
 }
 
 

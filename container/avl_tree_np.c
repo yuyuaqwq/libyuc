@@ -227,7 +227,7 @@ void AvlEntryNpInit(AvlEntryNp* entry) {
 /*
 * 从树中查找节点
 */
-AvlEntryNp* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key) {
+void* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key) {
     AvlEntryNp* cur = tree->root;
     while (cur) {
         void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
@@ -239,7 +239,7 @@ AvlEntryNp* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key) {
             cur = AvlEntryNpGetLeft(cur);
         }
         else {
-            return cur;
+            return GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
         }
     }
     return NULL;
@@ -426,8 +426,8 @@ bool AvlTreeNpDeleteEntry(AvlTreeNp* tree, void* key, AvlEntryNp* cur, AvlEntryN
 * 从树中按key删除节点
 * 成功返回被删除的节点，失败返回NULL
 */
-AvlEntryNp* AvlTreeNpDeleteEntryByKey(AvlTreeNp* tree, void* key) {
+void* AvlTreeNpDeleteEntryByKey(AvlTreeNp* tree, void* key) {
     AvlEntryNp* deleteEntry, * curParent = NULL;
     AvlTreeNpDeleteEntry(tree, key, tree->root, &curParent, &deleteEntry);
-    return deleteEntry;
+    return GetObjByFieldOffset(deleteEntry, tree->entryFieldOffset, void);
 }

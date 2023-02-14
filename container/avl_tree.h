@@ -74,10 +74,10 @@ void AvlTreeDeleteEntryFixup(AvlTree* tree, AvlEntry* parent, bool isLeft);
 void AvlTreeInit(AvlTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define AvlTreeInitByField(tree, objName, entryFieldName, keyFieldName) AvlTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void AvlEntryInit(AvlEntry* entry);
-AvlEntry* AvlTreeFindEntryByKey(AvlTree* tree, void* key);
+void* AvlTreeFindEntryByKey(AvlTree* tree, void* key);
 bool AvlTreeInsertEntryByKey(AvlTree* tree, AvlEntry* entry);
 void AvlTreeDeleteEntry(AvlTree* tree, AvlEntry* entry);
-AvlEntry* AvlTreeDeleteEntryByKey(AvlTree* tree, void* key);
+void* AvlTreeDeleteEntryByKey(AvlTree* tree, void* key);
 
 
 #ifdef __cplusplus

@@ -53,12 +53,12 @@ void RbEntrySetParent(RbEntry* entry, RbEntry* parent);
 void RbTreeInit(RbTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define RbTreeInitByField(tree, objName, entryFieldName, keyFieldName) RbTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
 void RbEntryInit(RbEntry* entry, RbColor color);
-RbEntry* RbTreeFindEntryByKey(RbTree* tree, void* key);
+void* RbTreeFindEntryByKey(RbTree* tree, void* key);
 void RbTreeInsertEntryFixup(RbTree* tree, RbEntry* entry);
 bool RbTreeInsertEntryByKey(RbTree* tree, RbEntry* entry);
 void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* entry, RbEntry* parent, RbEntry* left, RbEntry* right, RbColor color, bool isLeft);
 void RbTreeDeleteEntry(RbTree* tree, RbEntry* entry);
-RbEntry* RbTreeDeleteEntryByKey(RbTree* tree, void* key);
+void* RbTreeDeleteEntryByKey(RbTree* tree, void* key);
 
 
 #ifdef __cplusplus

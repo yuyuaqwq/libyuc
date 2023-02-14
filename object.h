@@ -25,6 +25,7 @@ void MemoryCopyR(void* dst_, void* src_, size_t size);
 #define MemorySet(dst, val, size) memset((void*)(dst), (val), (size))
 ptrdiff_t MemoryCmp(const void* buf1_, const void* buf2_, size_t size);
 ptrdiff_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size);
+ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const void* buf2_, size_t size2);
 void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
@@ -48,9 +49,13 @@ typedef struct _MemAllocTor {
 	MemFreeFunc Free;
 } MemAllocTor;
 
-typedef int (*CmpFunc)(const void* buf1, const void* buf2, size_t size);;
+typedef int (*CmpFunc)(const void* buf1, const void* buf2, size_t size);
+typedef int (*CmpFunc2)(const void* buf1, size_t size1, const void* buf2, size_t size2);
 typedef struct _CmpTor {
-	CmpFunc Cmp;
+	union {
+		CmpFunc cmp;
+		CmpFunc2 cmp2;
+	};
 } CmpTor;
 
 typedef uint32_t(*HashU32Func)(const void* buf, size_t size);

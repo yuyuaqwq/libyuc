@@ -502,8 +502,8 @@ void AvlEntryInit(AvlEntry* entry) {
 * 从树中查找节点
 * 存在返回查找到的节点，不存在返回NULL
 */
-AvlEntry* AvlTreeFindEntryByKey(AvlTree* tree, void* key) {
-    return (AvlEntry*)BsTreeFindEntryByKey(&tree->bst, key);
+void* AvlTreeFindEntryByKey(AvlTree* tree, void* key) {
+    return BsTreeFindEntryByKey(&tree->bst, key);
 }
 
 /*
@@ -677,10 +677,11 @@ void AvlTreeDeleteEntry(AvlTree* tree, AvlEntry* deleteEntry) {
 * 从树中按key删除节点
 * 成功返回被删除的节点，失败返回NULL
 */
-AvlEntry* AvlTreeDeleteEntryByKey(AvlTree* tree, void* key) {
-    AvlEntry* deleteEntry = AvlTreeFindEntryByKey(tree, key);
-    if (deleteEntry) {
-        AvlTreeDeleteEntry(tree, deleteEntry);
+void* AvlTreeDeleteEntryByKey(AvlTree* tree, void* key) {
+    void* obj = AvlTreeFindEntryByKey(tree, key);
+    if (obj) {
+        AvlEntry* entry = GetFieldByFieldOffset(obj, tree->entryFieldOffset, void);
+        AvlTreeDeleteEntry(tree, entry);
     }
-    return deleteEntry;
+    return obj;
 }

@@ -20,8 +20,8 @@ typedef struct _LruList {
 } LruList;
 
 void LruListInit(LruList* list, size_t capacity, int lru_entry_field_offset, int key_field_offset, int key_size, HashU32Func hash_func, CmpFunc cmp_func);
-#define LruListInitByField(list, capacity, objName, entryFieldName, keyFieldName) LruListInit((list), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
-void* LruListGet(LruList* list, void* key);
+#define LruListInitByField(list, capacity, objName, entryFieldName, keyFieldName) LruListInit((list), (capacity), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL, NULL)
+void* LruListGet(LruList* list, void* key, bool put_first);
 void* LruListPut(LruList* list, void* obj);
 
 #ifdef __cplusplus

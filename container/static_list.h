@@ -15,11 +15,11 @@
 extern "C" {
 #endif
 
-typedef struct _StaticListHead {
+typedef struct _StaticList {
     Array array;
     int entryFieldOffset;
     int freeIndex;
-} StaticListHead;
+} StaticList;
 
 /*
 * 分配后此节点的值可以被覆盖，故可以使用union
@@ -28,11 +28,11 @@ typedef struct _StaticListEntry {
     int nextIndex;
 } StaticListEntry;
 
-void StaticListHeadInit(StaticListHead* head, size_t count, int objSize, int entryFieldOffset);
-int StaticListAllocEntry(StaticListHead* head);
-void StaticListFreeEntry(StaticListHead* head, int index);
-#define StaticListAt(head, index, objName) (ArrayAt((head)->array, index, objName))
-int StaticListSwitchFreeIndex(StaticListHead* head, int newIndex);
+void StaticListInit(StaticList* list, size_t count, int objSize, int entryFieldOffset);
+int StaticListAllocEntry(StaticList* list);
+void StaticListFreeEntry(StaticList* list, int index);
+#define StaticListAt(list, index, objName) (ArrayAt((list)->array, index, objName))
+int StaticListSwitchFreeIndex(StaticList* list, int newIndex);
 
 #ifdef __cplusplus
 }

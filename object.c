@@ -41,6 +41,20 @@ ptrdiff_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size) {
     return 0;
 }
 
+ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const void* buf2_, size_t size2) {
+    if (size1 != size2) {
+        return size1 - size2;
+    }
+    uint8_t* buf1 = buf1_;
+    uint8_t* buf2 = buf2_;
+    while (size1-- != 0) {
+        int res = buf1[size1] - buf2[size1];
+        if (res != 0) {
+            return res;
+        }
+    }
+    return 0;
+}
 
 
 

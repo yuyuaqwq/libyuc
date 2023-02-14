@@ -33,7 +33,7 @@ typedef struct _BsTree {
 
 void BsTreeInit(BsTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 void BsEntryInit(BsEntry* entry);
-BsEntry* BsTreeFindEntryByKey(BsTree* tree, void* key);
+void* BsTreeFindEntryByKey(BsTree* tree, void* key);
 #define BsTreeFindEntryByField(tree, retObj, key, objName, entryFieldName, keyFieldName) { \
     retObj = NULL; \
     BsEntry* cur = (BsEntry*)((tree)->root); \
@@ -49,7 +49,7 @@ BsEntry* BsTreeFindEntryByKey(BsTree* tree, void* key);
     } \
 }
 bool BsTreeInsertEntryByKey(BsTree* tree, BsEntry* entry);
-BsEntry* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry);
+void* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry);
 size_t BsTreeGetEntryCount(BsTree* tree);
 
 BsEntry* BsTreeFirst(BsTree* tree);
