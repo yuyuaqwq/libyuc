@@ -10,6 +10,7 @@
 
 #include <CUtils/object.h>
 #include <CUtils/container/static_list.h>
+#include <CUtils/container/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ extern "C" {
 */
 
 typedef struct _DeterminSkipEntry {
-	struct _DeterminSkipEntry* next;
+	ListEntry list_entry;
 } DeterminSkipEntry;
 
 typedef struct _DeterminSkipIndex {
@@ -62,6 +63,22 @@ void DeterminSkipListInit(DeterminSkipList* list, int entry_field_offset, int ke
 	list->cmp_func = cmp_func;
 }
 
+
+
+/*
+ 
+head       4
+     1     4   6       10
+     1 2 3 4 5 6 7 8 9 10
+
+	 
+	       4
+	  1           6        10
+	    2 3    5    7 8 9     
+
+
+¼äÏ¶ÈÝÁ¿1-3¸ö
+*/
 void DeterminSkipListFind(DeterminSkipList* list) {
 
 }
