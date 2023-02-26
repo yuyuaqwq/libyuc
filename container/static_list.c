@@ -7,50 +7,52 @@
 
 #include <CUtils/container/static_list.h>
 
-void StaticListInit(StaticList* list, size_t count, int objSize, int entryFieldOffset) {
+const int kStaticListInvalidIndex = -1;
+
+void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count) {
     Array* arr = &list->array;
-    ArrayInit(arr, count, objSize);
-    list->entryFieldOffset = entryFieldOffset;
+    ArrayInit(arr, count, obj_size);
+    list->entry_field_offset = entry_field_offset;
     if (count == 0) {
-        list->freeIndex = -1;
+        list->list_first[0] = kStaticListInvalidIndex;
         return;
     }
     arr->count = count;
-    list->freeIndex = 0;
+    list->list_first[0] = 0;
     count--;
     int i = 0;
     for (; i < count; i++) {
-        void* objEntry = ArrayAt(arr, i, void);
-        StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, entryFieldOffset, StaticListEntry);
-        listEntry->nextIndex = i + 1;
+        void* obj_entry = ArrayAt(arr, i, void);
+        StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, entry_field_offset, StaticListEntry);
+        if (i + 1 == count) {
+            list_entry->next_index = kStaticListInvalidIndex;
+        }
+        else {
+            list_entry->next_index = i + 1;
+        }
     }
-    void* objEntry = ArrayAt(arr, i, void);
-    StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, entryFieldOffset, StaticListEntry);
-    listEntry->nextIndex = -1;
-}
 
-int StaticListAllocEntry(StaticList* list) {
-    if (list->freeIndex == -1) {
-        return NULL;
+    for (i = 1; i < list_count; i++) {
+        list->list_first[i] = kStaticListInvalidIndex;
     }
-    Array* arr = &list->array;
-    void* objEntry = ArrayAt(arr, list->freeIndex, void);
-    StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, list->entryFieldOffset, StaticListEntry);
-    int allocIndex = list->freeIndex;
-    list->freeIndex = listEntry->nextIndex;
-    return allocIndex;
 }
 
-void StaticListFreeEntry(StaticList* list, int index) {
+int StaticListEntryPop(StaticList* list, int list_order) {
+    if (list->list_first[list_order] == kStaticListInvalidIndex) {
+        return kStaticListInvalidIndex;
+    }
+    int index = list->list_first[list_order];
     Array* arr = &list->array;
-    void* objEntry = ArrayAt(arr, index, void);
-    StaticListEntry* listEntry = GetFieldByFieldOffset(objEntry, list->entryFieldOffset, StaticListEntry);
-    listEntry->nextIndex = list->freeIndex;
-    list->freeIndex = index;
+    void* obj_entry = ArrayAt(arr, index, void);
+    StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, list->entry_field_offset, StaticListEntry);
+    list->list_first[list_order] = list_entry->next_index;
+    return index;
 }
 
-int StaticListSwitchFreeIndex(StaticList* list, int newIndex) {
-    int oldIndex = list->freeIndex;
-    list->freeIndex = newIndex;
-    return oldIndex;
+void StaticListEntryPush(StaticList* list, int list_order, int index) {
+    Array* arr = &list->array;
+    void* obj_entry = ArrayAt(arr, index, void);
+    StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, list->entry_field_offset, StaticListEntry);
+    list_entry->next_index = list->list_first[list_order];
+    list->list_first[list_order] = index;
 }

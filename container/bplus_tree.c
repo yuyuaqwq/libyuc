@@ -42,7 +42,7 @@ PageId BPlusEntryCreate(Tx* tx, BPlusEntryType type) {
         size = (((BPlusTree*)tree)->leaf_m - 1) * sizeof(BPlusLeafElement);
     }
     PageId entry_id = MemoryAlloc(sizeof(BPlusEntry) + size);
-    BPlusEntry* entry = BPlusEntryGet(tx, entry_id, true);
+    BPlusEntry* entry = BPlusEntryGet(tx, entry_id);
     entry->type = type;
     entry->element_count = 0;
     BPlusEntryDereference(tx, entry_id);
@@ -252,7 +252,7 @@ static int BPlusBinarySearch_Range(Tx* tx, const BPlusEntry* entry, int first, i
 * 双向链表
 */
 static void LeafListEntryInit(Tx* tx, PageId entry_id) {
-    BPlusEntry* first = (BPlusEntry*)BPlusEntryGet(tx, entry_id, true);
+    BPlusEntry* first = (BPlusEntry*)BPlusEntryGet(tx, entry_id);
     first->leaf.list_entry.next = entry_id;
     first->leaf.list_entry.prev = entry_id;
     BPlusEntryDereference(tx, entry_id);
@@ -263,13 +263,13 @@ static void LeafListEntryInsertToNext(Tx* tx, BPlusEntry* prev, PageId prev_id, 
     prev->leaf.list_entry.next = entry_id;
     entry->leaf.list_entry.next = old_next_id;
     entry->leaf.list_entry.prev = prev_id;
-    BPlusEntry* old_next = (BPlusEntry*)BPlusEntryGet(tx, old_next_id, true);
+    BPlusEntry* old_next = (BPlusEntry*)BPlusEntryGet(tx, old_next_id);
     old_next->leaf.list_entry.prev = entry_id;
     BPlusEntryDereference(tx, old_next_id);
 }
 
 static void LeafListEntryRemoveFromPrev(Tx* tx, BPlusEntry* prev, PageId prev_id, BPlusEntry* entry, PageId entry_id) {
-    BPlusEntry* next = BPlusEntryGet(tx, entry->leaf.list_entry.next, true);
+    BPlusEntry* next = BPlusEntryGet(tx, entry->leaf.list_entry.next);
     next->leaf.list_entry.prev = prev_id;
     prev->leaf.list_entry.next = entry->leaf.list_entry.next;
     BPlusEntryDereference(tx, next);
@@ -353,7 +353,7 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, PageId left_id, BP
     BPlusElement up_element;
     if (left->type == kBPlusEntryLeaf) {
         right_id = BPlusEntryCreate(tx, kBPlusEntryLeaf);
-        right = BPlusEntryGet(tx, right_id, true);
+        right = BPlusEntryGet(tx, right_id);
         LeafListEntryInsertToNext(tx, left, left_id, right, right_id);
         // 原地分裂思路：mid将未插入的元素也算上，好计算newCount，4阶插入后4节点就是2(左2右2)，5阶插入后5节点还是2(左2右3)
         // 就是提前算好右侧应当有多少个元素，拷贝过去，中间遇到新元素插入就代替这一次的拷贝，没插入再插入到左侧
@@ -384,7 +384,7 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, PageId left_id, BP
     }
     else {
         right_id = BPlusEntryCreate(tx, kBPlusEntryIndex);
-        right = BPlusEntryGet(tx, right_id, true);
+        right = BPlusEntryGet(tx, right_id);
         // 原地分裂思路：mid将未插入的元素和即将上升的元素都算上，好计算newCount，4阶插入后4节点就是4/2=2(左1右2)，5阶插入后5节点也是2(左2右2)，少了一个是因为上升的也算上了
         // 先将后半部分拷贝到新节点，如果中间遇到了索引的插入，那就一并插入，最后的midkey是entry->indexData[entry->count-1]，因为右侧的数量是提前算好的，多出来的一定放到左侧
         int mid = (tree->index_m - 1) / 2;
@@ -473,7 +473,7 @@ bool BPlusInsertEntry(Tx* tx, BPlusCursor* cursor, BPlusElement* insert_element)
     BPlusElementPos* cur_pos = BPlusCursorCur(tx, cursor);
     BPlusElementPos* parent_pos = BPlusCursorUp(tx, cursor);
     PageId right_id;
-    BPlusEntry* cur = BPlusEntryGet(tx, cur_pos->entry_id, true);
+    BPlusEntry* cur = BPlusEntryGet(tx, cur_pos->entry_id);
     
     bool success = true, insertUp = false;
     BPlusElement up_element;
@@ -498,14 +498,14 @@ bool BPlusInsertEntry(Tx* tx, BPlusCursor* cursor, BPlusElement* insert_element)
         if (!parent_pos) {
             // 没有父节点，创建
             PageId parent_id = BPlusEntryCreate(tx, kBPlusEntryIndex);
-            BPlusEntry* parent = BPlusEntryGet(tx, parent_id, true);
+            BPlusEntry* parent = BPlusEntryGet(tx, parent_id);
             up_element = BPlusSplitEntry(tx, cur, cur_pos->entry_id, parent, 0, cur_pos->element_idx, insert_element, &right_id);
             BPlusInsertElement(tx, parent, 0, &up_element);
             tree->root_id = parent_id;
             BPlusEntryDereference(tx, parent_id);
             break;
         }
-        BPlusEntry* parent = BPlusEntryGet(tx, parent_pos->entry_id, true);
+        BPlusEntry* parent = BPlusEntryGet(tx, parent_pos->entry_id);
         up_element = BPlusSplitEntry(tx, cur, cur_pos->entry_id, parent, parent_pos->element_idx, cur_pos->element_idx, insert_element, &right_id);
         BPlusEntryDereference(tx, parent_pos->entry_id);
         insertUp = true;
@@ -524,7 +524,7 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
     BPlusTree* tree = BPlusTreeGet(tx);
     BPlusElementPos* cur_pos = BPlusCursorCur(tx, cursor);
     BPlusElementPos* parent_pos = BPlusCursorUp(tx, cursor);
-    BPlusEntry* entry = BPlusEntryGet(tx, cur_pos->entry_id, true);
+    BPlusEntry* entry = BPlusEntryGet(tx, cur_pos->entry_id);
     PageId siblingId = 0;
     BPlusEntry* sibling = NULL;
     BPlusEntry* parent = NULL;
@@ -548,14 +548,14 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
                 break;
             }
         }
-        parent = BPlusEntryGet(tx, parent_pos->entry_id, true);
+        parent = BPlusEntryGet(tx, parent_pos->entry_id);
         siblingId = BPlusGetLeftSiblingEntry(tx, entry, parent, parent_pos->element_idx);
         bool leftSibling = true;
         if (siblingId == kPageInvalidId) {
             siblingId = BPlusGetRightSiblingEntry(tx, entry, parent, parent_pos->element_idx);
             leftSibling = false;
         }
-        sibling = BPlusEntryGet(tx, siblingId, true);
+        sibling = BPlusEntryGet(tx, siblingId);
         if (sibling->element_count > (m - 1) / 2) {
             // 向兄弟借节点
             if (entry->type == kBPlusEntryLeaf) {

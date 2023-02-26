@@ -15,24 +15,26 @@
 extern "C" {
 #endif
 
-typedef struct _StaticList {
-    Array array;
-    int entryFieldOffset;
-    int freeIndex;
-} StaticList;
-
 /*
-* 分配后此节点的值可以被覆盖，故可以使用union
+* 若只有一条队列，Pop分配的节点，此节点的值可以被覆盖，可以使用union
 */
 typedef struct _StaticListEntry {
-    int nextIndex;
+    int next_index;
 } StaticListEntry;
 
-void StaticListInit(StaticList* list, size_t count, int objSize, int entryFieldOffset);
-int StaticListAllocEntry(StaticList* list);
-void StaticListFreeEntry(StaticList* list, int index);
+
+typedef struct _StaticList {
+    Array array;
+    int entry_field_offset;
+    int list_first[];
+} StaticList;
+
+
+extern const int kStaticListInvalidIndex;
+void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count);
+int StaticListEntryPop(StaticList* list, int list_order);
+void StaticListEntryPush(StaticList* list, int list_order, int index);
 #define StaticListAt(list, index, objName) (ArrayAt((list)->array, index, objName))
-int StaticListSwitchFreeIndex(StaticList* list, int newIndex);
 
 #ifdef __cplusplus
 }
