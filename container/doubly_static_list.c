@@ -41,7 +41,7 @@ void DoublyStaticListInit(DoublyStaticList* list, size_t count, int obj_size, in
     }
 }
 
-int DoublyStaticListEntryRemove(DoublyStaticList* list, int list_order, int remove_index) {
+int DoublyStaticListRemove(DoublyStaticList* list, int list_order, int remove_index) {
     Array* arr = &list->array;
     void* remove_obj_entry = ArrayAt(arr, remove_index, void);
     DoublyStaticListEntry* remove_list_entry = GetFieldByFieldOffset(remove_obj_entry, list->entry_field_offset, DoublyStaticListEntry);
@@ -50,25 +50,26 @@ int DoublyStaticListEntryRemove(DoublyStaticList* list, int list_order, int remo
     }
     else {
         void* prev_obj_entry = ArrayAt(arr, remove_list_entry->prev_index, void);
-        DoublyStaticListEntry* prev_list_entry = GetFieldByFieldOffset(remove_obj_entry, list->entry_field_offset, DoublyStaticListEntry);
+        DoublyStaticListEntry* prev_list_entry = GetFieldByFieldOffset(prev_obj_entry, list->entry_field_offset, DoublyStaticListEntry);
         prev_list_entry->next_index = remove_list_entry->next_index;
     }
 
     if (remove_list_entry->next_index != kDoublyStaticListInvalidIndex) {
         void* next_obj_entry = ArrayAt(arr, remove_list_entry->next_index, void);
-        DoublyStaticListEntry* next_list_entry = GetFieldByFieldOffset(remove_obj_entry, list->entry_field_offset, DoublyStaticListEntry);
+        DoublyStaticListEntry* next_list_entry = GetFieldByFieldOffset(next_obj_entry, list->entry_field_offset, DoublyStaticListEntry);
         next_list_entry->prev_index = remove_list_entry->prev_index;
     }
+    return remove_index;
 }
 
-int DoublyStaticListEntryPop(DoublyStaticList* list, int list_order) {
+int DoublyStaticListPop(DoublyStaticList* list, int list_order) {
     if (list->list_first[list_order] == kDoublyStaticListInvalidIndex) {
         return kDoublyStaticListInvalidIndex;
     }
-    return DoublyStaticListEntryRemove(list, list_order, list->list_first[list_order]);
+    return DoublyStaticListRemove(list, list_order, list->list_first[list_order]);
 }
 
-void DoublyStaticListEntryInsertNext(DoublyStaticList* list, int list_order, int prev_index, int insert_index) {
+void DoublyStaticListInsertNext(DoublyStaticList* list, int list_order, int prev_index, int insert_index) {
     Array* arr = &list->array;
     void* insert_obj_entry = ArrayAt(arr, insert_index, void);
     DoublyStaticListEntry* insert_list_entry = GetFieldByFieldOffset(insert_obj_entry, list->entry_field_offset, DoublyStaticListEntry);
@@ -92,6 +93,11 @@ void DoublyStaticListEntryInsertNext(DoublyStaticList* list, int list_order, int
     }
 }
 
-void DoublyStaticListEntryPush(DoublyStaticList* list, int list_order, int push_index) {
-    DoublyStaticListEntryInsertNext(list, list_order, kDoublyStaticListInvalidIndex, push_index);
+void DoublyStaticListPush(DoublyStaticList* list, int list_order, int push_index) {
+    DoublyStaticListInsertNext(list, list_order, kDoublyStaticListInvalidIndex, push_index);
+}
+
+void DoublyStaticListSwitch(DoublyStaticList* list, int list_order, int index, int new_list_order) {
+    DoublyStaticListRemove(list, list_order, index);
+    DoublyStaticListPush(list, new_list_order, index);
 }

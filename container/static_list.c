@@ -37,7 +37,7 @@ void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_fiel
     }
 }
 
-int StaticListEntryPop(StaticList* list, int list_order) {
+int StaticListPop(StaticList* list, int list_order) {
     if (list->list_first[list_order] == kStaticListInvalidIndex) {
         return kStaticListInvalidIndex;
     }
@@ -49,7 +49,7 @@ int StaticListEntryPop(StaticList* list, int list_order) {
     return index;
 }
 
-void StaticListEntryPush(StaticList* list, int list_order, int index) {
+void StaticListPush(StaticList* list, int list_order, int index) {
     Array* arr = &list->array;
     void* obj_entry = ArrayAt(arr, index, void);
     StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, list->entry_field_offset, StaticListEntry);
