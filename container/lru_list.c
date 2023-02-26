@@ -1,7 +1,7 @@
 #include <CUtils/container/lru_list.h>
 
-void LruListInit(LruList* list, size_t capacity, int lru_entry_field_offset, int key_field_offset, int key_size, HashU32Func hash_func, CmpFunc cmp_func) {
-	HashTableInit(&list->hash_table, capacity, 101, key_field_offset, key_size, hash_func, cmp_func);
+void LruListInit(LruList* list, size_t capacity, int lru_entry_field_offset, int obj_size, int key_field_offset, int key_size, HashU32Func hash_func, CmpFunc cmp_func) {
+	HashTableInit(&list->hash_table, capacity, 101, obj_size, key_field_offset, key_size, hash_func, cmp_func);
 	ListHeadInit(&list->list_head);
 	list->lru_entry_field_offset = lru_entry_field_offset;
 }

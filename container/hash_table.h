@@ -17,12 +17,18 @@
 extern "C" {
 #endif
 
+/*
+* 链式哈希表
+* 若objSize > sizeof(uintptr_t)，则存储指针
+* 否则存储拷贝数据
+*/
 
 typedef enum _HashEntryType HashEntryType;
 
 typedef struct _HashEntry {
     HashEntryType type;
     union {
+        uintptr_t data;
         void* obj;
         SinglyListHead listHead;
     };
@@ -30,15 +36,19 @@ typedef struct _HashEntry {
 
 typedef struct _HashDataList {
     SinglyListEntry listEntry;
-    void* obj;
+    union {
+        uintptr_t data;
+        void* obj;
+    };
 } HashDataList;
 
 typedef struct _HashTable {
     Array bucket;
-    // Array tempBucket;        // 保留，未来可能修改为逐渐搬迁
+    // Array tempBucket;        // 保留，可优化为逐渐搬迁
     uint32_t loadFator;
     int keyFieldOffset;
     int keyFieldSize;
+    int objSize;
     HashU32Func hashFunc;
     CmpFunc cmpFunc;
 } HashTable;
@@ -63,7 +73,7 @@ typedef struct _HashTableIterator {
 #define HASHTABLE_DEFAULT_LOAD_FACTOR 75//%
 #define HASHTABLE_DEFAULT_EXPANSION_FACTOR 2
 
-void HashTableInit(HashTable* table, size_t capacity, uint32_t loadFator, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc);
+void HashTableInit(HashTable* table, size_t capacity, uint32_t loadFator, int objSize, int keyFieldOffset, int keySize, HashU32Func hashFunc, CmpFunc cmpFunc);
 void HashEntryInit(HashEntry* entry);
 void HashTableRelease(HashTable* table, bool deleteObj);
 size_t HashTableGetCount(HashTable* table);
