@@ -32,9 +32,11 @@ typedef struct _DoublyStaticList {
 
 extern const int kDoublyStaticListInvalidIndex;
 
-void DoublyStaticListInit(DoublyStaticListEntry* list, size_t count, int obj_size, int entry_field_offset, int list_count);
-int DoublyStaticListEntryPop(DoublyStaticListEntry* list, int list_order);
-void DoublyStaticListEntryPush(DoublyStaticListEntry* list, int list_order, int index);
+void DoublyStaticListInit(DoublyStaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count);
+int DoublyStaticListEntryRemove(DoublyStaticList* list, int list_order, int remove_index);
+void DoublyStaticListEntryInsertNext(DoublyStaticList* list, int list_order, int prev_index, int insert_index);
+int DoublyStaticListEntryPop(DoublyStaticList* list, int list_order);
+void DoublyStaticListEntryPush(DoublyStaticList* list, int list_order, int push_index);
 #define DoublyStaticListAt(list, index, objName) (ArrayAt((list)->array, index, objName))
 
 #ifdef __cplusplus
