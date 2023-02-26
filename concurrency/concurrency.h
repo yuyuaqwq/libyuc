@@ -34,30 +34,30 @@ void SpinLockAcquire(SpinLock* lock);
 void SpinLockRelease(SpinLock* lock);
 
 /*
-* 休眠锁
+* 互斥锁(基于线程休眠)
 */
-typedef struct _SleepLock {
+typedef struct _MutexLock {
 	volatile bool state;
-} SleepLock;
+} MutexLock;
 
-void SleepLockInit(SleepLock* lock);
-void SleepLockAcquire(SleepLock* lock);
-void SleepLockRelease(SleepLock* lock);
+void MutexLockInit(MutexLock* lock);
+void MutexLockAcquire(MutexLock* lock);
+void MutexLockRelease(MutexLock* lock);
 
 /*
 * 读写锁
 */
-typedef struct _SleepRwLock {
+typedef struct _RwLock {
 	volatile int32_t read_count;
-	SleepLock write_lock;
+	MutexLock write_lock;
 	volatile bool write_wait;
-} SleepRwLock;
+} RwLock;
 
-void SleepRwLockInit(SleepRwLock* lock);
-void SleepRwLockReadAcquire(SleepRwLock* lock);
-void SleepRwLockReadRelease(SleepRwLock* lock);
-void SleepRwLockWriteAcquire(SleepRwLock* lock);
-void SleepRwLockWriteRelease(SleepRwLock* lock);
+void RwLockInit(RwLock* lock);
+void RwLockReadAcquire(RwLock* lock);
+void RwLockReadRelease(RwLock* lock);
+void RwLockWriteAcquire(RwLock* lock);
+void RwLockWriteRelease(RwLock* lock);
 
 #ifdef __cplusplus
 }
