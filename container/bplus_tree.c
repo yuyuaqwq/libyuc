@@ -71,7 +71,7 @@ ptrdiff_t BPlusKeyCmp(Tx* tx, const Key* key1, const Key* key2) {
 #endif // CUTILS_CONTAINER_BPLUS_TREE_DISK
 
 
-static BPlusElement BPlusElementGet(Tx* tx, BPlusEntry* entry, int i) {
+BPlusElement BPlusElementGet(Tx* tx, BPlusEntry* entry, int i) {
     BPlusElement element;
     if (entry->type == kBPlusEntryLeaf) {
         element.leaf = entry->leaf.element[i];
@@ -82,14 +82,14 @@ static BPlusElement BPlusElementGet(Tx* tx, BPlusEntry* entry, int i) {
     return element;
 }
 
-static inline PageId BPlusElementGetChildId(Tx* tx, const BPlusEntry* index, int i) {
+PageId BPlusElementGetChildId(Tx* tx, const BPlusEntry* index, int i) {
     if (i == index->element_count) {
         return index->index.tail_child_id;
     }
     return index->index.element[i].child_id;
 }
 
-static inline void BPlusElementSetChildId(Tx* tx, BPlusEntry* index, int i, PageId id) {
+void BPlusElementSetChildId(Tx* tx, BPlusEntry* index, int i, PageId id) {
     if (i == index->element_count) {
         index->index.tail_child_id = id;
         return;
@@ -97,7 +97,7 @@ static inline void BPlusElementSetChildId(Tx* tx, BPlusEntry* index, int i, Page
     index->index.element[i].child_id = id;
 }
 
-static void BPlusElementCopy(Tx* tx, BPlusEntry* dst_entry, int dst, BPlusEntry* src_entry, int src) {
+void BPlusElementCopy(Tx* tx, BPlusEntry* dst_entry, int dst, BPlusEntry* src_entry, int src) {
     if (dst_entry->type == kBPlusEntryLeaf) {
         dst_entry->leaf.element[dst] = src_entry->leaf.element[src];
     }
@@ -240,7 +240,7 @@ static int BPlusBinarySearch_Range(Tx* tx, const BPlusEntry* entry, int first, i
     int mid = 0;
     while (first < last) {
         mid = first + (last - first) / 2;
-        int res = BPlusElementCmp(tree, entry, mid, key);
+        int res = BPlusElementCmp(tx, entry, mid, key);
         if (res < 0) first = mid + 1;
         else last = mid;
     }
