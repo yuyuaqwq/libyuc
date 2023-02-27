@@ -20,6 +20,8 @@ C语言便携工具类支持
   - 单向链表
 - StaticList
   - 静态链表
+- DoublyStaticList
+  - 双向静态链表
 - SkipList
   - 跳表
 ## 散列表
