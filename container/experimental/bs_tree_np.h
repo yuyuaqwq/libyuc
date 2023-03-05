@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - ï¿½ï¿½ï¿½ï¿½
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* ï¿½ë±£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 
 #ifndef CUTILS_CONTAINER_BS_TREE_NP_H_
@@ -24,7 +24,7 @@ typedef struct _BsTreeNp {
     int entryFieldOffset;
     int keyFieldOffset;
     int keyFieldSize;
-    CmpFunc cmpFunc;        // ¼ä½Óµ÷ÓÃÔö¼ÓÒ»¶¨¿ªÏú
+    CmpFunc cmpFunc;        // ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 } BsTreeNp;
 
 void BsTreeNpInit(BsTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
@@ -33,7 +33,7 @@ void BsEntryNpInit(BsEntryNp* entry);
 retObj = NULL; \
 BsEntryNp* cur = (BsEntryNp*)((tree)->root); \
 while (cur) { \
-    objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
+    objName* tempObj = ObjectGetFromField(cur, objName, entryFieldName); \
     if (tempObj->keyFieldName < (key)) { \
         cur = cur->right; \
     } else if (tempObj->keyFieldName > (key)) { \

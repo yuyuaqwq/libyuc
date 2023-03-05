@@ -25,7 +25,7 @@ void MergeSort(int * arr, int left, int right) {
 	
 	// 折半完成，开始归并
 	int lenght = right - left + 1;
-	int* temp = CreateObjArr(int, lenght);
+	int* temp = ObjectCreateArray(int, lenght);
 	int i = left;
 	int j = half + 1;
 	for (int n = 0; n < lenght; ++n) {
@@ -42,5 +42,5 @@ void MergeSort(int * arr, int left, int right) {
 	for (int n = 0,i = left; n < lenght; ++n,++i) {
 		arr[i] = temp[n];
 	}
-	DeleteObject_(temp);
+	ObjectDelete(temp);
 }

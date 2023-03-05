@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include <CUtils\container\bs_tree.h>
+#include <CUtils/container/experimental/bs_tree.h>
 
 /*
 * newEntry代替entry挂接到其父节点下
@@ -61,8 +61,8 @@ void BsEntryInit(BsEntry* entry) {
 void* BsTreeFindEntryByKey(BsTree* tree, void* key) {
     BsEntry* cur = tree->root;
     while (cur) {
-        void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-        int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+        void* obj = ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+        int res = tree->cmpFunc(ObjectGetFieldByOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
         if (res < 0) {
             cur = cur->right;
         }
@@ -70,7 +70,7 @@ void* BsTreeFindEntryByKey(BsTree* tree, void* key) {
             cur = cur->left;
         }
         else {
-            return GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
+            return ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
         }
     }
     return NULL;
@@ -87,12 +87,12 @@ bool BsTreeInsertEntryByKey(BsTree* tree, BsEntry* entry) {
         tree->root = entry;
         return true;
     }
-    void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
-    void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
+    void* obj = ObjectGetFromFieldOffset(entry, tree->entryFieldOffset, void);
+    void* key = ObjectGetFieldByOffset(obj, tree->keyFieldOffset, void);
     BsEntry* cur = tree->root;
     while (cur) {
-        void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-        int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+        void* curObj = ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+        int res = tree->cmpFunc(ObjectGetFieldByOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
         if (res < 0) {
             if (!cur->right) {
                 cur->right = entry;
@@ -170,7 +170,7 @@ void* BsTreeDeleteEntry(BsTree* tree, BsEntry* entry) {
             BsTreeHitchEntry(tree, entry, NULL);
         }
     }
-    return GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
+    return ObjectGetFromFieldOffset(entry, tree->entryFieldOffset, void);
 }
 
 

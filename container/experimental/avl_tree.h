@@ -9,7 +9,7 @@
 #define CUTILS_CONTAINER_AVL_TREE_H_
 
 #include <CUtils/object.h>
-#include <CUtils/container/bs_tree.h>
+#include <CUtils/container/experimental/bs_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,7 +72,7 @@ void AvlTreeDeleteEntryFixup(AvlTree* tree, AvlEntry* parent, bool isLeft);
 
 
 void AvlTreeInit(AvlTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-#define AvlTreeInitByField(tree, objName, entryFieldName, keyFieldName) AvlTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
+#define AvlTreeInitByField(tree, objName, entryFieldName, keyFieldName) AvlTreeInit((tree), ObjectGetFieldOffset(objName, entryFieldName), ObjectGetFieldOffset(objName, keyFieldName), ObjectGetFieldSize(objName, keyFieldName), NULL)
 void AvlEntryInit(AvlEntry* entry);
 void* AvlTreeFindEntryByKey(AvlTree* tree, void* key);
 bool AvlTreeInsertEntryByKey(AvlTree* tree, AvlEntry* entry);

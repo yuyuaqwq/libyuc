@@ -23,7 +23,7 @@ void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_fiel
     int i = 0;
     for (; i < count; i++) {
         void* obj_entry = ArrayAt(arr, i, void);
-        StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, entry_field_offset, StaticListEntry);
+        StaticListEntry* list_entry = ObjectGetFieldByOffset(obj_entry, entry_field_offset, StaticListEntry);
         if (i + 1 == count) {
             list_entry->next_index = kStaticListInvalidIndex;
         }
@@ -44,7 +44,7 @@ int StaticListPop(StaticList* list, int list_order) {
     int index = list->list_first[list_order];
     Array* arr = &list->array;
     void* obj_entry = ArrayAt(arr, index, void);
-    StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, list->entry_field_offset, StaticListEntry);
+    StaticListEntry* list_entry = ObjectGetFieldByOffset(obj_entry, list->entry_field_offset, StaticListEntry);
     list->list_first[list_order] = list_entry->next_index;
     return index;
 }
@@ -52,7 +52,7 @@ int StaticListPop(StaticList* list, int list_order) {
 void StaticListPush(StaticList* list, int list_order, int index) {
     Array* arr = &list->array;
     void* obj_entry = ArrayAt(arr, index, void);
-    StaticListEntry* list_entry = GetFieldByFieldOffset(obj_entry, list->entry_field_offset, StaticListEntry);
+    StaticListEntry* list_entry = ObjectGetFieldByOffset(obj_entry, list->entry_field_offset, StaticListEntry);
     list_entry->next_index = list->list_first[list_order];
     list->list_first[list_order] = index;
 }

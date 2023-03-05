@@ -37,7 +37,7 @@ size_t ListGetEntryCount(ListHead* head);
     retObj = NULL; \
     ListEntry* cur = (head)->next; \
     while ((head) != cur) { \
-        objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
+        objName* tempObj = ObjectGetFromField(cur, objName, entryFieldName); \
         if (tempObj->keyFieldName == (key)) { \
             retObj = tempObj; \
             break; \

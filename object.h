@@ -29,18 +29,17 @@ ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const void* buf2_, size_t
 void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
-#define CreateObject(objName) ((objName*)MemoryAlloc(sizeof(objName)))
-#define CreateObjArr(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
-#define CreateObjArrByObjSize(objSize, count) (MemoryAlloc((objSize) * (count)))
-#define DeleteObject_(obj) (MemoryFree(obj))
-#define ObjArrAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
-#define SwapObject(objName, obj1, obj2) { objName temp = obj1; obj1 = obj2; obj2 = temp; }
-
-#define GetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
-#define GetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
-#define GetFieldByFieldOffset(obj, fieldOffset, objName) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
-#define GetObjByFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
-#define GetObjByField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - GetFieldOffset(objName, fieldName)) )
+#define ObjectCreate(objName) ((objName*)MemoryAlloc(sizeof(objName)))
+#define ObjectCreateArray(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
+#define ObjectCreateArrayBySize(objSize, count) (MemoryAlloc((objSize) * (count)))
+#define ObjectDelete(obj) (MemoryFree(obj))
+#define ObjectArrayAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
+#define ObjectSwap(objName, obj1, obj2) { objName temp = obj1; obj1 = obj2; obj2 = temp; }
+#define ObjectGetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
+#define ObjectGetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
+#define ObjectGetFieldByOffset(obj, fieldOffset, objName) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
+#define ObjectGetFromFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
+#define ObjectGetFromField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - ObjectGetFieldOffset(objName, fieldName)) )
 
 
 typedef void* (*MemAllocFunc)(size_t size);

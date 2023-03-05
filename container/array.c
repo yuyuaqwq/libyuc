@@ -22,7 +22,7 @@ void ArrayInit(Array* arr, size_t capacity, int objByteCount) {
 
 void ArrayRelease(Array* arr) {
     if (arr->objArr) {
-        DeleteObject_(arr->objArr);
+        ObjectDelete(arr->objArr);
         arr->objArr = NULL;
     }
     arr->capacity = 0;
@@ -50,12 +50,20 @@ void ArraySwapEntry(Array* arr, int index1, int index2) {
     MemorySwap(obj1, obj2, arr->objSize);
 }
 
+void* ArrayGetData(Array* arr) {
+    return arr->objArr;
+}
+
 size_t ArrayGetCount(Array* arr) {
     return arr->count;
 }
 
 void ArraySetCount(Array* arr, size_t count) {
     arr->count = count;
+}
+
+size_t ArrayGetByteCount(Array* arr) {
+    return arr->count * arr->objSize;
 }
 
 size_t ArrayGetCapacity(Array* arr) {
@@ -67,10 +75,10 @@ void ArraySetCapacity(Array* arr, size_t capacity) {
 }
 
 void ArrayResetCapacity(Array* arr, size_t capacity) {
-    void* newBuf = CreateObjArrByObjSize(arr->objSize, capacity);
+    void* newBuf = ObjectCreateArrayBySize(arr->objSize, capacity);
     if (arr->objArr) {
         MemoryCopy(newBuf, arr->objArr, arr->objSize * arr->count);
-        DeleteObject_(arr->objArr);
+        ObjectDelete(arr->objArr);
     }
     arr->objArr = newBuf;
     arr->capacity = capacity;

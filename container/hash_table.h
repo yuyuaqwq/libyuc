@@ -21,6 +21,7 @@ extern "C" {
 * 链式哈希表
 * 若objSize > sizeof(uintptr_t)，则存储指针
 * 否则存储拷贝数据
+* 存储拷贝时，删除时返回的指针请勿访问及释放，可能会导致异常，仅可用于检查删除是否成功
 */
 
 typedef enum _HashEntryType HashEntryType;

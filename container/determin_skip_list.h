@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - ï¿½ï¿½ï¿½ï¿½
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* ï¿½ë±£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 
 #ifndef CUTILS_CONTAINER_DETERMIN_SKIP_LIST_H_
@@ -18,8 +18,8 @@ extern "C" {
 
 
 /*
-* 1-2-3È·¶¨ÐÔÌøÔ¾±í
-* µÈ¼ÛÓÚ234Ê÷£¬»ùÓÚÔ¤·ÖÁÑºÍÔ¤ºÏ²¢µÄ²Ù×÷£¬¼´¿ÉÊµÏÖ×Ô¶¥ÏòÏÂ²åÈëÓëÉ¾³ý
+* 1-2-3È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾ï¿½ï¿½
+* ï¿½È¼ï¿½ï¿½ï¿½234ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½Ñºï¿½Ô¤ï¿½Ï²ï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½Â²ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½
 */
 
 typedef struct _DeterminSkipEntry {
@@ -38,7 +38,7 @@ typedef struct _DeterminSkipIndex {
 } DeterminSkipIndex;
 
 typedef struct _DeterminSkipList {
-	StaticList index_pool;		// ÊµÏÖÄÚ´æ·ÖÅäÆ÷Ìá¸ßÐÔÄÜ(Ë÷Òý½Úµã¹Ì¶¨³¤¶È£¬¾²Ì¬Á´±íÊµÏÖO(1)·ÖÅäÊÍ·Å)
+	StaticList index_pool;		// Êµï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Ì¶ï¿½ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½O(1)ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½)
 	DeterminSkipIndex* start;
 	DeterminSkipEntry* first;
 	size_t count;
@@ -77,15 +77,15 @@ head       4
 	    2 3    5    7 8 9     
 
 
-¼äÏ¶ÈÝÁ¿1-3¸ö
+ï¿½ï¿½Ï¶ï¿½ï¿½ï¿½ï¿½1-3ï¿½ï¿½
 */
 void DeterminSkipListFind(DeterminSkipList* list) {
 
 }
 
 void DeterminSkipListInsert(DeterminSkipList* list, void* entry) {
-	void* obj = GetObjByFieldOffset(entry, list->entry_field_offset, void);
-	void* key = GetFieldByFieldOffset(obj, list->key_field_offset, void);
+	void* obj = ObjectGetFromFieldOffset(entry, list->entry_field_offset, void);
+	void* key = ObjectGetFieldByOffset(obj, list->key_field_offset, void);
 
 }
 

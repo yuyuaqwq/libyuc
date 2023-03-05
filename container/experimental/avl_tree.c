@@ -1,4 +1,4 @@
-#include <CUtils/container/avl_tree.h>
+#include <CUtils/container/experimental/avl_tree.h>
 
 #ifndef CUTILS_CONTAINER_Avl_TREE_STORAGE_HEIGHT_H_
 /*
@@ -478,34 +478,6 @@ static bool RotateByBalanceFactor(AvlTree* tree, AvlEntry** subRoot_) {
 #endif // CUTILS_CONTAINER_Avl_TREE_STORAGE_HEIGHT_H_
 
 
-
-/*
-* 初始化Avl树
-*/
-void AvlTreeInit(AvlTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-    BsTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
-}
-
-/*
-* 初始化节点
-*/
-void AvlEntryInit(AvlEntry* entry) {
-    BsEntryInit(&entry->bse);
-#if !defined(CUTILS_CONTAINER_Avl_TREE_STORAGE_HEIGHT_H_)
-    AvlEntrySetBalanceFactor(entry, 0);
-#else
-    entry->height = 0;
-#endif
-}
-
-/*
-* 从树中查找节点
-* 存在返回查找到的节点，不存在返回NULL
-*/
-void* AvlTreeFindEntryByKey(AvlTree* tree, void* key) {
-    return BsTreeFindEntryByKey(&tree->bst, key);
-}
-
 /*
 * 向树中插入节点后的平衡操作
 */
@@ -542,19 +514,6 @@ void AvlTreeInsertEntryFixup(AvlTree* tree, AvlEntry* insertEntry) {
         cur = AvlEntryGetParent(cur);
     }
 #endif
-}
-
-/*
-* 从树中按key插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
-*/
-bool AvlTreeInsertEntryByKey(AvlTree* tree, AvlEntry* insertEntry) {
-    if (!BsTreeInsertEntryByKey(&tree->bst, &insertEntry->bse)) {
-        return false;
-    }
-    AvlTreeInsertEntryFixup(tree, insertEntry);
-    return true;
 }
 
 /*
@@ -598,6 +557,49 @@ void AvlTreeDeleteEntryFixup(AvlTree* tree, AvlEntry* cur, bool isCurLeft) {
         parent = AvlEntryGetParent(parent);
     }
 #endif
+}
+
+
+
+
+/*
+* 初始化Avl树
+*/
+void AvlTreeInit(AvlTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+    BsTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+}
+
+/*
+* 初始化节点
+*/
+void AvlEntryInit(AvlEntry* entry) {
+    BsEntryInit(&entry->bse);
+#if !defined(CUTILS_CONTAINER_Avl_TREE_STORAGE_HEIGHT_H_)
+    AvlEntrySetBalanceFactor(entry, 0);
+#else
+    entry->height = 0;
+#endif
+}
+
+/*
+* 从树中查找节点
+* 存在返回查找到的节点，不存在返回NULL
+*/
+void* AvlTreeFindEntryByKey(AvlTree* tree, void* key) {
+    return BsTreeFindEntryByKey(&tree->bst, key);
+}
+
+/*
+* 从树中按key插入节点
+* 不允许存在重复节点
+* 成功返回true，失败返回false
+*/
+bool AvlTreeInsertEntryByKey(AvlTree* tree, AvlEntry* insertEntry) {
+    if (!BsTreeInsertEntryByKey(&tree->bst, &insertEntry->bse)) {
+        return false;
+    }
+    AvlTreeInsertEntryFixup(tree, insertEntry);
+    return true;
 }
 
 /*
@@ -680,7 +682,7 @@ void AvlTreeDeleteEntry(AvlTree* tree, AvlEntry* deleteEntry) {
 void* AvlTreeDeleteEntryByKey(AvlTree* tree, void* key) {
     void* obj = AvlTreeFindEntryByKey(tree, key);
     if (obj) {
-        AvlEntry* entry = GetFieldByFieldOffset(obj, tree->entryFieldOffset, void);
+        AvlEntry* entry = ObjectGetFieldByOffset(obj, tree->entryFieldOffset, void);
         AvlTreeDeleteEntry(tree, entry);
     }
     return obj;

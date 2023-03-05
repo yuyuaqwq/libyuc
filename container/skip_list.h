@@ -40,7 +40,7 @@ typedef struct _SkipList {
 
 
 void SkipListInit(SkipList* list, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc);
-#define SkipListInitByField(list, objName, keyFieldName) SkipListInit((list), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
+#define SkipListInitByField(list, objName, keyFieldName) SkipListInit((list), ObjectGetFieldOffset(objName, keyFieldName), ObjectGetFieldSize(objName, keyFieldName), NULL)
 void SkipListRelease(SkipList* list, bool deleteObj);
 void* SkipListFind(SkipList* list, void* key);
 bool SkipListInsert(SkipList* list, void* obj);

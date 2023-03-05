@@ -26,11 +26,11 @@ void ArrayInit(Array* arr, size_t capacity, int objByteCount);
 void ArrayRelease(Array* arr);
 #define ArrayAt(arr, index, objName) ((objName*)(((uintptr_t)(arr)->objArr) + (arr)->objSize * (index)))
 #define ArrayToCArr(arr, objName) ((objName*)(arr)->objArr))
-#define ArrayFindEntryByKeyField(arr, retObj, objName, keyFieldName, key) { \
+#define ArrayFindEntryByKeyField(arr, retObj, objName, keyFieldName, exp) { \
     retObj = NULL; \
-    for (int i = 0; i < (arr)->size; i++) { \
-        objName* tempObj = ArrayAt((arr), objName, i); \
-        if (tempObj->keyFieldName == (key)) { \
+    for (int i = 0; i < (arr)->count; i++) { \
+        objName* tempObj = ArrayAt((arr), i, objName); \
+        if (tempObj->##exp) { \
             retObj = tempObj; \
             break; \
         } \
@@ -38,8 +38,10 @@ void ArrayRelease(Array* arr);
 }
 int ArrayPushTail(Array* arr, void* obj);
 void* ArrayPopTail(Array* arr);
+void* ArrayGetData(Array* arr);
 size_t ArrayGetCount(Array* arr);
 void ArraySetCount(Array* arr, size_t count);
+size_t ArrayGetByteCount(Array* arr);
 size_t ArrayGetCapacity(Array* arr);
 void ArraySetCapacity(Array* arr, size_t capacity);
 void ArrayResetCapacity(Array* arr, size_t capacity);

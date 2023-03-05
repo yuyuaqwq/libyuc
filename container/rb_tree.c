@@ -141,30 +141,6 @@ inline void RbEntrySetRight(RbEntry* entry, RbEntry* right) {
 }
 
 
-
-/*
-* 初始化树
-*/
-void RbTreeInit(RbTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-    BsTreeInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
-}
-
-/*
-* 初始化节点
-*/
-void RbEntryInit(RbEntry* entry, RbColor color) {
-    BsEntryInit(&entry->bse);
-    RbEntrySetColor(entry, color);
-}
-
-/*
-* 从树中查找节点
-* 存在返回查找到的节点对应的对象，不存在返回NULL
-*/
-void* RbTreeFindEntryByKey(RbTree* tree, void* key) {
-    return BsTreeFindEntryByKey(&tree->bst, key);
-}
-
 /*
 * 向树中插入节点后的平衡操作
 */
@@ -233,20 +209,6 @@ void RbTreeInsertEntryFixup(RbTree* tree, RbEntry* insertEntry) {
         cur = RbEntryGetParent(cur);
     }
 }
-
-/*
-* 向树中插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
-*/
-bool RbTreeInsertEntryByKey(RbTree* tree, RbEntry* insertEntry) {
-    if (!BsTreeInsertEntryByKey(&tree->bst, &insertEntry->bse, NULL)) {
-        return false;
-    }
-    RbTreeInsertEntryFixup(tree, insertEntry);
-    return true;
-}
-
 
 /*
 * 向树中删除节点后的平衡操作
@@ -353,6 +315,43 @@ void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* deleteEntry, RbEntry* cur, Rb
     }
 }
 
+
+/*
+* 初始化树
+*/
+void RbTreeInit(RbTree* tree, int entry_field_offset, int key_field_offset, int key_size, CmpFunc cmp_func) {
+    BsTreeInit(&tree->bst, entry_field_offset, key_field_offset, key_size, cmp_func);
+}
+
+/*
+* 初始化节点
+*/
+void RbEntryInit(RbEntry* entry, RbColor color) {
+    BsEntryInit(&entry->bse);
+    RbEntrySetColor(entry, color);
+}
+
+/*
+* 从树中查找节点
+* 存在返回查找到的节点对应的对象，不存在返回NULL
+*/
+void* RbTreeFindEntryByKey(RbTree* tree, void* key) {
+    return BsTreeFindEntryByKey(&tree->bst, key);
+}
+
+/*
+* 向树中插入节点
+* 不允许存在重复节点
+* 成功返回true，失败返回false
+*/
+bool RbTreeInsertEntryByKey(RbTree* tree, RbEntry* insertEntry) {
+    if (!BsTreeInsertEntryByKey(&tree->bst, &insertEntry->bse, NULL)) {
+        return false;
+    }
+    RbTreeInsertEntryFixup(tree, insertEntry);
+    return true;
+}
+
 /*
 * 从树中删除节点
 */
@@ -436,8 +435,71 @@ void RbTreeDeleteEntry(RbTree* tree, RbEntry* deleteEntry) {
 void* RbTreeDeleteEntryByKey(RbTree* tree, void* key) {
     void* obj = RbTreeFindEntryByKey(tree, key);
     if (obj) {
-        RbEntry* entry = GetFieldByFieldOffset(obj, tree->entryFieldOffset, RbEntry);
+        RbEntry* entry = ObjectGetFieldByOffset(obj, tree->entry_field_offset, RbEntry);
         RbTreeDeleteEntry(tree, entry);
     }
+    return obj;
+}
+
+
+void* RbTreeFirst(RbTree* tree, RbTreeIterator* iterator) {
+    RbEntry* cur = tree->root;
+    if (!cur) {
+        return NULL;
+    }
+    iterator->rb_tree = tree;
+    while (cur->left)
+        cur = cur->left;
+    void* obj = ObjectGetFromFieldOffset(cur, tree->entry_field_offset, void);
+    iterator->cur_entry = cur;
+    return obj;
+}
+
+void* RbTreeLast(RbTree* tree, RbTreeIterator* iterator) {
+    RbEntry* cur = tree->root;
+    if (!cur) {
+        return NULL;
+    }
+    iterator->rb_tree = tree;
+    while (cur->right)
+        cur = cur->right;
+    void* obj = ObjectGetFromFieldOffset(cur, tree->entry_field_offset, void);
+    iterator->cur_entry = cur;
+    return obj;
+}
+
+void* RbTreeNext(RbTreeIterator* iterator) {
+    RbEntry* cur = iterator->cur_entry;
+    if (cur->right) {
+        cur = cur->right;
+        while (cur->left)
+            cur = cur->left;
+    }
+    else {
+        RbEntry* parent;
+        while ((parent = RbEntryGetParent(cur)) && cur == parent->right)
+            cur = parent;
+        cur = parent;
+    }
+    void* obj = ObjectGetFromFieldOffset(cur, iterator->rb_tree->entry_field_offset, void);
+    iterator->cur_entry = cur;
+    return obj;
+}
+
+void* RbTreePrev(RbTreeIterator* iterator) {
+    RbEntry* cur = iterator->cur_entry;
+    if (cur->left) {
+        cur = cur->left;
+        while (cur->right)
+            cur = cur->right;
+    }
+    else {
+        RbEntry* parent;
+        while ((parent = RbEntryGetParent(cur)) && cur == parent->left)
+            cur = parent;
+        cur = parent;
+    }
+    void* obj = ObjectGetFromFieldOffset(cur, iterator->rb_tree->entry_field_offset, void);
+    iterator->cur_entry = cur;
     return obj;
 }

@@ -37,7 +37,7 @@ void DoublyStaticListInsertNext(DoublyStaticList* list, int list_order, int prev
 int DoublyStaticListRemove(DoublyStaticList* list, int list_order, int remove_index);
 void DoublyStaticListPush(DoublyStaticList* list, int list_order, int push_index);
 int DoublyStaticListPop(DoublyStaticList* list, int list_order);
-void DoublyStaticListSwitch(DoublyStaticList* list, int new_list_order, int remove_index);
+void DoublyStaticListSwitch(DoublyStaticList* list, int list_order, int index, int new_list_order);
 #define DoublyStaticListAt(list, index, objName) (ArrayAt(&(list)->array, index, objName))
 
 #ifdef __cplusplus

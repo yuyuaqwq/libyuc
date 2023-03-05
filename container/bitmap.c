@@ -43,11 +43,14 @@ static void BitmapSetMult(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count, b
 	}
 }
 
-
+/*
+* 必须是8的倍数
+*/
 void BitmapInit(Bitmap* bitmap, size_t bit_count) {
-	int byte_count = bit_count / 8 + (bit_count % 8 ? 1 : 0);
+	size_t byte_count = bit_count / 8 + (bit_count % 8 ? 1 : 0);
 	ArrayInit(&bitmap->arr, byte_count, sizeof(uint8_t));
-	for (int i = 0; i < byte_count; i++) {
+	ArraySetCount(&bitmap->arr, byte_count);
+	for (ptrdiff_t i = 0; i < byte_count; i++) {
 		*ArrayAt(&bitmap->arr, i, uint8_t) = 0;
 	}
 }
@@ -78,28 +81,33 @@ size_t BitmapGetByteCount(Bitmap* bitmap) {
 
 
 ptrdiff_t BitmapFindBit(Bitmap* bitmap, ptrdiff_t bit_start, bool val) {
-	size_t bit_count = bit_start % 8;
+	size_t bit_end = bit_start % 8;
+	if (bit_end > 0) {
+		bit_end = bit_start - bit_end + 8;
+	} else {
+		bit_end = bit_start;
+	}
 	ptrdiff_t byte_start = bit_start / 8;
-	if (bit_count) {
+	if (bit_end > bit_start) {
 		byte_start++;
 	}
 	// 先单独比较前面的位
-	while (bit_start < bit_count) {
+	while (bit_start < bit_end) {
 		if (BitmapGet(bitmap, bit_start) == val) {
 			return bit_start;
 		}
 		bit_start++;
 	}
 	
-	size_t byte_count = BitmapGetByteCount(bitmap);
+	size_t byte_end = BitmapGetByteCount(bitmap);
 	// 再进行字节比较
-	while (byte_start < byte_count) {
+	while (byte_start < byte_end) {
 		if (BitmapGetByte(bitmap, byte_start) != (val ? 0 : 0xff)) {
 			break;
 		}
 		byte_start++;
 	}
-	if (byte_start == byte_count) {
+	if (byte_start == byte_end) {
 		return -1;
 	}
 	ptrdiff_t bit_off = 0;
@@ -142,4 +150,32 @@ ptrdiff_t BitmapAlloc(Bitmap* bitmap, size_t bit_count) {
 
 void BitmapFree(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count) {
 	BitmapSetMult(bitmap, bit_idx, bit_count, false);
+}
+
+size_t BitmapGetMaxFreeCount(Bitmap* bitmap) {
+	ptrdiff_t bit_start = 0;
+	bit_start = BitmapFindBit(bitmap, bit_start, false);
+	if (bit_start == -1) {
+		return 0;
+	}
+	size_t bit_end = BitmapGetBitCount(bitmap) - bit_start;		// 剩余可检查位数
+	ptrdiff_t bit_cur = bit_start;
+	size_t free_count = 1;
+	size_t max_free_count = 1;
+	// 简化实现的算法，逐位比较，性能较低
+	while (bit_end-- > 0) {
+		if (BitmapGet(bitmap, ++bit_cur) == false) {
+			free_count++;
+		}
+		else {
+			if (free_count > max_free_count) {
+				max_free_count = free_count;
+			}
+			free_count = 0;		// 被有效位阻断，重新开始记录
+		}
+	}
+	if (free_count > max_free_count) {
+		max_free_count = free_count;
+	}
+	return max_free_count;
 }

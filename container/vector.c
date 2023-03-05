@@ -19,7 +19,7 @@ void VectorInit(Vector* vector, size_t capacity) {
 void VectorRelease(Vector* vector, bool deleteObj) {
     if (vector->array.objArr && deleteObj) {
         for (int i = 0; i < vector->array.count; i++) {
-            DeleteObject_(((void**)vector->array.objArr)[i]);
+            ObjectDelete(((void**)vector->array.objArr)[i]);
         }
     }
     ArrayRelease(&vector->array);

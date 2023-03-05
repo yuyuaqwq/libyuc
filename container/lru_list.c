@@ -12,28 +12,28 @@ void* LruListGet(LruList* list, void* key, bool put_first) {
 		return NULL;
 	}
 	if (put_first) {
-		LruEntry* entry = GetFieldByFieldOffset(obj, list->lru_entry_field_offset, LruEntry);
+		LruEntry* entry = ObjectGetFieldByOffset(obj, list->lru_entry_field_offset, LruEntry);
 		ListInsertNext(&list->list_head, ListRemoveEntry(&entry->list_entry, true));
 	}
 	return obj;
 }
 
 void* LruListPut(LruList* list, LruEntry* entry) {
-	void* obj = GetObjByFieldOffset(entry, list->lru_entry_field_offset, void);
-	void* key = GetFieldByFieldOffset(obj, list->hash_table.keyFieldOffset, void);
+	void* obj = ObjectGetFromFieldOffset(entry, list->lru_entry_field_offset, void);
+	void* key = ObjectGetFieldByOffset(obj, list->hash_table.keyFieldOffset, void);
 	void* del_obj = HashTableFind(&list->hash_table, key);
 	if (del_obj) {
 		HashTableDelete(&list->hash_table, key);
-		LruEntry* del_entry = GetFieldByFieldOffset(del_obj, list->lru_entry_field_offset, LruEntry);
+		LruEntry* del_entry = ObjectGetFieldByOffset(del_obj, list->lru_entry_field_offset, LruEntry);
 		ListRemoveEntry(&del_entry->list_entry, true);
 	}
 	else if (HashTableGetCount(&list->hash_table) >= HashTableGetCapacity(&list->hash_table)) {
 		ListEntry* del_entry = ListRemovePrev(&list->list_head);
-		del_obj = GetObjByFieldOffset(del_entry, list->lru_entry_field_offset, void);
-		HashTableDelete(&list->hash_table, GetFieldByFieldOffset(del_obj, list->hash_table.keyFieldOffset, void));
+		del_obj = ObjectGetFromFieldOffset(del_entry, list->lru_entry_field_offset, void);
+		HashTableDelete(&list->hash_table, ObjectGetFieldByOffset(del_obj, list->hash_table.keyFieldOffset, void));
 	}
 	HashTableInsert(&list->hash_table, obj);
-	LruEntry* new_entry = GetFieldByFieldOffset(obj, list->lru_entry_field_offset, LruEntry);
+	LruEntry* new_entry = ObjectGetFieldByOffset(obj, list->lru_entry_field_offset, LruEntry);
 	ListInsertNext(&list->list_head, &new_entry->list_entry);
 	return del_obj;
 }

@@ -117,11 +117,10 @@ typedef struct _BPlusCursor {
 /*
 * 页面管理器相关接口
 */
-extern const PageId kPageInvalidId;
+extern const PageId kPagerPageInvalidId;
 
 BPlusTree* BPlusTreeGet(struct _Tx* tx);
 BPlusEntry* BPlusEntryGet(struct _Tx* tx, PageId entry_id);
-void BPlusEntryFree(struct _Tx* tx, PageId id);
 void BPlusElementSet(struct _Tx* tx, BPlusEntry* entry, int i, BPlusElement* element);
 ptrdiff_t BPlusKeyCmp(struct _Tx* tx, const Key* key1, const Key* key2);
 

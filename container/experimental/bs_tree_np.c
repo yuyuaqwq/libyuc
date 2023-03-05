@@ -1,4 +1,4 @@
-#include <CUtils\container\bs_tree_np.h>
+#include <CUtils/container/experimental/bs_tree_np.h>
 
 /*
 * newEntry代替entry挂接到parent下
@@ -47,11 +47,11 @@ void BsEntryNpInit(BsEntryNp* entry) {
 * 递归向树中插入节点
 */
 bool BsTreeNpInsertEntry(BsTreeNp* tree, BsEntryNp* insertEntry, BsEntryNp* cur) {
-    void* obj = GetObjByFieldOffset(insertEntry, tree->entryFieldOffset, void);
-    void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
+    void* obj = ObjectGetFromFieldOffset(insertEntry, tree->entryFieldOffset, void);
+    void* key = ObjectGetFieldByOffset(obj, tree->keyFieldOffset, void);
 
-    void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-    int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+    void* curObj = ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+    int res = tree->cmpFunc(ObjectGetFieldByOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
     if (res == 0) {
         return false;
     }

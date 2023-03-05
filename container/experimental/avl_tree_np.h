@@ -11,7 +11,7 @@
 #define CUTILS_CONTAINER_AVL_TREE_NP_H_
 
 #include <CUtils/object.h>
-#include <CUtils/container/bs_tree_np.h>
+#include <CUtils/container/experimental/bs_tree_np.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,7 +48,7 @@ AvlEntryNp* AvlEntryNpGetRight(AvlEntryNp* entry);
 int AvlEntryNpGetBalanceFactor(AvlEntryNp* entry);
 
 void AvlTreeNpInit(AvlTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
-#define AvlTreeNpInitByField(tree, objName, entryFieldName, keyFieldName) AvlTreeInit((tree), GetFieldOffset(objName, entryFieldName), GetFieldOffset(objName, keyFieldName), GetFieldSize(objName, keyFieldName), NULL)
+#define AvlTreeNpInitByField(tree, objName, entryFieldName, keyFieldName) AvlTreeInit((tree), ObjectGetFieldOffset(objName, entryFieldName), ObjectGetFieldOffset(objName, keyFieldName), ObjectGetFieldSize(objName, keyFieldName), NULL)
 void AvlEntryNpInit(AvlEntryNp* entry);
 void* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key);
 bool AvlTreeNpInsertEntryByKey(AvlTreeNp* tree, AvlEntryNp* entry);

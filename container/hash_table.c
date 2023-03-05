@@ -28,11 +28,11 @@ static void HashResize(HashTable* table, size_t newCapacity) {
     
     // 重映射
     
-    // 优化点之一，遍历的时候可以顺带删除节点，可以节省一次查找
+    // 优化点之一，可以添加基于迭代器删除节点
     HashTableIterator iter;
     void* obj = HashTableFirst(table, &iter);
     while (obj) {
-        void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
+        void* key = ObjectGetFieldByOffset(obj, table->keyFieldOffset, void);
         HashTableInsert(&temp, obj);
         HashTableDelete(table, key);
         obj = HashTableNext(&iter);
@@ -78,10 +78,10 @@ void HashTableRelease(HashTable* table, bool deleteObj) {
     HashTableIterator iter;
     void* obj = HashTableFirst(table, &iter);
     while (obj) {
-        void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
+        void* key = ObjectGetFieldByOffset(obj, table->keyFieldOffset, void);
         HashTableDelete(table, key);
         if (deleteObj) {
-            DeleteObject_(obj);
+            ObjectDelete(obj);
         }
         obj = HashTableNext(&iter);
     }
@@ -97,18 +97,19 @@ size_t HashTableGetCapacity(HashTable* table) {
 }
 
 
+
 void* HashTableFind(HashTable* table, void* key) {
     int index = HashGetIndex(table, key);
     HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
     if (entry->type == kData) {
-        int res = table->cmpFunc(GetFieldByFieldOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
+        int res = table->cmpFunc(ObjectGetFieldByOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res == 0) {
             return &entry->data;
         }
     }
     else if (entry->type == kObj) {
         void* obj = entry->obj;
-        int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+        int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res == 0) {
             return obj;
         }
@@ -123,7 +124,7 @@ void* HashTableFind(HashTable* table, void* key) {
             else {
                 obj = ((HashDataList*)cur)->obj;
             }
-            int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+            int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
             if (res == 0) {
                 return obj;
             }
@@ -134,7 +135,7 @@ void* HashTableFind(HashTable* table, void* key) {
 }
 
 bool HashTableInsert(HashTable* table, void* obj) {
-    void* key = GetFieldByFieldOffset(obj, table->keyFieldOffset, void);
+    void* key = ObjectGetFieldByOffset(obj, table->keyFieldOffset, void);
     int index = HashGetIndex(table, key);
     HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
     
@@ -149,37 +150,37 @@ bool HashTableInsert(HashTable* table, void* obj) {
         }
     }
     else if (entry->type == kData) {
-        int res = table->cmpFunc(GetFieldByFieldOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
+        int res = table->cmpFunc(ObjectGetFieldByOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res == 0) {
             return memcmp(&entry->data, obj, table->objSize) == 0;
         }
         entry->type = kList;
         uintptr_t oldData = entry->data;
         SinglyListHeadInit(&entry->listHead);
-        HashDataList* listEntry = CreateObject(HashDataList);
+        HashDataList* listEntry = ObjectCreate(HashDataList);
         listEntry->data = oldData;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-        listEntry = CreateObject(HashDataList);
+        listEntry = ObjectCreate(HashDataList);
         memcpy(&listEntry->data, obj, table->objSize);
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
     }
     else if (entry->type == kObj) {
-        int res = table->cmpFunc(GetFieldByFieldOffset(entry->obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+        int res = table->cmpFunc(ObjectGetFieldByOffset(entry->obj, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res == 0) {
             return obj == entry->obj;
         }
         entry->type = kList;
         void* oldObj = entry->obj;
         SinglyListHeadInit(&entry->listHead);
-        HashDataList* listEntry = CreateObject(HashDataList);
+        HashDataList* listEntry = ObjectCreate(HashDataList);
         listEntry->obj = oldObj;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-        listEntry = CreateObject(HashDataList);
+        listEntry = ObjectCreate(HashDataList);
         listEntry->obj = obj;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
     }
     else if (entry->type == kList) {
-        HashDataList* listEntry = CreateObject(HashDataList);
+        HashDataList* listEntry = ObjectCreate(HashDataList);
         if (table->objSize <= sizeof(uintptr_t)) {
             memcpy(&listEntry->data, obj, table->objSize);
         }
@@ -197,6 +198,8 @@ bool HashTableInsert(HashTable* table, void* obj) {
     return true;
 }
 
+
+
 void* HashTableDelete(HashTable* table, void* key) {
     int index = HashGetIndex(table, key);
     HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
@@ -205,7 +208,7 @@ void* HashTableDelete(HashTable* table, void* key) {
         return NULL;
     }
     else if (entry->type == kData) {
-        int res = table->cmpFunc(GetFieldByFieldOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
+        int res = table->cmpFunc(ObjectGetFieldByOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res != 0) {
             return NULL;
         }
@@ -214,7 +217,7 @@ void* HashTableDelete(HashTable* table, void* key) {
     }
     else if (entry->type == kObj) {
         obj = entry->obj;
-        int res = table->cmpFunc(GetFieldByFieldOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
+        int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res != 0) {
             return NULL;
         }
@@ -232,7 +235,7 @@ void* HashTableDelete(HashTable* table, void* key) {
             else {
                 curObj = ((HashDataList*)cur)->obj;
             }
-            int res = table->cmpFunc(GetFieldByFieldOffset(curObj, table->keyFieldOffset, void), key, table->keyFieldSize);
+            int res = table->cmpFunc(ObjectGetFieldByOffset(curObj, table->keyFieldOffset, void), key, table->keyFieldSize);
             if (res != 0) {
                 prev = cur;
                 cur = SinglyListNext(cur);
@@ -253,7 +256,7 @@ void* HashTableDelete(HashTable* table, void* key) {
                     }
                 }
             }
-            DeleteObject_(cur);
+            ObjectDelete(cur);
             break;
         }
     }

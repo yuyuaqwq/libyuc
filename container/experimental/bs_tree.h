@@ -38,7 +38,7 @@ void* BsTreeFindEntryByKey(BsTree* tree, void* key);
     retObj = NULL; \
     BsEntry* cur = (BsEntry*)((tree)->root); \
     while (cur) { \
-        objName* tempObj = GetObjByField(cur, objName, entryFieldName); \
+        objName* tempObj = ObjectGetFromField(cur, objName, entryFieldName); \
         if (tempObj->keyFieldName < (key)) { \
             cur = cur->right; \
         } else if (tempObj->keyFieldName > (key)) { \

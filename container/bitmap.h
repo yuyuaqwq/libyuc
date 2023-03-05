@@ -27,6 +27,7 @@ size_t BitmapGetByteCount(Bitmap* bitmap);
 ptrdiff_t BitmapFindBit(Bitmap* bitmap, ptrdiff_t bit_start, bool val);
 ptrdiff_t BitmapAlloc(Bitmap* bitmap, size_t bit_count);
 void BitmapFree(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count);
+size_t BitmapGetMaxFreeCount(Bitmap* bitmap);
 
 extern const ptrdiff_t kBitmapInvalidIndex;
 

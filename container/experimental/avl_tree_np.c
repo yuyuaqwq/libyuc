@@ -1,4 +1,4 @@
-#include <CUtils/container/avl_tree_np.h>
+#include <CUtils/container/experimental/avl_tree_np.h>
 
 /*
 * 获取左子节点
@@ -45,6 +45,7 @@ inline int AvlEntryNpGetBalanceFactor(AvlEntryNp* entry) {
 inline void AvlEntryNpSetBalanceFactor(AvlEntryNp* entry, int balanceFactor) {
     entry->left_balanceFactor = (AvlEntryNp*)(((uintptr_t)AvlEntryNpGetLeft(entry)) | ((uintptr_t)balanceFactor) & 0x3);
 }
+
 
 
 /*
@@ -109,7 +110,6 @@ static void AvlTreeNpHitchEntry(AvlTreeNp* tree, AvlEntryNp* entry, AvlEntryNp* 
         tree->root = newEntry;
     }
 }
-
 
 /*
 * 根据平衡因子来旋转子树
@@ -208,42 +208,6 @@ static bool RotateByBalanceFactor(AvlTreeNp* tree, AvlEntryNp* subRoot, int curB
 }
 
 
-/*
-* 初始化Avl树
-*/
-void AvlTreeNpInit(AvlTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
-    BsTreeNpInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
-}
-
-/*
-* 初始化节点
-*/
-void AvlEntryNpInit(AvlEntryNp* entry) {
-    BsEntryNpInit(&entry->bse);
-    AvlEntryNpSetBalanceFactor(entry, 0);
-}
-
-
-/*
-* 从树中查找节点
-*/
-void* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key) {
-    AvlEntryNp* cur = tree->root;
-    while (cur) {
-        void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-        int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
-        if (res < 0) {
-            cur = cur->right;
-        }
-        else if (res > 0) {
-            cur = AvlEntryNpGetLeft(cur);
-        }
-        else {
-            return GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-        }
-    }
-    return NULL;
-}
 
 /*
 * 向树中插入节点后的平衡操作
@@ -266,11 +230,11 @@ bool AvlTreeNpInsertEntryFixup(AvlTreeNp* tree, bool isCurLeft, AvlEntryNp* cur,
 * 递归查找并插入节点
 */
 bool AvlTreeNpInsertEntry(AvlTreeNp* tree, AvlEntryNp* entry, AvlEntryNp* cur, AvlEntryNp* curParent) {
-    void* obj = GetObjByFieldOffset(entry, tree->entryFieldOffset, void);
-    void* key = GetFieldByFieldOffset(obj, tree->keyFieldOffset, void);
+    void* obj = ObjectGetFromFieldOffset(entry, tree->entryFieldOffset, void);
+    void* key = ObjectGetFieldByOffset(obj, tree->keyFieldOffset, void);
 
-    void* curObj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-    int res = tree->cmpFunc(GetFieldByFieldOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+    void* curObj = ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+    int res = tree->cmpFunc(ObjectGetFieldByOffset(curObj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
     bool ret = true;
     bool isCurLeft;
     if (res == 0) {
@@ -299,22 +263,6 @@ bool AvlTreeNpInsertEntry(AvlTreeNp* tree, AvlEntryNp* entry, AvlEntryNp* cur, A
     }
     return ret;
 }
-
-/*
-* 从树中按key插入节点
-* 不允许存在重复节点
-* 成功返回true，失败返回false
-*/
-bool AvlTreeNpInsertEntryByKey(AvlTreeNp* tree, AvlEntryNp* entry) {
-    AvlEntryNpInit(entry);
-    if (tree->root == NULL) {
-        tree->root = entry;
-        return true;
-    }
-    return AvlTreeNpInsertEntry(tree, entry, tree->root, NULL);
-}
-
-
 
 /*
 * 从树中删除节点的平衡操作
@@ -365,20 +313,24 @@ static bool DeleteMinEntry(AvlTreeNp* tree, AvlEntryNp* cur, AvlEntryNp** curPar
 
         // 最小节点继承待删除节点的右子树
         cur->right = (*delete_minEntry)->right;
-    } else {
+    }
+    else {
         *curParent = cur;       // curParent可能指向AvlTreeNpDeleteEntry的cur，也可能是上层DeleteMinEntry的cur
     }
     *delete_minEntry = cur;     // 返回最小节点
     return true;
-    
+
 }
 
 /*
 * 递归查找并删除节点
 */
 bool AvlTreeNpDeleteEntry(AvlTreeNp* tree, void* key, AvlEntryNp* cur, AvlEntryNp** curParent, AvlEntryNp** deleteEntry) {
-    void* obj = GetObjByFieldOffset(cur, tree->entryFieldOffset, void);
-    int res = tree->cmpFunc(GetFieldByFieldOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+    if (cur == NULL) {
+        return false;
+    }
+    void* obj = ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+    int res = tree->cmpFunc(ObjectGetFieldByOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
     bool ret;
     bool isCurLeft;
     if (res > 0) {
@@ -422,6 +374,58 @@ bool AvlTreeNpDeleteEntry(AvlTreeNp* tree, void* key, AvlEntryNp* cur, AvlEntryN
     return ret;
 }
 
+
+
+/*
+* 初始化Avl树
+*/
+void AvlTreeNpInit(AvlTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc) {
+    BsTreeNpInit(&tree->bst, entryFieldOffset, keyFieldOffset, keySize, cmpFunc);
+}
+
+/*
+* 初始化节点
+*/
+void AvlEntryNpInit(AvlEntryNp* entry) {
+    BsEntryNpInit(&entry->bse);
+    AvlEntryNpSetBalanceFactor(entry, 0);
+}
+
+/*
+* 从树中查找节点
+*/
+void* AvlTreeNpFindEntryByKey(AvlTreeNp* tree, void* key) {
+    AvlEntryNp* cur = tree->root;
+    while (cur) {
+        void* obj = ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+        int res = tree->cmpFunc(ObjectGetFieldByOffset(obj, tree->keyFieldOffset, void), key, tree->keyFieldSize);
+        if (res < 0) {
+            cur = cur->right;
+        }
+        else if (res > 0) {
+            cur = AvlEntryNpGetLeft(cur);
+        }
+        else {
+            return ObjectGetFromFieldOffset(cur, tree->entryFieldOffset, void);
+        }
+    }
+    return NULL;
+}
+
+/*
+* 从树中按key插入节点
+* 不允许存在重复节点
+* 成功返回true，失败返回false
+*/
+bool AvlTreeNpInsertEntryByKey(AvlTreeNp* tree, AvlEntryNp* entry) {
+    AvlEntryNpInit(entry);
+    if (tree->root == NULL) {
+        tree->root = entry;
+        return true;
+    }
+    return AvlTreeNpInsertEntry(tree, entry, tree->root, NULL);
+}
+
 /*
 * 从树中按key删除节点
 * 成功返回被删除的节点，失败返回NULL
@@ -429,5 +433,5 @@ bool AvlTreeNpDeleteEntry(AvlTreeNp* tree, void* key, AvlEntryNp* cur, AvlEntryN
 void* AvlTreeNpDeleteEntryByKey(AvlTreeNp* tree, void* key) {
     AvlEntryNp* deleteEntry, * curParent = NULL;
     AvlTreeNpDeleteEntry(tree, key, tree->root, &curParent, &deleteEntry);
-    return GetObjByFieldOffset(deleteEntry, tree->entryFieldOffset, void);
+    return ObjectGetFromFieldOffset(deleteEntry, tree->entryFieldOffset, void);
 }

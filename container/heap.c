@@ -17,9 +17,9 @@ static void ShiftUp(Heap* heap, uint32_t now) {
     
     while (next > 0) {
         void** objParent = VectorAt(vec, next, void);
-        void* keyParent = GetFieldByFieldOffset(*objParent, heap->keyFieldOffset, void);
+        void* keyParent = ObjectGetFieldByOffset(*objParent, heap->keyFieldOffset, void);
         void** objChild = VectorAt(vec, now, void);
-        void* keyChild = GetFieldByFieldOffset(*objChild, heap->keyFieldOffset, void);
+        void* keyChild = ObjectGetFieldByOffset(*objChild, heap->keyFieldOffset, void);
         
         // 父亲大于等于孩子就结束
         if (heap->cmpFunc(keyParent, keyChild , heap->keyFieldSize) >= 0) {
@@ -38,15 +38,15 @@ static void ShiftDown(Heap* heap, uint32_t now) {
     uint32_t next = (now + 1) * 2 - 1;      // now * 2
     while (next < VectorGetCount(&heap->vector)) {
         void** objParent = VectorAt(vec, now, void);
-        void* keyParent = GetFieldByFieldOffset(*objParent, heap->keyFieldOffset, void);
+        void* keyParent = ObjectGetFieldByOffset(*objParent, heap->keyFieldOffset, void);
         void** objChild = VectorAt(vec, next, void);
-        void* keyChild = GetFieldByFieldOffset(*objChild, heap->keyFieldOffset, void);
+        void* keyChild = ObjectGetFieldByOffset(*objChild, heap->keyFieldOffset, void);
 
         // 两个孩子都小于等于父亲就结束
         if (heap->cmpFunc(keyChild, keyParent, heap->keyFieldSize) <= 0) {
             next++;
             objChild = VectorAt(vec, next, void);
-            keyChild = GetFieldByFieldOffset(*objChild, heap->keyFieldOffset, void);
+            keyChild = ObjectGetFieldByOffset(*objChild, heap->keyFieldOffset, void);
             if (heap->cmpFunc(keyChild, keyParent, heap->keyFieldSize) <= 0) {
                 break;
             }

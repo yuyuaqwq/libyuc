@@ -18,7 +18,7 @@
 
 // 快速构建：
 static int* BuildNext(const char* pattern, size_t len) {
-	int* next = CreateObjArr(int, len);
+	int* next = ObjectCreateArray(int, len);
 	next[0] = 0;
 	int i = 1;		// i指向当前构建的好前缀末尾(也是后缀子串的末尾)
 	int prefixLen = 0;		// 当前好前缀的最长相等前后缀长度，也用于访问当前前缀子串的末尾
@@ -70,7 +70,7 @@ int KmpMatch(const char* main, size_t mainLen, const char* pattern, size_t patte
 			i++;		// 第一个字符就不匹配
 		}
 	}
-	DeleteObject_(next);
+	ObjectDelete(next);
 	return pos;
 
 }
