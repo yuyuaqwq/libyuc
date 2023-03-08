@@ -208,12 +208,12 @@ void* HashTableDelete(HashTable* table, void* key) {
         return NULL;
     }
     else if (entry->type == kData) {
-        int res = table->cmpFunc(ObjectGetFieldByOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
+        obj = &entry->data;
+        int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res != 0) {
             return NULL;
         }
         entry->type = kFree;
-        return &entry->data;
     }
     else if (entry->type == kObj) {
         obj = entry->obj;
@@ -248,19 +248,16 @@ void* HashTableDelete(HashTable* table, void* key) {
             else {
                 SinglyListRemoveHead(&entry->listHead);
                 if (SinglyListIsEmpty(&entry->listHead)) {
-                    if (table->objSize <= sizeof(uintptr_t)) {
-                        entry->type = kData;
-                    }
-                    else {
-                        entry->type = kObj;
-                    }
+                    entry->type = kFree;
                 }
             }
             ObjectDelete(cur);
             break;
         }
     }
-    table->bucket.count--;
+    if (obj) {
+        table->bucket.count--;
+    }
     return obj;
 }
 

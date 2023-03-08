@@ -60,7 +60,6 @@ bool RbTreeInsertEntryByKey(RbTree* tree, RbEntry* entry);
 
 void RbTreeInit(RbTree* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
 #define RbTreeInitByField(tree, objName, entryFieldName, keyFieldName) RbTreeInit((tree), ObjectGetFieldOffset(objName, entryFieldName), ObjectGetFieldOffset(objName, keyFieldName), ObjectGetFieldSize(objName, keyFieldName), NULL)
-void RbEntryInit(RbEntry* entry, RbColor color);
 void* RbTreeFindEntryByKey(RbTree* tree, void* key);
 void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* entry, RbEntry* parent, RbEntry* left, RbEntry* right, RbColor color, bool isLeft);
 void RbTreeDeleteEntry(RbTree* tree, RbEntry* entry);

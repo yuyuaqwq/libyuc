@@ -450,9 +450,11 @@ void* RbTreeFirst(RbTree* tree, RbTreeIterator* iterator) {
     iterator->rb_tree = tree;
     while (cur->left)
         cur = cur->left;
-    void* obj = ObjectGetFromFieldOffset(cur, tree->entry_field_offset, void);
     iterator->cur_entry = cur;
-    return obj;
+    if (cur) {
+        return ObjectGetFromFieldOffset(cur, tree->entry_field_offset, void);
+    }
+    return NULL;
 }
 
 void* RbTreeLast(RbTree* tree, RbTreeIterator* iterator) {
@@ -463,9 +465,11 @@ void* RbTreeLast(RbTree* tree, RbTreeIterator* iterator) {
     iterator->rb_tree = tree;
     while (cur->right)
         cur = cur->right;
-    void* obj = ObjectGetFromFieldOffset(cur, tree->entry_field_offset, void);
     iterator->cur_entry = cur;
-    return obj;
+    if (cur) {
+        return ObjectGetFromFieldOffset(cur, tree->entry_field_offset, void);
+    }
+    return NULL;
 }
 
 void* RbTreeNext(RbTreeIterator* iterator) {
@@ -481,9 +485,11 @@ void* RbTreeNext(RbTreeIterator* iterator) {
             cur = parent;
         cur = parent;
     }
-    void* obj = ObjectGetFromFieldOffset(cur, iterator->rb_tree->entry_field_offset, void);
     iterator->cur_entry = cur;
-    return obj;
+    if (cur) {
+        return ObjectGetFromFieldOffset(cur, iterator->rb_tree->entry_field_offset, void);
+    }
+    return NULL;
 }
 
 void* RbTreePrev(RbTreeIterator* iterator) {
@@ -499,7 +505,9 @@ void* RbTreePrev(RbTreeIterator* iterator) {
             cur = parent;
         cur = parent;
     }
-    void* obj = ObjectGetFromFieldOffset(cur, iterator->rb_tree->entry_field_offset, void);
     iterator->cur_entry = cur;
-    return obj;
+    if (cur) {
+        return ObjectGetFromFieldOffset(cur, iterator->rb_tree->entry_field_offset, void);
+    }
+    return NULL;
 }

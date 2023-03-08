@@ -13,7 +13,7 @@ typedef struct _Tx {
     BPlusTree tree;
 } Tx;
 
-const PageId kPagerPageInvalidId = -1;
+const PageId kPageInvalidId = -1;
 
 
 inline BPlusTree* BPlusTreeGet(Tx* tx) {
@@ -22,7 +22,7 @@ inline BPlusTree* BPlusTreeGet(Tx* tx) {
 
 
 BPlusEntry* BPlusEntryGet(Tx* tx, PageId pgid) {
-    if (pgid == kPagerPageInvalidId) {
+    if (pgid == kPageInvalidId) {
         return NULL;
     }
     return (BPlusEntry*)pgid;
@@ -291,7 +291,7 @@ static void LeafListEntryRemoveFromPrev(Tx* tx, BPlusEntry* prev, PageId prev_id
 */
 static PageId BPlusGetLeftSiblingEntry(Tx* tx, const BPlusEntry* entry, const BPlusEntry* parent, int index) {
     if (index == 0) {
-        return kPagerPageInvalidId;
+        return kPageInvalidId;
     }
     PageId siblingId = BPlusElementGetChildId(tx, parent, index - 1);
     return siblingId;
@@ -302,7 +302,7 @@ static PageId BPlusGetLeftSiblingEntry(Tx* tx, const BPlusEntry* entry, const BP
 */
 static PageId BPlusGetRightSiblingEntry(Tx* tx, const BPlusEntry* entry, const BPlusEntry* parent, int index) {
     if (index >= parent->element_count) {
-        return kPagerPageInvalidId;
+        return kPageInvalidId;
     }
     PageId siblingId = BPlusElementGetChildId(tx, parent, index + 1);
     return siblingId;
@@ -551,7 +551,7 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
         parent = BPlusEntryGet(tx, parent_pos->entry_id);
         siblingId = BPlusGetLeftSiblingEntry(tx, entry, parent, parent_pos->element_idx);
         bool leftSibling = true;
-        if (siblingId == kPagerPageInvalidId) {
+        if (siblingId == kPageInvalidId) {
             siblingId = BPlusGetRightSiblingEntry(tx, entry, parent, parent_pos->element_idx);
             leftSibling = false;
         }

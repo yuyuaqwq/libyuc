@@ -19,7 +19,6 @@ void DoublyStaticListInit(DoublyStaticList* list, size_t count, int obj_size, in
     }
     arr->count = count;
     list->list_first[0] = 0;
-    count--;
     int i = 0;
     for (; i < count; i++) {
         void* obj_entry = ArrayAt(arr, i, void);

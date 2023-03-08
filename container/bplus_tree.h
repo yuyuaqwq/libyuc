@@ -9,6 +9,7 @@
 #define CUTILS_CONTAINER_BPLUS_TREE_H_
 
 #include <CUtils/object.h>
+#include <CUtils/container/array.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,12 +116,13 @@ typedef struct _BPlusCursor {
 
 
 /*
-* 页面管理器相关接口
+* 实现接口
 */
-extern const PageId kPagerPageInvalidId;
+extern const PageId kPageInvalidId;
 
 BPlusTree* BPlusTreeGet(struct _Tx* tx);
-BPlusEntry* BPlusEntryGet(struct _Tx* tx, PageId entry_id);
+BPlusEntry* BPlusEntryGet(struct _Tx* tx, PageId pgid);
+void BPlusEntryDereference(struct _Tx* tx, PageId pgid);
 void BPlusElementSet(struct _Tx* tx, BPlusEntry* entry, int i, BPlusElement* element);
 ptrdiff_t BPlusKeyCmp(struct _Tx* tx, const Key* key1, const Key* key2);
 

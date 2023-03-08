@@ -12,6 +12,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
+
+#undef assert
+#define assert(exp) { if(!(exp)){ *(int*)0 = 0; } }
 
 
 #ifdef __cplusplus
