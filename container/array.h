@@ -45,6 +45,10 @@ size_t ArrayGetByteCount(Array* arr);
 size_t ArrayGetCapacity(Array* arr);
 void ArraySetCapacity(Array* arr, size_t capacity);
 void ArrayResetCapacity(Array* arr, size_t capacity);
+int ArrayGetObjectSize(Array* arr);
+int ArrayGetObjectSize(Array* arr) {
+    return arr->objSize;
+}
 void ArrayExpand(Array* arr, size_t addCount);
 void ArraySwapEntry(Array* arr, int index1, int index2);
 
