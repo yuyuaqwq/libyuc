@@ -74,6 +74,10 @@ void ArraySetCapacity(Array* arr, size_t capacity) {
     arr->capacity = capacity;
 }
 
+int ArrayGetObjectSize(Array* arr) {
+    return arr->objSize;
+}
+
 void ArrayResetCapacity(Array* arr, size_t capacity) {
     void* newBuf = ObjectCreateArrayBySize(arr->objSize, capacity);
     if (arr->objArr) {
