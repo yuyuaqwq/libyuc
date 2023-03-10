@@ -33,6 +33,7 @@ typedef struct _DoublyStaticList {
 extern const int kDoublyStaticListInvalidIndex;
 
 void DoublyStaticListInit(DoublyStaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count);
+void DoublyStaticListInitFromBuf(DoublyStaticList* list, void* buf, size_t count, int obj_size, int entry_field_offset, int list_count);
 void DoublyStaticListInsertNext(DoublyStaticList* list, int list_order, int prev_index, int insert_index);
 int DoublyStaticListRemove(DoublyStaticList* list, int list_order, int remove_index);
 void DoublyStaticListPush(DoublyStaticList* list, int list_order, int push_index);

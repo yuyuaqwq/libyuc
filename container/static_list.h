@@ -32,6 +32,7 @@ typedef struct _StaticList {
 
 extern const int kStaticListInvalidIndex;
 void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count);
+void StaticListInitFromBuf(StaticList* list, void* buf, size_t count, int obj_size, int entry_field_offset, int list_count);
 int StaticListPop(StaticList* list, int list_order);
 void StaticListPush(StaticList* list, int list_order, int index);
 #define StaticListAt(list, index, objName) (ArrayAt((list)->array, index, objName))

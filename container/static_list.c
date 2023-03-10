@@ -9,19 +9,11 @@
 
 const int kStaticListInvalidIndex = -1;
 
-void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count) {
-    Array* arr = &list->array;
-    ArrayInit(arr, count, obj_size);
-    list->entry_field_offset = entry_field_offset;
-    if (count == 0) {
-        list->list_first[0] = kStaticListInvalidIndex;
-        return;
-    }
-    arr->count = count;
+void StaticListInitFromBuf(StaticList* list, void* buf, size_t count, int obj_size, int entry_field_offset, int list_count) {
     list->list_first[0] = 0;
     int i = 0;
     for (; i < count; i++) {
-        void* obj_entry = ArrayAt(arr, i, void);
+        void* obj_entry = ObjectArrayAt(buf, i, obj_size);
         StaticListEntry* list_entry = ObjectGetFieldByOffset(obj_entry, entry_field_offset, StaticListEntry);
         if (i + 1 == count) {
             list_entry->next_index = kStaticListInvalidIndex;
@@ -34,6 +26,18 @@ void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_fiel
     for (i = 1; i < list_count; i++) {
         list->list_first[i] = kStaticListInvalidIndex;
     }
+}
+
+void StaticListInit(StaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count) {
+    Array* arr = &list->array;
+    ArrayInit(arr, count, obj_size);
+    list->entry_field_offset = entry_field_offset;
+    if (count == 0) {
+        list->list_first[0] = kStaticListInvalidIndex;
+        return;
+    }
+    arr->count = count;
+    StaticListInitFromBuf(list, ArrayGetData(arr), count, obj_size, entry_field_offset, list_count);
 }
 
 int StaticListPop(StaticList* list, int list_order) {
