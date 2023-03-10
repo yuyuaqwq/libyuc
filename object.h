@@ -14,9 +14,11 @@
 #include <string.h>
 #include <assert.h>
 
-#ifndef NDEBUG
+#ifdef NDEBUG
+#define assert(expression) ((void)0)
+#else
 #undef assert
-#define assert(exp) { if(!(exp)){ *(int*)0 = 0; } }
+#define assert(expression) { if(!(expression)){ *(int*)0 = 0; } }
 #endif
 
 #ifdef __cplusplus

@@ -43,7 +43,7 @@ void DoublyStaticListInit(DoublyStaticList* list, size_t count, int obj_size, in
         return;
     }
     arr->count = count;
-    DoublyStaticListInitFromBuf(list, ArrayGetData(&arr), count, obj_size, entry_field_offset, list_count);
+    DoublyStaticListInitFromBuf(list, ArrayGetData(arr), count, obj_size, entry_field_offset, list_count);
 }
 
 int DoublyStaticListRemove(DoublyStaticList* list, int list_order, int remove_index) {
