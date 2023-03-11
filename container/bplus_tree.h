@@ -122,7 +122,7 @@ extern const PageId kPageInvalidId;
 
 BPlusTree* BPlusTreeGet(struct _Tx* tx);
 BPlusEntry* BPlusEntryGet(struct _Tx* tx, PageId pgid);
-void BPlusEntryDereference(struct _Tx* tx, PageId pgid);
+void BPlusEntryDereference(struct _Tx* tx, BPlusEntry* entry);
 void BPlusElementSet(struct _Tx* tx, BPlusEntry* entry, int i, BPlusElement* element);
 ptrdiff_t BPlusKeyCmp(struct _Tx* tx, const Key* key1, const Key* key2);
 

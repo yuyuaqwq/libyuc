@@ -28,7 +28,7 @@ BPlusEntry* BPlusEntryGet(Tx* tx, PageId pgid) {
     return (BPlusEntry*)pgid;
 }
 
-void BPlusEntryDereference(Tx* tx, PageId pgid) {
+void BPlusEntryDereference(Tx* tx, BPlusEntry* entry) {
 
 }
 
@@ -45,7 +45,7 @@ PageId BPlusEntryCreate(Tx* tx, BPlusEntryType type) {
     BPlusEntry* entry = BPlusEntryGet(tx, entry_id);
     entry->type = type;
     entry->element_count = 0;
-    BPlusEntryDereference(tx, entry_id);
+    BPlusEntryDereference(tx, entry);
     return entry_id;
 }
 
@@ -106,8 +106,8 @@ void BPlusElementCopy(Tx* tx, BPlusEntry* dst_entry, int dst, BPlusEntry* src_en
     }
 }
 
-ptrdiff_t BPlusElementCmp(Tx* tx, BPlusEntry* entry, int i, Key* key2) {
-    Key* key1;
+ptrdiff_t BPlusElementCmp(Tx* tx, const BPlusEntry* entry, int i, Key* key2) {
+    const Key* key1;
     if (entry->type == kBPlusEntryLeaf) {
         key1 = &entry->leaf.element[i].key;
     }
@@ -165,7 +165,7 @@ BPlusCursorStatus BPlusCursorNext(Tx* tx, BPlusCursor* cursor, Key* key) {
             return kBPlusCursorEnd;
         }
         cur.entry_id = BPlusElementGetChildId(tx, parent_entry, parent->element_idx);
-        BPlusEntryDereference(tx, parent->entry_id);
+        BPlusEntryDereference(tx, parent_entry);
     }
     else {
         cur.entry_id = tree->root_id;
@@ -204,7 +204,7 @@ BPlusCursorStatus BPlusCursorNext(Tx* tx, BPlusCursor* cursor, Key* key) {
         cursor->leaf_status = status;
     }
     ++cursor->level;
-    BPlusEntryDereference(tx, cur.entry_id);
+    BPlusEntryDereference(tx, cur_entry);
     return status;
 }
 
@@ -221,7 +221,7 @@ static int BPlusBinarySearch(Tx* tx, const BPlusEntry* entry, int first, int las
     int mid;
     while (first <= last) {
         mid = first + (last - first) / 2;
-        int res = BPlusElementCmp(tree, entry, mid, key);
+        int res = BPlusElementCmp(tx, entry, mid, key);
         if (res > 0) {
             last = mid - 1;
         }
@@ -255,7 +255,7 @@ static void LeafListEntryInit(Tx* tx, PageId entry_id) {
     BPlusEntry* first = (BPlusEntry*)BPlusEntryGet(tx, entry_id);
     first->leaf.list_entry.next = entry_id;
     first->leaf.list_entry.prev = entry_id;
-    BPlusEntryDereference(tx, entry_id);
+    BPlusEntryDereference(tx, first);
 }
 
 static void LeafListEntryInsertToNext(Tx* tx, BPlusEntry* prev, PageId prev_id, BPlusEntry* entry, PageId entry_id) {
@@ -265,7 +265,7 @@ static void LeafListEntryInsertToNext(Tx* tx, BPlusEntry* prev, PageId prev_id, 
     entry->leaf.list_entry.prev = prev_id;
     BPlusEntry* old_next = (BPlusEntry*)BPlusEntryGet(tx, old_next_id);
     old_next->leaf.list_entry.prev = entry_id;
-    BPlusEntryDereference(tx, old_next_id);
+    BPlusEntryDereference(tx, old_next);
 }
 
 static void LeafListEntryRemoveFromPrev(Tx* tx, BPlusEntry* prev, PageId prev_id, BPlusEntry* entry, PageId entry_id) {
@@ -428,7 +428,7 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, PageId left_id, BP
 
     right->element_count = rightCount;
     *out_right_id = right_id;
-    BPlusEntryDereference(tx, right_id);
+    BPlusEntryDereference(tx, right);
     return up_element;
 }
 
@@ -458,7 +458,7 @@ static void BPlusMergeEntry(Tx* tx, BPlusEntry* left, PageId left_id, BPlusEntry
     // 父元素会被删除，右兄弟的左侧子节点(或尾子节点)原先连接右节点，此时继承左节点
     BPlusElementSetChildId(tx, parent, parent_index + 1, left_id);
 
-    BPlusEntryDereference(tx, right_id);
+    BPlusEntryDereference(tx, right);
     BPlusEntryDelete(tx, right_id);
     // 合并部分完成，删除部分交给调用者
 }
@@ -502,15 +502,15 @@ bool BPlusInsertEntry(Tx* tx, BPlusCursor* cursor, BPlusElement* insert_element)
             up_element = BPlusSplitEntry(tx, cur, cur_pos->entry_id, parent, 0, cur_pos->element_idx, insert_element, &right_id);
             BPlusInsertElement(tx, parent, 0, &up_element);
             tree->root_id = parent_id;
-            BPlusEntryDereference(tx, parent_id);
+            BPlusEntryDereference(tx, parent);
             break;
         }
         BPlusEntry* parent = BPlusEntryGet(tx, parent_pos->entry_id);
         up_element = BPlusSplitEntry(tx, cur, cur_pos->entry_id, parent, parent_pos->element_idx, cur_pos->element_idx, insert_element, &right_id);
-        BPlusEntryDereference(tx, parent_pos->entry_id);
+        BPlusEntryDereference(tx, parent);
         insertUp = true;
     } while (false);
-    BPlusEntryDereference(tx, cur_pos->entry_id);
+    BPlusEntryDereference(tx, cur);
     if (insertUp) {
         return BPlusInsertEntry(tx, cursor, &up_element);
     }
@@ -540,7 +540,7 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
             if (entry->type == kBPlusEntryIndex && entry->element_count == 0) {
                 PageId childId = entry->index.tail_child_id;
                 tree->root_id = childId;
-                BPlusEntryDereference(tx, cur_pos->entry_id);
+                BPlusEntryDereference(tx, entry);
                 BPlusEntryDelete(tx, cur_pos->entry_id);
                 return true;
             }
@@ -615,9 +615,9 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
         }
         deleteUp = true;
     } while (false);
-    if (parent) { BPlusEntryDereference(tx, parent_pos->entry_id); }
-    if (sibling) { BPlusEntryDereference(tx, siblingId); }
-    if (entry) { BPlusEntryDereference(tx, cur_pos->entry_id); }
+    if (parent) { BPlusEntryDereference(tx, parent); }
+    if (sibling) { BPlusEntryDereference(tx, sibling); }
+    if (entry) { BPlusEntryDereference(tx, entry); }
 
     if (deleteUp) {
         return BPlusDeleteEntry(tx, cursor);     // 尾递归

@@ -71,12 +71,30 @@ static const uint32_t crc32tab[] = {
 };
  
  
-uint32_t Crc32(const uint8_t *buf, size_t size) {
+uint32_t Crc32(const void *buf, size_t size) {
      uint32_t i, crc;
      crc = 0xFFFFFFFF;
 
-     for (i = 0; i < size; i++)
-      crc = crc32tab[(crc ^ buf[i]) & 0xff] ^ (crc >> 8);
+    const uint8_t* buf_ = (const uint8_t*)buf;
+
+     for (ptrdiff_t i = 0; i < size; i++)
+      crc = crc32tab[(crc ^ buf_[i]) & 0xff] ^ (crc >> 8);
  
      return crc^0xFFFFFFFF;
+}
+
+
+uint32_t Crc32Start() {
+    return 0xFFFFFFFF;
+}
+
+uint32_t Crc32Continue(uint32_t crc, const void* buf, size_t size) {
+    const uint8_t* buf_ = (const uint8_t*)buf;
+    for (ptrdiff_t i = 0; i < size; i++)
+      crc = crc32tab[(crc ^ buf_[i]) & 0xff] ^ (crc >> 8);
+    return crc;
+}
+
+uint32_t Crc32End(uint32_t crc) {
+    return crc^0xffffffff;
 }

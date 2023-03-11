@@ -12,7 +12,10 @@ https://blog.csdn.net/gongmin856/article/details/77101397
 extern "C" {
 #endif
 
-int KmpMatch(const char* main, size_t mainLen, const char* pattern, size_t patternLen);
+uint32_t Crc32(const void*buf, size_t size);
+uint32_t Crc32Start();
+uint32_t Crc32Continue(uint32_t crc, const void* buf, size_t size);
+uint32_t Crc32End(uint32_t crc);
 
 #ifdef __cplusplus
 }
