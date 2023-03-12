@@ -18,10 +18,8 @@ extern "C" {
 #endif
 
 /*
-* 链式哈希表
-* 若objSize > sizeof(uintptr_t)，则存储指针
-* 否则存储拷贝数据
-* 存储拷贝时，删除时返回的指针请勿访问及释放，可能会导致异常，仅可用于检查删除是否成功
+* 存储对象指针的链式哈希表
+* 若映射定长key建议使用radix_tree
 */
 
 typedef enum _HashEntryType HashEntryType;
@@ -29,7 +27,6 @@ typedef enum _HashEntryType HashEntryType;
 typedef struct _HashEntry {
     HashEntryType type;
     union {
-        uintptr_t data;
         void* obj;
         SinglyListHead listHead;
     };
@@ -37,10 +34,7 @@ typedef struct _HashEntry {
 
 typedef struct _HashDataList {
     SinglyListEntry listEntry;
-    union {
-        uintptr_t data;
-        void* obj;
-    };
+    void* obj;
 } HashDataList;
 
 typedef struct _HashTable {

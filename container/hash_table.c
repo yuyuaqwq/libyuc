@@ -9,7 +9,6 @@
 
 typedef enum _HashEntryType {
     kFree,
-    kData,
     kObj,
     kList,
 } HashEntryType;
@@ -101,13 +100,7 @@ size_t HashTableGetCapacity(HashTable* table) {
 void* HashTableFind(HashTable* table, void* key) {
     int index = HashGetIndex(table, key);
     HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
-    if (entry->type == kData) {
-        int res = table->cmpFunc(ObjectGetFieldByOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
-        if (res == 0) {
-            return &entry->data;
-        }
-    }
-    else if (entry->type == kObj) {
+    if (entry->type == kObj) {
         void* obj = entry->obj;
         int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
         if (res == 0) {
@@ -117,13 +110,7 @@ void* HashTableFind(HashTable* table, void* key) {
     else if (entry->type == kList) {
         SinglyListEntry* cur = SinglyListFirst(&entry->listHead);
         while (cur) {
-            void* obj;
-            if (table->objSize <= sizeof(uintptr_t)) {
-                obj = &((HashDataList*)cur)->data;
-            }
-            else {
-                obj = ((HashDataList*)cur)->obj;
-            }
+            void* obj = ((HashDataList*)cur)->obj;
             int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
             if (res == 0) {
                 return obj;
@@ -140,29 +127,8 @@ bool HashTableInsert(HashTable* table, void* obj) {
     HashEntry* entry = ArrayAt(&table->bucket, index, HashEntry);
     
     if (entry->type == kFree) {
-        if (table->objSize <= sizeof(uintptr_t)) {
-            memcpy(&entry->data, obj, table->objSize);
-            entry->type = kData;
-        }
-        else {
-            entry->obj = obj;
-            entry->type = kObj;
-        }
-    }
-    else if (entry->type == kData) {
-        int res = table->cmpFunc(ObjectGetFieldByOffset(&entry->data, table->keyFieldOffset, void), key, table->keyFieldSize);
-        if (res == 0) {
-            return memcmp(&entry->data, obj, table->objSize) == 0;
-        }
-        entry->type = kList;
-        uintptr_t oldData = entry->data;
-        SinglyListHeadInit(&entry->listHead);
-        HashDataList* listEntry = ObjectCreate(HashDataList);
-        listEntry->data = oldData;
-        SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
-        listEntry = ObjectCreate(HashDataList);
-        memcpy(&listEntry->data, obj, table->objSize);
-        SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
+        entry->obj = obj;
+        entry->type = kObj;
     }
     else if (entry->type == kObj) {
         int res = table->cmpFunc(ObjectGetFieldByOffset(entry->obj, table->keyFieldOffset, void), key, table->keyFieldSize);
@@ -181,12 +147,7 @@ bool HashTableInsert(HashTable* table, void* obj) {
     }
     else if (entry->type == kList) {
         HashDataList* listEntry = ObjectCreate(HashDataList);
-        if (table->objSize <= sizeof(uintptr_t)) {
-            memcpy(&listEntry->data, obj, table->objSize);
-        }
-        else {
-            listEntry->obj = obj;
-        }
+        listEntry->obj = obj;
         SinglyListInsertHead(&entry->listHead, &listEntry->listEntry);
     }
 
@@ -207,14 +168,6 @@ void* HashTableDelete(HashTable* table, void* key) {
     if (entry->type == kFree) {
         return NULL;
     }
-    else if (entry->type == kData) {
-        obj = &entry->data;
-        int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
-        if (res != 0) {
-            return NULL;
-        }
-        entry->type = kFree;
-    }
     else if (entry->type == kObj) {
         obj = entry->obj;
         int res = table->cmpFunc(ObjectGetFieldByOffset(obj, table->keyFieldOffset, void), key, table->keyFieldSize);
@@ -227,14 +180,7 @@ void* HashTableDelete(HashTable* table, void* key) {
         SinglyListEntry* prev = NULL;
         SinglyListEntry* cur = SinglyListFirst(&entry->listHead);
         while (cur) {
-            void* curObj;
-            if (table->objSize <= sizeof(uintptr_t)) {
-                uintptr_t temp = ((HashDataList*)cur)->data;
-                curObj = &temp;
-            }
-            else {
-                curObj = ((HashDataList*)cur)->obj;
-            }
+            void* curObj = ((HashDataList*)cur)->obj;
             int res = table->cmpFunc(ObjectGetFieldByOffset(curObj, table->keyFieldOffset, void), key, table->keyFieldSize);
             if (res != 0) {
                 prev = cur;
@@ -295,12 +241,7 @@ void* HashTableNext(HashTableIterator* iter) {
             }
             iter->listEntryCount++;
 #endif // HASHTABLE_DATA_STATISTICS
-            if (iter->table->keyFieldSize <= sizeof(uintptr_t)) {
-                return &cur->data;
-            }
-            else {
-                return cur->obj;
-            }
+            return cur->obj;
             
         }
     }
@@ -312,10 +253,6 @@ void* HashTableNext(HashTableIterator* iter) {
             iter->freeCount++;
 #endif // HASHTABLE_DATA_STATISTICS
             continue;
-        }
-        if (entry->type == kData) {
-            iter->curIndex++;
-            return &entry->data;
         }
         if (entry->type == kObj) {
 #ifdef HASHTABLE_DATA_STATISTICS

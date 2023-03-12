@@ -36,5 +36,8 @@ C语言便携工具类支持
   - 以234树为原型，嵌入颜色的红黑树
 - BPlusTree
   - B+树
+- RadixTree
+  - 映射定长key的基数树
 - Heap
   - 堆
+
