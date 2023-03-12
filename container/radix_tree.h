@@ -48,6 +48,8 @@ typedef struct _RadixSlot {
 } RadixSlot;
 
 typedef struct _RadixEntry {
+	struct _RadixEntry* parent;
+	int16_t count;
 	uint8_t slot_status[CUTILS_CONTAINER_RADIX_TREE_MAP_BIT_TO_BYTE_COUNT];		// 1为kv，0为下级指针
 	RadixSlot slots[CUTILS_CONTAINER_RADIX_TREE_MAP_SIZE];
 } RadixEntry;

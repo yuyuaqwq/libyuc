@@ -46,18 +46,20 @@ forceinline static RadixSlot* RadixTreeFindSlot(RadixTree* tree, RadixKey key, R
 }
 
 
-void RadixEntryInit(RadixEntry* entry) {
+void RadixEntryInit(RadixEntry* entry, RadixEntry* parent) {
 	for (int32_t i = 0; i < CUTILS_CONTAINER_RADIX_TREE_MAP_SIZE; i++) {
 		entry->slots[i].down = NULL;
 	}
 	for (int32_t i = 0; i < CUTILS_CONTAINER_RADIX_TREE_MAP_BIT_TO_BYTE_COUNT; i++) {
 		entry->slot_status[i] = 0;
 	}
+	entry->parent = parent;
+	entry->count = 0;
 }
 
 void RadixTreeInit(RadixTree* tree) {
 	tree->root = ObjectCreate(RadixEntry);
-	RadixEntryInit(tree->root);
+	RadixEntryInit(tree->root, NULL);
 }
 
 static void RadixTreeRecursiveRelease(RadixTree* tree, RadixEntry* entry) {
@@ -96,6 +98,7 @@ bool RadixTreeInsert(RadixTree* tree, RadixKey key, RadixValue value) {
 		RadixSetSlotType(entry, slot_index, true);
 		entry->slots[slot_index].key = key;
 		entry->slots[slot_index].value = value;
+		++entry->count;
 		return true;
 	}
 	
@@ -116,7 +119,8 @@ bool RadixTreeInsert(RadixTree* tree, RadixKey key, RadixValue value) {
 		RadixSetSlotType(cur_entry, old_slot_index, false);
 		down_entry = ObjectCreate(RadixEntry);
 		cur_entry->slots[old_slot_index].down = down_entry;
-		RadixEntryInit(down_entry);
+		++cur_entry->count;
+		RadixEntryInit(down_entry, cur_entry);
 
 		old_slot_index = RadixGetSlotIndex(old_key, level);
 		new_slot_index = RadixGetSlotIndex(key, level);
@@ -130,6 +134,8 @@ bool RadixTreeInsert(RadixTree* tree, RadixKey key, RadixValue value) {
 			RadixSetSlotType(down_entry, old_slot_index, true);
 			down_entry->slots[old_slot_index].key = old_key;
 			down_entry->slots[old_slot_index].value = old_Value;
+
+			down_entry->count += 2;
 			break;
 		}
 		// 继续向下创建
@@ -147,8 +153,17 @@ bool RadixTreeDelete(RadixTree* tree, RadixKey key) {
 	if (!slot) {
 		return false;
 	}
-	entry->slots[slot_index].down = NULL;
-	RadixSetSlotType(entry, slot_index, false);
-	// 未实现收缩
+	do {
+		entry->slots[slot_index].down = NULL;
+		RadixSetSlotType(entry, slot_index, false);
+		--entry->count;
+		if (entry->count > 0) {
+			break;
+		}
+		RadixEntry* temp = entry->parent;
+		ObjectDelete(entry);
+		entry = temp;
+		slot_index = RadixGetSlotIndex(key, --level);
+    } while (entry);
 	return true;
 }
