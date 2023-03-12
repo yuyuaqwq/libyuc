@@ -41,7 +41,7 @@ typedef struct _RadixSlot {
 	union {
 		struct {
 			RadixKey key;
-			RadixValue value;
+			RadixValue value;		// 为内部节点时则会存在空间浪费
 		};
 		struct _RadixEntry* down;
 	};
