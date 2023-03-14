@@ -9,45 +9,74 @@
 #define CUTILS_CONTAINER_VECTOR_H_
 
 #include <CUtils/object.h>
-#include <CUtils/container/array.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-typedef struct _Vector {
-    Array array;
-} Vector;
+#define CUTILS_CONTAINER_VECTOR_DECLARATION(vector_type_name, element_type) \
+    typedef struct _##vector_type_name##Vector { \
+        size_t count; \
+        size_t capacity; \
+        element_type* obj_arr; \
+    } vector_type_name##Vector; \
+    void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count); \
+    void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
+    int vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
+    element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
-void VectorInit(Vector* vector, size_t capacity);
-
-void VectorRelease(Vector* vector, bool deleteObj);
-
-#define VectorAt(vector, index, objName) (ArrayAt(&(vector)->array, index, objName*))
-
-#define VectorFindEntryByField(vector, retObj, objName, keyFieldName, key) { \
-    retObj = NULL; \
-    for (int i = 0; i < (vector)->size; i++) { \
-        objName* tempObj = VectorAt((vector), objName, i); \
-        if (tempObj->keyFieldName == (key)) { \
-            retObj = tempObj; \
-            break; \
+#define CUTILS_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator) \
+    void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, size_t capacity) { \
+        element_type* new_buf = allocator##_CreateMultiple(element_type, capacity); \
+        if (arr->obj_arr) { \
+            MemoryCopy(new_buf, arr->obj_arr, sizeof(element_type) * arr->count); \
+            allocator##_Delete(arr->obj_arr); \
+        } \
+        arr->obj_arr = new_buf; \
+        arr->capacity = capacity; \
+    } \
+    void vector_type_name##VectorExpand(vector_type_name##Vector* arr, size_t add_count) { \
+        size_t cur_capacity = arr->capacity; \
+        size_t target_count = cur_capacity + add_count; \
+        if (cur_capacity == 0) { \
+            cur_capacity = 1; \
+        } \
+        while (cur_capacity < target_count) { \
+            cur_capacity *= 2; \
+        } \
+        vector_type_name##VectorResetCapacity(arr, cur_capacity); \
+    } \
+    void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count) { \
+        arr->capacity = 0; \
+        arr->count = count; \
+        arr->obj_arr = NULL; \
+        if (count != 0) { \
+            vector_type_name##VectorResetCapacity(arr, count); \
         } \
     } \
-}
+    void vector_type_name##VectorRelease(vector_type_name##Vector* arr) { \
+        if (arr->obj_arr) { \
+            allocator##_Delete(arr->obj_arr); \
+            arr->obj_arr = NULL; \
+        } \
+        arr->capacity = 0; \
+        arr->count = 0; \
+    } \
+    int vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj) { \
+        if (arr->capacity <= arr->count) { \
+            vector_type_name##VectorExpand(arr, 1); \
+        } \
+        MemoryCopy(&arr->obj_arr[arr->count++], obj, sizeof(element_type)); \
+        return arr->count - 1; \
+    } \
+    element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr) { \
+        if (arr->count == 0) { \
+            return NULL; \
+        } \
+        return &arr->obj_arr[--arr->count]; \
+    } \
 
-int VectorPushTail(Vector* vector, void* obj);
-
-void* VectorPopTail(Vector* vector);
-
-size_t VectorGetCount(Vector* vector);
-
-void VectorSetCount(Vector* vector, size_t count);
-
-size_t VectorGetCapacity(Vector* vector);
-
-void VectorSetCapacity(Vector* vector, size_t capacity);
 
 #ifdef __cplusplus
 }

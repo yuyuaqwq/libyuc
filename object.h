@@ -36,44 +36,69 @@ ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const void* buf2_, size_t
 void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
-#define ObjectCreate(objName) ((objName*)MemoryAlloc(sizeof(objName)))
-#define ObjectCreateArray(objName, count) ((objName*)MemoryAlloc(sizeof(objName) * (count)))
-#define ObjectCreateArrayBySize(objSize, count) (MemoryAlloc((objSize) * (count)))
+#define ObjectCreate(obj_type) ((obj_type*)MemoryAlloc(sizeof(obj_type)))
+#define ObjectCreateMultiple(obj_type, count) ((obj_type*)MemoryAlloc(sizeof(obj_type) * (count)))
+#define ObjectCreateMultipleBySize(obj_size, count) (MemoryAlloc((obj_size) * (count)))
 #define ObjectDelete(obj) (MemoryFree(obj))
-#define ObjectArrayAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
-#define ObjectSwap(objName, obj1, obj2) { objName temp = obj1; obj1 = obj2; obj2 = temp; }
-#define ObjectGetFieldOffset(objName, fieldName) ( (int)&(((objName*)0)->fieldName) )
-#define ObjectGetFieldSize(objName, fieldName) ( sizeof(((objName*)0)->fieldName) )
-#define ObjectGetFieldByOffset(obj, fieldOffset, objName) ( (objName*)((uintptr_t)(obj) + (fieldOffset)) )
-#define ObjectGetFromFieldOffset(field, fieldOffset, objName) ( (objName*)((uintptr_t)(field) - (fieldOffset)) )
-#define ObjectGetFromField(field, objName, fieldName) ( (objName*)((uintptr_t)(field) - ObjectGetFieldOffset(objName, fieldName)) )
+#define ObjectMultipleAt(arr, index, objSize) ((void*)((((uintptr_t)arr) + (objSize) * (index))))
+#define ObjectSwap(obj_type, obj1, obj2) { obj_type temp = obj1; obj1 = obj2; obj2 = temp; }
+#define ObjectGetFieldOffset(obj_type, field_name) ( (int)&(((obj_type*)0)->field_name) )
+#define ObjectGetFieldSize(obj_type, field_name) ( sizeof(((obj_type*)0)->field_name) )
+#define ObjectGetFieldByOffset(obj, field_offset, obj_type) ( (obj_type*)((uintptr_t)(obj) + (field_offset)) )
+#define ObjectGetFromFieldOffset(field, field_offset, obj_type) ( (obj_type*)((uintptr_t)(field) - (field_offset)) )
+#define ObjectGetFromField(field, obj_type, field_name) ( (obj_type*)((uintptr_t)(field) - ObjectGetFieldOffset(obj_type, field_name)) )
 
 
-typedef void* (*MemAllocFunc)(size_t size);
-typedef void (*MemFreeFunc)(void* ptr);
-typedef struct _MemAllocTor {
-	MemAllocFunc Alloc;
-	MemFreeFunc Free;
-} MemAllocTor;
+/*
+* 对象：接口皆为指针，优化交给编译器
+*/
 
-typedef int (*CmpFunc)(const void* buf1, const void* buf2, size_t size);
-typedef int (*CmpFunc2)(const void* buf1, size_t size1, const void* buf2, size_t size2);
-typedef struct _CmpTor {
-	union {
-		CmpFunc cmp;
-		CmpFunc2 cmp2;
-	};
-} CmpTor;
+/*
+* 默认分配器
+* 负责对象的分配与释放
+*/
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Create(obj_type) ObjectCreate(obj_type) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_CreateMultiple(obj_type, count) ObjectCreateMultiple(obj_type, count) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Delete(obj) ObjectDelete(obj) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT CUTILS_OBJECT_ALLOCATOR_DEFALUT		// 同名以支持嵌套
 
-typedef uint32_t(*HashU32Func)(const void* buf, size_t size);
-typedef struct _HashTor {
-	HashU32Func HashU32;
-} HashTor;
+/*
+* 默认比较器
+* 负责对象与对象的大小比较
+*/
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Equal(obj1, obj2) (*(obj1) == *(obj2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Greater(obj1, obj2) (*(obj1) > *(obj2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Less(obj, obj2) (*(obj1) < *(obj2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT CUTILS_OBJECT_COMPARER_DEFALUT
 
-typedef void* (*RandomAtFunc)(void* arr, int i);
-typedef struct _RandomAtTor {
-	RandomAtFunc ArrAt;
-} RandomAtTor;
+/*
+* 默认字段访问器
+* 负责对象指定字段的访问
+*/
+#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT(obj, field_name) ((obj)->field_name)
+
+/*
+* 默认引用器
+* 负责引用对象，将id转换成对象，通常是映射关系
+*/
+#define CUTILS_OBJECT_REFERENCER_DEFALUT_Reference(obj_id) (obj_id)
+#define CUTILS_OBJECT_REFERENCER_DEFALUT_Dereference(obj)
+#define CUTILS_OBJECT_REFERENCER_DEFALUT_InvalidId (NULL)
+#define CUTILS_OBJECT_REFERENCER_DEFALUT CUTILS_OBJECT_REFERENCER_DEFALUT
+
+/*
+* 默认哈希器
+* 负责计算对象的哈希值
+*/
+#define CUTILS_OBJECT_HASHER_DEFALUT 
+
+/*
+* 默认传输器
+* 负责对象之间的传输、拷贝等操作
+*/
+#define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(obj1, obj2) (*(obj1) = *(obj2))
+#define CUTILS_OBJECT_MOVER_DEFALUT CUTILS_OBJECT_MOVER_DEFALUT
+
 
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline

@@ -28,6 +28,20 @@ uint32_t Hashmap_jenkins_hash(const void* buf1_, size_t size) {
     return hash;
 }
 
+/*
+* http://burtleburtle.net/bob/hash/integer.html
+*/
+uint32_t Hashmap_hashint(uint32_t a) {
+    a -= (a << 6);
+    a ^= (a >> 17);
+    a -= (a << 9);
+    a ^= (a << 4);
+    a -= (a << 3);
+    a ^= (a << 10);
+    a ^= (a >> 15);
+    return a;
+}
+
 
 
 // settings taken from

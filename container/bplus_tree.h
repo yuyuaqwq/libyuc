@@ -17,7 +17,7 @@ extern "C" {
 
 
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK
-typedef struct _BPlusEntry* PageId;
+typedef struct _BPlusEntry* BPlusEntryId;
 typedef size_t PageCount;
 typedef struct {
     size_t size;
@@ -37,7 +37,7 @@ typedef struct _BPlusLeafElement {
 } BPlusLeafElement;
 
 typedef struct _BPlusIndexElement {       // Internal 
-    PageId child_id;
+    BPlusEntryId child_id;
     Key key;
 } BPlusIndexElement;
 
@@ -54,13 +54,13 @@ typedef enum _BPlusEntryType {
 } BPlusEntryType;
 
 typedef struct _BPlusLeafListEntry {
-    PageId prev;
-    PageId next;
+    BPlusEntryId prev;
+    BPlusEntryId next;
 } BPlusLeafListEntry;
 
 
 typedef struct _BPlusIndexEntry {
-    PageId tail_child_id;       // 末尾孩子id存在这里
+    BPlusEntryId tail_child_id;       // 末尾孩子id存在这里
     struct _BPlusIndexElement element[];
 } BPlusIndexEntry;
 
@@ -85,8 +85,8 @@ CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusEntry
 
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusTree
 typedef struct _BPlusTree {
-    PageId root_id;
-    PageId leaf_list_first;
+    BPlusEntryId root_id;
+    BPlusEntryId leaf_list_first;
     uint32_t index_m;
     uint32_t leaf_m;
 } BPlusTree;
@@ -98,7 +98,7 @@ CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusTree
 * B+树游标
 */
 typedef struct {
-    PageId entry_id;
+    BPlusEntryId entry_id;
     int element_idx;
 } BPlusElementPos;
 typedef enum {
@@ -118,10 +118,10 @@ typedef struct _BPlusCursor {
 /*
 * 实现接口
 */
-extern const PageId kPageInvalidId;
+extern const BPlusEntryId kBPlusEntryInvalidId;
 
 BPlusTree* BPlusTreeGet(struct _Tx* tx);
-BPlusEntry* BPlusEntryGet(struct _Tx* tx, PageId pgid);
+BPlusEntry* BPlusEntryGet(struct _Tx* tx, BPlusEntryId id);
 void BPlusEntryDereference(struct _Tx* tx, BPlusEntry* entry);
 void BPlusElementSet(struct _Tx* tx, BPlusEntry* entry, int i, BPlusElement* element);
 ptrdiff_t BPlusKeyCmp(struct _Tx* tx, const Key* key1, const Key* key2);

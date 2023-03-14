@@ -7,6 +7,8 @@
 
 #include <CUtils/container/bitmap.h>
 
+CUTILS_CONTAINER_VECTOR_DEFINE(uint8_t, Byte, CUTILS_OBJECT_ALLOCATOR_DEFALUT)
+
 const ptrdiff_t kBitmapInvalidIndex = -1;
 
 static size_t BitmapGetBitIndex(ptrdiff_t byte_idx, ptrdiff_t bit_off) {
@@ -21,11 +23,11 @@ static size_t BitmapGetByteIndex(ptrdiff_t bit_idx, ptrdiff_t* bit_off) {
 }
 
 static uint8_t BitmapGetByte(Bitmap* bitmap, ptrdiff_t byte_idx) {
-	return *ArrayAt(&bitmap->arr, byte_idx, uint8_t);
+	return bitmap->arr.obj_arr[byte_idx];
 }
 
 static void BitmapSetByte(Bitmap* bitmap, ptrdiff_t byte_idx, uint8_t val) {
-	*ArrayAt(&bitmap->arr, byte_idx, uint8_t) = val;
+	bitmap->arr.obj_arr[byte_idx] = val;
 }
 
 static void BitmapSetMult(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count, bool val) {
@@ -48,10 +50,9 @@ static void BitmapSetMult(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count, b
 */
 void BitmapInit(Bitmap* bitmap, size_t bit_count) {
 	size_t byte_count = bit_count / 8 + (bit_count % 8 ? 1 : 0);
-	ArrayInit(&bitmap->arr, byte_count, sizeof(uint8_t));
-	ArraySetCount(&bitmap->arr, byte_count);
+	ByteVectorInit(&bitmap->arr, byte_count);
 	for (ptrdiff_t i = 0; i < byte_count; i++) {
-		*ArrayAt(&bitmap->arr, i, uint8_t) = 0;
+		bitmap->arr.obj_arr[i] = 0;
 	}
 }
 
@@ -62,12 +63,11 @@ bool BitmapGet(Bitmap* bitmap, ptrdiff_t bit_idx) {
 }
 
 void BitmapSet(Bitmap* bitmap, ptrdiff_t bit_idx, bool value) {
-	uint8_t* entry = ArrayAt(&bitmap->arr, bit_idx / 8, uint8_t);
 	uint8_t pos = bit_idx % 8;
 	if (value) {
-		*entry |= (uint8_t)0x80 >> pos;
+		bitmap->arr.obj_arr[bit_idx / 8] |= (uint8_t)0x80 >> pos;
 	} else {
-		*entry &= ~((uint8_t)0x80 >> pos);
+		bitmap->arr.obj_arr[bit_idx / 8] &= ~((uint8_t)0x80 >> pos);
 	}
 }
 

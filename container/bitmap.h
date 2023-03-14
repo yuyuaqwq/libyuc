@@ -9,14 +9,16 @@
 #define CUTILS_CONTAINER_BITMAP_H_
 
 #include <CUtils/object.h>
-#include <CUtils/container/array.h>
+#include <CUtils/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+CUTILS_CONTAINER_VECTOR_DECLARATION(uint8_t, Byte)
+
 typedef struct _Bitmap {
-	Array arr;
+	ByteVector arr;
 } Bitmap;
 
 void BitmapInit(Bitmap* bitmap, size_t bit_count);

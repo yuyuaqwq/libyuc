@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+uint32_t Hashmap_hashint(uint32_t a);
+
 uint32_t Hashmap_jenkins_hash(const void* buf1_, size_t size);
 
 uint32_t Hashmap_fnv1a_hash(const void* data, size_t size);
