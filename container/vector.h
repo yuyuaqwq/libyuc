@@ -63,7 +63,7 @@ extern "C" {
         arr->capacity = 0; \
         arr->count = 0; \
     } \
-    int vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj) { \
+    int vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj) { \
         if (arr->capacity <= arr->count) { \
             vector_type_name##VectorExpand(arr, 1); \
         } \

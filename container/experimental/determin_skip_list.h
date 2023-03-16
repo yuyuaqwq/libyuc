@@ -1,9 +1,4 @@
-/*
-* @yuyuaqwq - ����
-* email:1454832774@qq.com
-* project:https://github.com/yuyuaqwq/CUtils
-* �뱣��������
-*/
+
 
 #ifndef CUTILS_CONTAINER_DETERMIN_SKIP_LIST_H_
 #define CUTILS_CONTAINER_DETERMIN_SKIP_LIST_H_
@@ -18,8 +13,8 @@ extern "C" {
 
 
 /*
-* 1-2-3ȷ������Ծ��
-* �ȼ���234��������Ԥ���Ѻ�Ԥ�ϲ��Ĳ���������ʵ���Զ����²�����ɾ��
+* 1-2-3确定性跳表
+* 等价于自顶向下B树/红黑树
 */
 
 typedef struct _DeterminSkipEntry {
@@ -38,7 +33,7 @@ typedef struct _DeterminSkipIndex {
 } DeterminSkipIndex;
 
 typedef struct _DeterminSkipList {
-	StaticList index_pool;		// ʵ���ڴ�������������(�����ڵ�̶����ȣ���̬����ʵ��O(1)�����ͷ�)
+	StaticList index_pool;
 	DeterminSkipIndex* start;
 	DeterminSkipEntry* first;
 	size_t count;
@@ -76,8 +71,6 @@ head       4
 	  1           6        10
 	    2 3    5    7 8 9     
 
-
-��϶����1-3��
 */
 void DeterminSkipListFind(DeterminSkipList* list) {
 
