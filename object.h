@@ -50,7 +50,9 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
 /*
-* 对象：接口皆为指针，优化交给编译器
+* 对象：
+* 对象操作器间传递(参数、返回值)的对象以对象本身进行
+* 外部函数间传递的对象以指针进行(参考C++引用)
 */
 
 /*
@@ -59,30 +61,32 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 */
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Create(obj_type) ObjectCreate(obj_type) 
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT_CreateMultiple(obj_type, count) ObjectCreateMultiple(obj_type, count) 
-#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Delete(obj) ObjectDelete(obj) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Delete(obj_ptr) ObjectDelete(obj_ptr) 
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT CUTILS_OBJECT_ALLOCATOR_DEFALUT		// 同名以支持嵌套
 
 /*
 * 默认比较器
-* 负责对象与对象的大小比较
+* 负责对象与对象的大小比较，相当于重载 < > ==
 */
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Equal(obj1, obj2) (*(obj1) == *(obj2))
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Greater(obj1, obj2) (*(obj1) > *(obj2))
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Less(obj1, obj2) (*(obj1) < *(obj2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Equal(obj1, obj2) ((obj1) == (obj2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Greater(obj1, obj2) ((obj1) > (obj2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Less(obj1, obj2) ((obj1) < (obj2))
 #define CUTILS_OBJECT_COMPARER_DEFALUT CUTILS_OBJECT_COMPARER_DEFALUT
 
 /*
 * 默认字段访问器
-* 负责对象指定字段的访问
+* 负责对象指定字段的访问，相当于重载 ->
 */
-#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT(obj, field_name) (&(obj)->field_name)
+#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_GetTest(obj_ptr) ((obj_ptr)->test)
+#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_SetTest(obj_ptr, new_test) ((obj_ptr)->test = (new_test))
+#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT
 
 /*
 * 默认引用器
 * 负责引用对象，将id转换成对象，通常是映射关系，默认id即对象的指针
 */
 #define CUTILS_OBJECT_REFERENCER_DEFALUT_Reference(main_obj, obj_id) (obj_id)
-#define CUTILS_OBJECT_REFERENCER_DEFALUT_Dereference(main_obj, obj) (0)
+#define CUTILS_OBJECT_REFERENCER_DEFALUT_Dereference(main_obj, obj)
 #define CUTILS_OBJECT_REFERENCER_DEFALUT_InvalidId (NULL)
 #define CUTILS_OBJECT_REFERENCER_DEFALUT CUTILS_OBJECT_REFERENCER_DEFALUT
 
@@ -90,13 +94,13 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 默认哈希器
 * 负责计算对象的哈希值
 */
-#define CUTILS_OBJECT_HASHER_DEFALUT(key) (0)
+#define CUTILS_OBJECT_HASHER_DEFALUT(key) 0
 
 /*
 * 默认传输器
-* 负责对象之间的传输、拷贝等操作
+* 负责对象之间的传输、拷贝等操作，相当于重载 =
 */
-#define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(obj1, obj2) (*(obj1) = *(obj2))
+#define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(obj1, obj2) ((obj1) = (obj2))
 #define CUTILS_OBJECT_MOVER_DEFALUT CUTILS_OBJECT_MOVER_DEFALUT
 
 

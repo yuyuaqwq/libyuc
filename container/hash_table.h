@@ -23,18 +23,6 @@ extern "C" {
 
 
 
-//#ifdef HASHTABLE_DATA_STATISTICS
-//    int freeCount;
-//    int objCount;
-//    int listEntryCount;
-//    int listHeadCount;
-//    int maxListCount;
-//    int curListCount;
-//#endif // HASHTABLE_DATA_STATISTICS
-//} HashTableIterator;
-
-// #define HASHTABLE_DATA_STATISTICS
-
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
@@ -129,11 +117,11 @@ typedef enum _HashEntryType {
 
 
 
-
-#define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor_key, mover_obj, hasher, comparer) \
+// 访问器需要提供_GetKey方法
+#define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, mover_obj, hasher, comparer) \
     CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashTable, hash_table_type_name##HashEntry, allocator) \
     static inline uint32_t hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
-        return hasher(key) % table->bucket.capacity; \
+        return hasher(*key) % table->bucket.capacity; \
     } \
     static inline uint32_t hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
@@ -147,7 +135,7 @@ typedef enum _HashEntryType {
         element_type* obj = hash_table_type_name##HashTableFirst(table, &iter); \
         while (obj) { \
             hash_table_type_name##HashTablePut(&temp_table, obj); \
-            hash_table_type_name##HashTableDelete(table, accessor_key(obj)); \
+            hash_table_type_name##HashTableDelete(table, &accessor##_GetKey(*obj)); \
             obj = hash_table_type_name##HashTableNext(table, &iter); \
         } \
         \
@@ -173,7 +161,7 @@ typedef enum _HashEntryType {
         hash_table_type_name##HashTableIterator iter; \
         element_type* obj = hash_table_type_name##HashTableFirst(table, &iter); \
         while (obj) { \
-            hash_table_type_name##HashTableDelete(table, accessor_key(obj)); \
+            hash_table_type_name##HashTableDelete(table, &accessor##_GetKey(*obj)); \
             obj = hash_table_type_name##HashTableNext(table, &iter); \
         } \
         hash_table_type_name##HashTableVectorRelease(&table->bucket); \
@@ -182,7 +170,7 @@ typedef enum _HashEntryType {
         uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
         if (entry->type == kHashEntryObj) { \
-            if(comparer##_Equal(accessor_key(&entry->obj), key)) { \
+            if(comparer##_Equal(accessor##_GetKey(entry->obj), *key)) { \
                 return &entry->obj; \
             } \
         } \
@@ -190,7 +178,7 @@ typedef enum _HashEntryType {
             SinglyListEntry* cur = SinglyListFirst(&entry->list_head); \
             while (cur) { \
                 hash_table_type_name##HashEntryList* list_entry = (hash_table_type_name##HashEntryList*)cur; \
-                if (comparer##_Equal(accessor_key(&list_entry->obj), key)) { \
+                if (comparer##_Equal(accessor##_GetKey(list_entry->obj), *key)) { \
                     return &entry->obj; \
                 } \
                 cur = SinglyListNext(&entry->list_head, cur); \
@@ -203,36 +191,36 @@ typedef enum _HashEntryType {
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
         \
         if (entry->type == kHashEntryFree) { \
-            mover_obj##_Assignment(&entry->obj, obj); \
+            mover_obj##_Assignment(entry->obj, *obj); \
             entry->type = kHashEntryObj; \
         } \
         else if (entry->type == kHashEntryObj) { \
-            if (comparer##_Equal(accessor_key(&entry->obj), accessor_key(obj))) { \
-                mover_obj##_Assignment(&entry->obj, obj); \
+            if (comparer##_Equal(accessor##_GetKey(entry->obj), accessor##_GetKey(*obj))) { \
+                mover_obj##_Assignment(entry->obj, *obj); \
                 return true; \
             } \
             entry->type = kHashEntryList; \
             hash_table_type_name##HashEntryList* list_entry = allocator##_Create(hash_table_type_name##HashEntryList); \
-            mover_obj##_Assignment(&list_entry->obj, &entry->obj); \
+            mover_obj##_Assignment(list_entry->obj, entry->obj); \
             SinglyListHeadInit(&entry->list_head); \
             SinglyListPutFirst(&entry->list_head, &list_entry->list_entry); \
             list_entry = allocator##_Create(hash_table_type_name##HashEntryList); \
-            mover_obj##_Assignment(&list_entry->obj, obj); \
+            mover_obj##_Assignment(list_entry->obj, *obj); \
             SinglyListPutFirst(&entry->list_head, &list_entry->list_entry); \
         } \
         else if (entry->type == kHashEntryList) { \
             SinglyListEntry* cur = SinglyListFirst(&entry->list_head); \
             while (cur) { \
                 hash_table_type_name##HashEntryList* list_entry = (hash_table_type_name##HashEntryList*)cur; \
-                if (comparer##_Equal(accessor_key(&list_entry->obj), accessor_key(obj))) { \
-                    mover_obj##_Assignment(&list_entry->obj, obj); \
+                if (comparer##_Equal(accessor##_GetKey(list_entry->obj), accessor##_GetKey(*obj))) { \
+                    mover_obj##_Assignment(list_entry->obj, *obj); \
                     break; \
                 } \
                 cur = SinglyListNext(&entry->list_head, cur); \
             } \
             if (!cur) { \
                 hash_table_type_name##HashEntryList* list_entry = allocator##_Create(hash_table_type_name##HashEntryList); \
-                mover_obj##_Assignment(&list_entry->obj, obj); \
+                mover_obj##_Assignment(list_entry->obj, *obj); \
                 SinglyListPutFirst(&entry->list_head, &list_entry->list_entry); \
             } \
         } \
@@ -252,7 +240,7 @@ typedef enum _HashEntryType {
             return false; \
         } \
         else if (entry->type == kHashEntryObj) { \
-            if (!comparer##_Equal(accessor_key(&entry->obj), key)) { \
+            if (!comparer##_Equal(accessor##_GetKey(entry->obj), *key)) { \
                 return false; \
             } \
             entry->type = kHashEntryFree; \
@@ -262,7 +250,7 @@ typedef enum _HashEntryType {
             SinglyListEntry* prev = NULL; \
             SinglyListEntry* cur = SinglyListFirst(&entry->list_head); \
             while (cur) { \
-                if (!comparer##_Equal(accessor_key( &((hash_table_type_name##HashEntryList*)cur)->obj ), key)) { \
+                if (!comparer##_Equal(accessor##_GetKey(((hash_table_type_name##HashEntryList*)cur)->obj), *key)) { \
                     prev = cur; \
                     cur = SinglyListNext(&entry->list_head, cur); \
                     continue; \
@@ -329,9 +317,10 @@ typedef enum _HashEntryType {
 
 
 //CUTILS_CONTAINER_HASH_TABLE_DECLARATION(Int, int, int)
-//#define ACCESSOR_KEY(obj) (obj)
-//#define HASHER_KEY(key) Hashmap_hashint(*key)
-//CUTILS_CONTAINER_HASH_TABLE_DEFINE(Int, int, int, CUTILS_OBJECT_ALLOCATOR_DEFALUT, ACCESSOR_KEY, CUTILS_OBJECT_MOVER_DEFALUT, HASHER_KEY, CUTILS_OBJECT_COMPARER_DEFALUT)
+//#define INT_HASHTABLE_ACCESSOR_GetKey(obj) (obj)
+//#define INT_HASHTABLE_ACCESSOR INT_HASHTABLE_ACCESSOR
+//#define INT_HASHTABLE_HASHER_KEY(key) Hashmap_hashint(key)
+//CUTILS_CONTAINER_HASH_TABLE_DEFINE(Int, int, int, CUTILS_OBJECT_ALLOCATOR_DEFALUT, INT_HASHTABLE_ACCESSOR, CUTILS_OBJECT_MOVER_DEFALUT, INT_HASHTABLE_HASHER_KEY, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus
 }
