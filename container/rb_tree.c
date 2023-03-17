@@ -15,389 +15,17 @@ typedef enum {
 
 
 #define INT_RB_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Rb*)bs_entry)->key)
+#define INT_RB_TREE_ACCESSOR_GetParent(entry) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)entry)->parent_color) & (~((uintptr_t)0x1)))))
+#define  INT_RB_TREE_ACCESSOR_GetColor(entry) ((RbColor)(((uintptr_t)((IntRbEntry*)entry)->parent_color) & 0x1))
+#define INT_RB_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntRbEntry*)entry)->parent_color = (IntRbEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(entry))));
+#define INT_RB_TREE_ACCESSOR_SetColor(entry, color) (entry->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)color)))
 #define INT_RB_TREE_ACCESSOR INT_RB_TREE_ACCESSOR
+
 #define INT_RB_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
 #define INT_RB_TREE_REFERENCER_Dereference(main_obj, obj)
 #define INT_RB_TREE_REFERENCER_InvalidId (NULL)
 #define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
-//CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
-
-
- inline IntRbEntry* INT_RB_TREE_ACCESSOR_GetParent(IntRbEntry* entry) {
-	return (IntRbEntry*)(((uintptr_t)(entry->parent_color) & (~((uintptr_t)0x1))));
-}
- inline RbColor INT_RB_TREE_ACCESSOR_GetColor(IntRbEntry* entry) {
-	return (RbColor)(((uintptr_t)entry->parent_color) & 0x1);
-}
- inline void INT_RB_TREE_ACCESSOR_SetParent(IntRbEntry* entry, IntRbEntry* new_parent_id) {
-	entry->parent_color = (IntRbEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(entry)));
-}
- inline void INT_RB_TREE_ACCESSOR_SetColor(IntRbEntry* entry, RbColor color) {
-	entry->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)color));
-}
-static void IntBsTreeHitchEntry(IntBsTree* tree, IntRbEntry* entry_id, IntRbEntry* new_entry_id) {
-	IntBsEntry* entry = ((IntBsEntry*)entry_id);
-	IntBsEntry* new_entry = ((IntBsEntry*)new_entry_id);
-	if (INT_RB_TREE_ACCESSOR_GetParent(entry) != (((void*)0))) {
-		IntBsEntry* entry_parent = ((IntBsEntry*)INT_RB_TREE_ACCESSOR_GetParent(entry));
-		if (entry_parent->left == entry_id) {
-			entry_parent->left = new_entry_id;
-		}
-		else {
-			entry_parent->right = new_entry_id;
-		}
-		(0);
-	}
-	if (new_entry_id != (((void*)0))) {
-		INT_RB_TREE_ACCESSOR_SetParent(new_entry, INT_RB_TREE_ACCESSOR_GetParent(entry));
-	}
-	if (tree->root == entry_id) {
-		tree->root = new_entry_id;
-	}
-	(0);
-	(0);
-}
-static void IntBsEntryInit(IntRbEntry* entry_id) {
-	IntBsEntry* entry = ((IntBsEntry*)entry_id);
-	entry->left = (((void*)0));
-	entry->right = (((void*)0));
-	entry->parent = (((void*)0));
-	(0);
-}
-void IntBsTreeInit(IntBsTree* tree) {
-	tree->root = (((void*)0));
-}
-IntRbEntry* IntBsTreeFind(IntBsTree* tree, int* key) {
-	IntRbEntry* cur_id = tree->root;
-	while (cur_id != (((void*)0))) {
-		IntBsEntry* cur = ((IntBsEntry*)cur_id);
-		if ((((((IntEntry_Rb*)cur)->key)) < (*key))) {
-			cur_id = cur->right;
-		}
-		else if ((((((IntEntry_Rb*)cur)->key)) > (*key))) {
-			cur_id = cur->left;
-		}
-		else {
-			(0);
-			return cur_id;
-		}
-		(0);
-	}
-	return (((void*)0));
-}
-_Bool IntBsTreePut(IntBsTree* tree, IntRbEntry* entry_id) {
-	IntBsEntry* entry = ((IntBsEntry*)entry_id);
-	IntBsEntryInit(entry);
-	if (tree->root == (((void*)0))) {
-		tree->root = entry_id;
-		return 1;
-	}
-	IntRbEntry* cur_id = tree->root;
-	while (cur_id != (((void*)0))) {
-		IntBsEntry* cur = ((IntBsEntry*)cur_id);
-		if ((((((IntEntry_Rb*)cur)->key)) < ((((IntEntry_Rb*)entry)->key)))) {
-			if (!cur->right) {
-				cur->right = entry_id;
-				break;
-			}
-			cur_id = cur->right;
-		}
-		else if ((((((IntEntry_Rb*)cur)->key)) > ((((IntEntry_Rb*)entry)->key)))) {
-			if (!cur->left) {
-				cur->left = entry_id;
-				break;
-			}
-			cur_id = cur->left;
-		}
-		else {
-			(0);
-			return 0;
-		}
-		(0);
-	}
-	INT_RB_TREE_ACCESSOR_SetParent(entry, cur_id);
-	(0);
-	return 1;
-}
-_Bool IntBsTreeDelete(IntBsTree* tree, IntRbEntry* entry_id) {
-	IntBsEntry* entry = ((IntBsEntry*)entry_id);
-	if (entry->left != (((void*)0)) && entry->right != (((void*)0))) {
-		IntRbEntry* min_entry_id = entry->right;
-		IntBsEntry* min_entry = ((IntBsEntry*)min_entry_id);
-		while (min_entry->left != (((void*)0))) {
-			min_entry_id = min_entry->left;
-			(0);
-			min_entry = ((IntBsEntry*)min_entry_id);
-		}
-		min_entry->left = entry->left;
-		if (entry->left != (((void*)0))) {
-			IntBsEntry* entry_left = ((IntBsEntry*)entry->left);
-			INT_RB_TREE_ACCESSOR_SetParent(entry_left, min_entry_id);
-			(0);
-		}
-		if (entry->right != min_entry_id) {
-			IntBsEntry* min_entry_parent = ((IntBsEntry*)INT_RB_TREE_ACCESSOR_GetParent(min_entry));
-			min_entry_parent->left = min_entry->right;
-			(0);
-			if (min_entry->right != (((void*)0))) {
-				IntBsEntry* min_entry_right = ((IntBsEntry*)min_entry->right);
-				INT_RB_TREE_ACCESSOR_SetParent(min_entry_right, INT_RB_TREE_ACCESSOR_GetParent(min_entry));
-				(0);
-			}
-			min_entry->right = entry->right;
-			if (entry->right != (((void*)0))) {
-				IntBsEntry* entry_right = ((IntBsEntry*)entry->right);
-				INT_RB_TREE_ACCESSOR_SetParent(entry_right, min_entry);
-				(0);
-			}
-		}
-		else {
-		}
-		IntBsTreeHitchEntry(tree, entry, min_entry);
-	}
-	else {
-		if (entry->right != (((void*)0))) {
-			IntBsTreeHitchEntry(tree, entry_id, entry->right);
-		}
-		else if (entry->left != (((void*)0))) {
-			IntBsTreeHitchEntry(tree, entry_id, entry->left);
-		}
-		else {
-			IntBsTreeHitchEntry(tree, entry_id, (((void*)0)));
-		}
-	}
-	return 1;
-}
-size_t IntBsTreeGetCount(IntBsTree* tree) {
-	size_t count = 0;
-	IntRbEntry* cur_id = IntBsTreeFirst(tree);
-	while (cur_id != (((void*)0))) {
-		count++;
-		cur_id = IntBsTreeNext(tree, cur_id);
-	}
-	return count;
-}
-IntRbEntry* IntBsTreeFirst(IntBsTree* tree) {
-	IntRbEntry* cur_id = tree->root;
-	if (cur_id == (((void*)0))) {
-		return (((void*)0));
-	}
-	IntBsEntry* cur = ((IntBsEntry*)cur_id);
-	while (cur->left != (((void*)0))) {
-		cur_id = cur->left;
-		(0);
-		cur = ((IntBsEntry*)cur_id);
-	}
-	(0);
-	return cur_id;
-}
-IntRbEntry* IntBsTreeLast(IntBsTree* tree) {
-	IntRbEntry* cur_id = tree->root;
-	if (cur_id == (((void*)0))) {
-		return (((void*)0));
-	}
-	IntBsEntry* cur = ((IntBsEntry*)cur_id);
-	while (cur->right != (((void*)0))) {
-		cur_id = cur->right;
-		(0);
-		cur = ((IntBsEntry*)cur_id);
-	}
-	(0);
-	return cur_id;
-}
-IntRbEntry* IntBsTreeNext(IntBsTree* tree, IntRbEntry* cur_id) {
-	IntBsEntry* cur = ((IntBsEntry*)cur_id);
-	if (cur->right != (((void*)0))) {
-		cur_id = cur->right;
-		cur = ((IntBsEntry*)cur_id);
-		while (cur->left != (((void*)0))) {
-			cur_id = cur->left;
-			(0);
-			cur = ((IntBsEntry*)cur_id);
-		}
-		(0);
-		return cur_id;
-	}
-	IntRbEntry* parent_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-	IntBsEntry* parent = ((IntBsEntry*)parent_id);
-	while (parent_id != (((void*)0)) && cur_id == parent->right) {
-		(0);
-		cur = parent;
-		parent_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-		parent = ((IntBsEntry*)parent_id);
-	}
-	return parent_id;
-}
-IntRbEntry* IntBsTreePrev(IntBsTree* tree, IntRbEntry* cur_id) {
-	IntBsEntry* cur = ((IntBsEntry*)cur_id);
-	if (cur->left != (((void*)0))) {
-		cur_id = cur->left;
-		cur = ((IntBsEntry*)cur_id);
-		while (cur->right != (((void*)0))) {
-			cur_id = cur->right;
-			(0);
-			cur = ((IntBsEntry*)cur_id);
-		}
-		(0);
-		return cur_id;
-	}
-	IntRbEntry* parent_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-	IntBsEntry* parent = ((IntBsEntry*)parent_id);
-	while (parent_id != (((void*)0)) && cur_id == parent->left) {
-		(0);
-		cur = parent;
-		parent_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-		parent = ((IntBsEntry*)parent_id);
-	}
-	return parent;
-}
-static IntRbEntry* IntRotateLeft(IntRbEntry* sub_root_id) {
-	IntRbEntry* sub_root = ((IntBsEntry*)sub_root_id);
-	IntRbEntry* new_sub_root_id = sub_root->right;
-	if (new_sub_root_id == (((void*)0))) {
-		(0);
-		return sub_root_id;
-	}
-	IntRbEntry* new_sub_root = ((IntBsEntry*)new_sub_root_id);
-	INT_RB_TREE_ACCESSOR_SetParent(new_sub_root, INT_RB_TREE_ACCESSOR_GetParent(sub_root));
-	if (INT_RB_TREE_ACCESSOR_GetParent(sub_root) != (((void*)0))) {
-		if (INT_RB_TREE_ACCESSOR_GetParent(sub_root)->left == sub_root_id) {
-			INT_RB_TREE_ACCESSOR_GetParent(sub_root)->left = new_sub_root_id;
-		}
-		else {
-			INT_RB_TREE_ACCESSOR_GetParent(sub_root)->right = new_sub_root_id;
-		}
-	}
-	INT_RB_TREE_ACCESSOR_SetParent(sub_root, new_sub_root_id);
-	sub_root->right = new_sub_root->left;
-	if (sub_root->right != (((void*)0))) {
-		INT_RB_TREE_ACCESSOR_SetParent(sub_root->right, sub_root_id);
-	}
-	new_sub_root->left = sub_root_id;
-	(0);
-	(0);
-	return new_sub_root_id;
-}
-static IntRbEntry* IntRotateRight(IntRbEntry* sub_root_id) {
-	IntRbEntry* sub_root = ((IntBsEntry*)sub_root_id);
-	IntRbEntry* new_sub_root_id = (((void*)0));
-	if (new_sub_root_id == (((void*)0))) {
-		(0);
-		return sub_root_id;
-	}
-	IntRbEntry* new_sub_root = ((IntBsEntry*)new_sub_root_id);
-	INT_RB_TREE_ACCESSOR_SetParent(new_sub_root, INT_RB_TREE_ACCESSOR_GetParent(sub_root));
-	if (INT_RB_TREE_ACCESSOR_GetParent(sub_root) != (((void*)0))) {
-		if (INT_RB_TREE_ACCESSOR_GetParent(sub_root)->left == sub_root_id) {
-			INT_RB_TREE_ACCESSOR_GetParent(sub_root)->left = new_sub_root_id;
-		}
-		else {
-			INT_RB_TREE_ACCESSOR_GetParent(sub_root)->right = new_sub_root_id;
-		}
-	}
-	INT_RB_TREE_ACCESSOR_SetParent(sub_root, new_sub_root_id);
-	sub_root->left = new_sub_root->right;
-	if (sub_root->left != (((void*)0))) {
-		INT_RB_TREE_ACCESSOR_SetParent(sub_root->left, sub_root_id);
-	}
-	new_sub_root->right = sub_root_id;
-	(0);
-	(0);
-	return new_sub_root_id;
-}
-static IntRbEntry* IntGetSiblingEntry(IntRbEntry* entry_id, IntRbEntry* entry) {
-	IntRbEntry* parent_id = INT_RB_TREE_ACCESSOR_GetParent(entry);
-	IntRbEntry* parent = ((IntBsEntry*)parent_id);
-	IntRbEntry* ret;
-	if (parent->left == entry_id) {
-		ret = parent->right;
-	}
-	else {
-		ret = parent->left;
-	}
-	(0);
-	return ret;
-}
-static void IntRbTreeInsertFixup(IntRbTree* tree, IntRbEntry* ins_entry_id) {
-	IntRbEntry* ins_entry = ((IntBsEntry*)ins_entry_id);
-	IntRbEntry* cur_id = INT_RB_TREE_ACCESSOR_GetParent(ins_entry);
-	if (cur_id == (((void*)0))) {
-		INT_RB_TREE_ACCESSOR_SetColor(ins_entry, kRbBlack);
-		(0);
-		return;
-	}
-	INT_RB_TREE_ACCESSOR_SetColor(ins_entry, kRbRed);
-	(0);
-	IntRbEntry* cur;
-	while (cur_id != (((void*)0))) {
-		cur = ((IntBsEntry*)cur_id);
-		if (INT_RB_TREE_ACCESSOR_GetColor(cur) == kRbBlack) {
-			break;
-		}
-		if (INT_RB_TREE_ACCESSOR_GetParent(cur) == (((void*)0))) {
-			INT_RB_TREE_ACCESSOR_SetColor(cur, kRbBlack);
-			break;
-		}
-		IntRbEntry* sibling_id = IntGetSiblingEntry(cur_id, cur);
-		IntRbEntry* sibling = ((IntBsEntry*)sibling_id);
-		if (sibling_id != (((void*)0)) && INT_RB_TREE_ACCESSOR_GetColor(sibling) == kRbRed) {
-			INT_RB_TREE_ACCESSOR_SetColor(cur, kRbBlack);
-			INT_RB_TREE_ACCESSOR_SetColor(sibling, kRbBlack);
-			ins_entry_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-			ins_entry = ((IntBsEntry*)ins_entry_id);
-			if (INT_RB_TREE_ACCESSOR_GetParent(ins_entry) == (((void*)0))) {
-				INT_RB_TREE_ACCESSOR_SetColor(ins_entry, kRbBlack);
-				break;
-			}
-			INT_RB_TREE_ACCESSOR_SetColor(ins_entry, kRbRed);
-			cur = ins_entry;
-		}
-		else {
-			IntRbEntry* new_sub_root_id;
-			IntRbEntry* old_sub_root_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-			IntRbEntry* old_sub_root = ((IntBsEntry*)old_sub_root_id);
-			if (old_sub_root->left == cur_id) {
-				if (cur->right == ins_entry_id) {
-					IntRotateLeft(cur_id);
-				}
-				new_sub_root_id = IntRotateRight(old_sub_root_id);
-			}
-			else {
-				if (cur->left == ins_entry_id) {
-					IntRotateRight(cur_id);
-				}
-				new_sub_root_id = IntRotateLeft(old_sub_root_id);
-			}
-			IntRbEntry* new_sub_root = ((IntBsEntry*)new_sub_root_id);
-			INT_RB_TREE_ACCESSOR_SetColor(new_sub_root, kRbBlack);
-			INT_RB_TREE_ACCESSOR_SetColor(old_sub_root, kRbRed);
-			(0);
-			if (tree->root == old_sub_root_id) {
-				tree->root = new_sub_root_id;
-			}
-			break;
-		}
-		cur_id = INT_RB_TREE_ACCESSOR_GetParent(cur);
-		(0);
-	}
-	(0);
-}
-void IntRbTreeInit(IntRbTree* tree) {
-	IntBsTreeInit(&tree->bs_tree);
-}
-IntRbEntry* IntRbTreeFind(IntRbTree* tree, int* key) {
-	return IntBsTreeFind(&tree->bs_tree, key);
-}
-_Bool IntRbTreePut(IntRbTree* tree, IntRbEntry* put_entry_id) {
-	if (!IntBsTreePut(&tree->bs_tree, put_entry_id)) {
-		return 0;
-	}
-	IntRbTreeInsertFixup(tree, put_entry_id);
-	return 1;
-}
-
-
-
+CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 
 //
@@ -434,46 +62,46 @@ _Bool IntRbTreePut(IntRbTree* tree, IntRbEntry* put_entry_id) {
 //
 
 //
-///*
-//* 向树中删除节点后的平衡操作
-//*/
-//void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* deleteEntry, RbEntry* cur, RbEntry* deleteLeft, RbEntry* deleteRight, RbColor deleteColor, bool isCurLeft) {
-//    if (deleteEntry) {
-//        if (deleteColor == kRbRed) {
+/////*
+////* 向树中删除节点后的平衡操作
+////*/
+//void RbTreeDeleteEntryFixup(RbTree* tree, RbEntry* del_entry, RbEntry* cur, RbEntry* del_left, RbEntry* del_right, RbColor del_color, bool is_cur_left) {
+//    if (del_entry) {
+//        if (del_color == kRbRed) {
 //            // 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除
 //            cur = NULL;
 //        }
 //        // 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可
-//        else if (deleteLeft) {
-//            RbEntrySetColor(deleteLeft, kRbBlack);
+//        else if (del_left) {
+//            RbEntrySetColor(del_left, kRbBlack);
 //            cur = NULL;
 //        }
-//        else if (deleteRight) {
-//            RbEntrySetColor(deleteRight, kRbBlack);
+//        else if (del_right) {
+//            RbEntrySetColor(del_right, kRbBlack);
 //            cur = NULL;
 //        }
 //    }
 //
-//    RbEntry* newSubRoot;
+//    RbEntry* new_sub_root;
 //    // 回溯维护删除黑色节点，即没有子节点(2节点)的情况
 //    while (cur) {
-//        RbEntry* sibling = isCurLeft ? cur->right : cur->left;
+//        RbEntry* sibling = is_cur_left ? cur->right : cur->left;
 //        if (RbEntryGetColor(sibling) == kRbRed) {
 //            // 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
 //            // 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点
-//            RbEntry* oldSubRoot = RbEntryGetParent(sibling);
-//            RbEntrySetColor(oldSubRoot, kRbRed);
+//            RbEntry* old_sub_root = RbEntryGetParent(sibling);
+//            RbEntrySetColor(old_sub_root, kRbRed);
 //            RbEntrySetColor(sibling, kRbBlack);
-//            if (oldSubRoot->left == sibling) {
-//                newSubRoot = RotateRight(oldSubRoot);
-//                sibling = oldSubRoot->left;     // 下降后挂接过来的节点
+//            if (old_sub_root->left == sibling) {
+//                new_sub_root = RotateRight(old_sub_root);
+//                sibling = old_sub_root->left;     // 下降后挂接过来的节点
 //            }
 //            else {
-//                newSubRoot = RotateLeft(oldSubRoot);
-//                sibling = oldSubRoot->right;     // 下降后挂接过来的节点
+//                new_sub_root = RotateLeft(old_sub_root);
+//                sibling = old_sub_root->right;     // 下降后挂接过来的节点
 //            }
-//            if (tree->root == oldSubRoot) {
-//                tree->root = newSubRoot;
+//            if (tree->root == old_sub_root) {
+//                tree->root = new_sub_root;
 //            }
 //        }
 //
@@ -483,7 +111,7 @@ _Bool IntRbTreePut(IntRbTree* tree, IntRbEntry* put_entry_id) {
 //        if (sibling->right && RbEntryGetColor(sibling->right) == kRbRed || sibling->left && RbEntryGetColor(sibling->left) == kRbRed) {
 //            RbColor parentColor = RbEntryGetColor(cur);
 //            RbEntrySetColor(cur, kRbBlack);
-//            RbEntry* oldSubRoot = cur;
+//            RbEntry* old_sub_root = cur;
 //            if (cur->left == sibling) {
 //                if (!sibling->left || RbEntryGetColor(sibling->left) == kRbBlack) {
 //                    RbEntrySetColor(sibling->right, kRbBlack);
@@ -492,7 +120,7 @@ _Bool IntRbTreePut(IntRbTree* tree, IntRbEntry* put_entry_id) {
 //                else {
 //                    RbEntrySetColor(sibling->left, kRbBlack);
 //                }
-//                newSubRoot = RotateRight(cur);
+//                new_sub_root = RotateRight(cur);
 //            }
 //            else {
 //                if (!sibling->right || RbEntryGetColor(sibling->right) == kRbBlack) {
@@ -502,12 +130,12 @@ _Bool IntRbTreePut(IntRbTree* tree, IntRbEntry* put_entry_id) {
 //                else {
 //                    RbEntrySetColor(sibling->right, kRbBlack);
 //                }
-//                newSubRoot = RotateLeft(cur);
+//                new_sub_root = RotateLeft(cur);
 //            }
 //            // 该节点会接替原先的子根节点，也要接替颜色
 //            RbEntrySetColor(sibling, parentColor);
-//            if (tree->root == oldSubRoot) {
-//                tree->root = newSubRoot;
+//            if (tree->root == old_sub_root) {
+//                tree->root = new_sub_root;
 //            }
 //            break;
 //        }
@@ -529,7 +157,7 @@ _Bool IntRbTreePut(IntRbTree* tree, IntRbEntry* put_entry_id) {
 //        RbEntry* child = cur;
 //        cur = RbEntryGetParent(cur);
 //        if (cur) {
-//            isCurLeft = cur->left == child;
+//            is_cur_left = cur->left == child;
 //        }
 //    }
 //

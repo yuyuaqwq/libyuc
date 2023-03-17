@@ -29,7 +29,7 @@ extern "C" {
     void bs_tree_type_name##BsTreeInit(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key); \
     bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id); \
-    bool bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id); \
+    id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeFirst(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeLast(bs_tree_type_name##BsTree* tree); \
@@ -106,7 +106,7 @@ extern "C" {
         return referencer##_InvalidId; \
     } \
     /*
-    * 向树中插入节点
+    * 向树中推入节点
     * 不允许存在重复节点
     * 成功返回true，失败返回false
     */ \
@@ -146,9 +146,10 @@ extern "C" {
     } \
     /*
     * 从树中删除节点
-    * 成功返回被删除的节点，失败返回NULL
+    * 返回被删除的节点(或被替换到当前位置的节点)，构造所有回溯条件
     */ \
-    bool bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
+    id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id, bool* is_parent_left) { \
+        id_type backtrack_id; \
         bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
         if (entry->left != referencer##_InvalidId && entry->right != referencer##_InvalidId) { \
             /* 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点 */ \
@@ -159,6 +160,8 @@ extern "C" {
                 referencer##_Dereference(tree, min_entry); \
                 min_entry = referencer##_Reference(tree, min_entry_id); \
             } \
+            if (is_parent_left) *is_parent_left = accessor##_GetParent(min_entry)->left == min_entry_id; \
+            \
             /* 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值 */ \
             min_entry->left = entry->left; \
             if (entry->left != referencer##_InvalidId) { \
@@ -167,6 +170,7 @@ extern "C" {
                 referencer##_Dereference(tree, entry_left); \
             } \
             \
+            id_type old_right_id = min_entry->right; \
             /* 最小节点可能是待删除节点的右节点 */ \
             if (entry->right != min_entry_id) { \
                 /* 将min_entry从原先的位置摘除，用其右子树代替 */ \
@@ -187,9 +191,11 @@ extern "C" {
                     referencer##_Dereference(tree, entry_right); \
                 } \
                 /* 如果需要回溯，这里对应entry的父亲是min_entry的父亲的情况，但不能直接修改entry的parent，因为还没挂接 */  \
+                backtrack_id = accessor##_GetParent(min_entry); \
             } \
             else { \
                 /* 如果需要回溯，这里对应entry的父亲是min_entry的情况，但不能直接修改entry的parent，因为还没挂接 */  \
+                backtrack_id = min_entry_id; \
             } \
             \
             /* 最后进行挂接 */ \
@@ -197,8 +203,23 @@ extern "C" {
             \
             /* 也可以选择直接交换两个节点的数据，但是开销不定 */ \
             \
+            entry_id = min_entry_id; \
+            \
+            /* 回溯可能需要的，entry变为原先的min_entry，只是不挂到树上(entry的父节点不指向entry) */ \
+            entry->left = NULL; \
+            entry->right = old_right_id; \
+            accessor##_SetParent(entry, backtrack_id); \
         } \
         else { \
+            if (is_parent_left) { \
+                if (accessor##_GetParent(entry) != referencer##_InvalidId) { \
+                    *is_parent_left = entry->left == entry_id; \
+                } \
+                else { \
+                    *is_parent_left = false; \
+                } \
+            } \
+            \
             if (entry->right !=  referencer##_InvalidId) { \
                 /* 只有右子节点 */ \
                 bs_tree_type_name##BsTreeHitchEntry(tree, entry_id, entry->right); \
@@ -212,7 +233,7 @@ extern "C" {
                 bs_tree_type_name##BsTreeHitchEntry(tree, entry_id, referencer##_InvalidId); \
             } \
         } \
-        return true; \
+        return entry_id; \
     } \
     /*
     * 获取树的节点数量
