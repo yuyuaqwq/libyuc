@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - é±¼é±¼
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* è¯·ä¿ç•™æ­¤å£°æ˜Ž
 */
 
 #ifndef CUTILS_CONTAINER_SPACE_MANAGER_H_
@@ -15,116 +15,116 @@ extern "C" {
 #endif
 
 /*
-* ¿Õ¼ä¹ÜÀí
+* ç©ºé—´ç®¡ç†
 */
 #define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION(space_manager_type_name, id_type, list_count) \
-	typedef struct _##space_manager_type_name##SpaceBlock { \
-		id_type next_block_offset; \
-		id_type len; \
-	} space_manager_type_name##SpaceBlock; \
-	typedef struct _##space_manager_type_name##SpaceHead { \
-		id_type first_block[list_count];		/* ·Ö±ðÖ¸Ïò²»Í¬¶ÓÁÐµÄµÚÒ»¸ö¿ÕÏÐ¿é */ \
-		/* uint8_t space[]; */ \
-	} space_manager_type_name##SpaceHead; \
+    typedef struct _##space_manager_type_name##SpaceBlock { \
+        id_type next_block_offset; \
+        id_type len; \
+    } space_manager_type_name##SpaceBlock; \
+    typedef struct _##space_manager_type_name##SpaceHead { \
+        id_type first_block[list_count];        /* åˆ†åˆ«æŒ‡å‘ä¸åŒé˜Ÿåˆ—çš„ç¬¬ä¸€ä¸ªç©ºé—²å— */ \
+        /* uint8_t space[]; */ \
+    } space_manager_type_name##SpaceHead; \
 
 #define CUTILS_CONTAINER_SPACE_MANAGER_DEFINE(space_manager_type_name, id_type, referencer, list_count) \
-	/*
-	* ³õÊ¼»¯
-	*/ \
-	void space_manager_type_name##SpaceManagerInit(space_manager_type_name##SpaceHead* head, id_type space_size) { \
-		head->first_block[0] = sizeof(space_manager_type_name##SpaceHead); \
-		for (int16_t i = 1; i < list_count; i++) { \
-			head->first_block[i] = referencer##_InvalidId; \
-		} \
-		space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + sizeof(space_manager_type_name##SpaceHead)); \
-		block->next_block_offset = referencer##_InvalidId; \
-		block->len = space_size - sizeof(space_manager_type_name##SpaceHead); \
-	} \
-	/*
-	* ·ÖÅä¿é£¬·µ»ØÆ«ÒÆ
-	*/ \
-	id_type space_manager_type_name##SpaceManagerAlloc(space_manager_type_name##SpaceHead* head, id_type list_order, id_type len) { \
-		space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
-		\
-		id_type free_offset = head->first_block[list_order]; \
-		while (free_offset != referencer##_InvalidId) { \
-			space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
-			if (block->len > len) { \
-				void* mem = (void*)(&block->next_block_offset); \
-				space_manager_type_name##SpaceBlock* new_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset + len); \
-				new_block->next_block_offset = block->next_block_offset; \
-				new_block->len = block->len - len; \
-				prev_block->next_block_offset += len; \
-				return free_offset; \
-			} \
-			else if (block->len == len) { \
-				prev_block->next_block_offset = block->next_block_offset; \
-				return free_offset; \
-			} \
-			free_offset = block->next_block_offset; \
-			prev_block = block; \
-		}; \
-		return referencer##_InvalidId; \
-	} \
-	/*
-	* ÊÍ·Å¿é
-	*/ \
-	void space_manager_type_name##SpaceManagerFree(space_manager_type_name##SpaceHead* head, id_type list_order, id_type free_offset, id_type len) { \
-		id_type cur_offset = head->first_block[list_order]; \
-		space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
-		\
-		space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
-		/* ³¢ÊÔºÏ²¢Óëµ±Ç°¿éÁ¬ÐøµÄÇ°ºó¿ÕÏÐ¿é */ \
-		bool prev = false, next = false; \
-		while (cur_offset != referencer##_InvalidId) { \
-			space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + cur_offset); \
-			if (!next && free_offset + len == cur_offset) { \
-				/* ÕÒµ½Á¬ÐøµÄ¿ÕÏÐÏÂÒ»¿é */ \
-				len += cur_block->len; \
-				cur_block->len = len; \
-				cur_block->next_block_offset = cur_block->next_block_offset; \
-				prev_block->next_block_offset = free_offset; \
-				cur_block = cur_block; \
-				next = true; \
-			} \
-			else if (!prev && cur_offset + cur_block->len == free_offset) { \
-				/* ÕÒµ½Á¬ÐøµÄ¿ÕÏÐÉÏÒ»¿é */ \
-				free_offset = cur_offset; \
-				len += cur_block->len;\
-				cur_block->len = len; \
-				cur_block = cur_block; \
-				prev_block->next_block_offset = free_offset; \
-				prev = true; \
-			} \
-			else { \
-				/* Ã»ÓÐºÏ²¢²Å¸üÐÂ£¬ÕÒµ½Á¬ÐøµÄ¿ÕÏÐÏÂÒ»¿éÒ²²»¸üÐÂÕâ¿éÂß¼­±È½Ï¸´ÔÓ
-				 Ö÷ÒªÎªÁËÊ¹µÃÏÂÒ»´ÎÑ­»·ÈôÕÒµ½Á¬ÐøµÄ¿ÕÏÐÉÏÒ»¿éÊ±£¬prevÄÜ¹»ÕýÈ·µÄÖ¸ÏòºÏ²¢ºóµÄfree_block */ \
-				prev_block = cur_block; \
-			} \
-			if (prev && next) break; \
-			cur_offset = cur_block->next_block_offset; \
-		} \
-		if (!prev && !next) { \
-			cur_block->next_block_offset = head->first_block[list_order]; \
-			cur_block->len = len; \
-			head->first_block[list_order] = free_offset; \
-		} \
-	} \
-	/*
-	* ²éÑ¯×î´ó¿é³¤¶È
-	*/ \
-	id_type space_manager_type_name##SpaceManagerGetMaxFreeBlockSize(space_manager_type_name##SpaceHead* head, id_type list_order) { \
-		space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
-		id_type free_offset = head->first_block[list_order]; \
-		id_type max = 0; \
-		while (free_offset != referencer##_InvalidId) { \
-			space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
-			if (block->len > max) { \
-				max = block->len; \
-			} \
-		} \
-		return max; \
-	} \
+    /*
+    * åˆå§‹åŒ–
+    */ \
+    void space_manager_type_name##SpaceManagerInit(space_manager_type_name##SpaceHead* head, id_type space_size) { \
+        head->first_block[0] = sizeof(space_manager_type_name##SpaceHead); \
+        for (int16_t i = 1; i < list_count; i++) { \
+            head->first_block[i] = referencer##_InvalidId; \
+        } \
+        space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + sizeof(space_manager_type_name##SpaceHead)); \
+        block->next_block_offset = referencer##_InvalidId; \
+        block->len = space_size - sizeof(space_manager_type_name##SpaceHead); \
+    } \
+    /*
+    * åˆ†é…å—ï¼Œè¿”å›žåç§»
+    */ \
+    id_type space_manager_type_name##SpaceManagerAlloc(space_manager_type_name##SpaceHead* head, id_type list_order, id_type len) { \
+        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
+        \
+        id_type free_offset = head->first_block[list_order]; \
+        while (free_offset != referencer##_InvalidId) { \
+            space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
+            if (block->len > len) { \
+                void* mem = (void*)(&block->next_block_offset); \
+                space_manager_type_name##SpaceBlock* new_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset + len); \
+                new_block->next_block_offset = block->next_block_offset; \
+                new_block->len = block->len - len; \
+                prev_block->next_block_offset += len; \
+                return free_offset; \
+            } \
+            else if (block->len == len) { \
+                prev_block->next_block_offset = block->next_block_offset; \
+                return free_offset; \
+            } \
+            free_offset = block->next_block_offset; \
+            prev_block = block; \
+        }; \
+        return referencer##_InvalidId; \
+    } \
+    /*
+    * é‡Šæ”¾å—
+    */ \
+    void space_manager_type_name##SpaceManagerFree(space_manager_type_name##SpaceHead* head, id_type list_order, id_type free_offset, id_type len) { \
+        id_type cur_offset = head->first_block[list_order]; \
+        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
+        \
+        space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
+        /* å°è¯•åˆå¹¶ä¸Žå½“å‰å—è¿žç»­çš„å‰åŽç©ºé—²å— */ \
+        bool prev = false, next = false; \
+        while (cur_offset != referencer##_InvalidId) { \
+            space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + cur_offset); \
+            if (!next && free_offset + len == cur_offset) { \
+                /* æ‰¾åˆ°è¿žç»­çš„ç©ºé—²ä¸‹ä¸€å— */ \
+                len += cur_block->len; \
+                cur_block->len = len; \
+                cur_block->next_block_offset = cur_block->next_block_offset; \
+                prev_block->next_block_offset = free_offset; \
+                cur_block = cur_block; \
+                next = true; \
+            } \
+            else if (!prev && cur_offset + cur_block->len == free_offset) { \
+                /* æ‰¾åˆ°è¿žç»­çš„ç©ºé—²ä¸Šä¸€å— */ \
+                free_offset = cur_offset; \
+                len += cur_block->len;\
+                cur_block->len = len; \
+                cur_block = cur_block; \
+                prev_block->next_block_offset = free_offset; \
+                prev = true; \
+            } \
+            else { \
+                /* æ²¡æœ‰åˆå¹¶æ‰æ›´æ–°ï¼Œæ‰¾åˆ°è¿žç»­çš„ç©ºé—²ä¸‹ä¸€å—ä¹Ÿä¸æ›´æ–°è¿™å—é€»è¾‘æ¯”è¾ƒå¤æ‚
+                 ä¸»è¦ä¸ºäº†ä½¿å¾—ä¸‹ä¸€æ¬¡å¾ªçŽ¯è‹¥æ‰¾åˆ°è¿žç»­çš„ç©ºé—²ä¸Šä¸€å—æ—¶ï¼Œprevèƒ½å¤Ÿæ­£ç¡®çš„æŒ‡å‘åˆå¹¶åŽçš„free_block */ \
+                prev_block = cur_block; \
+            } \
+            if (prev && next) break; \
+            cur_offset = cur_block->next_block_offset; \
+        } \
+        if (!prev && !next) { \
+            cur_block->next_block_offset = head->first_block[list_order]; \
+            cur_block->len = len; \
+            head->first_block[list_order] = free_offset; \
+        } \
+    } \
+    /*
+    * æŸ¥è¯¢æœ€å¤§å—é•¿åº¦
+    */ \
+    id_type space_manager_type_name##SpaceManagerGetMaxFreeBlockSize(space_manager_type_name##SpaceHead* head, id_type list_order) { \
+        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
+        id_type free_offset = head->first_block[list_order]; \
+        id_type max = 0; \
+        while (free_offset != referencer##_InvalidId) { \
+            space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
+            if (block->len > max) { \
+                max = block->len; \
+            } \
+        } \
+        return max; \
+    } \
 
 
 

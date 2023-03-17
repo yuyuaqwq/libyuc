@@ -1,25 +1,25 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - é±¼é±¼
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* è¯·ä¿ç•™æ­¤å£°æ˜Ž
 */
 
 #ifndef CUTILS_CONTAINER_SPACE_MANAGER_BTM_H_
 #define CUTILS_CONTAINER_SPACE_MANAGER_BTM_H_
 
 /*
-* ¿Õ¼ä¹ÜÀí - ±ß½ç±êÊ¶·¨(boundary tag method)
+* ç©ºé—´ç®¡ç† - è¾¹ç•Œæ ‡è¯†æ³•(boundary tag method)
 */
 #define CUTILS_CONTAINER_SPACE_MANAGER_BTM_DECLARATION(btm_type_name, id_type, referencer) \
-	typedef struct _##btm_type_name##BtmBlockHead { \
+    typedef struct _##btm_type_name##BtmBlockHead { \
         id_type next_tag; \
         id_type size; \
     } btm_type_name##BtmBlockHead; \
-	typedef struct _##btm_type_name##BtmBlockFoot { \
+    typedef struct _##btm_type_name##BtmBlockFoot { \
         id_type head_tag; \
     } btm_type_name##BtmBlockFoot; \
-	typedef struct _##btm_type_name##BtmManager { \
+    typedef struct _##btm_type_name##BtmManager { \
         id_type first; \
         /* uint8_t space[]; */ \
     } btm_type_name##BtmManager; \
@@ -29,7 +29,7 @@
 #define CUTILS_CONTAINER_SPACE_MANAGER_BTM_SetTag(old_id, tag) (old_id = CUTILS_CONTAINER_SPACE_MANAGER_BTM_GetId(id) | tag)
 #define CUTILS_CONTAINER_SPACE_MANAGER_BTM_SetId(old_id, id) (old_id = id | CUTILS_CONTAINER_SPACE_MANAGER_BTM_GetTag(old_id))
 #define CUTILS_CONTAINER_BOUNDARY_TAG_METHOD_DEFINE(btm_type_name, id_type, referencer) \
-	void btm_type_name##BtmInit(btm_type_name##BtmManager* btm, id_type space_size) { \
+    void btm_type_name##BtmInit(btm_type_name##BtmManager* btm, id_type space_size) { \
         btm->first = sizeof(btm_type_name##BtmManager); \
         btm_type_name##BtmBlockHead* head = (btm_type_name##BtmBlockHead*)((uintptr_t)btm + sizeof(btm_type_name##BtmManager)); \
         head->next_tag = referencer##_InvalidId; \
