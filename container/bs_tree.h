@@ -329,6 +329,18 @@ extern "C" {
         return parent_id; \
     } \
     
+
+//CUTILS_CONTAINER_BS_TREE_DECLARATION(Int, struct _IntBsEntry*, int)
+//typedef struct _IntEntry {
+//    IntBsEntry entry;
+//    int key;
+//} IntEntry;
+//#define INT_BS_TREE_ACCESSOR_GetParent(bs_entry) (bs_entry->parent)
+//#define INT_BS_TREE_ACCESSOR_SetParent(bs_entry, new_parent) (bs_entry->parent = new_parent)
+//#define INT_BS_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry*)bs_entry)->key)
+//CUTILS_CONTAINER_BS_TREE_DEFINE(Int, struct _IntBsEntry*, int, CUTILS_OBJECT_REFERENCER_DEFALUT, INT_BS_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
+
+
 #ifdef __cplusplus
 }
 #endif

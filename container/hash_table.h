@@ -146,7 +146,7 @@ typedef enum _HashEntryType {
         if (capacity == 0) { \
             capacity = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
-        hash_table_type_name##HashTableVectorInit(&table->bucket, capacity); \
+        hash_table_type_name##HashTableVectorInit(&table->bucket, capacity, true); \
         table->bucket.count = 0; \
         \
         for (int i = 0; i < table->bucket.capacity; i++) { \

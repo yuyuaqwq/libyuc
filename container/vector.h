@@ -21,7 +21,7 @@ extern "C" {
         size_t capacity; \
         element_type* obj_arr; \
     } vector_type_name##Vector; \
-    void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count); \
+    void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create); \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
     ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
@@ -47,12 +47,14 @@ extern "C" {
         } \
         vector_type_name##VectorResetCapacity(arr, cur_capacity); \
     } \
-    void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count) { \
-        arr->capacity = 0; \
+    void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create) { \
         arr->count = count; \
         arr->obj_arr = NULL; \
-        if (count != 0) { \
+        if (count != 0 && create) { \
             vector_type_name##VectorResetCapacity(arr, count); \
+        } \
+        else { \
+            arr->capacity = count; \
         } \
     } \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr) { \

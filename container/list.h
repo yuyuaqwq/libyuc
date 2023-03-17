@@ -153,7 +153,6 @@ extern "C" {
 CUTILS_CONTAINER_LIST_DECLARATION(, struct _ListEntry*)
 
 
-
 #ifdef __cplusplus
 }
 #endif

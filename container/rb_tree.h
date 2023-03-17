@@ -48,7 +48,7 @@ typedef enum {
     bool rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
 
-// 访问器需要提供_GetKey方法
+// 访问器需要提供_GetKey、_Set/GetParent、_Set/GetColor方法
 #define CUTILS_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
     CUTILS_CONTAINER_BS_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
     /*

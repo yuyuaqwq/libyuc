@@ -9,37 +9,92 @@
 #define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_H_
 
 #include <CUtils/object.h>
-#include <CUtils/container/array.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
-* 若只有一条队列，Pop分配的节点，此节点的值可以被覆盖，可以使用union
-*/
-typedef struct _DoublyStaticListEntry {
-    int prev_index;
-    int next_index;
-} DoublyStaticListEntry;
+#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION(ds_list_type_name, id_type, element_type, list_count) \
+    /*
+    * 若只有一条队列，由Pop分配的节点，此结构体可以被覆盖，可以使用union
+    */ \
+    typedef struct _##ds_list_type_name##DoublyStaticListEntry{ \
+        id_type prev; \
+        id_type next; \
+    } ds_list_type_name##DoublyStaticListEntry; \
+    typedef struct _##ds_list_type_name##DoublyStaticList{ \
+        element_type * obj_arr; \
+        id_type list_first[list_count]; /* 最少应为1 */ \
+    } ds_list_type_name##DoublyStaticList; \
+    \
+    void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, element_type* obj_arr, id_type count); \
+    id_type ds_list_type_name##DoublyStaticListPop(ds_list_type_name##DoublyStaticList* list, id_type list_order); \
+    void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index); \
 
-typedef struct _DoublyStaticList {
-    Array array;
-    int entry_field_offset;
-    int list_first[1];
-} DoublyStaticList;
-
-
-extern const int kDoublyStaticListInvalidIndex;
-
-void DoublyStaticListInit(DoublyStaticList* list, size_t count, int obj_size, int entry_field_offset, int list_count);
-void DoublyStaticListInitFromBuf(DoublyStaticList* list, void* buf, size_t count, int obj_size, int entry_field_offset, int list_count);
-void DoublyStaticListInsertNext(DoublyStaticList* list, int list_order, int prev_index, int insert_index);
-int DoublyStaticListRemove(DoublyStaticList* list, int list_order, int remove_index);
-void DoublyStaticListPush(DoublyStaticList* list, int list_order, int push_index);
-int DoublyStaticListPop(DoublyStaticList* list, int list_order);
-void DoublyStaticListSwitch(DoublyStaticList* list, int list_order, int index, int new_list_order);
-#define DoublyStaticListAt(list, index, objName) (ArrayAt(&(list)->array, index, objName))
+#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, list_count) \
+    void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, element_type* obj_arr, id_type count) { \
+        list->list_first[0] = 0; \
+        id_type i = 0; \
+        for (; i < count; i++) { \
+            if (i + 1 == count) { \
+                obj_arr[i].next = referencer##_InvalidId; \
+            } \
+            else { \
+                obj_arr[i].next = i + 1; \
+            } \
+            if (i == 0) { \
+                obj_arr[i].prev = referencer##_InvalidId; \
+            } \
+            else { \
+                obj_arr[i].prev = i - 1; \
+            } \
+        } \
+        \
+        for (i = 1; i < list_count; i++) { \
+            obj_arr[i].list_first[i] = referencer##_InvalidId; \
+        } \
+    } \
+    id_type ds_list_type_name##DoublyStaticListRemove(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type remove_index) { \
+        if (list->arr_obj[remove_index].prev == referencer##_InvalidId) { \
+            list->list_first[list_order] = list->arr_obj[remove_index].next; \
+        } \
+        else { \
+            list->arr_obj[list->arr_obj[remove_index].prev].next = list->arr_obj[remove_index].next; \
+        } \
+        \
+        if (list->arr_obj[remove_index].next != referencer##_InvalidId) { \
+            list->arr_obj[list->arr_obj[remove_index].next].prev = list->arr_obj[remove_index].prev; \
+        } \
+        return remove_index; \
+    } \
+    id_type ds_list_type_name##DoublyStaticListPop(DoublyStaticList* list, id_type list_order) { \
+        if (list->list_first[list_order] == referencer##_InvalidId) { \
+            return referencer##_InvalidId; \
+        } \
+        return DoublyStaticListRemove(list, list_order, list->list_first[list_order]); \
+    } \
+    void ds_list_type_name##DoublyStaticListInsert(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type prev_index, id_type insert_index) { \
+        if (prev_index == referencer##_InvalidId) { \
+            list->arr_obj[insert_index].prev = referencer##_InvalidId; \
+            list->arr_obj[insert_index].next = list->list_first[list_order]; \
+            list->list_first[list_order] = insert_index; \
+        } \
+        else { \
+            list->arr_obj[insert_index].prev = prev_index; \
+            list->arr_obj[insert_index].next = list->arr_obj[prev_index].next; \
+            list->arr_obj[prev_index].next = insert_index; \
+        } \
+        if (list->arr_obj[insert_index].next != referencer##_InvalidId) { \
+            list->arr_obj[list->arr_obj[insert_index].next].prev = insert_index; \
+        } \
+    } \
+    void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type push_index) { \
+         ds_list_type_name##DoublyStaticListInsert(list, list_order, referencer##_InvalidId, push_index); \
+    } \
+    void ds_list_type_name##DoublyStaticListSwitch(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index, id_type new_list_order) { \
+        DoublyStaticListRemove(list, list_order, index); \
+        DoublyStaticListPush(list, new_list_order, index); \
+    } \
 
 #ifdef __cplusplus
 }
