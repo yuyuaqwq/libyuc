@@ -49,6 +49,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define ObjectGetFromField(field, obj_type, field_name) ( (obj_type*)((uintptr_t)(field) - ObjectGetFieldOffset(obj_type, field_name)) )
 
 
+
 /*
 * 对象：
 * 对象操作器间传递(参数、返回值)的对象以对象本身进行

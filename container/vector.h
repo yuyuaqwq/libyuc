@@ -23,7 +23,7 @@ extern "C" {
     } vector_type_name##Vector; \
     void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count); \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
-    int vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
+    ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
 #define CUTILS_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator) \
@@ -63,7 +63,7 @@ extern "C" {
         arr->capacity = 0; \
         arr->count = 0; \
     } \
-    int vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj) { \
+    ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj) { \
         if (arr->capacity <= arr->count) { \
             vector_type_name##VectorExpand(arr, 1); \
         } \
