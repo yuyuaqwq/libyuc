@@ -30,7 +30,7 @@ static void BitmapSetByte(Bitmap* bitmap, ptrdiff_t byte_idx, uint8_t val) {
 	bitmap->arr.obj_arr[byte_idx] = val;
 }
 
-static void BitmapSetMult(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count, bool val) {
+static void BitmapSetMultiple(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count, bool val) {
 	ptrdiff_t byte_idx = BitmapGetByteIndex(bit_idx, NULL);
 	bit_idx += (bit_count / 8) * 8;
 	while (bit_count > 8 && byte_idx < BitmapGetByteCount(bitmap)) {
@@ -45,31 +45,11 @@ static void BitmapSetMult(Bitmap* bitmap, ptrdiff_t bit_idx, size_t bit_count, b
 	}
 }
 
-/*
-* 必须是8的倍数
-*/
-void BitmapInit(Bitmap* bitmap, size_t bit_count) {
-	size_t byte_count = bit_count / 8 + (bit_count % 8 ? 1 : 0);
-	ByteVectorInit(&bitmap->arr, byte_count);
-	for (ptrdiff_t i = 0; i < byte_count; i++) {
-		bitmap->arr.obj_arr[i] = 0;
-	}
-}
 
-bool BitmapGet(Bitmap* bitmap, ptrdiff_t bit_idx) {
-	uint8_t entry = BitmapGetByte(bitmap, bit_idx / 8);
-	uint8_t pos = bit_idx % 8;
-	return entry & ((uint8_t)0x80 >> pos);
-}
 
-void BitmapSet(Bitmap* bitmap, ptrdiff_t bit_idx, bool value) {
-	uint8_t pos = bit_idx % 8;
-	if (value) {
-		bitmap->arr.obj_arr[bit_idx / 8] |= (uint8_t)0x80 >> pos;
-	} else {
-		bitmap->arr.obj_arr[bit_idx / 8] &= ~((uint8_t)0x80 >> pos);
-	}
-}
+
+
+
 
 size_t BitmapGetBitCount(Bitmap* bitmap) {
 	return bitmap->arr.count * 8;
