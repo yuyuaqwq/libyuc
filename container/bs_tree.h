@@ -212,8 +212,11 @@ extern "C" {
         } \
         else { \
             if (is_parent_left) { \
-                if (accessor##_GetParent(entry) != referencer##_InvalidId) { \
-                    *is_parent_left = entry->left == entry_id; \
+                id_type parent_id = accessor##_GetParent(entry); \
+                if (parent_id != referencer##_InvalidId) { \
+                    bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
+                    *is_parent_left = parent->left == entry_id; \
+                    referencer##_Dereference(tree, parent); \
                 } \
                 else { \
                     *is_parent_left = false; \

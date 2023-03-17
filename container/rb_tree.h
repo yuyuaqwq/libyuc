@@ -71,6 +71,13 @@ extern "C" {
 //void* RbTreePrev(RbTreeIterator* iterator);
 
 
+typedef enum {
+    kRbBlack,
+    kRbRed,
+} RbColor;
+
+
+
 #define CUTILS_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, key_type) \
     CUTILS_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name, id_type, key_type) \
     typedef struct _##rb_tree_type_name##RbEntry { \
@@ -93,6 +100,7 @@ extern "C" {
     void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree); \
     id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key); \
     bool rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
+    bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
 
 // 访问器需要提供_GetKey方法
 #define CUTILS_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
@@ -255,6 +263,129 @@ extern "C" {
         referencer##_Dereference(tree, cur); \
     } \
     /*
+    * 向树中删除节点后的平衡操作
+    */ \
+   static void rb_tree_type_name##RbTreeDeleteFixup(rb_tree_type_name##RbTree* tree, id_type del_entry_id, bool is_parent_left) { \
+        rb_tree_type_name##RbEntry* del_entry = referencer##_Reference(tree, del_entry_id); \
+        id_type cur_id = referencer##_InvalidId; \
+        \
+        RbColor del_color = accessor##_GetColor(del_entry); \
+        if (del_color == kRbRed) { /* 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除 */ } \
+        /* 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可 */ \
+        else if (del_entry->left != referencer##_InvalidId) { accessor##_SetColor(del_entry->left, kRbBlack); } \
+        else if (del_entry->right != referencer##_InvalidId) { accessor##_SetColor(del_entry->right, kRbBlack); } \
+        else { cur_id = accessor##_GetParent(del_entry); } \
+        \
+        id_type new_sub_root_id; \
+        /* 回溯维护删除黑色节点，即没有子节点(2节点)的情况 */ \
+        rb_tree_type_name##RbEntry* cur = NULL, * sibling = NULL; \
+        cur = referencer##_Reference(tree, cur_id); \
+        while (cur_id != referencer##_InvalidId) { \
+            id_type sibling_id = is_parent_left ? cur->right : cur->left; \
+            sibling = referencer##_Reference(tree, sibling_id); \
+            /* 黑色节点一定有兄弟节点 */ \
+            if (accessor##_GetColor(sibling) == kRbRed) { \
+                /* 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
+                 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点 */ \
+                id_type old_sub_root_id = accessor##_GetParent(sibling); \
+                rb_tree_type_name##RbEntry* old_sub_root = referencer##_Reference(tree, old_sub_root_id); \
+                accessor##_SetColor(old_sub_root, kRbRed); \
+                accessor##_SetColor(sibling, kRbBlack); \
+                if (old_sub_root->left == sibling_id) { \
+                    new_sub_root_id = rb_tree_type_name##RotateRight(old_sub_root_id, old_sub_root); \
+                    sibling_id = old_sub_root->left;     /* 下降后挂接过来的节点 */ \
+                    referencer##_Dereference(tree, sibling); \
+                    sibling = referencer##_Reference(tree, sibling_id); \
+                } \
+                else { \
+                    new_sub_root_id = rb_tree_type_name##RotateLeft(old_sub_root_id, old_sub_root); \
+                    sibling_id = old_sub_root->right;     /* 下降后挂接过来的节点 */ \
+                    referencer##_Dereference(tree, sibling); \
+                    sibling = referencer##_Reference(tree, sibling_id); \
+                } \
+                if (tree->root == old_sub_root_id) { \
+                    tree->root = new_sub_root_id; \
+                } \
+                referencer##_Dereference(tree, old_sub_root); \
+            } \
+            \
+            /* 至此兄弟节点一定为黑 */ \
+            \
+            /* 侄子节点为红，即兄弟节点是3 / 4节点的情况，向兄弟借节点(上升兄弟节点，下降父亲节点) */ \
+            rb_tree_type_name##RbEntry* sibling_right = referencer##_Reference(tree, sibling->right); \
+            rb_tree_type_name##RbEntry* sibling_left = referencer##_Reference(tree, sibling->left); \
+            if (sibling->right != referencer##_InvalidId && accessor##_GetColor(sibling_right) == kRbRed || \
+                sibling->left != referencer##_InvalidId && accessor##_GetColor(sibling_left) == kRbRed) { \
+                RbColor parent_color = accessor##_GetColor(cur); \
+                accessor##_SetColor(cur, kRbBlack); \
+                id_type old_sub_root_id = cur_id; \
+                if (cur->left == sibling_id) { \
+                    if (sibling->left == referencer##_InvalidId || accessor##_GetColor(sibling_left) == kRbBlack) { \
+                        accessor##_SetColor(sibling_right, kRbBlack); \
+                        sibling_id = rb_tree_type_name##RotateLeft(sibling_id, sibling); \
+                    } \
+                    else { \
+                        accessor##_SetColor(sibling_left, kRbBlack); \
+                    } \
+                    new_sub_root_id = rb_tree_type_name##RotateRight(cur_id, cur); \
+                } \
+                else { \
+                    if (sibling->right == referencer##_InvalidId || accessor##_GetColor(sibling_right) == kRbBlack) { \
+                        accessor##_SetColor(sibling_left, kRbBlack); \
+                        sibling_id = rb_tree_type_name##RotateRight(sibling_id, sibling); \
+                    } \
+                    else { \
+                        accessor##_SetColor(sibling_right, kRbBlack); \
+                    } \
+                    new_sub_root_id = rb_tree_type_name##RotateLeft(cur_id, cur); \
+                } \
+                referencer##_Dereference(tree, sibling); \
+                sibling = referencer##_Reference(tree, sibling_id); \
+                /* 该节点会接替原先的子根节点，也要接替颜色 */ \
+                accessor##_SetColor(sibling, parent_color); \
+                if (tree->root == old_sub_root_id) { \
+                    tree->root = new_sub_root_id; \
+                } \
+                referencer##_Dereference(tree, sibling_right); \
+                referencer##_Dereference(tree, sibling_left); \
+                break; \
+            } \
+            referencer##_Dereference(tree, sibling_right); \
+            referencer##_Dereference(tree, sibling_left); \
+            \
+            if (accessor##_GetColor(cur) == kRbRed) { \
+                /* 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
+                    |5|8|               |5|
+                   /  |  \     ->      /   \
+                  3   6  -9-          3   |6|8| */ \
+                accessor##_SetColor(sibling, kRbRed); \
+                accessor##_SetColor(cur, kRbBlack); \
+                break; \
+            } \
+            else { \
+                /* 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
+                 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红 */ \
+                accessor##_SetColor(sibling, kRbRed); \
+            } \
+            id_type child_id = cur_id; \
+            cur_id = accessor##_GetParent(cur); \
+            if (cur_id != referencer##_InvalidId) { \
+                referencer##_Dereference(tree, cur); \
+                cur = referencer##_Reference(tree, cur_id); \
+                is_parent_left = cur->left == child_id; \
+            } \
+        } \
+        referencer##_Dereference(tree, sibling); \
+        referencer##_Dereference(tree, cur); \
+        \
+        rb_tree_type_name##RbEntry* root = referencer##_Reference(tree, tree->root); \
+        if (root && accessor##_GetColor(root) == kRbRed) { \
+            /* 根节点染黑 */  \
+            accessor##_SetColor(root, kRbBlack); \
+        } \
+        referencer##_Dereference(tree, root); \
+    } \
+    /*
     * 初始化树
     */ \
     void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree) { \
@@ -279,120 +410,45 @@ extern "C" {
         return true; \
     } \
     /*
-    * 向树中删除节点后的平衡操作
+    * 删除树中指定节点
     */ \
-    void rb_tree_type_name##RbTreeDeleteEntryFixup(rb_tree_type_name##RbTree* tree, id_type del_entry_id, bool is_parent_left) { \
-        rb_tree_type_name##RbEntry* del_entry = referencer##_Reference(tree, del_entry_id); \
-        id_type cur_id = accessor##_GetParent(del_entry); \
-        rb_tree_type_name##RbEntry* cur = NULL; \
-        \
-        RbColor del_color = accessor##_GetColor(del_entry); \
-        if (del_color == kRbRed) { /* 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除 */ } \
-        /* 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可 */ \
-        else if (del_entry->left != referencer##_InvalidId) { accessor##_SetColor(del_entry->left, kRbBlack); } \
-        else if (del_entry->right != referencer##_InvalidId) { accessor##_SetColor(del_entry->right, kRbBlack); } \
-        else { cur = referencer##_Reference(tree, cur_id); } \
-        \
-        id_type new_sub_root_id; \
-        /* 回溯维护删除黑色节点，即没有子节点(2节点)的情况 */ \
-        while (cur) { \
-            id_type sibling_id = is_parent_left ? cur->right : cur->left; \
-            rb_tree_type_name##RbEntry* sibling = referencer##_Reference(tree, sibling_id); \
-            if (accessor##_GetColor(sibling) == kRbRed) { \
-                /* 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
-                 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点 */ \
-                id_type old_sub_root_id = accessor##_GetParent(sibling); \
-                rb_tree_type_name##RbEntry* old_sub_root = referencer##_Reference(tree, old_sub_root_id); \
-                accessor##_SetColor(old_sub_root, kRbRed); \
-                accessor##_SetColor(sibling, kRbBlack); \
-                if (old_sub_root->left == sibling_id) { \
-                    new_sub_root_id = rb_tree_type_name##RotateRight(old_sub_root_id, old_sub_root); \
-                    sibling_id = old_sub_root->left;     /* 下降后挂接过来的节点 */ \
-                    referencer##_Dereference(tree, sibling); \
-                    rb_tree_type_name##RbEntry* sibling = referencer##_Reference(tree, sibling_id); \
-                } \
-                else { \
-                    new_sub_root = rb_tree_type_name##RotateLeft(old_sub_root_id, old_sub_root); \
-                    sibling_id = old_sub_root->right;     /* 下降后挂接过来的节点 */ \
-                    referencer##_Dereference(tree, sibling); \
-                    rb_tree_type_name##RbEntry* sibling = referencer##_Reference(tree, sibling_id); \
-                } \
-                if (tree->root == old_sub_root) { \
-                    tree->root = new_sub_root; \
-                } \
-                referencer##_Dereference(tree, old_sub_root); \
-            } \
-            \
-            /* 至此兄弟节点一定为黑 */ \
-            \
-            /* 侄子节点为红，即兄弟节点是3 / 4节点的情况，向兄弟借节点(上升兄弟节点，下降父亲节点) */ \
-            if (sibling->right != referencer##_InvalidId && accessor##_GetColor(sibling->right) == kRbRed || sibling->left != referencer##_InvalidId && accessor##_GetColor(sibling->left) == kRbRed) { \
-                RbColor parent_color = accessor##_GetColor(cur); \
-                accessor##_SetColor(cur, kRbBlack); \
-                id_type old_sub_root_id = cur_id; \
-                if (cur->left == sibling_id) { \
-                    if (sibling->left == referencer##_InvalidId || accessor##_GetColor(sibling->left) == kRbBlack) { \
-                        accessor##_SetColor(sibling->right, kRbBlack); \
-                        sibling = rb_tree_type_name##RotateLeft(sibling_id. sibling); \
-                    } \
-                    else { \
-                        accessor##_SetColor(sibling->left, kRbBlack); \
-                    } \
-                    new_sub_root_id = rb_tree_type_name##RotateRight(cur); \
-                } \
-                else { \
-                    if (!sibling->right || RbEntryGetColor(sibling->right) == kRbBlack) { \
-                        accessor##_SetColor(sibling->left, kRbBlack); \
-                        sibling = rb_tree_type_name##RotateRight(sibling); \
-                    } \
-                    else { \
-                        accessor##_SetColor(sibling->right, kRbBlack); \
-                    } \
-                    new_sub_root_id = rb_tree_type_name##RotateLeft(cur); \
-                } \
-                /* 该节点会接替原先的子根节点，也要接替颜色 */ \
-                accessor##_SetColor(sibling, parent_color); \
-                if (tree->root == old_sub_root_id) { \
-                    tree->root = new_sub_root_id; \
-                } \
-                break; \
-            } \
-            \
-            if (accessor##_GetColor(cur) == kRbRed) { \
-                /* 父节点为红，即父节点是3/4节点，分裂下降与兄弟节点合并
-                    |5|8|               |5|
-                   /  |  \     ->      /   \
-                  3   6  -9-          3   |6|8| */ \
-                accessor##_SetColor(sibling, kRbRed); \
-                accessor##_SetColor(cur, kRbBlack); \
-                break; \
-            } \
-            else { \
-                /* 父节点为黑，即父节点是2节点，兄弟节点也是2节点，下降父节点与兄弟节点合并，相当于向上删除父节点，继续回溯
-                 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红 */ \
-                accessor##_SetColor(sibling, kRbRed); \
-            } \
-            RbEntry* child = cur; \
-            cur = RbEntryGetParent(cur); \
-            if (cur) { \
-                is_parent_left = cur->left == child; \
-            } \
+    bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id) { \
+        bool is_parent_left; \
+        id_type del_min_entry_id = rb_tree_type_name##BsTreeDelete(&tree->bs_tree, del_entry_id, &is_parent_left); \
+        if(del_min_entry_id == referencer##_InvalidId) { \
+            return false; \
         } \
-        \
-        if (tree->root && Raccessor##_GetColor(tree->root) == kRbRed) { \
-            /* 根节点染黑 */  \
-            accessor##_SetColor(tree->root, kRbBlack); \
+        if (del_min_entry_id != del_entry_id) { \
+            rb_tree_type_name##RbEntry* del_entry = referencer##_Reference(tree, del_entry_id); \
+            rb_tree_type_name##RbEntry* del_min_entry = referencer##_Reference(tree, del_min_entry_id); \
+            /* 需要交换颜色 */; \
+            RbColor old_color = accessor##_GetColor(del_min_entry); \
+            accessor##_SetColor(del_min_entry, accessor##_GetColor(del_entry)); \
+            accessor##_SetColor(del_entry, old_color); \
         } \
+        rb_tree_type_name##RbTreeDeleteFixup(tree, del_entry_id, is_parent_left); \
+        return true; \
     } \
 
-CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
-
-typedef struct _IntEntry_Rb {
-    IntRbEntry entry;
-    int key;
-} IntEntry_Rb;
-
-
+//CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
+// 
+//typedef struct _IntEntry_Rb {
+//    IntRbEntry entry;
+//    int key;
+//} IntEntry_Rb;
+// 
+//#define INT_RB_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Rb*)bs_entry)->key)
+//#define INT_RB_TREE_ACCESSOR_GetParent(entry) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)entry)->parent_color) & (~((uintptr_t)0x1)))))
+//#define  INT_RB_TREE_ACCESSOR_GetColor(entry) ((RbColor)(((uintptr_t)((IntRbEntry*)entry)->parent_color) & 0x1))
+//#define INT_RB_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntRbEntry*)entry)->parent_color = (IntRbEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(entry))));
+//#define INT_RB_TREE_ACCESSOR_SetColor(entry, color) (entry->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)color)))
+//#define INT_RB_TREE_ACCESSOR INT_RB_TREE_ACCESSOR
+//
+//#define INT_RB_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
+//#define INT_RB_TREE_REFERENCER_Dereference(main_obj, obj)
+//#define INT_RB_TREE_REFERENCER_InvalidId (NULL)
+//#define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
+//CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus
 }
