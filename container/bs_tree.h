@@ -299,6 +299,8 @@ extern "C" {
             parent_id = accessor##_GetParent(cur); \
             parent = referencer##_Reference(tree, parent_id); \
         } \
+        referencer##_Dereference(tree, parent); \
+        referencer##_Dereference(tree, cur); \
         return parent_id; \
     } \
     id_type bs_tree_type_name##BsTreePrev(bs_tree_type_name##BsTree* tree, id_type cur_id) { \
@@ -322,7 +324,9 @@ extern "C" {
             parent_id = accessor##_GetParent(cur); \
             parent = referencer##_Reference(tree, parent_id); \
         } \
-        return parent; \
+        referencer##_Dereference(tree, parent); \
+        referencer##_Dereference(tree, cur); \
+        return parent_id; \
     } \
     
 #ifdef __cplusplus

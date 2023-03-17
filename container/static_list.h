@@ -9,7 +9,7 @@
 #define CUTILS_CONTAINER_STATIC_LIST_H_
 
 #include <CUtils/object.h>
-#include <CUtils/container/array.h>
+#include <CUtils/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {
