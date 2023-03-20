@@ -5,7 +5,7 @@
 * 请保留此声明
 */
 
-#include <CUtils/container/array.h>
+#include <CUtils/container/vector.h>
 #include <CUtils/container/bplus_tree.h>
 
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK

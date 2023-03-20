@@ -52,68 +52,6 @@ typedef enum {
 #define CUTILS_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
     CUTILS_CONTAINER_BS_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
     /*
-    * 左旋子树
-    */ \
-    static id_type rb_tree_type_name##RotateLeft(id_type sub_root_id, rb_tree_type_name##RbEntry* sub_root) { \
-        id_type new_sub_root_id = sub_root->right; \
-        if (new_sub_root_id == referencer##_InvalidId) { \
-            return sub_root_id; \
-        } \
-        rb_tree_type_name##RbEntry* new_sub_root = referencer##_Reference(tree, new_sub_root_id); \
-        \
-        accessor##_SetParent(new_sub_root, accessor##_GetParent(sub_root)); \
-        if (accessor##_GetParent(sub_root) != referencer##_InvalidId) { \
-            if (accessor##_GetParent(sub_root)->left == sub_root_id) { \
-                accessor##_GetParent(sub_root)->left = new_sub_root_id; \
-            } \
-            else { \
-                accessor##_GetParent(sub_root)->right = new_sub_root_id; \
-            } \
-        } \
-        accessor##_SetParent(sub_root, new_sub_root_id); \
-        \
-        sub_root->right = new_sub_root->left; \
-        if (sub_root->right != referencer##_InvalidId) { \
-            accessor##_SetParent(sub_root->right, sub_root_id); \
-        } \
-        \
-        new_sub_root->left = sub_root_id; \
-        \
-        referencer##_Dereference(tree, new_sub_root); \
-        return new_sub_root_id; \
-    } \
-    /*
-    * 右旋子树
-    */ \
-    static id_type rb_tree_type_name##RotateRight(id_type sub_root_id, rb_tree_type_name##RbEntry* sub_root) { \
-        id_type new_sub_root_id = sub_root->left; \
-        if (new_sub_root_id == referencer##_InvalidId) { \
-            return sub_root_id; \
-        } \
-        rb_tree_type_name##RbEntry* new_sub_root = referencer##_Reference(tree, new_sub_root_id); \
-        \
-        accessor##_SetParent(new_sub_root, accessor##_GetParent(sub_root)); \
-        if (accessor##_GetParent(sub_root) != referencer##_InvalidId) { \
-           if (accessor##_GetParent(sub_root)->left == sub_root_id) { \
-                accessor##_GetParent(sub_root)->left = new_sub_root_id; \
-            } \
-            else { \
-                accessor##_GetParent(sub_root)->right = new_sub_root_id; \
-            } \
-        } \
-        accessor##_SetParent(sub_root, new_sub_root_id); \
-        \
-        sub_root->left = new_sub_root->right; \
-        if (sub_root->left != referencer##_InvalidId) { \
-            accessor##_SetParent(sub_root->left, sub_root_id); \
-        } \
-        \
-        new_sub_root->right = sub_root_id; \
-        \
-        referencer##_Dereference(tree, new_sub_root); \
-        return new_sub_root_id; \
-    } \
-    /*
     * 取兄弟节点
     */ \
     static id_type rb_tree_type_name##GetSiblingEntry(id_type entry_id, rb_tree_type_name##RbEntry* entry) { \
@@ -378,23 +316,21 @@ typedef enum {
 
 
 //CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
-// 
 //typedef struct _IntEntry_Rb {
 //    IntRbEntry entry;
 //    int key;
 //} IntEntry_Rb;
-
 //#define INT_RB_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Rb*)bs_entry)->key)
 //#define INT_RB_TREE_ACCESSOR_GetParent(entry) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)entry)->parent_color) & (~((uintptr_t)0x1)))))
 //#define  INT_RB_TREE_ACCESSOR_GetColor(entry) ((RbColor)(((uintptr_t)((IntRbEntry*)entry)->parent_color) & 0x1))
 //#define INT_RB_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntRbEntry*)entry)->parent_color = (IntRbEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(entry))));
 //#define INT_RB_TREE_ACCESSOR_SetColor(entry, color) (entry->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)color)))
 //#define INT_RB_TREE_ACCESSOR INT_RB_TREE_ACCESSOR
-//
 //#define INT_RB_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
 //#define INT_RB_TREE_REFERENCER_Dereference(main_obj, obj)
 //#define INT_RB_TREE_REFERENCER_InvalidId (NULL)
 //#define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
+
 //CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus

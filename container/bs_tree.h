@@ -67,6 +67,68 @@ extern "C" {
         referencer##_Dereference(tree, entry); \
         referencer##_Dereference(tree, new_entry); \
     } \
+        /*
+    * 左旋子树
+    */ \
+    static id_type bs_tree_type_name##RotateLeft(id_type sub_root_id, bs_tree_type_name##BsEntry* sub_root) { \
+        id_type new_sub_root_id = sub_root->right; \
+        if (new_sub_root_id == referencer##_InvalidId) { \
+            return sub_root_id; \
+        } \
+        bs_tree_type_name##BsEntry* new_sub_root = referencer##_Reference(tree, new_sub_root_id); \
+        \
+        accessor##_SetParent(new_sub_root, accessor##_GetParent(sub_root)); \
+        if (accessor##_GetParent(sub_root) != referencer##_InvalidId) { \
+            if (accessor##_GetParent(sub_root)->left == sub_root_id) { \
+                accessor##_GetParent(sub_root)->left = new_sub_root_id; \
+            } \
+            else { \
+                accessor##_GetParent(sub_root)->right = new_sub_root_id; \
+            } \
+        } \
+        accessor##_SetParent(sub_root, new_sub_root_id); \
+        \
+        sub_root->right = new_sub_root->left; \
+        if (sub_root->right != referencer##_InvalidId) { \
+            accessor##_SetParent(sub_root->right, sub_root_id); \
+        } \
+        \
+        new_sub_root->left = sub_root_id; \
+        \
+        referencer##_Dereference(tree, new_sub_root); \
+        return new_sub_root_id; \
+    } \
+    /*
+    * 右旋子树
+    */ \
+    static id_type bs_tree_type_name##RotateRight(id_type sub_root_id, bs_tree_type_name##BsEntry* sub_root) { \
+        id_type new_sub_root_id = sub_root->left; \
+        if (new_sub_root_id == referencer##_InvalidId) { \
+            return sub_root_id; \
+        } \
+        bs_tree_type_name##BsEntry* new_sub_root = referencer##_Reference(tree, new_sub_root_id); \
+        \
+        accessor##_SetParent(new_sub_root, accessor##_GetParent(sub_root)); \
+        if (accessor##_GetParent(sub_root) != referencer##_InvalidId) { \
+           if (accessor##_GetParent(sub_root)->left == sub_root_id) { \
+                accessor##_GetParent(sub_root)->left = new_sub_root_id; \
+            } \
+            else { \
+                accessor##_GetParent(sub_root)->right = new_sub_root_id; \
+            } \
+        } \
+        accessor##_SetParent(sub_root, new_sub_root_id); \
+        \
+        sub_root->left = new_sub_root->right; \
+        if (sub_root->left != referencer##_InvalidId) { \
+            accessor##_SetParent(sub_root->left, sub_root_id); \
+        } \
+        \
+        new_sub_root->right = sub_root_id; \
+        \
+        referencer##_Dereference(tree, new_sub_root); \
+        return new_sub_root_id; \
+    } \
     /*
     * 初始化节点
     */ \
@@ -146,7 +208,7 @@ extern "C" {
     } \
     /*
     * 从树中删除节点
-    * 返回被删除的节点(或被替换到当前位置的节点)，构造所有回溯条件
+    * 返回被删除的节点(或被替换到当前位置的右子树最小节点)，构造所有回溯条件
     */ \
     id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id, bool* is_parent_left) { \
         id_type backtrack_id; \
