@@ -17,7 +17,6 @@ extern "C" {
 
 /*
 * 基数树
-* 提供高性能的定长key查询
 */
 
 typedef uint32_t RadixKey;

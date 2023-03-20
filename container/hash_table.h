@@ -20,9 +20,6 @@ extern "C" {
 /*
 * 链式哈希表
 */
-
-
-
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
@@ -82,7 +79,6 @@ typedef enum _HashEntryType {
 #define CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
     CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashTable, struct _##hash_table_type_name##HashEntry) \
     \
-    \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
         uint32_t cur_index; \
         struct _##hash_table_type_name##HashEntryList* cur_list_entry; \
@@ -91,7 +87,6 @@ typedef enum _HashEntryType {
     \
     element_type* hash_table_type_name##HashTableFirst(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     element_type* hash_table_type_name##HashTableNext(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
-    \
     \
     typedef struct _##hash_table_type_name##HashEntry { \
         HashEntryType type; \
