@@ -242,6 +242,9 @@ extern "C" {
         } \
         return height_update; \
     } \
+    /*
+    * 向树中插入节点的平衡操作
+    */ \
     static void avl_tree_type_name##AvlTreeInsertFixup(avl_tree_type_name##AvlTree* tree, id_type ins_entry_id) { \
         id_type cur_id = accessor##_GetParent(ins_entry_id); \
         id_type child_id = ins_entry_id; \
