@@ -82,7 +82,7 @@ typedef enum {
         accessor##_SetColor(ins_entry, kRbRed); \
         referencer##_Dereference(tree, ins_entry); \
         \
-        rb_tree_type_name##RbEntry* cur; \
+        rb_tree_type_name##RbEntry* cur = NULL; \
         /* 开始回溯维护 */ \
         while (cur_id != referencer##_InvalidId) { \
             cur = referencer##_Reference(tree, cur_id); \

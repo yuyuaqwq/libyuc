@@ -248,24 +248,26 @@ extern "C" {
     static void avl_tree_type_name##AvlTreeInsertFixup(avl_tree_type_name##AvlTree* tree, id_type ins_entry_id) { \
         id_type cur_id = accessor##_GetParent(ins_entry_id); \
         id_type child_id = ins_entry_id; \
-        avl_tree_type_name##AvlEntry* child = referencer##_Reference(tree, child_id); \
+        avl_tree_type_name##AvlEntry* child = NULL, * cur = NULL; \
         /* 插入节点后平衡因子可能发生变化，回溯维护平衡因子 */ \
         while (cur_id != referencer##_InvalidId) { \
-            avl_tree_type_name##AvlEntry* cur = referencer##_Reference(tree, cur_id); \
+            cur = referencer##_Reference(tree, cur_id); \
+            child = referencer##_Reference(tree, child_id); \
             int8_t cur_bf = accessor##_GetBalanceFactor(cur); \
             if (child_id == cur->left) cur_bf++;        /* 新节点插入到当前节点的左子树 */ \
             else cur_bf--;       /* 新节点插入到当前节点的右子树 */ \
             \
             if (avl_tree_type_name##RotateByBalanceFactor(tree, &cur_id, &cur, child_id, child, cur_bf) || cur_bf == 0) { \
                 /* 旋转后当前节点高度不变，或原先高度就不变，停止回溯 */ \
-                referencer##_Dereference(tree, cur); \
                 break; \
             } \
-            child_id = cur_id; \
             referencer##_Dereference(tree, child); \
+            child_id = cur_id; \
             child = cur; \
-            cur_id = accessor##_GetParent(cur); \
+            cur = NULL; \
+            cur_id = accessor##_GetParent(child); \
         } \
+        referencer##_Dereference(tree, cur); \
         referencer##_Dereference(tree, child); \
     } \
     /*
@@ -275,8 +277,9 @@ extern "C" {
         /* 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子 */ \
         id_type cur_id = accessor##_GetParent(del_entry_id); \
         id_type child_id = del_entry_id; \
-        avl_tree_type_name##AvlEntry* cur = referencer##_Reference(tree, cur_id); \
+        avl_tree_type_name##AvlEntry* cur = NULL; \
         while (cur_id != referencer##_InvalidId) { \
+            cur = referencer##_Reference(tree, cur_id); \
             int8_t cur_bf = accessor##_GetBalanceFactor(cur); \
             if (is_parent_left) { cur_bf--; } \
             else { cur_bf++; } \
@@ -285,7 +288,6 @@ extern "C" {
                 avl_tree_type_name##AvlEntry* deep_child = referencer##_Reference(tree, deep_child_id); \
                 if (avl_tree_type_name##RotateByBalanceFactor(tree, &cur_id, &cur, deep_child_id, deep_child, cur_bf) == false) { \
                     /* 另一侧高度相等或更深且无需旋转，则当前节点高度不变 */ \
-                    referencer##_Dereference(tree, cur); \
                     referencer##_Dereference(tree, deep_child); \
                     break; \
                 } \
@@ -302,6 +304,7 @@ extern "C" {
                 is_parent_left = cur->left == child_id; \
             } \
         } \
+        referencer##_Dereference(tree, cur); \
     } \
     /*
     * 初始化树
@@ -349,23 +352,22 @@ extern "C" {
     } \
 
 
-//CUTILS_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
-//typedef struct _IntEntry_Avl {
-//    IntAvlEntry entry;
-//    int key;
-//} IntEntry_Avl;
-//#define INT_AVL_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Avl*)bs_entry)->key)
-//#define INT_AVL_TREE_ACCESSOR_GetParent(entry) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)entry)->parent_bf) & (~((uintptr_t)0x3)))))
-//#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) ((int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3))
-//#define INT_AVL_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntAvlEntry*)entry)->parent_bf = (IntAvlEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) & 0x3)));
-//#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(entry, bf) (entry->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)bf & 0x3)))
-//#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
-//#define INT_AVL_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
-//#define INT_AVL_TREE_REFERENCER_Dereference(main_obj, obj)
-//#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
-//#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
+CUTILS_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
+typedef struct _IntEntry_Avl {
+    IntAvlEntry entry;
+    int key;
+} IntEntry_Avl;
+#define INT_AVL_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Avl*)bs_entry)->key)
+#define INT_AVL_TREE_ACCESSOR_GetParent(entry) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)entry)->parent_bf) & (~((uintptr_t)0x3)))))
+#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) ((int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3))
+#define INT_AVL_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntAvlEntry*)entry)->parent_bf = (IntAvlEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) & 0x3)));
+#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(entry, bf) (entry->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)bf & 0x3)))
+#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
+#define INT_AVL_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
+#define INT_AVL_TREE_REFERENCER_Dereference(main_obj, obj)
+#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
+#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
 
-//CUTILS_CONTAINER_AVL_TREE_DEFINE(Int, IntAvlEntry*, int, INT_AVL_TREE_REFERENCER, INT_AVL_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus
 }
