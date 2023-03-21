@@ -8,6 +8,9 @@
 #include <CUtils/container/vector.h>
 #include <CUtils/container/bplus_tree.h>
 
+
+CUTILS_CONTAINER_VECTOR_DEFINE(BPlusCursorStack, BPlusElementPos, CUTILS_OBJECT_ALLOCATOR_DEFALUT)
+
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK
 typedef struct _Tx {
     BPlusTree tree;
@@ -126,32 +129,33 @@ BPlusElementPos* BPlusCursorCur(Tx* tx, BPlusCursor* cursor) {
     if (cursor->level < 0) {
         return NULL;
     }
-    return ArrayAt(&cursor->stack, cursor->level, BPlusElementPos);
+    return &cursor->stack.obj_arr[cursor->level];
 }
 
 BPlusElementPos* BPlusCursorUp(Tx* tx, BPlusCursor* cursor) {
     if (cursor->level <= 0) {
         return NULL;
     }
-    return ArrayAt(&cursor->stack, --cursor->level, BPlusElementPos);
+    return &cursor->stack.obj_arr[--cursor->level];;
 }
 
 BPlusElementPos* BPlusCursorDown(Tx* tx, BPlusCursor* cursor) {
-    if (cursor->level + 1 >= ArrayGetCount(&cursor->stack)) {
+    if (cursor->level + 1 >= cursor->stack.count) {
         return NULL;
     }
-    return ArrayAt(&cursor->stack, ++cursor->level, BPlusElementPos);
+    return &cursor->stack.obj_arr[++cursor->level];
 }
 
 BPlusCursorStatus BPlusCursorFirst(Tx* tx, BPlusCursor* cursor, Key* key) {
-    ArrayInit(&cursor->stack, 8, sizeof(BPlusElementPos));
+    BPlusCursorStackVectorInit(&cursor->stack, 8, true);
+    cursor->stack.count = 0;
     cursor->level = -1;
     return BPlusCursorNext(tx, cursor, key);
 }
 
 void BPlusCursorRelease(Tx* tx, BPlusCursor* cursor) {
     if (cursor->stack.capacity != 0) {
-        ArrayRelease(&cursor->stack);
+        BPlusCursorStackVectorRelease(&cursor->stack);
     }
 }
 
@@ -192,7 +196,7 @@ BPlusCursorStatus BPlusCursorNext(Tx* tx, BPlusCursor* cursor, Key* key) {
         res = -1;
         cur.element_idx = 0;
     }
-    ArrayPushTail(&cursor->stack, &cur);
+    BPlusCursorStackVectorPushTail(&cursor->stack, &cur);
     BPlusCursorStatus status = kBPlusCursorNext;
     if (cur_entry->type == kBPlusEntryLeaf) {
         if (res != 0) {

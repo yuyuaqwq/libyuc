@@ -16,6 +16,12 @@ extern "C" {
 #endif
 
 
+
+// #define CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, id_type, key_type) \
+
+
+
+
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK
 typedef struct _BPlusEntry* BPlusEntryId;
 typedef size_t PageCount;
@@ -94,6 +100,9 @@ typedef struct _BPlusTree {
 CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusTree
 #endif // !CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusEntry
 
+
+
+
 /*
 * B+树游标
 */
@@ -101,6 +110,8 @@ typedef struct {
     BPlusEntryId entry_id;
     int element_idx;
 } BPlusElementPos;
+
+CUTILS_CONTAINER_VECTOR_DECLARATION(BPlusCursorStack, BPlusElementPos)
 typedef enum {
     kBPlusCursorNe,
     kBPlusCursorNext,
@@ -108,7 +119,7 @@ typedef enum {
     kBPlusCursorEnd,
 } BPlusCursorStatus;
 typedef struct _BPlusCursor {
-    Array stack;
+    BPlusCursorStackVector stack;
     int level;
     BPlusCursorStatus leaf_status;
 } BPlusCursor;

@@ -352,22 +352,23 @@ extern "C" {
     } \
 
 
-CUTILS_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
-typedef struct _IntEntry_Avl {
-    IntAvlEntry entry;
-    int key;
-} IntEntry_Avl;
-#define INT_AVL_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Avl*)bs_entry)->key)
-#define INT_AVL_TREE_ACCESSOR_GetParent(entry) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)entry)->parent_bf) & (~((uintptr_t)0x3)))))
-#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) ((int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3))
-#define INT_AVL_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntAvlEntry*)entry)->parent_bf = (IntAvlEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) & 0x3)));
-#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(entry, bf) (entry->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)bf & 0x3)))
-#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
-#define INT_AVL_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
-#define INT_AVL_TREE_REFERENCER_Dereference(main_obj, obj)
-#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
-#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
+//CUTILS_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
+//typedef struct _IntEntry_Avl {
+//    IntAvlEntry entry;
+//    int key;
+//} IntEntry_Avl;
+//#define INT_AVL_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry_Avl*)bs_entry)->key)
+//#define INT_AVL_TREE_ACCESSOR_GetParent(entry) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)entry)->parent_bf) & (~((uintptr_t)0x3)))))
+//#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) ((int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)entry)->parent_bf) & 0x3))
+//#define INT_AVL_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntAvlEntry*)entry)->parent_bf = (IntAvlEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(entry) & 0x3)));
+//#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(entry, bf) (entry->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)bf & 0x3)))
+//#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
+//#define INT_AVL_TREE_REFERENCER_Reference(main_obj, obj_id) ((IntBsEntry*)obj_id)
+//#define INT_AVL_TREE_REFERENCER_Dereference(main_obj, obj)
+//#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
+//#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
 
+// CUTILS_CONTAINER_AVL_TREE_DEFINE(Int, IntEntry_Avl*, int, INT_AVL_TREE_REFERENCER, INT_AVL_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus
 }
