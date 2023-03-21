@@ -11,6 +11,25 @@
 
 CUTILS_CONTAINER_VECTOR_DEFINE(BPlusCursorStack, BPlusElementPos, CUTILS_OBJECT_ALLOCATOR_DEFALUT)
 
+inline Key CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(BPlusRbBsEntry* bs_entry) {
+    
+}
+
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(entry) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)entry)->parent_color) & (~((uintptr_t)0x1)))))
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(entry) ((RbColor)(((uintptr_t)((IntRbEntry*)entry)->parent_color) & 0x1))
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetParent(entry, new_parent_id) (((IntRbEntry*)entry)->parent_color = (IntRbEntry*)(((uintptr_t)new_parent_id) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(entry))));
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetColor(entry, color) (entry->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(entry)) | ((uintptr_t)color)))
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR
+
+
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(tree, obj_id) obj_id)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Dereference(main_obj, obj) 
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId (NULL)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER
+CUTILS_CONTAINER_RB_TREE_DEFINE(BPlus, int16_t, Key, CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER, CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
+
+
+
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_MODE_DISK
 typedef struct _Tx {
     BPlusTree tree;
@@ -19,23 +38,23 @@ typedef struct _Tx {
 const BPlusEntryId kBPlusEntryInvalidId = -1;
 
 
-inline BPlusTree* BPlusTreeGet(Tx* tx) {
+inline BPlusTree* BPlusTreeGet(BPlusTree* tree) {
     return &tx->tree;
 }
 
 
-BPlusEntry* BPlusEntryGet(Tx* tx, BPlusEntryId entry_id) {
+BPlusEntry* BPlusEntryGet(BPlusTree* tree, BPlusEntryId entry_id) {
     if (entry_id == kBPlusEntryInvalidId) {
         return NULL;
     }
     return (BPlusEntry*)entry_id;
 }
 
-void BPlusEntryDereference(Tx* tx, BPlusEntry* entry) {
+void BPlusEntryDereference(BPlusTree* tree, BPlusEntry* entry) {
 
 }
 
-BPlusEntryId BPlusEntryCreate(Tx* tx, BPlusEntryType type) {
+BPlusEntryId BPlusEntryCreate(BPlusTree* tree, BPlusEntryType type) {
     BPlusTree* tree = BPlusTreeGet(tx);
     size_t size;
     if (type == kBPlusEntryIndex) {
@@ -45,19 +64,19 @@ BPlusEntryId BPlusEntryCreate(Tx* tx, BPlusEntryType type) {
         size = (((BPlusTree*)tree)->leaf_m - 1) * sizeof(BPlusLeafElement);
     }
     BPlusEntryId entry_id = MemoryAlloc(sizeof(BPlusEntry) + size);
-    BPlusEntry* entry = BPlusEntryGet(tx, entry_id);
+    BPlusEntry* entry = BPlusEntryGet(tree, entry_id);
     entry->type = type;
     entry->element_count = 0;
-    BPlusEntryDereference(tx, entry);
+    BPlusEntryDereference(tree, entry);
     return entry_id;
 }
 
-void BPlusEntryDelete(Tx* tx, BPlusEntryId entry_id) {
+void BPlusEntryDelete(BPlusTree* tree, BPlusEntryId entry_id) {
     MemoryFree((void*)entry_id);
 }
 
 
-void BPlusElementSet(Tx* tx, BPlusEntry* entry, int i, BPlusElement* element) {
+void BPlusElementSet(BPlusTree* tree, BPlusEntry* entry, int i, BPlusElement* element) {
     if (entry->type == kBPlusEntryLeaf) {
         entry->leaf.element[i] = element->leaf;
     }
@@ -67,14 +86,14 @@ void BPlusElementSet(Tx* tx, BPlusEntry* entry, int i, BPlusElement* element) {
 }
 
 
-ptrdiff_t BPlusKeyCmp(Tx* tx, const Key* key1, const Key* key2) {
+ptrdiff_t BPlusKeyCmp(BPlusTree* tree, const Key* key1, const Key* key2) {
     return MemoryCmpR2(key1->ptr, key1->size, key2->ptr, key2->size);
 }
 
 #endif // CUTILS_CONTAINER_BPLUS_TREE_DISK
 
 
-BPlusElement BPlusElementGet(Tx* tx, BPlusEntry* entry, int i) {
+BPlusElement BPlusElementGet(BPlusTree* tree, BPlusEntry* entry, int i) {
     BPlusElement element;
     if (entry->type == kBPlusEntryLeaf) {
         element.leaf = entry->leaf.element[i];
@@ -85,14 +104,14 @@ BPlusElement BPlusElementGet(Tx* tx, BPlusEntry* entry, int i) {
     return element;
 }
 
-BPlusEntryId BPlusElementGetChildId(Tx* tx, const BPlusEntry* index, int i) {
+BPlusEntryId BPlusElementGetChildId(BPlusTree* tree, const BPlusEntry* index, int i) {
     if (i == index->element_count) {
         return index->index.tail_child_id;
     }
     return index->index.element[i].child_id;
 }
 
-void BPlusElementSetChildId(Tx* tx, BPlusEntry* index, int i, BPlusEntryId id) {
+void BPlusElementSetChildId(BPlusTree* tree, BPlusEntry* index, int i, BPlusEntryId id) {
     if (i == index->element_count) {
         index->index.tail_child_id = id;
         return;
@@ -100,7 +119,7 @@ void BPlusElementSetChildId(Tx* tx, BPlusEntry* index, int i, BPlusEntryId id) {
     index->index.element[i].child_id = id;
 }
 
-void BPlusElementCopy(Tx* tx, BPlusEntry* dst_entry, int dst, BPlusEntry* src_entry, int src) {
+void BPlusElementCopy(BPlusTree* tree, BPlusEntry* dst_entry, int dst, BPlusEntry* src_entry, int src) {
     if (dst_entry->type == kBPlusEntryLeaf) {
         dst_entry->leaf.element[dst] = src_entry->leaf.element[src];
     }
@@ -109,7 +128,7 @@ void BPlusElementCopy(Tx* tx, BPlusEntry* dst_entry, int dst, BPlusEntry* src_en
     }
 }
 
-ptrdiff_t BPlusElementCmp(Tx* tx, const BPlusEntry* entry, int i, Key* key2) {
+ptrdiff_t BPlusElementCmp(BPlusTree* tree, const BPlusEntry* entry, int i, Key* key2) {
     const Key* key1;
     if (entry->type == kBPlusEntryLeaf) {
         key1 = &entry->leaf.element[i].key;
@@ -117,7 +136,7 @@ ptrdiff_t BPlusElementCmp(Tx* tx, const BPlusEntry* entry, int i, Key* key2) {
     else {
         key1 = &entry->index.element[i].key;
     }
-    ptrdiff_t res = BPlusKeyCmp(tx, key1, key2);
+    ptrdiff_t res = BPlusKeyCmp(tree, key1, key2);
     return res;
 }
 
@@ -125,61 +144,60 @@ ptrdiff_t BPlusElementCmp(Tx* tx, const BPlusEntry* entry, int i, Key* key2) {
 
 
 
-BPlusElementPos* BPlusCursorCur(Tx* tx, BPlusCursor* cursor) {
+BPlusElementPos* BPlusCursorCur(BPlusTree* tree, BPlusCursor* cursor) {
     if (cursor->level < 0) {
         return NULL;
     }
     return &cursor->stack.obj_arr[cursor->level];
 }
 
-BPlusElementPos* BPlusCursorUp(Tx* tx, BPlusCursor* cursor) {
+BPlusElementPos* BPlusCursorUp(BPlusTree* tree, BPlusCursor* cursor) {
     if (cursor->level <= 0) {
         return NULL;
     }
     return &cursor->stack.obj_arr[--cursor->level];;
 }
 
-BPlusElementPos* BPlusCursorDown(Tx* tx, BPlusCursor* cursor) {
+BPlusElementPos* BPlusCursorDown(BPlusTree* tree, BPlusCursor* cursor) {
     if (cursor->level + 1 >= cursor->stack.count) {
         return NULL;
     }
     return &cursor->stack.obj_arr[++cursor->level];
 }
 
-BPlusCursorStatus BPlusCursorFirst(Tx* tx, BPlusCursor* cursor, Key* key) {
+BPlusCursorStatus BPlusCursorFirst(BPlusTree* tree, BPlusCursor* cursor, Key* key) {
     BPlusCursorStackVectorInit(&cursor->stack, 8, true);
     cursor->stack.count = 0;
     cursor->level = -1;
-    return BPlusCursorNext(tx, cursor, key);
+    return BPlusCursorNext(tree, cursor, key);
 }
 
-void BPlusCursorRelease(Tx* tx, BPlusCursor* cursor) {
+void BPlusCursorRelease(BPlusTree* tree, BPlusCursor* cursor) {
     if (cursor->stack.capacity != 0) {
         BPlusCursorStackVectorRelease(&cursor->stack);
     }
 }
 
-BPlusCursorStatus BPlusCursorNext(Tx* tx, BPlusCursor* cursor, Key* key) {
-    BPlusTree* tree = BPlusTreeGet(tx);
+BPlusCursorStatus BPlusCursorNext(BPlusTree* tree, BPlusCursor* cursor, Key* key) {
     BPlusElementPos cur;
-    BPlusElementPos* parent = BPlusCursorCur(tx, cursor);
+    BPlusElementPos* parent = BPlusCursorCur(tree, cursor);
     if (parent) {
-        BPlusEntry* parent_entry = BPlusEntryGet(tx, parent->entry_id);
+        BPlusEntry* parent_entry = BPlusEntryGet(tree, parent->entry_id);
         if (parent_entry->type == kBPlusEntryLeaf) {
             return kBPlusCursorEnd;
         }
-        cur.entry_id = BPlusElementGetChildId(tx, parent_entry, parent->element_idx);
-        BPlusEntryDereference(tx, parent_entry);
+        cur.entry_id = BPlusElementGetChildId(tree, parent_entry, parent->element_idx);
+        BPlusEntryDereference(tree, parent_entry);
     }
     else {
         cur.entry_id = tree->root_id;
     }
 
-    BPlusEntry* cur_entry = BPlusEntryGet(tx, cur.entry_id);
+    BPlusEntry* cur_entry = BPlusEntryGet(tree, cur.entry_id);
     int res;
     if (cur_entry->element_count > 0) {
-        cur.element_idx = BPlusBinarySearch_Range(tx, cur_entry, 0, cur_entry->element_count - 1, key);
-        res = BPlusElementCmp(tx, cur_entry, cur.element_idx, key);
+        cur.element_idx = BPlusBinarySearch_Range(tree, cur_entry, 0, cur_entry->element_count - 1, key);
+        res = BPlusElementCmp(tree, cur_entry, cur.element_idx, key);
         if (cur_entry->type == kBPlusEntryIndex) {
             if (res == 0) {
                 // 索引节点，查找key相等，取右兄弟元素
@@ -208,7 +226,7 @@ BPlusCursorStatus BPlusCursorNext(Tx* tx, BPlusCursor* cursor, Key* key) {
         cursor->leaf_status = status;
     }
     ++cursor->level;
-    BPlusEntryDereference(tx, cur_entry);
+    BPlusEntryDereference(tree, cur_entry);
     return status;
 }
 
@@ -220,12 +238,11 @@ BPlusCursorStatus BPlusCursorNext(Tx* tx, BPlusCursor* cursor, Key* key) {
 /*
 * 二分查找
 */
-static int BPlusBinarySearch(Tx* tx, const BPlusEntry* entry, int first, int last, Key* key) {
-    BPlusTree* tree = BPlusTreeGet(tx);
+static int BPlusBinarySearch(BPlusTree* tree, const BPlusEntry* entry, int first, int last, Key* key) {
     int mid;
     while (first <= last) {
         mid = first + (last - first) / 2;
-        int res = BPlusElementCmp(tx, entry, mid, key);
+        int res = BPlusElementCmp(tree, entry, mid, key);
         if (res > 0) {
             last = mid - 1;
         }
@@ -239,12 +256,11 @@ static int BPlusBinarySearch(Tx* tx, const BPlusEntry* entry, int first, int las
     return -1;
 }
 
-static int BPlusBinarySearch_Range(Tx* tx, const BPlusEntry* entry, int first, int last, Key* key) {
-    BPlusTree* tree = BPlusTreeGet(tx);
+static int BPlusBinarySearch_Range(BPlusTree* tree, const BPlusEntry* entry, int first, int last, Key* key) {
     int mid = 0;
     while (first < last) {
         mid = first + (last - first) / 2;
-        int res = BPlusElementCmp(tx, entry, mid, key);
+        int res = BPlusElementCmp(tree, entry, mid, key);
         if (res < 0) first = mid + 1;
         else last = mid;
     }
@@ -255,28 +271,28 @@ static int BPlusBinarySearch_Range(Tx* tx, const BPlusEntry* entry, int first, i
 /*
 * 双向链表
 */
-static void LeafListEntryInit(Tx* tx, BPlusEntryId entry_id) {
-    BPlusEntry* first = (BPlusEntry*)BPlusEntryGet(tx, entry_id);
+static void LeafListEntryInit(BPlusTree* tree, BPlusEntryId entry_id) {
+    BPlusEntry* first = (BPlusEntry*)BPlusEntryGet(tree, entry_id);
     first->leaf.list_entry.next = entry_id;
     first->leaf.list_entry.prev = entry_id;
-    BPlusEntryDereference(tx, first);
+    BPlusEntryDereference(tree, first);
 }
 
-static void LeafListEntryInsertToNext(Tx* tx, BPlusEntry* prev, BPlusEntryId prev_id, BPlusEntry* entry, BPlusEntryId entry_id) {
+static void LeafListEntryInsertToNext(BPlusTree* tree, BPlusEntry* prev, BPlusEntryId prev_id, BPlusEntry* entry, BPlusEntryId entry_id) {
     BPlusEntryId old_next_id = prev->leaf.list_entry.next;
     prev->leaf.list_entry.next = entry_id;
     entry->leaf.list_entry.next = old_next_id;
     entry->leaf.list_entry.prev = prev_id;
-    BPlusEntry* old_next = (BPlusEntry*)BPlusEntryGet(tx, old_next_id);
+    BPlusEntry* old_next = (BPlusEntry*)BPlusEntryGet(tree, old_next_id);
     old_next->leaf.list_entry.prev = entry_id;
-    BPlusEntryDereference(tx, old_next);
+    BPlusEntryDereference(tree, old_next);
 }
 
-static void LeafListEntryRemoveFromPrev(Tx* tx, BPlusEntry* prev, BPlusEntryId prev_id, BPlusEntry* entry, BPlusEntryId entry_id) {
-    BPlusEntry* next = BPlusEntryGet(tx, entry->leaf.list_entry.next);
+static void LeafListEntryRemoveFromPrev(BPlusTree* tree, BPlusEntry* prev, BPlusEntryId prev_id, BPlusEntry* entry, BPlusEntryId entry_id) {
+    BPlusEntry* next = BPlusEntryGet(tree, entry->leaf.list_entry.next);
     next->leaf.list_entry.prev = prev_id;
     prev->leaf.list_entry.next = entry->leaf.list_entry.next;
-    BPlusEntryDereference(tx, next);
+    BPlusEntryDereference(tree, next);
 }
 
 
@@ -293,22 +309,22 @@ static void LeafListEntryRemoveFromPrev(Tx* tx, BPlusEntry* prev, BPlusEntryId p
 /*
 * 获取左兄弟节点，没有则返回NULL
 */
-static BPlusEntryId BPlusGetLeftSiblingEntry(Tx* tx, const BPlusEntry* entry, const BPlusEntry* parent, int index) {
+static BPlusEntryId BPlusGetLeftSiblingEntry(BPlusTree* tree, const BPlusEntry* entry, const BPlusEntry* parent, int index) {
     if (index == 0) {
         return kBPlusEntryInvalidId;
     }
-    BPlusEntryId siblingId = BPlusElementGetChildId(tx, parent, index - 1);
+    BPlusEntryId siblingId = BPlusElementGetChildId(tree, parent, index - 1);
     return siblingId;
 }
 
 /*
 * 获取右兄弟节点，没有则返回NULL
 */
-static BPlusEntryId BPlusGetRightSiblingEntry(Tx* tx, const BPlusEntry* entry, const BPlusEntry* parent, int index) {
+static BPlusEntryId BPlusGetRightSiblingEntry(BPlusTree* tree, const BPlusEntry* entry, const BPlusEntry* parent, int index) {
     if (index >= parent->element_count) {
         return kBPlusEntryInvalidId;
     }
-    BPlusEntryId siblingId = BPlusElementGetChildId(tx, parent, index + 1);
+    BPlusEntryId siblingId = BPlusElementGetChildId(tree, parent, index + 1);
     return siblingId;
 }
 
@@ -316,11 +332,11 @@ static BPlusEntryId BPlusGetRightSiblingEntry(Tx* tx, const BPlusEntry* entry, c
 * 向元素数组指定位置插入元素
 * 不支持处理末尾子节点
 */
-static void BPlusInsertElement(Tx* tx, BPlusEntry* entry, int insert_index, BPlusElement* insert_element) {
+static void BPlusInsertElement(BPlusTree* tree, BPlusEntry* entry, int insert_index, BPlusElement* insert_element) {
     for (int j = entry->element_count - 1; j >= insert_index; j--) {
-        BPlusElementCopy(tx, entry, j + 1, entry, j);        // 向后挪动腾位置
+        BPlusElementCopy(tree, entry, j + 1, entry, j);        // 向后挪动腾位置
     }
-    BPlusElementSet(tx, entry, insert_index, insert_element);
+    BPlusElementSet(tree, entry, insert_index, insert_element);
     entry->element_count++;
 }
 
@@ -329,10 +345,10 @@ static void BPlusInsertElement(Tx* tx, BPlusEntry* entry, int insert_index, BPlu
 * 不支持处理末尾子节点
 * 返回被删除的元素
 */
-static BPlusElement BPlusDeleteElement(Tx* tx, BPlusEntry* entry, int del_index) {
-    BPlusElement del_element = BPlusElementGet(tx, entry, del_index);
+static BPlusElement BPlusDeleteElement(BPlusTree* tree, BPlusEntry* entry, int del_index) {
+    BPlusElement del_element = BPlusElementGet(tree, entry, del_index);
     for (int i = del_index + 1; i < entry->element_count; i++) {
-        BPlusElementCopy(tx, entry, i - 1, entry, i);
+        BPlusElementCopy(tree, entry, i - 1, entry, i);
     }
     entry->element_count--;
     return del_element;
@@ -349,16 +365,15 @@ static BPlusElement BPlusDeleteElement(Tx* tx, BPlusEntry* entry, int del_index)
 * 因为分裂后选择右节点的最左元素的key作为上升的key
 * 这个时候无论怎么插入元素都不会插入到该节点最左元素的左侧(比它小的会被分到左侧节点，因为父元素key等于该元素)，该节点再分裂也就不存在最左元素再次上升的可能了
 */
-static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_id, BPlusEntry* parent, int parent_index, int insertIndex, BPlusElement* element, BPlusEntryId* out_right_id) {
-    BPlusTree* tree = BPlusTreeGet(tx);
+static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntryId left_id, BPlusEntry* parent, int parent_index, int insertIndex, BPlusElement* element, BPlusEntryId* out_right_id) {
     BPlusEntryId right_id;
     BPlusEntry* right;
     int rightCount;
     BPlusElement up_element;
     if (left->type == kBPlusEntryLeaf) {
-        right_id = BPlusEntryCreate(tx, kBPlusEntryLeaf);
-        right = BPlusEntryGet(tx, right_id);
-        LeafListEntryInsertToNext(tx, left, left_id, right, right_id);
+        right_id = BPlusEntryCreate(tree, kBPlusEntryLeaf);
+        right = BPlusEntryGet(tree, right_id);
+        LeafListEntryInsertToNext(tree, left, left_id, right, right_id);
         // 原地分裂思路：mid将未插入的元素也算上，好计算newCount，4阶插入后4节点就是2(左2右2)，5阶插入后5节点还是2(左2右3)
         // 就是提前算好右侧应当有多少个元素，拷贝过去，中间遇到新元素插入就代替这一次的拷贝，没插入再插入到左侧
         int mid = tree->leaf_m / 2;
@@ -368,27 +383,27 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_
         for (; i >= 0; i--, j--) {
             if (!insert && j + 1 == insertIndex) {        // 这里j+1是因为，循环的时候j并没有把未插入元素也算上
                 left->element_count++;
-                BPlusElementSet(tx, right, i, element);
+                BPlusElementSet(tree, right, i, element);
                 j++;        // j不动
                 insert = true;
                 continue;
             }
-            BPlusElementCopy(tx, right, i, left, j);
+            BPlusElementCopy(tree, right, i, left, j);
         }
         left->element_count -= rightCount;
         if (!insert) {
             // 新元素还没有插入，将其插入
-            BPlusInsertElement(tx, left, insertIndex, element);
+            BPlusInsertElement(tree, left, insertIndex, element);
         }
 
         // 从mid拿到上升元素，叶子元素转换为索引元素，上升元素的子节点指向左节点，
-        up_element = BPlusElementGet(tx, right, 0);
+        up_element = BPlusElementGet(tree, right, 0);
         Key key = up_element.leaf.key;
         up_element.index.key = key;
     }
     else {
-        right_id = BPlusEntryCreate(tx, kBPlusEntryIndex);
-        right = BPlusEntryGet(tx, right_id);
+        right_id = BPlusEntryCreate(tree, kBPlusEntryIndex);
+        right = BPlusEntryGet(tree, right_id);
         // 原地分裂思路：mid将未插入的元素和即将上升的元素都算上，好计算newCount，4阶插入后4节点就是4/2=2(左1右2)，5阶插入后5节点也是2(左2右2)，少了一个是因为上升的也算上了
         // 先将后半部分拷贝到新节点，如果中间遇到了索引的插入，那就一并插入，最后的midkey是entry->indexData[entry->count-1]，因为右侧的数量是提前算好的，多出来的一定放到左侧
         int mid = (tree->index_m - 1) / 2;
@@ -398,17 +413,17 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_
         for (; i >= 0; i--, j--) {
             if (!insert && j + 1 == insertIndex) {        // 这里j+1是因为，循环的时候j并没有把未插入元素也算上
                 left->element_count++;
-                BPlusElementSet(tx, right, i, element);
+                BPlusElementSet(tree, right, i, element);
                 j++;        // j不动
                 insert = true;
                 continue;
             }
-            BPlusElementCopy(tx, right, i, left, j);
+            BPlusElementCopy(tree, right, i, left, j);
         }
         left->element_count -= rightCount;
         if (!insert) {
             // 新元素还没有插入，将其插入
-            BPlusInsertElement(tx, left, insertIndex, element);
+            BPlusInsertElement(tree, left, insertIndex, element);
         }
 
         // 假设如下节点需要分裂
@@ -424,15 +439,15 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_
 
         // 最后从左节点末尾拿到上升元素，将其摘除
         left->element_count--;
-        up_element = BPlusElementGet(tx, left, left->element_count);
+        up_element = BPlusElementGet(tree, left, left->element_count);
         left->index.tail_child_id = up_element.index.child_id;       // 3指定为2的右侧子节点
     }
     up_element.index.child_id = left_id;        // 上升的4的子节点为2
-    BPlusElementSetChildId(tx, parent, parent_index, right_id);      // 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点)
+    BPlusElementSetChildId(tree, parent, parent_index, right_id);      // 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点)
 
     right->element_count = rightCount;
     *out_right_id = right_id;
-    BPlusEntryDereference(tx, right);
+    BPlusEntryDereference(tree, right);
     return up_element;
 }
 
@@ -442,28 +457,28 @@ static BPlusElement BPlusSplitEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_
 *   2
 * 1   3
 */
-static void BPlusMergeEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_id, BPlusEntry* right, BPlusEntryId right_id, BPlusEntry* parent, int parent_index) {
+static void BPlusMergeEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntryId left_id, BPlusEntry* right, BPlusEntryId right_id, BPlusEntry* parent, int parent_index) {
     if (left->type == kBPlusEntryLeaf) {
-        LeafListEntryRemoveFromPrev(tx, left, left_id, right, right_id);
+        LeafListEntryRemoveFromPrev(tree, left, left_id, right, right_id);
         // 是叶子节点，将right并入left中，并删除父元素
         for (int i = 0; i < right->element_count; i++) {
-            BPlusElementCopy(tx, left, left->element_count++, right, i);
+            BPlusElementCopy(tree, left, left->element_count++, right, i);
         }
     }
     else {
         // 是索引节点，将父元素(子节点原先指向左和右，下降需要指向左的末尾子节点)和right都并入到left中，向上传递删除父元素
-        BPlusElementCopy(tx, left, left->element_count++, parent, parent_index);
-        BPlusElementSetChildId(tx, left, left->element_count - 1, left->index.tail_child_id);       // left的末尾元素此时为下降的父元素，修改其子节点
+        BPlusElementCopy(tree, left, left->element_count++, parent, parent_index);
+        BPlusElementSetChildId(tree, left, left->element_count - 1, left->index.tail_child_id);       // left的末尾元素此时为下降的父元素，修改其子节点
         for (int i = 0; i < right->element_count; i++) {
-            BPlusElementCopy(tx, left, left->element_count++, right, i);
+            BPlusElementCopy(tree, left, left->element_count++, right, i);
         }
-        BPlusElementSetChildId(tx, left, left->element_count, right->index.tail_child_id);
+        BPlusElementSetChildId(tree, left, left->element_count, right->index.tail_child_id);
     }
     // 父元素会被删除，右兄弟的左侧子节点(或尾子节点)原先连接右节点，此时继承左节点
-    BPlusElementSetChildId(tx, parent, parent_index + 1, left_id);
+    BPlusElementSetChildId(tree, parent, parent_index + 1, left_id);
 
-    BPlusEntryDereference(tx, right);
-    BPlusEntryDelete(tx, right_id);
+    BPlusEntryDereference(tree, right);
+    BPlusEntryDelete(tree, right_id);
     // 合并部分完成，删除部分交给调用者
 }
 
@@ -472,51 +487,50 @@ static void BPlusMergeEntry(Tx* tx, BPlusEntry* left, BPlusEntryId left_id, BPlu
 /*
 * 向节点插入元素
 */
-bool BPlusInsertEntry(Tx* tx, BPlusCursor* cursor, BPlusElement* insert_element) {
-    BPlusTree* tree = BPlusTreeGet(tx);
-    BPlusElementPos* cur_pos = BPlusCursorCur(tx, cursor);
-    BPlusElementPos* parent_pos = BPlusCursorUp(tx, cursor);
+bool BPlusInsertEntry(BPlusTree* tree, BPlusCursor* cursor, BPlusElement* insert_element) {
+    BPlusElementPos* cur_pos = BPlusCursorCur(tree, cursor);
+    BPlusElementPos* parent_pos = BPlusCursorUp(tree, cursor);
     BPlusEntryId right_id;
-    BPlusEntry* cur = BPlusEntryGet(tx, cur_pos->entry_id);
+    BPlusEntry* cur = BPlusEntryGet(tree, cur_pos->entry_id);
     
     bool success = true, insertUp = false;
     BPlusElement up_element;
     do {
         if (cur->element_count == 0) {
             // 空树的叶子节点的插入
-            BPlusInsertElement(tx, cur, 0, insert_element);
+            BPlusInsertElement(tree, cur, 0, insert_element);
             break;
         }
         if (cursor->leaf_status == kBPlusCursorEq) {
-            BPlusElementSet(tx, cur, cur_pos->element_idx, insert_element);
+            BPlusElementSet(tree, cur, cur_pos->element_idx, insert_element);
             break;
         }
         uint32_t m = cur->type == kBPlusEntryIndex ? tree->index_m : tree->leaf_m;
         if (cur->element_count < m - 1) {
             // 有空余的位置插入
-            BPlusInsertElement(tx, cur, cur_pos->element_idx, insert_element);
+            BPlusInsertElement(tree, cur, cur_pos->element_idx, insert_element);
             break;
         }
 
         // 没有多余位置，需要分裂向上插入
         if (!parent_pos) {
             // 没有父节点，创建
-            BPlusEntryId parent_id = BPlusEntryCreate(tx, kBPlusEntryIndex);
-            BPlusEntry* parent = BPlusEntryGet(tx, parent_id);
-            up_element = BPlusSplitEntry(tx, cur, cur_pos->entry_id, parent, 0, cur_pos->element_idx, insert_element, &right_id);
-            BPlusInsertElement(tx, parent, 0, &up_element);
+            BPlusEntryId parent_id = BPlusEntryCreate(tree, kBPlusEntryIndex);
+            BPlusEntry* parent = BPlusEntryGet(tree, parent_id);
+            up_element = BPlusSplitEntry(tree, cur, cur_pos->entry_id, parent, 0, cur_pos->element_idx, insert_element, &right_id);
+            BPlusInsertElement(tree, parent, 0, &up_element);
             tree->root_id = parent_id;
-            BPlusEntryDereference(tx, parent);
+            BPlusEntryDereference(tree, parent);
             break;
         }
-        BPlusEntry* parent = BPlusEntryGet(tx, parent_pos->entry_id);
-        up_element = BPlusSplitEntry(tx, cur, cur_pos->entry_id, parent, parent_pos->element_idx, cur_pos->element_idx, insert_element, &right_id);
-        BPlusEntryDereference(tx, parent);
+        BPlusEntry* parent = BPlusEntryGet(tree, parent_pos->entry_id);
+        up_element = BPlusSplitEntry(tree, cur, cur_pos->entry_id, parent, parent_pos->element_idx, cur_pos->element_idx, insert_element, &right_id);
+        BPlusEntryDereference(tree, parent);
         insertUp = true;
     } while (false);
-    BPlusEntryDereference(tx, cur);
+    BPlusEntryDereference(tree, cur);
     if (insertUp) {
-        return BPlusInsertEntry(tx, cursor, &up_element);
+        return BPlusInsertEntry(tree, cursor, &up_element);
     }
     return success;
 }
@@ -524,16 +538,15 @@ bool BPlusInsertEntry(Tx* tx, BPlusCursor* cursor, BPlusElement* insert_element)
 /*
 * 删除指定节点的元素
 */
-bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
-    BPlusTree* tree = BPlusTreeGet(tx);
-    BPlusElementPos* cur_pos = BPlusCursorCur(tx, cursor);
-    BPlusElementPos* parent_pos = BPlusCursorUp(tx, cursor);
-    BPlusEntry* entry = BPlusEntryGet(tx, cur_pos->entry_id);
+bool BPlusDeleteEntry(BPlusTree* tree, BPlusCursor* cursor) {
+    BPlusElementPos* cur_pos = BPlusCursorCur(tree, cursor);
+    BPlusElementPos* parent_pos = BPlusCursorUp(tree, cursor);
+    BPlusEntry* entry = BPlusEntryGet(tree, cur_pos->entry_id);
     BPlusEntryId siblingId = 0;
     BPlusEntry* sibling = NULL;
     BPlusEntry* parent = NULL;
     bool success = true, deleteUp = false;
-    BPlusDeleteElement(tx, entry, cur_pos->element_idx);      // 直接删除即可，叶子元素没有子节点，索引元素在合并时已经处理子节点了
+    BPlusDeleteElement(tree, entry, cur_pos->element_idx);      // 直接删除即可，叶子元素没有子节点，索引元素在合并时已经处理子节点了
     do {
         uint32_t m = entry->type == kBPlusEntryIndex ? tree->index_m : tree->leaf_m;
         if (entry->element_count >= (m - 1) / 2) {
@@ -544,22 +557,22 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
             if (entry->type == kBPlusEntryIndex && entry->element_count == 0) {
                 BPlusEntryId childId = entry->index.tail_child_id;
                 tree->root_id = childId;
-                BPlusEntryDereference(tx, entry);
-                BPlusEntryDelete(tx, cur_pos->entry_id);
+                BPlusEntryDereference(tree, entry);
+                BPlusEntryDelete(tree, cur_pos->entry_id);
                 return true;
             }
             else {
                 break;
             }
         }
-        parent = BPlusEntryGet(tx, parent_pos->entry_id);
-        siblingId = BPlusGetLeftSiblingEntry(tx, entry, parent, parent_pos->element_idx);
+        parent = BPlusEntryGet(tree, parent_pos->entry_id);
+        siblingId = BPlusGetLeftSiblingEntry(tree, entry, parent, parent_pos->element_idx);
         bool leftSibling = true;
         if (siblingId == kBPlusEntryInvalidId) {
-            siblingId = BPlusGetRightSiblingEntry(tx, entry, parent, parent_pos->element_idx);
+            siblingId = BPlusGetRightSiblingEntry(tree, entry, parent, parent_pos->element_idx);
             leftSibling = false;
         }
-        sibling = BPlusEntryGet(tx, siblingId);
+        sibling = BPlusEntryGet(tree, siblingId);
         if (sibling->element_count > (m - 1) / 2) {
             // 向兄弟借节点
             if (entry->type == kBPlusEntryLeaf) {
@@ -567,14 +580,14 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
                 if (leftSibling) {
                     parent_pos->element_idx--;
                     // 左兄弟节点的末尾的元素插入到当前节点的头部，更新父元素key为借来的key
-                    BPlusElement element = BPlusDeleteElement(tx, sibling, sibling->element_count - 1);
-                    BPlusInsertElement(tx, entry, 0, &element);
+                    BPlusElement element = BPlusDeleteElement(tree, sibling, sibling->element_count - 1);
+                    BPlusInsertElement(tree, entry, 0, &element);
                     parent->index.element[parent_pos->element_idx].key = element.leaf.key;       // 更新索引
                 }
                 else {
                     // 右兄弟节点的头部的元素插入到当前节点的尾部，并新父元素key为右兄弟的新首元素
-                    BPlusElement element = BPlusDeleteElement(tx, sibling, 0);
-                    BPlusInsertElement(tx, entry, entry->element_count, &element);
+                    BPlusElement element = BPlusDeleteElement(tree, sibling, 0);
+                    BPlusInsertElement(tree, entry, entry->element_count, &element);
                     // 右节点的头元素key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首元素是最好的
                     parent->index.element[parent_pos->element_idx].key = sibling->leaf.element[0].key;       // 更新索引
                 }
@@ -584,23 +597,23 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
                 if (leftSibling) {
                     parent_pos->element_idx--;
                     // 左兄弟节点的末尾元素上升到父节点的头部，父节点的对应元素下降到当前节点的头部，上升元素其右子节点挂在下降的父节点元素的左侧
-                    BPlusElement left_element = BPlusDeleteElement(tx, sibling, sibling->element_count - 1);
+                    BPlusElement left_element = BPlusDeleteElement(tree, sibling, sibling->element_count - 1);
                     ObjectSwap(BPlusEntryId, left_element.index.child_id, sibling->index.tail_child_id);        // 要拿的是末尾的子节点，处理一下
-                    BPlusElement par_element = BPlusElementGet(tx, parent, parent_pos->element_idx);
+                    BPlusElement par_element = BPlusElementGet(tree, parent, parent_pos->element_idx);
                     par_element.index.child_id = left_element.index.child_id;
-                    BPlusInsertElement(tx, entry, 0, &par_element);
+                    BPlusInsertElement(tree, entry, 0, &par_element);
                     left_element.index.child_id = siblingId;
-                    BPlusElementSet(tx, parent, parent_pos->element_idx, &left_element);
+                    BPlusElementSet(tree, parent, parent_pos->element_idx, &left_element);
                 }
                 else {
                     // 右兄弟节点的头元素上升到父节点的头部，父节点的对应元素下降到当前节点的尾部，上升元素其左子节点挂在下降的父节点元素的右侧
-                    BPlusElement right_element = BPlusDeleteElement(tx, sibling, 0);
-                    BPlusElement par_element = BPlusElementGet(tx, parent, parent_pos->element_idx);
+                    BPlusElement right_element = BPlusDeleteElement(tree, sibling, 0);
+                    BPlusElement par_element = BPlusElementGet(tree, parent, parent_pos->element_idx);
                     par_element.index.child_id = right_element.index.child_id;
                     ObjectSwap(BPlusEntryId, par_element.index.child_id, entry->index.tail_child_id);        // 要插入的是末尾的子节点，处理一下
-                    BPlusInsertElement(tx, entry, entry->element_count, &par_element);
+                    BPlusInsertElement(tree, entry, entry->element_count, &par_element);
                     right_element.index.child_id = cur_pos->entry_id;
-                    BPlusElementSet(tx, parent, parent_pos->element_idx, &right_element);
+                    BPlusElementSet(tree, parent, parent_pos->element_idx, &right_element);
                 }
             }
             
@@ -610,21 +623,21 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
         // 兄弟节点不够借，需要合并(合并了也不会超过m-1，因为一边不足m-1的一半，一边是m-1的一半，是索引节点的合并也足够下降一个父元素)
         if (leftSibling) {
             --parent_pos->element_idx;
-            BPlusMergeEntry(tx, sibling, siblingId, entry, cur_pos->entry_id, parent, parent_pos->element_idx);
+            BPlusMergeEntry(tree, sibling, siblingId, entry, cur_pos->entry_id, parent, parent_pos->element_idx);
             entry = NULL;
         }
         else {
-            BPlusMergeEntry(tx, entry, cur_pos->entry_id, sibling, siblingId, parent, parent_pos->element_idx);
+            BPlusMergeEntry(tree, entry, cur_pos->entry_id, sibling, siblingId, parent, parent_pos->element_idx);
             sibling = NULL;
         }
         deleteUp = true;
     } while (false);
-    if (parent) { BPlusEntryDereference(tx, parent); }
-    if (sibling) { BPlusEntryDereference(tx, sibling); }
-    if (entry) { BPlusEntryDereference(tx, entry); }
+    if (parent) { BPlusEntryDereference(tree, parent); }
+    if (sibling) { BPlusEntryDereference(tree, sibling); }
+    if (entry) { BPlusEntryDereference(tree, entry); }
 
     if (deleteUp) {
-        return BPlusDeleteEntry(tx, cursor);     // 尾递归
+        return BPlusDeleteEntry(tree, cursor);     // 尾递归
     }
     return success;
 }
@@ -633,8 +646,7 @@ bool BPlusDeleteEntry(Tx* tx, BPlusCursor* cursor) {
 /*
 * 初始化B+树
 */
-void BPlusTreeInit(Tx* tx, uint32_t index_m, uint32_t leaf_m) {
-    BPlusTree* tree = BPlusTreeGet(tx);
+void BPlusTreeInit(BPlusTree* tree, uint32_t index_m, uint32_t leaf_m) {
     if (index_m < 3) {
         index_m = 3;      // 最少3阶，否则索引节点分裂会出现一侧没有节点的情况
     }
@@ -643,19 +655,19 @@ void BPlusTreeInit(Tx* tx, uint32_t index_m, uint32_t leaf_m) {
     }
     tree->index_m = index_m;
     tree->leaf_m = leaf_m;
-    tree->root_id = BPlusEntryCreate(tx, kBPlusEntryLeaf);
+    tree->root_id = BPlusEntryCreate(tree, kBPlusEntryLeaf);
     tree->leaf_list_first = tree->root_id;
-    LeafListEntryInit(tx, tree->leaf_list_first);
+    LeafListEntryInit(tree, tree->leaf_list_first);
 }
 
 /*
 * 从B+树中查找指定key
 */
-bool BPlusTreeFind(Tx* tx, Key* key) {
+bool BPlusTreeFind(BPlusTree* tree, Key* key) {
     BPlusCursor cursor;
-    BPlusCursorStatus status = BPlusCursorFirst(tx, &cursor, key);
+    BPlusCursorStatus status = BPlusCursorFirst(tree, &cursor, key);
     while (status == kBPlusCursorNext) {
-        status = BPlusCursorNext(tx, &cursor, key);
+        status = BPlusCursorNext(tree, &cursor, key);
     }
     return status == kBPlusCursorEq;
 }
@@ -663,29 +675,29 @@ bool BPlusTreeFind(Tx* tx, Key* key) {
 /*
 * 从B+树中插入指定key
 */
-bool BPlusTreeInsert(Tx* tx, BPlusLeafElement* element) {
+bool BPlusTreeInsert(BPlusTree* tree, BPlusLeafElement* element) {
     BPlusCursor cursor;
-    BPlusCursorStatus status = BPlusCursorFirst(tx, &cursor, &element->key);
+    BPlusCursorStatus status = BPlusCursorFirst(tree, &cursor, &element->key);
     while (status == kBPlusCursorNext) {
-        status = BPlusCursorNext(tx, &cursor, &element->key);
+        status = BPlusCursorNext(tree, &cursor, &element->key);
     }
-    bool success = BPlusInsertEntry(tx, &cursor, (BPlusLeafElement*)element);
-    BPlusCursorRelease(tx, &cursor);
+    bool success = BPlusInsertEntry(tree, &cursor, (BPlusLeafElement*)element);
+    BPlusCursorRelease(tree, &cursor);
     return success;
 }
 
 /*
 * 从B+树中删除指定key
 */
-bool BPlusTreeDelete(Tx* tx, Key* key) {
+bool BPlusTreeDelete(BPlusTree* tree, Key* key) {
     BPlusCursor cursor;
-    BPlusCursorStatus status = BPlusCursorFirst(tx, &cursor, key);
+    BPlusCursorStatus status = BPlusCursorFirst(tree, &cursor, key);
     while (status == kBPlusCursorNext) {
-        status = BPlusCursorNext(tx, &cursor, key);
+        status = BPlusCursorNext(tree, &cursor, key);
     }
     if (status == kBPlusCursorNe) {
         return false;
     }
-    bool success = BPlusDeleteEntry(tx, &cursor);
+    bool success = BPlusDeleteEntry(tree, &cursor);
     return success;
 }

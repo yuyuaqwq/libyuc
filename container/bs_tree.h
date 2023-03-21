@@ -48,8 +48,8 @@ extern "C" {
     static void bs_tree_type_name##BsTreeHitchEntry(bs_tree_type_name##BsTree* tree, id_type entry_id, id_type new_entry_id) { \
         bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
         bs_tree_type_name##BsEntry* new_entry = referencer##_Reference(tree, new_entry_id); \
-        if (accessor##_GetParent(entry) != referencer##_InvalidId) { \
-            bs_tree_type_name##BsEntry* entry_parent = referencer##_Reference(tree, accessor##_GetParent(entry)); \
+        if (accessor##_GetParent(tree, entry) != referencer##_InvalidId) { \
+            bs_tree_type_name##BsEntry* entry_parent = referencer##_Reference(tree, accessor##_GetParent(tree, entry)); \
             if (entry_parent->left == entry_id) { \
                 entry_parent->left = new_entry_id; \
             } \
@@ -59,7 +59,7 @@ extern "C" {
             referencer##_Dereference(tree, entry_parent); \
         } \
         if (new_entry_id != referencer##_InvalidId) { \
-            accessor##_SetParent(new_entry, accessor##_GetParent(entry)); \
+            accessor##_SetParent(tree, new_entry, accessor##_GetParent(tree, entry)); \
         } \
         if (tree->root == entry_id) { \
             tree->root = new_entry_id; \
@@ -67,30 +67,30 @@ extern "C" {
         referencer##_Dereference(tree, entry); \
         referencer##_Dereference(tree, new_entry); \
     } \
-        /*
+    /*
     * 左旋子树
     */ \
-    static id_type bs_tree_type_name##RotateLeft(id_type sub_root_id, bs_tree_type_name##BsEntry* sub_root) { \
+    static id_type bs_tree_type_name##RotateLeft(bs_tree_type_name##BsTree* tree, id_type sub_root_id, bs_tree_type_name##BsEntry* sub_root) { \
         id_type new_sub_root_id = sub_root->right; \
         if (new_sub_root_id == referencer##_InvalidId) { \
             return sub_root_id; \
         } \
         bs_tree_type_name##BsEntry* new_sub_root = referencer##_Reference(tree, new_sub_root_id); \
         \
-        accessor##_SetParent(new_sub_root, accessor##_GetParent(sub_root)); \
-        if (accessor##_GetParent(sub_root) != referencer##_InvalidId) { \
-            if (accessor##_GetParent(sub_root)->left == sub_root_id) { \
-                accessor##_GetParent(sub_root)->left = new_sub_root_id; \
+        accessor##_SetParent(tree, new_sub_root, accessor##_GetParent(tree, sub_root)); \
+        if (accessor##_GetParent(tree, sub_root) != referencer##_InvalidId) { \
+            if (accessor##_GetParent(tree, sub_root)->left == sub_root_id) { \
+                accessor##_GetParent(tree, sub_root)->left = new_sub_root_id; \
             } \
             else { \
-                accessor##_GetParent(sub_root)->right = new_sub_root_id; \
+                accessor##_GetParent(tree, sub_root)->right = new_sub_root_id; \
             } \
         } \
-        accessor##_SetParent(sub_root, new_sub_root_id); \
+        accessor##_SetParent(tree, sub_root, new_sub_root_id); \
         \
         sub_root->right = new_sub_root->left; \
         if (sub_root->right != referencer##_InvalidId) { \
-            accessor##_SetParent(sub_root->right, sub_root_id); \
+            accessor##_SetParent(tree, sub_root->right, sub_root_id); \
         } \
         \
         new_sub_root->left = sub_root_id; \
@@ -101,27 +101,27 @@ extern "C" {
     /*
     * 右旋子树
     */ \
-    static id_type bs_tree_type_name##RotateRight(id_type sub_root_id, bs_tree_type_name##BsEntry* sub_root) { \
+    static id_type bs_tree_type_name##RotateRight(bs_tree_type_name##BsTree* tree, id_type sub_root_id, bs_tree_type_name##BsEntry* sub_root) { \
         id_type new_sub_root_id = sub_root->left; \
         if (new_sub_root_id == referencer##_InvalidId) { \
             return sub_root_id; \
         } \
         bs_tree_type_name##BsEntry* new_sub_root = referencer##_Reference(tree, new_sub_root_id); \
         \
-        accessor##_SetParent(new_sub_root, accessor##_GetParent(sub_root)); \
-        if (accessor##_GetParent(sub_root) != referencer##_InvalidId) { \
-           if (accessor##_GetParent(sub_root)->left == sub_root_id) { \
-                accessor##_GetParent(sub_root)->left = new_sub_root_id; \
+        accessor##_SetParent(tree, new_sub_root, accessor##_GetParent(tree, sub_root)); \
+        if (accessor##_GetParent(tree, sub_root) != referencer##_InvalidId) { \
+           if (accessor##_GetParent(tree, sub_root)->left == sub_root_id) { \
+                accessor##_GetParent(tree, sub_root)->left = new_sub_root_id; \
             } \
             else { \
-                accessor##_GetParent(sub_root)->right = new_sub_root_id; \
+                accessor##_GetParent(tree, sub_root)->right = new_sub_root_id; \
             } \
         } \
-        accessor##_SetParent(sub_root, new_sub_root_id); \
+        accessor##_SetParent(tree, sub_root, new_sub_root_id); \
         \
         sub_root->left = new_sub_root->right; \
         if (sub_root->left != referencer##_InvalidId) { \
-            accessor##_SetParent(sub_root->left, sub_root_id); \
+            accessor##_SetParent(tree, sub_root->left, sub_root_id); \
         } \
         \
         new_sub_root->right = sub_root_id; \
@@ -132,7 +132,7 @@ extern "C" {
     /*
     * 初始化节点
     */ \
-    static void bs_tree_type_name##BsEntryInit(id_type entry_id) { \
+    static void bs_tree_type_name##BsEntryInit(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
         bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
         entry->left = referencer##_InvalidId; \
         entry->right = referencer##_InvalidId; \
@@ -153,10 +153,10 @@ extern "C" {
         id_type cur_id = tree->root; \
         while (cur_id != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(accessor##_GetKey(cur), *key)) { \
+            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), *key)) { \
                 cur_id = cur->right; \
             } \
-            else if (comparer##_Greater(accessor##_GetKey(cur), *key)) { \
+            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), *key)) { \
                 cur_id = cur->left; \
             } \
             else { \
@@ -174,7 +174,7 @@ extern "C" {
     */ \
     bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
         bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
-        bs_tree_type_name##BsEntryInit(entry); \
+        bs_tree_type_name##BsEntryInit(tree, entry); \
         if (tree->root == referencer##_InvalidId) { \
             tree->root = entry_id; \
             return true; \
@@ -182,14 +182,14 @@ extern "C" {
         id_type cur_id = tree->root; \
         while (cur_id != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(accessor##_GetKey(cur), accessor##_GetKey(entry))) { \
+            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
                 if (!cur->right) { \
                     cur->right = entry_id; \
                     break; \
                 } \
                 cur_id = cur->right; \
             } \
-            else if (comparer##_Greater(accessor##_GetKey(cur), accessor##_GetKey(entry))) { \
+            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
                 if (!cur->left) { \
                     cur->left = entry_id; \
                     break; \
@@ -202,7 +202,7 @@ extern "C" {
             } \
             referencer##_Dereference(tree, cur); \
         } \
-        accessor##_SetParent(entry, cur_id); \
+        accessor##_SetParent(tree, entry, cur_id); \
         referencer##_Dereference(tree, entry); \
         return true; \
     } \
@@ -222,13 +222,13 @@ extern "C" {
                 referencer##_Dereference(tree, min_entry); \
                 min_entry = referencer##_Reference(tree, min_entry_id); \
             } \
-            if (is_parent_left) *is_parent_left = accessor##_GetParent(min_entry)->left == min_entry_id; \
+            if (is_parent_left) *is_parent_left = accessor##_GetParent(tree, min_entry)->left == min_entry_id; \
             \
             /* 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值 */ \
             min_entry->left = entry->left; \
             if (entry->left != referencer##_InvalidId) { \
                 bs_tree_type_name##BsEntry* entry_left = referencer##_Reference(tree, entry->left); \
-                accessor##_SetParent(entry_left, min_entry_id); \
+                accessor##_SetParent(tree, entry_left, min_entry_id); \
                 referencer##_Dereference(tree, entry_left); \
             } \
             \
@@ -236,24 +236,24 @@ extern "C" {
             /* 最小节点可能是待删除节点的右节点 */ \
             if (entry->right != min_entry_id) { \
                 /* 将min_entry从原先的位置摘除，用其右子树代替 */ \
-                bs_tree_type_name##BsEntry* min_entry_parent = referencer##_Reference(tree, accessor##_GetParent(min_entry)); \
+                bs_tree_type_name##BsEntry* min_entry_parent = referencer##_Reference(tree, accessor##_GetParent(tree, min_entry)); \
                 min_entry_parent->left = min_entry->right; \
                 referencer##_Dereference(tree, min_entry_parent); \
                 \
                 if (min_entry->right != referencer##_InvalidId) { \
                     bs_tree_type_name##BsEntry* min_entry_right = referencer##_Reference(tree, min_entry->right); \
-                    accessor##_SetParent(min_entry_right, accessor##_GetParent(min_entry)); \
+                    accessor##_SetParent(tree, min_entry_right, accessor##_GetParent(tree, min_entry)); \
                     referencer##_Dereference(tree, min_entry_right); \
                 } \
                 /* 最小节点继承待删除节点的右子树 */ \
                 min_entry->right = entry->right; \
                 if (entry->right != referencer##_InvalidId) { \
                     bs_tree_type_name##BsEntry* entry_right = referencer##_Reference(tree, entry->right); \
-                    accessor##_SetParent(entry_right, min_entry); \
+                    accessor##_SetParent(tree, entry_right, min_entry); \
                     referencer##_Dereference(tree, entry_right); \
                 } \
                 /* 如果需要回溯，这里对应entry的父亲是min_entry的父亲的情况，但不能直接修改entry的parent，因为还没挂接 */  \
-                backtrack_id = accessor##_GetParent(min_entry); \
+                backtrack_id = accessor##_GetParent(tree, min_entry); \
             } \
             else { \
                 /* 如果需要回溯，这里对应entry的父亲是min_entry的情况，但不能直接修改entry的parent，因为还没挂接 */  \
@@ -270,11 +270,11 @@ extern "C" {
             /* 回溯可能需要的，entry变为原先的min_entry，只是不挂到树上(entry的父节点不指向entry) */ \
             entry->left = NULL; \
             entry->right = old_right_id; \
-            accessor##_SetParent(entry, backtrack_id); \
+            accessor##_SetParent(tree, entry, backtrack_id); \
         } \
         else { \
             if (is_parent_left) { \
-                id_type parent_id = accessor##_GetParent(entry); \
+                id_type parent_id = accessor##_GetParent(tree, entry); \
                 if (parent_id != referencer##_InvalidId) { \
                     bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
                     *is_parent_left = parent->left == entry_id; \
@@ -353,12 +353,12 @@ extern "C" {
             referencer##_Dereference(tree, cur); \
             return cur_id; \
         } \
-        id_type parent_id = accessor##_GetParent(cur); \
+        id_type parent_id = accessor##_GetParent(tree, cur); \
         bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
         while (parent_id != referencer##_InvalidId && cur_id == parent->right) { \
             referencer##_Dereference(tree, cur); \
             cur = parent; \
-            parent_id = accessor##_GetParent(cur); \
+            parent_id = accessor##_GetParent(tree, cur); \
             parent = referencer##_Reference(tree, parent_id); \
         } \
         referencer##_Dereference(tree, parent); \
@@ -378,12 +378,12 @@ extern "C" {
             referencer##_Dereference(tree, cur); \
             return cur_id; \
         } \
-        id_type parent_id = accessor##_GetParent(cur); \
+        id_type parent_id = accessor##_GetParent(tree, cur); \
         bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
         while (parent_id != referencer##_InvalidId && cur_id == parent->left) { \
             referencer##_Dereference(tree, cur); \
             cur = parent; \
-            parent_id = accessor##_GetParent(cur); \
+            parent_id = accessor##_GetParent(tree, cur); \
             parent = referencer##_Reference(tree, parent_id); \
         } \
         referencer##_Dereference(tree, parent); \

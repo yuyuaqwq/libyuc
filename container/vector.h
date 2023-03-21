@@ -28,10 +28,10 @@ extern "C" {
 
 #define CUTILS_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator) \
     void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, size_t capacity) { \
-        element_type* new_buf = allocator##_CreateMultiple(element_type, capacity); \
+        element_type* new_buf = allocator##_CreateMultiple(arr, element_type, capacity); \
         if (arr->obj_arr) { \
             MemoryCopy(new_buf, arr->obj_arr, sizeof(element_type) * arr->count); \
-            allocator##_Delete(arr->obj_arr); \
+            allocator##_Delete(arr, arr->obj_arr); \
         } \
         arr->obj_arr = new_buf; \
         arr->capacity = capacity; \
@@ -59,7 +59,7 @@ extern "C" {
     } \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr) { \
         if (arr->obj_arr) { \
-            allocator##_Delete(arr->obj_arr); \
+            allocator##_Delete(arr, arr->obj_arr); \
             arr->obj_arr = NULL; \
         } \
         arr->capacity = 0; \
