@@ -29,8 +29,8 @@ extern "C" {
     id_type singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head); \
     id_type singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id); \
     size_t singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head); \
-    id_type singly_list_type_name##SinglyListFirst(singly_list_type_name##SinglyListHead* head); \
-    id_type singly_list_type_name##SinglyListNext(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
+    id_type singly_list_type_name##SinglyListIteratorFirst(singly_list_type_name##SinglyListHead* head); \
+    id_type singly_list_type_name##SinglyListIteratorNext(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
 
 #define CUTILS_CONTAINER_SINGLY_LIST_DEFINE(singly_list_type_name, id_type, referencer) \
     void singly_list_type_name##SinglyListHeadInit(singly_list_type_name##SinglyListHead* head) { \
@@ -72,10 +72,10 @@ extern "C" {
         } \
         return count; \
     } \
-    id_type singly_list_type_name##SinglyListFirst(singly_list_type_name##SinglyListHead* head) { \
+    id_type singly_list_type_name##SinglyListIteratorFirst(singly_list_type_name##SinglyListHead* head) { \
         return head->first; \
     } \
-    id_type singly_list_type_name##SinglyListNext(singly_list_type_name##SinglyListHead* head, id_type entry_id) { \
+    id_type singly_list_type_name##SinglyListIteratorNext(singly_list_type_name##SinglyListHead* head, id_type entry_id) { \
         singly_list_type_name##SinglyListEntry* entry = referencer##_Reference(head, entry_id); \
         id_type next_id = entry->next; \
         referencer##_Dereference(head, entry); \

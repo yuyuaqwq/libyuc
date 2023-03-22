@@ -44,13 +44,13 @@ typedef enum {
     } rb_tree_type_name##RbTree; \
     \
     void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree); \
-    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key); \
+    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key, bool scope); \
     bool rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
-    id_type rb_tree_type_name##RbTreeFirst(rb_tree_type_name##RbTree* tree); \
-    id_type rb_tree_type_name##RbTreeLast(rb_tree_type_name##RbTree* tree); \
-    id_type rb_tree_type_name##RbTreeNext(rb_tree_type_name##RbTree* tree, id_type cur_id); \
-    id_type rb_tree_type_name##RbTreePrev(rb_tree_type_name##RbTree* tree, id_type cur_id); \
+    id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
+    id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
+    id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, id_type cur_id); \
+    id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, id_type cur_id); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetColor方法
 #define CUTILS_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
@@ -77,6 +77,7 @@ typedef enum {
     */ \
     static void rb_tree_type_name##RbTreeInsertFixup(rb_tree_type_name##RbTree* tree, id_type ins_entry_id) { \
         rb_tree_type_name##RbEntry* ins_entry = referencer##_Reference(tree, ins_entry_id); \
+        accessor##_SetColor(tree, ins_entry, kRbBlack); \
         id_type cur_id = accessor##_GetParent(tree, ins_entry); \
         if (cur_id == referencer##_InvalidId) { \
             accessor##_SetColor(tree, ins_entry, kRbBlack); \
@@ -281,10 +282,10 @@ typedef enum {
     } \
     /*
     * 从树中查找节点
-    * 存在返回查找到的节点对应的对象，不存在返回NULL
+    * 存在返回查找到的节点对应的对象，不存在返回NULL/最后一次查找的节点
     */ \
-    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key) { \
-        return rb_tree_type_name##RbBsTreeFind(&tree->bs_tree, key); \
+    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key, bool scope) { \
+        return rb_tree_type_name##RbBsTreeFind(&tree->bs_tree, key, scope); \
     } \
     /*
     * 向树中插入节点
@@ -317,34 +318,34 @@ typedef enum {
         rb_tree_type_name##RbTreeDeleteFixup(tree, del_entry_id, is_parent_left); \
         return true; \
     } \
-    id_type rb_tree_type_name##RbTreeFirst(rb_tree_type_name##RbTree* tree) { \
-        return rb_tree_type_name##RbBsTreeFirst((rb_tree_type_name##RbBsTree*)tree); \
+    id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree) { \
+        return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree); \
     } \
-    id_type rb_tree_type_name##RbTreeLast(rb_tree_type_name##RbTree* tree) { \
-        return rb_tree_type_name##RbBsTreeLast((rb_tree_type_name##RbBsTree*)tree); \
+    id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree) { \
+        return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree); \
     } \
-    id_type rb_tree_type_name##RbTreeNext(rb_tree_type_name##RbTree* tree, id_type cur_id) { \
-        return rb_tree_type_name##RbBsTreeNext((rb_tree_type_name##RbBsTree*)tree, cur_id); \
+    id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, id_type cur_id) { \
+        return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, cur_id); \
     } \
-    id_type rb_tree_type_name##RbTreePrev(rb_tree_type_name##RbTree* tree, id_type cur_id) { \
-        return rb_tree_type_name##RbBsTreePrev((rb_tree_type_name##RbBsTree*)tree, cur_id); \
+    id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, id_type cur_id) { \
+        return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, cur_id); \
     } \
 
-CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
-typedef struct _IntEntry_Rb {
-    IntRbEntry entry;
-    int key;
-} IntEntry_Rb;
-#define INT_RB_TREE_ACCESSOR_GetKey(TREE, ENTRY) (((IntEntry_Rb*)ENTRY)->key)
-#define INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
-#define  INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((IntRbEntry*)ENTRY)->parent_color) & 0x1))
-#define INT_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntRbEntry*)ENTRY)->parent_color = (IntRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY))));
-#define INT_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (ENTRY->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
-#define INT_RB_TREE_ACCESSOR INT_RB_TREE_ACCESSOR
-#define INT_RB_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntRbBsEntry*)OBJ_ID)
-#define INT_RB_TREE_REFERENCER_Dereference(TREE, OBJ)
-#define INT_RB_TREE_REFERENCER_InvalidId (NULL)
-#define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
+//CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
+//typedef struct _IntEntry_Rb {
+//    IntRbEntry entry;
+//    int key;
+//} IntEntry_Rb;
+//#define INT_RB_TREE_ACCESSOR_GetKey(TREE, ENTRY) (((IntEntry_Rb*)ENTRY)->key)
+//#define INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
+//#define  INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((IntRbEntry*)ENTRY)->parent_color) & 0x1))
+//#define INT_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntRbEntry*)ENTRY)->parent_color = (IntRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY))));
+//#define INT_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (ENTRY->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
+//#define INT_RB_TREE_ACCESSOR INT_RB_TREE_ACCESSOR
+//#define INT_RB_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntRbBsEntry*)OBJ_ID)
+//#define INT_RB_TREE_REFERENCER_Dereference(TREE, OBJ)
+//#define INT_RB_TREE_REFERENCER_InvalidId (NULL)
+//#define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
 
 //CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 

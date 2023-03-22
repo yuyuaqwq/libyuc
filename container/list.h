@@ -25,6 +25,7 @@ extern "C" {
     } list_type_name##ListHead; \
     \
     void list_type_name##ListInit(list_type_name##ListHead* head); \
+    void list_type_name##ListPutEntryNext(list_type_name##ListHead* head, id_type prev_id, id_type entry_id); \
     void list_type_name##ListPutFirst(list_type_name##ListHead* head, id_type entry_id); \
     void list_type_name##ListPutLast(list_type_name##ListHead* head, id_type entry_id); \
     id_type list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id); \
@@ -40,6 +41,19 @@ extern "C" {
     void list_type_name##ListInit(list_type_name##ListHead* head) { \
         head->last = referencer##_InvalidId; \
         head->first = referencer##_InvalidId; \
+    } \
+    void list_type_name##ListPutEntryNext(list_type_name##ListHead* head, id_type prev_id, id_type entry_id) { \
+        list_type_name##ListEntry* entry = referencer##_Reference(head, entry_id); \
+        list_type_name##ListEntry* prev = referencer##_Reference(head, prev_id); \
+        entry->prev = prev_id; \
+        entry->next = prev->next; \
+        prev->next = entry_id; \
+        list_type_name##ListEntry* prev_next = referencer##_Reference(head, prev->next); \
+        prev_next->prev = entry_id; \
+        if (head->last == prev_id) head->last = entry_id;\
+        referencer##_Dereference(head, prev_next); \
+        referencer##_Dereference(head, prev); \
+        referencer##_Dereference(head, entry); \
     } \
     void list_type_name##ListPutFirst(list_type_name##ListHead* head, id_type entry_id) { \
         list_type_name##ListEntry* entry = referencer##_Reference(head, entry_id); \

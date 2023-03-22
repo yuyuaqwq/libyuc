@@ -46,19 +46,28 @@ typedef Data Value;
 
 
 CUTILS_CONTAINER_RB_TREE_DECLARATION(BPlus, int16_t, Key)
+CUTILS_CONTAINER_LIST_DECLARATION(BPlusLeaf, BPlusEntryId)
 
+CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusIndex, int16_t, struct _BPlusIndexElement, 1)
+CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusLeaf, int16_t, struct _BPlusLeafElement, 1)
 
 // 阶(m)，4阶B树可以有4个子节点，3个内部节点，m = t * 2
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
 
 typedef struct _BPlusLeafElement {
-    BPlusRbEntry rb_entry;
+    union {
+        BPlusLeafStaticListEntry next;
+        BPlusRbEntry rb_entry;
+    };
     Key key;
     Value value;
 } BPlusLeafElement;
 
 typedef struct _BPlusIndexElement {       // Internal
-    BPlusRbEntry entry;
+    union {
+        BPlusIndexStaticListEntry next;
+        BPlusRbEntry rb_entry;
+    };
     BPlusEntryId child_id;
     Key key;
 } BPlusIndexElement;
@@ -72,27 +81,21 @@ typedef struct _BPlusElement {
 
 
 
-typedef struct _BPlusLeafListEntry {
-    BPlusEntryId prev;
-    BPlusEntryId next;
-} BPlusLeafListEntry;
-
-
 typedef struct _BPlusIndexEntry {
     BPlusEntryId tail_child_id;       // 末尾孩子id存在这里
-    struct _BPlusIndexElement element[];
+    BPlusIndexStaticList space;
 } BPlusIndexEntry;
 
 typedef struct _BPlusLeafEntry {
     BPlusLeafListEntry list_entry;       // 连接所有叶子节点
-    struct _BPlusLeafElement element[];
+    BPlusLeafStaticList space;
 } BPlusLeafEntry;
 
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusEntry
 typedef struct _BPlusEntry {
+    BPlusRbTree rb_tree;
     uint16_t type : 1;
     uint16_t element_count : 15;
-    BPlusRbTree rb_tree;
     union {
         BPlusIndexEntry index;
         BPlusLeafEntry leaf;
@@ -106,7 +109,7 @@ CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusEntry
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusTree
 typedef struct _BPlusTree {
     BPlusEntryId root_id;
-    BPlusEntryId leaf_list_first;
+    BPlusLeafListHead leaf_list;
     int16_t index_m;
     int16_t leaf_m;
 } BPlusTree;
@@ -122,16 +125,11 @@ CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusTree
 */
 typedef struct {
     BPlusEntryId entry_id;
-    int element_idx;
+    int16_t element_idx;
 } BPlusElementPos;
 
 CUTILS_CONTAINER_VECTOR_DECLARATION(BPlusCursorStack, BPlusElementPos)
-typedef enum {
-    kBPlusCursorNe,
-    kBPlusCursorNext,
-    kBPlusCursorEq,
-    kBPlusCursorEnd,
-} BPlusCursorStatus;
+
 typedef struct _BPlusCursor {
     BPlusCursorStackVector stack;
     int level;
@@ -145,8 +143,8 @@ typedef struct _BPlusCursor {
 */
 extern const BPlusEntryId kBPlusEntryInvalidId;
 
-BPlusTree* BPlusTreeGet(struct _Tx* tx);
-BPlusEntry* BPlusEntryGet(struct _Tx* tx, BPlusEntryId id);
+
+BPlusEntry* BPlusEntryReference(struct _Tx* tx, BPlusEntryId id);
 void BPlusEntryDereference(struct _Tx* tx, BPlusEntry* entry);
 void BPlusElementSet(struct _Tx* tx, BPlusEntry* entry, int i, BPlusElement* element);
 ptrdiff_t BPlusKeyCmp(struct _Tx* tx, const Key* key1, const Key* key2);
@@ -171,14 +169,6 @@ BPlusElementPos* BPlusCursorDown(struct _Tx* tx, BPlusCursor* cursor);
 BPlusCursorStatus BPlusCursorFirst(struct _Tx* tx, BPlusCursor* cursor, Key* key);
 void BPlusCursorRelease(struct _Tx* tx, BPlusCursor* cursor);
 BPlusCursorStatus BPlusCursorNext(struct _Tx* tx, BPlusCursor* cursor, Key* key);
-
-
-
-
-
-
-
-
 
 
 

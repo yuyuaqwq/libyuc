@@ -39,7 +39,7 @@ extern "C" {
     } avl_tree_type_name##AvlTree; \
     \
     void avl_tree_type_name##AvlTreeInit(avl_tree_type_name##AvlTree* tree); \
-    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key); \
+    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key, bool scope); \
     bool avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id); \
     bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, id_type del_entry_id); \
 
@@ -316,8 +316,8 @@ extern "C" {
     * 从树中查找节点
     * 存在返回查找到的节点对应的对象，不存在返回NULL
     */ \
-    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key) { \
-        return avl_tree_type_name##AvlBsTreeFind(&tree->bs_tree, key); \
+    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key, bool scope) { \
+        return avl_tree_type_name##AvlBsTreeFind(&tree->bs_tree, key, scope); \
     } \
     /*
     * 向树中插入节点
@@ -352,21 +352,21 @@ extern "C" {
     } \
 
 
-CUTILS_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
-typedef struct _IntEntry_Avl {
-    IntAvlEntry entry;
-    int key;
-} IntEntry_Avl;
-#define INT_AVL_TREE_ACCESSOR_GetKey(TREE, ENTRY) (((IntEntry_Avl*)ENTRY)->key)
-#define INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)ENTRY)->parent_bf) & (~((uintptr_t)0x3)))))
-#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3))
-#define INT_AVL_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntAvlEntry*)ENTRY)->parent_bf = (IntAvlEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) & 0x3)));
-#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(TREE, ENTRY, BF) (ENTRY->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)BF & 0x3)))
-#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
-#define INT_AVL_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntAvlBsEntry*)OBJ_ID)
-#define INT_AVL_TREE_REFERENCER_Dereference(TREE, OBJ)
-#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
-#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
+//CUTILS_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
+//typedef struct _IntEntry_Avl {
+//    IntAvlEntry entry;
+//    int key;
+//} IntEntry_Avl;
+//#define INT_AVL_TREE_ACCESSOR_GetKey(TREE, ENTRY) (((IntEntry_Avl*)ENTRY)->key)
+//#define INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)ENTRY)->parent_bf) & (~((uintptr_t)0x3)))))
+//#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3))
+//#define INT_AVL_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntAvlEntry*)ENTRY)->parent_bf = (IntAvlEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) & 0x3)));
+//#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(TREE, ENTRY, BF) (ENTRY->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)BF & 0x3)))
+//#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
+//#define INT_AVL_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntAvlBsEntry*)OBJ_ID)
+//#define INT_AVL_TREE_REFERENCER_Dereference(TREE, OBJ)
+//#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
+//#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
 
 //CUTILS_CONTAINER_AVL_TREE_DEFINE(Int, IntAvlEntry*, int, INT_AVL_TREE_REFERENCER, INT_AVL_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
 
