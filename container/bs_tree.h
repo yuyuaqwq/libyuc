@@ -86,7 +86,7 @@ extern "C" {
             else { \
                 sub_root_parent->right = new_sub_root_id; \
             } \
-            referencer##_Deference(sub_root_parent); \
+            referencer##_Dereference(sub_root_parent); \
         } \
         accessor##_SetParent(tree, sub_root, new_sub_root_id); \
         \
@@ -119,7 +119,7 @@ extern "C" {
             else { \
                 sub_root_parent->right = new_sub_root_id; \
             } \
-            referencer##_Deference(sub_root_parent); \
+            referencer##_Dereference(sub_root_parent); \
         } \
         accessor##_SetParent(tree, sub_root, new_sub_root_id); \
         \
@@ -136,12 +136,10 @@ extern "C" {
     /*
     * 初始化节点
     */ \
-    static void bs_tree_type_name##BsEntryInit(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
-        bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
+    static void bs_tree_type_name##BsEntryInit(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsEntry* entry) { \
         entry->left = referencer##_InvalidId; \
         entry->right = referencer##_InvalidId; \
         entry->parent = referencer##_InvalidId; \
-        referencer##_Dereference(tree, entry); \
     } \
     /*
     * 初始化树
@@ -157,6 +155,7 @@ extern "C" {
         id_type cur_id = tree->root; \
         id_type prev_cur_id = referencer##_InvalidId; \
         while (cur_id != referencer##_InvalidId) { \
+            prev_cur_id = cur_id; \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
             if (comparer##_Less(tree, accessor##_GetKey(tree, cur), *key)) { \
                 cur_id = cur->right; \
@@ -169,7 +168,6 @@ extern "C" {
                 return cur_id; \
             } \
             referencer##_Dereference(tree, cur); \
-            prev_cur_id = cur_id; \
         } \
         return scope ? prev_cur_id : referencer##_InvalidId; \
     } \
@@ -189,14 +187,14 @@ extern "C" {
         while (cur_id != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
             if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
-                if (!cur->right) { \
+                if (cur->right == referencer##_InvalidId) { \
                     cur->right = entry_id; \
                     break; \
                 } \
                 cur_id = cur->right; \
             } \
             else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
-                if (!cur->left) { \
+                if (cur->left == referencer##_InvalidId) { \
                     cur->left = entry_id; \
                     break; \
                 } \

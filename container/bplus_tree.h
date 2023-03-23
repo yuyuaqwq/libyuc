@@ -48,15 +48,15 @@ typedef Data Value;
 CUTILS_CONTAINER_RB_TREE_DECLARATION(BPlus, int16_t, Key)
 CUTILS_CONTAINER_LIST_DECLARATION(BPlusLeaf, BPlusEntryId)
 
-CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusIndex, int16_t, struct _BPlusIndexElement, 1)
-CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusLeaf, int16_t, struct _BPlusLeafElement, 1)
+
 
 // 阶(m)，4阶B树可以有4个子节点，3个内部节点，m = t * 2
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
 
 typedef struct _BPlusLeafElement {
     union {
-        BPlusLeafStaticListEntry next;
+        // BPlusLeafStaticListEntry next;
+        int16_t next;
         BPlusRbEntry rb_entry;
     };
     Key key;
@@ -65,7 +65,8 @@ typedef struct _BPlusLeafElement {
 
 typedef struct _BPlusIndexElement {       // Internal
     union {
-        BPlusIndexStaticListEntry next;
+        // BPlusIndexStaticListEntry next;
+        int16_t next;
         BPlusRbEntry rb_entry;
     };
     BPlusEntryId child_id;
@@ -79,16 +80,17 @@ typedef struct _BPlusElement {
     };
 } BPlusElement;
 
-
+CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusIndex, int16_t, BPlusIndexElement, 1)
+CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusLeaf, int16_t, BPlusLeafElement, 1)
 
 typedef struct _BPlusIndexEntry {
     BPlusEntryId tail_child_id;       // 末尾孩子id存在这里
-    BPlusIndexStaticList space;
+    BPlusIndexStaticList element_space;
 } BPlusIndexEntry;
 
 typedef struct _BPlusLeafEntry {
     BPlusLeafListEntry list_entry;       // 连接所有叶子节点
-    BPlusLeafStaticList space;
+    BPlusLeafStaticList element_space;
 } BPlusLeafEntry;
 
 #ifndef CUTILS_CONTAINER_BPLUS_TREE_DEFINE_BPlusEntry
