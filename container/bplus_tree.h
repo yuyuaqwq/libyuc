@@ -37,8 +37,7 @@ typedef enum {
 typedef struct _BPlusEntry* BPlusEntryId;
 typedef size_t PageCount;
 typedef struct {
-    size_t size;
-    uint32_t* ptr;
+    uint32_t data;
 } Data;
 typedef Data Key;
 typedef Data Value;
@@ -146,31 +145,31 @@ typedef struct _BPlusCursor {
 extern const BPlusEntryId kBPlusEntryInvalidId;
 
 
-BPlusEntry* BPlusEntryReference(struct _Tx* tx, BPlusEntryId id);
-void BPlusEntryDereference(struct _Tx* tx, BPlusEntry* entry);
-void BPlusElementSet(struct _Tx* tx, BPlusEntry* entry, int i, BPlusElement* element);
-ptrdiff_t BPlusKeyCmp(struct _Tx* tx, const Key* key1, const Key* key2);
+BPlusEntry* BPlusEntryReference(BPlusTree* tree, BPlusEntryId id);
+void BPlusEntryDereference(BPlusTree* tree, BPlusEntry* entry);
+void BPlusElementSet(BPlusTree* tree, BPlusEntry* entry, int i, BPlusElement* element);
+ptrdiff_t BPlusKeyCmp(BPlusTree* tree, const Key* key1, const Key* key2);
 
 /*
 * B+树操作
 */
-void BPlusTreeInit(struct _Tx* tx, uint32_t index_m, uint32_t leaf_m);
-bool BPlusTreeInsert(struct _Tx* tx, BPlusLeafElement* element);
-bool BPlusTreeFind(struct _Tx* tx, Key* key);
-bool BPlusTreeDelete(struct _Tx* tx, Key* key);
+void BPlusTreeInit(BPlusTree* tree, uint32_t index_m, uint32_t leaf_m);
+bool BPlusTreeInsert(BPlusTree* tree, BPlusLeafElement* element);
+bool BPlusTreeFind(BPlusTree* tree, Key* key);
+bool BPlusTreeDelete(BPlusTree* tree, Key* key);
 
-bool BPlusInsertEntry(struct _Tx* tx, BPlusCursor* cursor, BPlusElement* insert_element);
-bool BPlusDeleteEntry(struct _Tx* tx, BPlusCursor* cursor);
+bool BPlusInsertEntry(BPlusTree* tree, BPlusCursor* cursor, BPlusElement* insert_element);
+bool BPlusDeleteEntry(BPlusTree* tree, BPlusCursor* cursor);
 
 /*
 * B+树游标
 */
-BPlusElementPos* BPlusCursorCur(struct _Tx* tx, BPlusCursor* cursor);
-BPlusElementPos* BPlusCursorUp(struct _Tx* tx, BPlusCursor* cursor);
-BPlusElementPos* BPlusCursorDown(struct _Tx* tx, BPlusCursor* cursor);
-BPlusCursorStatus BPlusCursorFirst(struct _Tx* tx, BPlusCursor* cursor, Key* key);
-void BPlusCursorRelease(struct _Tx* tx, BPlusCursor* cursor);
-BPlusCursorStatus BPlusCursorNext(struct _Tx* tx, BPlusCursor* cursor, Key* key);
+BPlusElementPos* BPlusCursorCur(BPlusTree* tree, BPlusCursor* cursor);
+BPlusElementPos* BPlusCursorUp(BPlusTree* tree, BPlusCursor* cursor);
+BPlusElementPos* BPlusCursorDown(BPlusTree* tree, BPlusCursor* cursor);
+BPlusCursorStatus BPlusCursorFirst(BPlusTree* tree, BPlusCursor* cursor, Key* key);
+void BPlusCursorRelease(BPlusTree* tree, BPlusCursor* cursor);
+BPlusCursorStatus BPlusCursorNext(BPlusTree* tree, BPlusCursor* cursor, Key* key);
 
 
 

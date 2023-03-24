@@ -121,6 +121,7 @@ typedef enum {
                  *     5r     20b  ->   !2r     10r    
                  * !2r                             20b
                 */ \
+                  assert(sibling_id == referencer##_InvalidId || accessor##_GetColor(tree, sibling) == kRbBlack); \
                 id_type new_sub_root_id; \
                 id_type old_sub_root_id = accessor##_GetParent(tree, cur); \
                 rb_tree_type_name##RbEntry* old_sub_root = referencer##_Reference(tree, old_sub_root_id); \
@@ -161,8 +162,16 @@ typedef enum {
         RbColor del_color = accessor##_GetColor(tree, del_entry); \
         if (del_color == kRbRed) { /* 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除 */ } \
         /* 是黑色的，但是有一个子节点，说明是3节点，变为2节点即可 */ \
-        else if (del_entry->left != referencer##_InvalidId) { accessor##_SetColor(tree, del_entry->left, kRbBlack); } \
-        else if (del_entry->right != referencer##_InvalidId) { accessor##_SetColor(tree, del_entry->right, kRbBlack); } \
+        else if (del_entry->left != referencer##_InvalidId) { \
+            rb_tree_type_name##RbEntry* del_entry_left = referencer##_Reference(tree, del_entry->left); \
+            accessor##_SetColor(tree, del_entry_left, kRbBlack); \
+            referencer##_Dereference(tree, del_entry_left); \
+        } \
+        else if (del_entry->right != referencer##_InvalidId) { \
+            rb_tree_type_name##RbEntry* del_entry_right = referencer##_Reference(tree, del_entry->right); \
+            accessor##_SetColor(tree, del_entry_right, kRbBlack); \
+            referencer##_Dereference(tree, del_entry_right); \
+        } \
         else { cur_id = accessor##_GetParent(tree, del_entry); } \
         \
         id_type new_sub_root_id; \

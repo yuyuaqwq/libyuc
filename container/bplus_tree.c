@@ -27,6 +27,10 @@ forceinline void CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT_Dereference(BPl
 #define CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT
 CUTILS_CONTAINER_LIST_DEFINE(BPlusLeaf, BPlusEntryId, CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT)
 
+typedef struct {
+    int16_t color:1;
+    int16_t parent:15;
+} BPlusRbParentColor;
 forceinline Key CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(BPlusRbTree* tree, BPlusRbBsEntry* bs_entry) {
     if (((BPlusEntry*)tree)->type == kBPlusEntryLeaf) {
         return ((BPlusLeafElement*)bs_entry)->key;
@@ -35,13 +39,17 @@ forceinline Key CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(BPlusRbTree* tree
         return ((BPlusIndexElement*)bs_entry)->key;
     }
 }
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((int16_t)(((((BPlusRbEntry*)ENTRY)->parent_color) & (~(1 << (sizeof(int16_t) * 8 - 1))))))
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) ((RbColor)((((BPlusRbEntry*)ENTRY)->parent_color) >> (sizeof(int16_t) * 8 - 1)))
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((BPlusRbEntry*)ENTRY)->parent_color = (int16_t)(((int16_t)NEW_PARENT_ID) | (CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY))));
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (((BPlusRbEntry*)ENTRY)->parent_color = (int16_t)((CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((int16_t)(COLOR))))
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) (((BPlusRbParentColor*)&(((BPlusRbEntry*)ENTRY)->parent_color))->parent)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) (((BPlusRbParentColor*)&(((BPlusRbEntry*)ENTRY)->parent_color))->color == -1 ? 1 : 0)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((BPlusRbParentColor*)&(((BPlusRbEntry*)ENTRY)->parent_color))->parent = NEW_PARENT_ID)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (((BPlusRbParentColor*)&(((BPlusRbEntry*)ENTRY)->parent_color))->color = COLOR)
 #define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR
 
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId (-1)
 forceinline BPlusRbEntry* CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(BPlusRbTree* tree, int16_t id) {
+    if (id == CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId) {
+        return NULL;
+    }
     BPlusEntry* entry = ObjectGetFromField(tree, BPlusEntry, rb_tree);
     if (entry->type == kBPlusEntryIndex) {
         return &entry->index.element_space.obj_arr[id].rb_entry;
@@ -51,17 +59,16 @@ forceinline BPlusRbEntry* CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(BP
     }
 }
 #define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Dereference(TREE, OBJ)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId (32767)
 #define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER
 
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT_Equal(TREE, OBJ1, OBJ2) ((OBJ1).ptr == (OBJ2).ptr)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT_Greater(TREE, OBJ1, OBJ2) ((OBJ1).ptr > (OBJ2).ptr)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT_Less(TREE, OBJ1, OBJ2) ((OBJ1).ptr < (OBJ2).ptr)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT
-//CUTILS_CONTAINER_RB_TREE_DEFINE(BPlus, int16_t, Key, CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER, CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR, CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT)
-#include <CUtils/container/rb.h>
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Equal(TREE, OBJ1, OBJ2) ((OBJ1).data == (OBJ2).data)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Greater(TREE, OBJ1, OBJ2) ((OBJ1).data > (OBJ2).data)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Less(TREE, OBJ1, OBJ2) ((OBJ1).data < (OBJ2).data)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE
+CUTILS_CONTAINER_RB_TREE_DEFINE(BPlus, int16_t, Key, CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER, CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR, CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE)
+//#include <CUtils/container/rb.h>
 
-#define CUTILS_CONTAINER_BPLUS_STATIC_LIST_REFERENCER_InvalidId (32767)
+#define CUTILS_CONTAINER_BPLUS_STATIC_LIST_REFERENCER_InvalidId (-1)
 #define CUTILS_CONTAINER_BPLUS_STATIC_LIST_REFERENCER CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER
 CUTILS_CONTAINER_STATIC_LIST_DEFINE(BPlusIndex, int16_t, BPlusIndexElement, CUTILS_CONTAINER_BPLUS_STATIC_LIST_REFERENCER, 1)
 CUTILS_CONTAINER_STATIC_LIST_DEFINE(BPlusLeaf, int16_t, BPlusLeafElement, CUTILS_CONTAINER_BPLUS_STATIC_LIST_REFERENCER, 1)
@@ -114,6 +121,7 @@ void BPlusElementSet(BPlusTree* tree, BPlusEntry* entry, int16_t element_id, BPl
     }
     else if (entry->type == kBPlusEntryIndex) {
         entry->index.element_space.obj_arr[element_id].key = element->index.key;
+        entry->index.element_space.obj_arr[element_id].child_id = element->index.child_id;
     }
 }
 
@@ -210,13 +218,13 @@ BPlusCursorStatus BPlusCursorNext(BPlusTree* tree, BPlusCursor* cursor, Key* key
         }
 
         if (cur_entry->type == kBPlusEntryIndex) {
-            if (CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT_Equal(&cur_entry->rb_tree, *element_key, *key)) {
+            if (CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Equal(&cur_entry->rb_tree, *element_key, *key)) {
                 // 索引节点，查找key相等，取右兄弟元素
                 ++cur.element_idx;
                 res = 0;
             }
         }
-        if (res == -1 && CUTILS_CONTAINER_BPLUS_RB_TREE_DEFALUT_Greater(&cur_entry->rb_tree, *key, *element_key)) {
+        if (res == -1 && CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Greater(&cur_entry->rb_tree, *key, *element_key)) {
             // 查找key较大，取右兄弟元素/向右找
             ++cur.element_idx;
         }
@@ -322,16 +330,16 @@ static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntr
         int16_t left_elemeng_id = BPlusRbTreeIteratorLast(&left->rb_tree);
         for (; i >= 0; i--, j--) {
             if (!insert && j + 1 == insert_index) {        // 这里j+1是因为，循环的时候j并没有把未插入元素也算上
-                left->element_count++;
                 BPlusInsertElement(tree, right, element);
                 j++;        // j不动
                 insert = true;
                 continue;
             }
+              assert(left_elemeng_id != CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId);
+            int16_t next_elemeng_id = BPlusRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id);
             BPlusInsertElement(tree, right, BPlusDeleteElement(tree, left, left_elemeng_id));
-            left_elemeng_id = BPlusRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id);
+            left_elemeng_id = next_elemeng_id;
         }
-        left->element_count -= right_count;
         if (!insert) {
             // 新元素还没有插入，将其插入
             BPlusInsertElement(tree, left, element);
@@ -363,7 +371,6 @@ static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntr
             BPlusInsertElement(tree, right, BPlusDeleteElement(tree, left, left_elemeng_id));
             left_elemeng_id = BPlusRbTreeIteratorPrev(&left->rb_tree , left_elemeng_id);
         }
-        left->element_count -= right_count;
         if (!insert) {
             // 新元素还没有插入，将其插入
             BPlusInsertElement(tree, left, element);
@@ -381,14 +388,12 @@ static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntr
         right->index.tail_child_id = left->index.tail_child_id;
 
         // 最后从左节点末尾拿到上升元素，将其摘除
-        left->element_count--;
-        up_element = *BPlusElementGet(tree, left, left->element_count);
+        up_element = *BPlusDeleteElement(tree, left, BPlusRbTreeIteratorLast(&left->rb_tree));
         left->index.tail_child_id = up_element.index.child_id;       // 3指定为2的右侧子节点
     }
     up_element.index.child_id = left_id;        // 上升的4的子节点为2
     BPlusElementSetChildId(tree, parent, parent_index, right_id);      // 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点)
 
-    right->element_count = right_count;
     *out_right_id = right_id;
     BPlusEntryDereference(tree, right);
     return up_element;
