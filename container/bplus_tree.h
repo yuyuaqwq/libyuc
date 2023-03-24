@@ -25,8 +25,8 @@ typedef enum _BPlusEntryType {
 } BPlusEntryType;
 typedef enum {
     kBPlusCursorNe,
-    kBPlusCursorNext,
     kBPlusCursorEq,
+    kBPlusCursorNext,
     kBPlusCursorEnd,
 } BPlusCursorStatus;
 

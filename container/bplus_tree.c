@@ -138,6 +138,7 @@ BPlusElement* BPlusElementGet(BPlusTree* tree, BPlusEntry* entry, int16_t elemen
 }
 
 BPlusEntryId BPlusElementGetChildId(BPlusTree* tree, const BPlusEntry* index, int16_t element_id) {
+      assert(element_id != -1);
     if (element_id == index->element_count) {
         return index->index.tail_child_id;
     }
@@ -145,6 +146,7 @@ BPlusEntryId BPlusElementGetChildId(BPlusTree* tree, const BPlusEntry* index, in
 }
 
 void BPlusElementSetChildId(BPlusTree* tree, BPlusEntry* index, int16_t element_id, BPlusEntryId entry_id) {
+      assert(element_id != -1);
     if (element_id == index->element_count) {
         index->index.tail_child_id = entry_id;
         return;
@@ -206,37 +208,21 @@ BPlusCursorStatus BPlusCursorNext(BPlusTree* tree, BPlusCursor* cursor, Key* key
     }
 
     BPlusEntry* cur_entry = BPlusEntryReference(tree, cur.entry_id);
-    int16_t res = -1;
+    int8_t cmp_status = -1;
     if (cur_entry->element_count > 0) {
-        cur.element_idx = BPlusRbTreeFind(&cur_entry->rb_tree, key, true);
-        Key* element_key;
-        if (cur_entry->type == kBPlusEntryLeaf) {
-            element_key = &cur_entry->leaf.element_space.obj_arr[cur.element_idx].key;
-        }
-        else {
-            element_key = &cur_entry->index.element_space.obj_arr[cur.element_idx].key;
-        }
-
-        if (cur_entry->type == kBPlusEntryIndex) {
-            if (CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Equal(&cur_entry->rb_tree, *element_key, *key)) {
-                // 索引节点，查找key相等，取右兄弟元素
-                ++cur.element_idx;
-                res = 0;
-            }
-        }
-        if (res == -1 && CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Greater(&cur_entry->rb_tree, *key, *element_key)) {
-            // 查找key较大，取右兄弟元素/向右找
-            ++cur.element_idx;
-        }
-        else { } // 查找key较小，向左找
+        cur.element_idx = BPlusRbTreeIteratorLocate(&cur_entry->rb_tree, key, &cmp_status);
+        if (cmp_status == -1) { /* key小于当前定位元素 */ }
+        else { /* key大于等于当前定位元素 */
+            cur.element_idx = BPlusRbTreeIteratorNext(&cur_entry->rb_tree, cur.element_idx);
+        } 
     }
     else {
-        cur.element_idx = 0;
+        cur.element_idx = -1;
     }
     BPlusCursorStackVectorPushTail(&cursor->stack, &cur);
     BPlusCursorStatus status = kBPlusCursorNext;
     if (cur_entry->type == kBPlusEntryLeaf) {
-        if (res != 0) {
+        if (cmp_status != 0) {
             status = kBPlusCursorNe;
         }
         else {
@@ -312,70 +298,51 @@ static BPlusElement* BPlusDeleteElement(BPlusTree* tree, BPlusEntry* entry, int1
 * 因为分裂后选择右节点的最左元素的key作为上升的key
 * 这个时候无论怎么插入元素都不会插入到该节点最左元素的左侧(比它小的会被分到左侧节点，因为父元素key等于该元素)，该节点再分裂也就不存在最左元素再次上升的可能了
 */
-static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntryId left_id, BPlusEntry* parent, int parent_index, int insert_index, BPlusElement* element, BPlusEntryId* out_right_id) {
-    BPlusEntryId right_id;
-    BPlusEntry* right;
-    int right_count;
+static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntryId left_id, BPlusEntry* parent, int16_t parent_index, BPlusElement* element, int16_t insert_index, BPlusEntryId* out_right_id) {
+    BPlusEntryId right_id = BPlusEntryCreate(tree, left->type);
+    BPlusEntry* right = BPlusEntryReference(tree, right_id);
     BPlusElement up_element;
+    int mid;
+    int right_count;
     if (left->type == kBPlusEntryLeaf) {
-        right_id = BPlusEntryCreate(tree, kBPlusEntryLeaf);
-        right = BPlusEntryReference(tree, right_id);
         BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id);
         // 原地分裂思路：mid将未插入的元素也算上，好计算newCount，4阶插入后4节点就是2(左2右2)，5阶插入后5节点还是2(左2右3)
         // 就是提前算好右侧应当有多少个元素，拷贝过去，中间遇到新元素插入就代替这一次的拷贝，没插入再插入到左侧
-        int mid = tree->leaf_m / 2;
+        mid = tree->leaf_m / 2;
         right_count = left->element_count + 1 - mid;        // +1是因为这个时候entry->count并没有把未插入元素也算上
-        int i = right_count - 1, j = left->element_count - 1;
-        bool insert = false;
-        int16_t left_elemeng_id = BPlusRbTreeIteratorLast(&left->rb_tree);
-        for (; i >= 0; i--, j--) {
-            if (!insert && j + 1 == insert_index) {        // 这里j+1是因为，循环的时候j并没有把未插入元素也算上
-                BPlusInsertElement(tree, right, element);
-                j++;        // j不动
-                insert = true;
-                continue;
-            }
-              assert(left_elemeng_id != CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId);
-            int16_t next_elemeng_id = BPlusRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id);
-            BPlusInsertElement(tree, right, BPlusDeleteElement(tree, left, left_elemeng_id));
-            left_elemeng_id = next_elemeng_id;
+    }
+    else {
+        // 原地分裂思路：mid将未插入的元素和即将上升的元素都算上，好计算newCount，4阶插入后4节点就是4/2=2(左1右2)，5阶插入后5节点也是2(左2右2)，少了一个是因为上升的也算上了
+        // 先将后半部分拷贝到新节点，如果中间遇到了索引的插入，那就一并插入，最后的midkey是entry->indexData[entry->count-1]，因为右侧的数量是提前算好的，多出来的一定放到左侧
+        mid = (tree->index_m - 1) / 2;
+        right_count = left->element_count - mid;        // 这个时候entry->count并没有把未插入元素也算上，但是会上升一个元素，抵消故不计入
+    }
+    int i = right_count - 1;
+    int16_t left_elemeng_id = BPlusRbTreeIteratorLast(&left->rb_tree);
+    bool insert = false;
+    for (; i >= 0; i--) {
+        if (!insert && left_elemeng_id == insert_index) {
+            BPlusInsertElement(tree, right, element);
+            insert = true;
+            continue;
         }
-        if (!insert) {
-            // 新元素还没有插入，将其插入
-            BPlusInsertElement(tree, left, element);
-        }
+        assert(left_elemeng_id != CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId);
+        int16_t next_elemeng_id = BPlusRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id);
+        BPlusInsertElement(tree, right, BPlusDeleteElement(tree, left, left_elemeng_id));
+        left_elemeng_id = next_elemeng_id;
+    }
+    // 新元素还没有插入，将其插入
+    if (!insert) {
+        BPlusInsertElement(tree, left, element);
+    }
 
+    if (left->type == kBPlusEntryLeaf) {
         // 从mid拿到上升元素，叶子元素转换为索引元素，上升元素的子节点指向左节点，
         up_element = *BPlusElementGet(tree, right, BPlusRbTreeIteratorFirst(&right->rb_tree));
         Key key = up_element.leaf.key;
         up_element.index.key = key;
     }
     else {
-        right_id = BPlusEntryCreate(tree, kBPlusEntryIndex);
-        right = BPlusEntryReference(tree, right_id);
-        // 原地分裂思路：mid将未插入的元素和即将上升的元素都算上，好计算newCount，4阶插入后4节点就是4/2=2(左1右2)，5阶插入后5节点也是2(左2右2)，少了一个是因为上升的也算上了
-        // 先将后半部分拷贝到新节点，如果中间遇到了索引的插入，那就一并插入，最后的midkey是entry->indexData[entry->count-1]，因为右侧的数量是提前算好的，多出来的一定放到左侧
-        int mid = (tree->index_m - 1) / 2;
-        right_count = left->element_count - mid;        // 这个时候entry->count并没有把未插入元素也算上，但是会上升一个元素，抵消故不计入
-        int i = right_count - 1, j = left->element_count - 1;
-        bool insert = false;
-        int16_t left_elemeng_id = BPlusRbTreeIteratorLast(&left->rb_tree); 
-        for (; i >= 0; i--, j--) {
-            if (!insert && j + 1 == insert_index) {        // 这里j+1是因为，循环的时候j并没有把未插入元素也算上
-                left->element_count++;
-                BPlusInsertElement(tree, right, element);
-                j++;        // j不动
-                insert = true;
-                continue;
-            }
-            BPlusInsertElement(tree, right, BPlusDeleteElement(tree, left, left_elemeng_id));
-            left_elemeng_id = BPlusRbTreeIteratorPrev(&left->rb_tree , left_elemeng_id);
-        }
-        if (!insert) {
-            // 新元素还没有插入，将其插入
-            BPlusInsertElement(tree, left, element);
-        }
-
         // 假设如下节点需要分裂
         //   2   4   8   12
         //   |   |   |   |    \
@@ -391,6 +358,7 @@ static BPlusElement BPlusSplitEntry(BPlusTree* tree, BPlusEntry* left, BPlusEntr
         up_element = *BPlusDeleteElement(tree, left, BPlusRbTreeIteratorLast(&left->rb_tree));
         left->index.tail_child_id = up_element.index.child_id;       // 3指定为2的右侧子节点
     }
+
     up_element.index.child_id = left_id;        // 上升的4的子节点为2
     BPlusElementSetChildId(tree, parent, parent_index, right_id);      // 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点)
 
@@ -441,7 +409,7 @@ bool BPlusInsertEntry(BPlusTree* tree, BPlusCursor* cursor, BPlusElement* insert
     BPlusEntryId right_id;
     BPlusEntry* cur = BPlusEntryReference(tree, cur_pos->entry_id);
     
-    bool success = true, insertUp = false;
+    bool success = true, insert_up = false;
     BPlusElement up_element;
     do {
         if (cursor->leaf_status == kBPlusCursorEq) {
@@ -455,24 +423,25 @@ bool BPlusInsertEntry(BPlusTree* tree, BPlusCursor* cursor, BPlusElement* insert
             break;
         }
 
-        // 没有多余位置，需要分裂向上插入
+        // 没有多余位置，需要分裂向上插入，需要代替的元素是小于key的，所以找上一个
+        cur_pos->element_idx = BPlusRbTreeIteratorPrev(&cur->rb_tree, cur_pos->element_idx);
         if (!parent_pos) {
             // 没有父节点，创建
             BPlusEntryId parent_id = BPlusEntryCreate(tree, kBPlusEntryIndex);
             BPlusEntry* parent = BPlusEntryReference(tree, parent_id);
-            up_element = BPlusSplitEntry(tree, cur, cur_pos->entry_id, parent, 0, cur_pos->element_idx, insert_element, &right_id);
+            up_element = BPlusSplitEntry(tree, cur, cur_pos->entry_id, parent, 0, insert_element, cur_pos->element_idx, &right_id);
             BPlusInsertElement(tree, parent, &up_element);
             tree->root_id = parent_id;
             BPlusEntryDereference(tree, parent);
             break;
         }
         BPlusEntry* parent = BPlusEntryReference(tree, parent_pos->entry_id);
-        up_element = BPlusSplitEntry(tree, cur, cur_pos->entry_id, parent, parent_pos->element_idx, cur_pos->element_idx, insert_element, &right_id);
+        up_element = BPlusSplitEntry(tree, cur, cur_pos->entry_id, parent, parent_pos->element_idx, insert_element, cur_pos->element_idx, &right_id);
         BPlusEntryDereference(tree, parent);
-        insertUp = true;
+        insert_up = true;
     } while (false);
     BPlusEntryDereference(tree, cur);
-    if (insertUp) {
+    if (insert_up) {
         return BPlusInsertEntry(tree, cursor, &up_element);
     }
     return success;

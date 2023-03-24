@@ -39,7 +39,7 @@ extern "C" {
     } avl_tree_type_name##AvlTree; \
     \
     void avl_tree_type_name##AvlTreeInit(avl_tree_type_name##AvlTree* tree); \
-    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key, bool scope); \
+    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key); \
     bool avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id); \
     bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, id_type del_entry_id); \
 
@@ -316,8 +316,8 @@ extern "C" {
     * 从树中查找节点
     * 存在返回查找到的节点对应的对象，不存在返回NULL
     */ \
-    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key, bool scope) { \
-        return avl_tree_type_name##AvlBsTreeFind(&tree->bs_tree, key, scope); \
+    id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key) { \
+        return avl_tree_type_name##AvlBsTreeFind(&tree->bs_tree, key); \
     } \
     /*
     * 向树中插入节点

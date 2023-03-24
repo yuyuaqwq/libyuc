@@ -44,9 +44,10 @@ typedef enum {
     } rb_tree_type_name##RbTree; \
     \
     void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree); \
-    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key, bool scope); \
+    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key); \
     bool rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
+    id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
     id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
     id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, id_type cur_id); \
@@ -293,8 +294,8 @@ typedef enum {
     * 从树中查找节点
     * 存在返回查找到的节点对应的对象，不存在返回NULL/最后一次查找的节点
     */ \
-    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key, bool scope) { \
-        return rb_tree_type_name##RbBsTreeFind(&tree->bs_tree, key, scope); \
+    id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key) { \
+        return rb_tree_type_name##RbBsTreeFind(&tree->bs_tree, key); \
     } \
     /*
     * 向树中插入节点
@@ -326,6 +327,9 @@ typedef enum {
         } \
         rb_tree_type_name##RbTreeDeleteFixup(tree, del_entry_id, is_parent_left); \
         return true; \
+    } \
+    id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status) { \
+        return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, key, cmp_status); \
     } \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree) { \
         return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree); \

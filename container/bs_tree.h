@@ -27,10 +27,11 @@ extern "C" {
     } bs_tree_type_name##BsTree; \
     \
     void bs_tree_type_name##BsTreeInit(bs_tree_type_name##BsTree* tree); \
-    id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key, bool scope); \
+    id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key); \
     bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
+    id_type bs_tree_type_name##BsTreeIteratorLocate(bs_tree_type_name##BsTree* tree, key_type* key, int8_t* cmp_status); \
     id_type bs_tree_type_name##BsTreeIteratorFirst(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeIteratorLast(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeIteratorNext(bs_tree_type_name##BsTree* tree, id_type cur_id); \
@@ -151,25 +152,10 @@ extern "C" {
     * 从树中查找节点
     * 存在返回查找到的节点对应的对象，不存在返回NULL
     */ \
-    id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key, bool scope) { \
-        id_type cur_id = tree->root; \
-        id_type prev_cur_id = referencer##_InvalidId; \
-        while (cur_id != referencer##_InvalidId) { \
-            prev_cur_id = cur_id; \
-            bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), *key)) { \
-                cur_id = cur->right; \
-            } \
-            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), *key)) { \
-                cur_id = cur->left; \
-            } \
-            else { \
-                referencer##_Dereference(tree, cur); \
-                return cur_id; \
-            } \
-            referencer##_Dereference(tree, cur); \
-        } \
-        return scope ? prev_cur_id : referencer##_InvalidId; \
+    id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key) { \
+        int8_t status; \
+        id_type id = bs_tree_type_name##BsTreeIteratorLocate(tree, key, &status); \
+        return status == 0 ? id : referencer##_InvalidId; \
     } \
     /*
     * 向树中推入节点
@@ -317,6 +303,29 @@ extern "C" {
             cur_id = bs_tree_type_name##BsTreeIteratorNext(tree, cur_id); \
         } \
         return count; \
+    } \
+    id_type bs_tree_type_name##BsTreeIteratorLocate(bs_tree_type_name##BsTree* tree, key_type* key, int8_t* cmp_status) { \
+        id_type cur_id = tree->root; \
+        id_type perv_id = referencer##_InvalidId; \
+        while (cur_id != referencer##_InvalidId) { \
+            perv_id = cur_id; \
+            bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
+            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), *key)) { \
+                *cmp_status = 1; \
+                cur_id = cur->right; \
+            } \
+            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), *key)) { \
+                *cmp_status = -1; \
+                cur_id = cur->left; \
+            } \
+            else { \
+                referencer##_Dereference(tree, cur); \
+                *cmp_status = 0; \
+                return cur_id; \
+            } \
+            referencer##_Dereference(tree, cur); \
+        } \
+        return perv_id; \
     } \
     id_type bs_tree_type_name##BsTreeIteratorFirst(bs_tree_type_name##BsTree* tree) { \
         id_type cur_id = tree->root; \
