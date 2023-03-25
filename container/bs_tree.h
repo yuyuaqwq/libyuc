@@ -93,7 +93,9 @@ extern "C" {
         \
         sub_root->right = new_sub_root->left; \
         if (sub_root->right != referencer##_InvalidId) { \
-            accessor##_SetParent(tree, sub_root->right, sub_root_id); \
+            bs_tree_type_name##BsEntry* sub_root_right = referencer##_Reference(tree, sub_root->right); \
+            accessor##_SetParent(tree, sub_root_right, sub_root_id); \
+            referencer##_Dereference(sub_root_right); \
         } \
         \
         new_sub_root->left = sub_root_id; \
@@ -126,7 +128,9 @@ extern "C" {
         \
         sub_root->left = new_sub_root->right; \
         if (sub_root->left != referencer##_InvalidId) { \
-            accessor##_SetParent(tree, sub_root->left, sub_root_id); \
+            bs_tree_type_name##BsEntry* sub_root_left = referencer##_Reference(tree, sub_root->left); \
+            accessor##_SetParent(tree, sub_root_left, sub_root_id); \
+            referencer##_Dereference(sub_root_left); \
         } \
         \
         new_sub_root->right = sub_root_id; \
@@ -373,11 +377,12 @@ extern "C" {
         while (parent_id != referencer##_InvalidId && cur_id == parent->right) { \
             referencer##_Dereference(tree, cur); \
             cur = parent; \
+            cur_id = parent_id; \
             parent_id = accessor##_GetParent(tree, cur); \
             parent = referencer##_Reference(tree, parent_id); \
         } \
-        referencer##_Dereference(tree, parent); \
         referencer##_Dereference(tree, cur); \
+        referencer##_Dereference(tree, parent); \
         return parent_id; \
     } \
     id_type bs_tree_type_name##BsTreeIteratorPrev(bs_tree_type_name##BsTree* tree, id_type cur_id) { \
@@ -398,11 +403,12 @@ extern "C" {
         while (parent_id != referencer##_InvalidId && cur_id == parent->left) { \
             referencer##_Dereference(tree, cur); \
             cur = parent; \
+            cur_id = parent_id; \
             parent_id = accessor##_GetParent(tree, cur); \
             parent = referencer##_Reference(tree, parent_id); \
         } \
-        referencer##_Dereference(tree, parent); \
         referencer##_Dereference(tree, cur); \
+        referencer##_Dereference(tree, parent); \
         return parent_id; \
     } \
 

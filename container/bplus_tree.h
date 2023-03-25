@@ -133,6 +133,7 @@ CUTILS_CONTAINER_VECTOR_DECLARATION(BPlusCursorStack, BPlusElementPos)
 
 typedef struct _BPlusCursor {
     BPlusCursorStackVector stack;
+    BPlusElementPos pos[8];
     int level;
     BPlusCursorStatus leaf_status;
 } BPlusCursor;
