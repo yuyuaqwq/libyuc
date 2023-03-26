@@ -33,6 +33,7 @@ extern "C" {
     id_type list_type_name##ListDeleteLast(list_type_name##ListHead* head); \
     size_t list_type_name##ListGetCount(list_type_name##ListHead* head); \
     id_type list_type_name##ListFirst(list_type_name##ListHead* head); \
+    id_type list_type_name##ListLast(list_type_name##ListHead* head); \
     id_type list_type_name##ListPrev(list_type_name##ListHead* head, id_type cur_id); \
     id_type list_type_name##ListNext(list_type_name##ListHead* head, id_type cur_id); \
 
@@ -47,8 +48,8 @@ extern "C" {
         list_type_name##ListEntry* prev = referencer##_Reference(head, prev_id); \
         entry->prev = prev_id; \
         entry->next = prev->next; \
-        prev->next = entry_id; \
         list_type_name##ListEntry* prev_next = referencer##_Reference(head, prev->next); \
+        prev->next = entry_id; \
         prev_next->prev = entry_id; \
         if (head->last == prev_id) head->last = entry_id;\
         referencer##_Dereference(head, prev_next); \
@@ -143,6 +144,9 @@ extern "C" {
     } \
     id_type list_type_name##ListFirst(list_type_name##ListHead* head) { \
         return head->first; \
+    } \
+    id_type list_type_name##ListLast(list_type_name##ListHead* head) { \
+        return head->last; \
     } \
     id_type list_type_name##ListPrev(list_type_name##ListHead* head, id_type cur_id) { \
         list_type_name##ListEntry* cur = referencer##_Reference(head, cur_id); \

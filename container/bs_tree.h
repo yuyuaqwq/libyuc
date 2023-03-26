@@ -244,7 +244,7 @@ extern "C" {
                 min_entry->right = entry->right; \
                 if (entry->right != referencer##_InvalidId) { \
                     bs_tree_type_name##BsEntry* entry_right = referencer##_Reference(tree, entry->right); \
-                    accessor##_SetParent(tree, entry_right, min_entry); \
+                    accessor##_SetParent(tree, entry_right, min_entry_id); \
                     referencer##_Dereference(tree, entry_right); \
                 } \
                 /* 如果需要回溯，这里对应entry的父亲是min_entry的父亲的情况，但不能直接修改entry的parent，因为还没挂接 */  \
@@ -257,14 +257,14 @@ extern "C" {
             referencer##_Dereference(tree, min_entry_parent); \
             \
             /* 最后进行挂接 */ \
-            bs_tree_type_name##BsTreeHitchEntry(tree, entry, min_entry); \
+            bs_tree_type_name##BsTreeHitchEntry(tree, entry_id, min_entry_id); \
             \
             /* 也可以选择直接交换两个节点的数据，但是开销不定 */ \
             \
             entry_id = min_entry_id; \
             \
             /* 回溯可能需要的，entry变为原先的min_entry，只是不挂到树上(entry的父节点不指向entry) */ \
-            entry->left = NULL; \
+            entry->left = referencer##_InvalidId; \
             entry->right = old_right_id; \
             accessor##_SetParent(tree, entry, backtrack_id); \
         } \
