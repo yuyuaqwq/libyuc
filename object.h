@@ -39,7 +39,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define ObjectCreate(OBJ_TYPE) ((OBJ_TYPE*)MemoryAlloc(sizeof(OBJ_TYPE)))
 #define ObjectCreateMultiple(OBJ_TYPE, COUNT) ((OBJ_TYPE*)MemoryAlloc(sizeof(OBJ_TYPE) * (COUNT)))
 #define ObjectCreateMultipleBySize(OBJ_SIZE, COUNT) (MemoryAlloc((OBJ_SIZE) * (COUNT)))
-#define ObjectDelete(OBJ) (MemoryFree(OBJ))
+#define ObjectRelease(OBJ) (MemoryFree(OBJ))
 #define ObjectMultipleAt(ARR, INDEX, OBJ_SIZE) ((void*)((((uintptr_t)ARR) + (OBJ_SIZE) * (INDEX))))
 #define ObjectSwap(OBJ_TYPE, OBJ1, OBJ2) { OBJ_TYPE temp = OBJ1; OBJ1 = OBJ2; OBJ2 = temp; }
 #define ObjectGetFieldOffset(OBJ_TYPE, FIELD_NAME) ( (int)&(((OBJ_TYPE*)0)->FIELD_NAME) )
@@ -65,7 +65,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 */
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Create(MAIN_OBJ, OBJ_TYPE) ObjectCreate(OBJ_TYPE) 
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT_CreateMultiple(MAIN_OBJ, OBJ_TYPE, COUNT) ObjectCreateMultiple(OBJ_TYPE, COUNT) 
-#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Delete(MAIN_OBJ, OBJ) ObjectDelete(OBJ) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Delete(MAIN_OBJ, OBJ) ObjectRelease(OBJ) 
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT CUTILS_OBJECT_ALLOCATOR_DEFALUT		// 同名以支持嵌套
 
 /*
