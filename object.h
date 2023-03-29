@@ -63,9 +63,10 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 默认分配器
 * 负责管理对象的分配与释放，与引用器结合时返回id
 */
-#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Create(MAIN_OBJ, OBJ_TYPE) ObjectCreate(OBJ_TYPE) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Create(MAIN_OBJ, OBJ_TYPE) ObjectCreate(OBJ_TYPE)
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_CreateBySize(MAIN_OBJ, OBJ_SIZE) ObjectCreateMultipleBySize(OBJ_SIZE, 1)
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT_CreateMultiple(MAIN_OBJ, OBJ_TYPE, COUNT) ObjectCreateMultiple(OBJ_TYPE, COUNT) 
-#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Delete(MAIN_OBJ, OBJ) ObjectRelease(OBJ) 
+#define CUTILS_OBJECT_ALLOCATOR_DEFALUT_Release(MAIN_OBJ, OBJ) ObjectRelease(OBJ) 
 #define CUTILS_OBJECT_ALLOCATOR_DEFALUT CUTILS_OBJECT_ALLOCATOR_DEFALUT		// 同名以支持嵌套
 
 /*

@@ -259,7 +259,7 @@ typedef enum _HashEntryType {
                         entry->type = kHashEntryFree; \
                     } \
                 } \
-                allocator##_Delete(table, cur); \
+                allocator##_Release(table, cur); \
                 success = true; \
                 break; \
             } \
