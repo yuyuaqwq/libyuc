@@ -92,9 +92,9 @@ extern "C" {
             list_type_name##ListEntry* old_last = referencer##_Reference(head, old_last_id); \
             entry->prev = old_last_id; \
             entry->next = old_last->next; \
-            list_type_name##ListEntry* frist = referencer##_Reference(head, old_last->next); \
+            list_type_name##ListEntry* first = referencer##_Reference(head, old_last->next); \
             old_last->next = entry_id; \
-            frist->prev = entry_id; \
+            first->prev = entry_id; \
             referencer##_Dereference(head, first); \
             referencer##_Dereference(head, old_last); \
         } \
@@ -123,7 +123,7 @@ extern "C" {
             head->last = prev_id; \
         } \
         referencer##_Dereference(head, entry); \
-        return; \
+        return entry_id; \
     } \
     id_type list_type_name##ListDeleteFirst(list_type_name##ListHead* head) { \
         return list_type_name##ListDeleteEntry(head, head->first); \

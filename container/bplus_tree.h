@@ -34,89 +34,8 @@ typedef enum {
 
 
 
-typedef struct _BPlusEntry* BPlusEntryId;
-typedef size_t PageCount;
-typedef struct {
-    uint32_t data;
-} Data;
-typedef Data Key;
-typedef Data Value;
-
-
-
-CUTILS_CONTAINER_RB_TREE_DECLARATION(BPlusEntry, int16_t, Key)
-CUTILS_CONTAINER_LIST_DECLARATION(BPlusLeaf, BPlusEntryId)
-
-
-
 // 阶(m)，4阶B树可以有4个子节点，3个内部节点，m = t * 2
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
-
-typedef struct _BPlusLeafElement {
-    union {
-        // BPlusLeafStaticListEntry next;
-        int16_t next;
-        BPlusEntryRbEntry rb_entry;
-    };
-    Key key;
-    Value value;
-} BPlusLeafElement;
-
-typedef struct _BPlusIndexElement {       // Internal
-    union {
-        // BPlusIndexStaticListEntry next;
-        int16_t next;
-        BPlusEntryRbEntry rb_entry;
-    };
-    BPlusEntryId child_id;
-    Key key;
-} BPlusIndexElement;
-
-typedef struct _BPlusElement {
-    union {
-        BPlusIndexElement index;
-        BPlusLeafElement leaf;
-    };
-} BPlusElement;
-
-CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusIndex, int16_t, BPlusIndexElement, 1)
-CUTILS_CONTAINER_STATIC_LIST_DECLARATION(BPlusLeaf, int16_t, BPlusLeafElement, 1)
-
-typedef struct _BPlusIndexEntry {
-    BPlusEntryId tail_child_id;       // 末尾孩子id存在这里
-    BPlusIndexStaticList element_space;
-} BPlusIndexEntry;
-
-typedef struct _BPlusLeafEntry {
-    BPlusLeafListEntry list_entry;       // 连接所有叶子节点
-    BPlusLeafStaticList element_space;
-} BPlusLeafEntry;
-
-
-typedef struct _BPlusEntry {
-    BPlusEntryRbTree rb_tree;
-    uint16_t type : 1;
-    uint16_t element_count : 15;
-    union {
-        BPlusIndexEntry index;
-        BPlusLeafEntry leaf;
-    };
-} BPlusEntry;
-
-
-typedef struct _BPlusTree {
-    BPlusEntryId root_id;
-    BPlusLeafListHead leaf_list;
-    int16_t index_m;
-    int16_t leaf_m;
-} BPlusTree;
-
-
-
-/*
-* 实现接口
-*/
-extern const BPlusEntryId kBPlusEntryInvalidId;
 
 
 
@@ -137,12 +56,6 @@ extern const BPlusEntryId kBPlusEntryInvalidId;
         int16_t level; \
         BPlusCursorStatus leaf_status; \
     } bp_tree_type_name##BPlusCursor; \
-    bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-    bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-    bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-    BPlusCursorStatus bp_tree_type_name##BPlusCursorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
-    void BPlusCursorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-    BPlusCursorStatus bp_tree_type_name##BPlusCursorNext(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
     \
     \
     CUTILS_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, int16_t, key_type) \
@@ -162,7 +75,7 @@ extern const BPlusEntryId kBPlusEntryInvalidId;
         key_type key; \
         value_type value; \
     } bp_tree_type_name##BPlusLeafElement; \
-    typedef struct _BPlusIndexElement { \
+    typedef struct _##bp_tree_type_name##BPlusIndexElement { \
         union { \
             /* BPlusIndexStaticListEntry next; */ \
             int16_t next; \
@@ -197,12 +110,83 @@ extern const BPlusEntryId kBPlusEntryInvalidId;
         }; \
     } bp_tree_type_name##BPlusEntry; \
     \
+    \
+    bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
+    bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
+    bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
+    BPlusCursorStatus bp_tree_type_name##BPlusCursorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
+    void BPlusCursorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
+    BPlusCursorStatus bp_tree_type_name##BPlusCursorNext(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
+    \
 
 
 
+CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(Int, struct _IntBPlusEntry*, int, int)
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, entry_id_type, key_type, value_type, cursor_allocator, leaf_list_referencer, bp_referencer, rb_referencer, rb_accessor, rb_comparer) \
+#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, entry_id_type, key_type, value_type, cursor_allocator, bp_referencer, rb_accessor, rb_comparer) \
+    static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = bp_referencer##_InvalidId; \
+    forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
+        bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
+        bp_tree_type_name##BPlusEntry* entry = bp_referencer##_Reference(tree, entry_id); \
+        return &entry->leaf.list_entry; \
+    } \
+    forceinline void bp_tree_type_name##BPlusLeafEntryReferencer_Dereference(bp_tree_type_name##BPlusLeafListHead* head, bp_tree_type_name##BPlusLeafListEntry* list_entry) { \
+        bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
+        bp_tree_type_name##BPlusLeafEntry* entry = ObjectGetFromField(list_entry,  bp_tree_type_name##BPlusLeafEntry, list_entry); \
+        bp_referencer##_Dereference(tree, (bp_tree_type_name##BPlusEntry*)entry); \
+    } \
+    CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
+    CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator) \
+    \
+    static const int16_t bp_tree_type_name##BPlusEntryRbReferencer_InvalidId = (-1) ; \
+    forceinline bp_tree_type_name##BPlusEntryRbEntry* bp_tree_type_name##BPlusEntryRbReferencer_Reference(bp_tree_type_name##BPlusEntryRbTree* tree, int16_t element_id) { \
+        if (element_id == bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId) { \
+            return NULL; \
+        } \
+        bp_tree_type_name##BPlusEntry* entry = ObjectGetFromField(tree, bp_tree_type_name##BPlusEntry, rb_tree); \
+        if (entry->type == kBPlusEntryIndex) { \
+            return &entry->index.element_space.obj_arr[element_id].rb_entry; \
+        } \
+        else { \
+            return &entry->leaf.element_space.obj_arr[element_id].rb_entry; \
+        } \
+    } \
+    forceinline void bp_tree_type_name##BPlusEntryRbReferencer_Dereference(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbEntry* entry) {  } \
+    \
+    typedef struct { \
+        int16_t color : 1; \
+        int16_t parent : sizeof(int16_t) * 8 - 1; \
+    } bp_tree_type_name##BPlusEntryRbParentColor; \
+    forceinline int16_t rb_accessor##_GetParent(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry) { \
+        return (((bp_tree_type_name##BPlusEntryRbParentColor*)&(((bp_tree_type_name##BPlusEntryRbEntry*)bs_entry)->parent_color))->parent); \
+    } \
+    forceinline RbColor rb_accessor##_GetColor(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry) { \
+        return (((bp_tree_type_name##BPlusEntryRbParentColor*)&(((bp_tree_type_name##BPlusEntryRbEntry*)bs_entry)->parent_color))->color == -1 ? 1 : 0); \
+    } \
+    forceinline void rb_accessor##_SetParent(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry, int16_t new_id) { \
+        ((bp_tree_type_name##BPlusEntryRbParentColor*)&(((bp_tree_type_name##BPlusEntryRbEntry*)bs_entry)->parent_color))->parent = new_id; \
+    } \
+    forceinline void rb_accessor##_SetColor(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry, RbColor new_color) { \
+        return ((bp_tree_type_name##BPlusEntryRbParentColor*)&(((bp_tree_type_name##BPlusEntryRbEntry*)bs_entry)->parent_color))->color = new_color; \
+    } \
+    CUTILS_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, int16_t, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
+    \
+    \
+    static entry_id_type bp_tree_type_name##BPlusElementGetChildId(bp_tree_type_name##BPlusTree* tree, const bp_tree_type_name##BPlusEntry* index, int16_t element_id) { \
+        if (element_id == -1) { \
+            return index->index.tail_child_id; \
+        } \
+        return index->index.element_space.obj_arr[element_id].child_id; \
+    } \
+    static void bp_tree_type_name##BPlusElementSetChildId(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* index, int16_t element_id, entry_id_type entry_id) { \
+        if (element_id == -1) { \
+            index->index.tail_child_id = entry_id; \
+            return; \
+        } \
+        index->index.element_space.obj_arr[element_id].child_id = entry_id; \
+    } \
+    \
     bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
         if (cursor->level < 0) { \
             return NULL; \
@@ -236,24 +220,24 @@ extern const BPlusEntryId kBPlusEntryInvalidId;
         bp_tree_type_name##BPlusElementPos cur; \
         bp_tree_type_name##BPlusElementPos* parent = bp_tree_type_name##BPlusCursorCur(tree, cursor); \
         if (parent) { \
-            bp_tree_type_name##BPlusEntry* parent_entry = bp_tree_type_name##BPlusEntryReference(tree, parent->entry_id); \
+            bp_tree_type_name##BPlusEntry* parent_entry = bp_referencer##_Reference(tree, parent->entry_id); \
             if (parent_entry->type == kBPlusEntryLeaf) { \
                 return kBPlusCursorEnd; \
             } \
             cur.entry_id = bp_tree_type_name##BPlusElementGetChildId(tree, parent_entry, parent->element_id); \
-            bp_tree_type_name##BPlusEntryDereference(tree, parent_entry); \
+            bp_referencer##_Dereference(tree, parent_entry); \
         } \
         else { \
             cur.entry_id = tree->root_id; \
         } \
-        bp_tree_type_name##BPlusEntry* cur_entry = bp_tree_type_name##BPlusEntryReference(tree, cur.entry_id); \
+        bp_tree_type_name##BPlusEntry* cur_entry = bp_referencer##_Reference(tree, cur.entry_id); \
         int8_t cmp_status = -1; \
         if (cur_entry->element_count > 0) { \
-            cur.element_id = bp_tree_type_name##BPlusRbTreeIteratorLocate(&cur_entry->rb_tree, key, &cmp_status); \
+            cur.element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLocate(&cur_entry->rb_tree, key, &cmp_status); \
             if (cmp_status == -1) { /* key小于当前定位元素 */ } \
             else { /* key大于等于当前定位元素 */ \
                 if (cur_entry->type == kBPlusEntryIndex || cmp_status == 1) { \
-                    cur.element_id = bp_tree_type_name##BPlusRbTreeIteratorNext(&cur_entry->rb_tree, cur.element_id); \
+                    cur.element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&cur_entry->rb_tree, cur.element_id); \
                 } \
             } \
         } \
@@ -272,75 +256,33 @@ extern const BPlusEntryId kBPlusEntryInvalidId;
             cursor->leaf_status = status; \
         } \
         ++cursor->level; \
-        bp_tree_type_name##BPlusEntryDereference(tree, cur_entry); \
+        bp_referencer##_Dereference(tree, cur_entry); \
         return status; \
     } \
     \
     \
-    CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, leaf_list_referencer) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator) \
-    CUTILS_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, int16_t, key_type, rb_referencer, rb_accessor, rb_comparer) \
-    \
-    
-    
-    
 
 
-CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(Int, struct _IntBPlusEntry*, int, int)
 
-typedef struct {
-        int16_t color : 1;
-        int16_t parent : 15;
-    } BPlusEntryRbParentColor;
-    forceinline Key CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(BPlusEntryRbTree* tree, BPlusEntryRbBsEntry* bs_entry) {
-        if (((BPlusEntry*)tree)->type == kBPlusEntryLeaf) {
-            return ((BPlusLeafElement*)bs_entry)->key;
-        }
-        else {
-            return ((BPlusIndexElement*)bs_entry)->key;
-        }
+
+
+
+forceinline int CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(IntBPlusEntryRbTree* tree, IntBPlusEntryRbBsEntry* bs_entry) {
+    if (((IntBPlusEntry*)tree)->type == kBPlusEntryLeaf) {
+        return ((IntBPlusLeafElement*)bs_entry)->key;
     }
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) (((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->parent)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) (((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->color == -1 ? 1 : 0)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->parent = NEW_PARENT_ID)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->color = COLOR)
+    else {
+        return ((IntBPlusIndexElement*)bs_entry)->key;
+    }
+}
 #define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR
 
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Equal(TREE, OBJ1, OBJ2) ((OBJ1).data == (OBJ2).data)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Greater(TREE, OBJ1, OBJ2) ((OBJ1).data > (OBJ2).data)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Less(TREE, OBJ1, OBJ2) ((OBJ1).data < (OBJ2).data)
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Equal(TREE, OBJ1, OBJ2) ((OBJ1) == (OBJ2))
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Greater(TREE, OBJ1, OBJ2) ((OBJ1) > (OBJ2))
+#define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE_Less(TREE, OBJ1, OBJ2) ((OBJ1) < (OBJ2))
 #define CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE
 
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId (-1)
-forceinline BPlusEntryRbEntry* CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(BPlusEntryRbTree* tree, int16_t id) {
-        if (id == CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId) {
-            return NULL;
-    }
-        BPlusEntry* entry = ObjectGetFromField(tree, BPlusEntry, rb_tree);
-        if (entry->type == kBPlusEntryIndex) {
-            return &entry->index.element_space.obj_arr[id].rb_entry;
-        }
-        else {
-            return &entry->leaf.element_space.obj_arr[id].rb_entry;
-        }
-}
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_Dereference(TREE, OBJ)
-#define CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER
-
-forceinline BPlusLeafListEntry* CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT_Reference(BPlusLeafListHead* head, BPlusEntryId entry_id) {
-    BPlusTree* tree = ObjectGetFromField(head, BPlusTree, leaf_list);
-    BPlusEntry* entry = BPlusEntryReference(tree, entry_id);
-    return &entry->leaf.list_entry;
-}
-forceinline void CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT_Dereference(BPlusLeafListHead* head, BPlusLeafListEntry* list_entry) {
-    BPlusTree* tree = ObjectGetFromField(head, BPlusTree, leaf_list);
-    BPlusLeafEntry* entry = ObjectGetFromField(list_entry, BPlusLeafEntry, list_entry);
-    BPlusEntryDereference(tree, (BPlusEntry*)entry);
-}
-#define CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT_InvalidId kBPlusEntryInvalidId
-#define CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT
-
-CUTILS_CONTAINER_BPLUS_TREE_DEFINE(Int, struct _IntBPlusEntry*, Key, Value, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_CONTAINER_BPLUS_ENTRY_REFERENCER_DEFALUT, CUTILS_OBJECT_REFERENCER_DEFALUT, CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER, CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR, CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE)
+CUTILS_CONTAINER_BPLUS_TREE_DEFINE(Int, struct _IntBPlusEntry*, int, int, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_OBJECT_REFERENCER_DEFALUT, CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR, CUTILS_CONTAINER_BPLUS_RB_TREE_COMPARE)
 
 
 #ifdef __cplusplus

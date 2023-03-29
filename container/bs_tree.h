@@ -87,7 +87,7 @@ extern "C" {
             else { \
                 sub_root_parent->right = new_sub_root_id; \
             } \
-            referencer##_Dereference(sub_root_parent); \
+            referencer##_Dereference(tree, sub_root_parent); \
         } \
         accessor##_SetParent(tree, sub_root, new_sub_root_id); \
         \
@@ -95,7 +95,7 @@ extern "C" {
         if (sub_root->right != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* sub_root_right = referencer##_Reference(tree, sub_root->right); \
             accessor##_SetParent(tree, sub_root_right, sub_root_id); \
-            referencer##_Dereference(sub_root_right); \
+            referencer##_Dereference(tree, sub_root_right); \
         } \
         \
         new_sub_root->left = sub_root_id; \
@@ -122,7 +122,7 @@ extern "C" {
             else { \
                 sub_root_parent->right = new_sub_root_id; \
             } \
-            referencer##_Dereference(sub_root_parent); \
+            referencer##_Dereference(tree, sub_root_parent); \
         } \
         accessor##_SetParent(tree, sub_root, new_sub_root_id); \
         \
@@ -130,7 +130,7 @@ extern "C" {
         if (sub_root->left != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* sub_root_left = referencer##_Reference(tree, sub_root->left); \
             accessor##_SetParent(tree, sub_root_left, sub_root_id); \
-            referencer##_Dereference(sub_root_left); \
+            referencer##_Dereference(tree, sub_root_left); \
         } \
         \
         new_sub_root->right = sub_root_id; \
