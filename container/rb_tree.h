@@ -344,23 +344,21 @@ typedef enum {
         return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, cur_id); \
     } \
 
+
+
+            
 //CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
 //typedef struct _IntEntry_Rb {
 //    IntRbEntry entry;
 //    int key;
 //} IntEntry_Rb;
-//#define INT_RB_TREE_ACCESSOR_GetKey(TREE, ENTRY) (((IntEntry_Rb*)ENTRY)->key)
-//#define INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
-//#define  INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((IntRbEntry*)ENTRY)->parent_color) & 0x1))
-//#define INT_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntRbEntry*)ENTRY)->parent_color = (IntRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY))));
-//#define INT_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (ENTRY->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
-//#define INT_RB_TREE_ACCESSOR INT_RB_TREE_ACCESSOR
-//#define INT_RB_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntRbBsEntry*)OBJ_ID)
-//#define INT_RB_TREE_REFERENCER_Dereference(TREE, OBJ)
-//#define INT_RB_TREE_REFERENCER_InvalidId (NULL)
-//#define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
-
-//CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
+//#define INT_RB_TREE_ACCESSOR_DEFALUT_GetKey(TREE, ENTRY) (((IntEntry_Rb*)ENTRY)->key)
+//#define INT_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
+//#define INT_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((IntRbEntry*)ENTRY)->parent_color) & 0x1))
+//#define INT_RB_TREE_ACCESSOR_DEFALUT_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntRbEntry*)ENTRY)->parent_color = (IntRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY))));
+//#define INT_RB_TREE_ACCESSOR_DEFALUT_SetColor(TREE, ENTRY, COLOR) (ENTRY->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
+//#define INT_RB_TREE_ACCESSOR_DEFALUT INT_RB_TREE_ACCESSOR_DEFALUT
+//CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, CUTILS_OBJECT_REFERENCER_DEFALUT, CUTILS_CONTAINER_RB_TREE_ACCESSOR_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus
 }

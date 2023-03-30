@@ -18,16 +18,60 @@ extern "C" {
 	typedef struct _LruList { \
 		lru_type_name##LruListHashTable hash_table; \
 		ListHead list_head; \
-	} LruList; \
+	} lru_type_name##LruList; \
 
+	
 
+#define CUTILS_CONTAINER_LRU_LIST_DEFINE(lru_type_name, element_type, key_type, allocater, accessor, obj_mover, hasher, comparer) \
+	CUTILS_CONTAINER_HASH_TABLE_DEFINE(lru_type_name##LruList, element_type, key_type) \
+    \
+	void lru_type_name##LruListInit(lru_type_name##LruList* list, size_t max_count) { \
+		lru_type_name##HashTableInit(&list->hash_table, max_count, 0); \
+		ListHeadInit(&list->list_head); \
+		list->lru_entry_field_offset = lru_entry_field_offset; \
+	} \
+	element_type* lru_type_name##LruListGet(lru_type_name##LruList* list, key_type* key, bool put_first) { \
+		element_type* obj = lru_type_name##HashTableFind(&list->hash_table, key); \
+		if (!obj) { \
+			return NULL; \
+		} \
+		if (put_first) { \
+			ListPutFirst(&list->list_head, ListDeleteEntry(&list->list_head, &entry->list_entry)); \
+		} \
+		return obj; \
+	} \
+	element_type* lru_type_name##LruListPut(lru_type_name##LruList* list, lru_type_name##LruEntry* entry) { \
+		void* obj = ObjectGetFromFieldOffset(entry, list->lru_entry_field_offset, void); \
+		void* key = ObjectGetFieldByOffset(obj, list->hash_table.keyFieldOffset, void); \
+		void* del_obj = HashTableFind(&list->hash_table, key); \
+		if (del_obj) { \
+			LruListDelete(list, key); \
+		} \
+		else if (HashTableGetCount(&list->hash_table) >= HashTableGetCapacity(&list->hash_table)) { \
+			del_obj = LruListPop(list); \
+		} \
+		HashTableInsert(&list->hash_table, obj);
+		LruEntry* new_entry = ObjectGetFieldByOffset(obj, list->lru_entry_field_offset, LruEntry);
+		ListInsertNext(&list->list_head, &new_entry->list_entry);
+		return del_obj;
+	}
+	void* LruListPop(LruList* list) {
+		ListEntry* del_list_entry = ListRemovePrev(&list->list_head);
+		void* del_obj = ObjectGetFromFieldOffset(del_list_entry, list->lru_entry_field_offset, void);
+		HashTableDelete(&list->hash_table, ObjectGetFieldByOffset(del_obj, list->hash_table.keyFieldOffset, void));
+		LruEntry* del_entry = ObjectGetFieldByOffset(del_obj, list->lru_entry_field_offset, LruEntry);
+		ListRemoveEntry(&del_entry->list_entry, true);
+		return del_obj;
+	}
 
-void LruListInit(LruList* list, size_t capacity, int lru_entry_field_offset, int obj_size, int key_field_offset, int key_size, HashU32Func hash_func, CmpFunc cmp_func);
-#define LruListInitByField(list, capacity, objName, entryFieldName, keyFieldName) LruListInit((list), (capacity), ObjectGetFieldOffset(objName, entryFieldName), sizeof(objName),  ObjectGetFieldOffset(objName, keyFieldName), ObjectGetFieldSize(objName, keyFieldName), NULL, NULL)
-void* LruListGet(LruList* list, void* key, bool put_first);
-void* LruListPut(LruList* list, LruEntry* entry);
-void* LruListPop(LruList* list);
-void* LruListDelete(LruList* list, void* key);
+	void* LruListDelete(LruList* list, void* key) {
+		void* del_obj = HashTableDelete(&list->hash_table, key);
+		if (del_obj) {
+			LruEntry* del_entry = ObjectGetFieldByOffset(del_obj, list->lru_entry_field_offset, LruEntry);
+			ListRemoveEntry(&del_entry->list_entry, true);
+		}
+		return del_obj;
+	}
 
 #ifdef __cplusplus
 }
