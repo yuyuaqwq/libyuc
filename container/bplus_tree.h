@@ -378,8 +378,8 @@ typedef enum {
         entry_id_type right_id = bp_tree_type_name##BPlusEntryCreate(tree, left->type); \
         bp_tree_type_name##BPlusEntry* right = entry_referencer##_Reference(tree, right_id); \
         bp_tree_type_name##BPlusElement up_element; \
-        int mid; \
-        int right_count; \
+        int32_t mid; \
+        int32_t right_count; \
         if (left->type == kBPlusEntryLeaf) { \
             bp_tree_type_name##BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id); \
             /* 原地分裂思路：mid将未插入的元素也算上，好计算newCount，4阶插入后4节点就是2(左2右2)，5阶插入后5节点还是2(左2右3)
@@ -393,7 +393,7 @@ typedef enum {
             mid = (tree->index_m - 1) / 2; \
             right_count = left->element_count - mid;        /* 这个时候entry->count并没有把未插入元素也算上，但是会上升一个元素，抵消故不计入 */ \
         } \
-        int i = right_count - 1; \
+        int32_t i = right_count - 1; \
         int16_t left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
         for (; i >= 0; i--) { \
@@ -460,7 +460,7 @@ typedef enum {
     */ \
     static void bp_tree_type_name##BPlusEntryMerge(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* right, entry_id_type right_id, bp_tree_type_name##BPlusEntry* parent, int16_t parent_index) { \
         int16_t right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&right->rb_tree); \
-        for (int i = 0; i < right->element_count; i++) { \
+        for (int32_t i = 0; i < right->element_count; i++) { \
               assert(right_elemeng_id != CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId); \
             bp_tree_type_name##BPlusEntryInsertElement(tree, left, bp_tree_type_name##BPlusElementGet(tree, right, right_elemeng_id)); \
             right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, right_elemeng_id); \
