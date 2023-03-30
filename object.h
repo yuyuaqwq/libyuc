@@ -57,6 +57,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 
 * 主对象：
 * 对象进行某些操作时需要的关联对象，如引用器，若通过哈希表对id进行引用，仅id自然无法查找到对应的引用关系
+* 通常传递的是指针
 */
 
 /*
@@ -106,7 +107,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 默认哈希器
 * 负责计算对象的哈希值
 */
-#define CUTILS_OBJECT_HASHER_DEFALUT(MAIN_OBJ, OBJ) 0
+#define CUTILS_OBJECT_HASHER_DEFALUT(MAIN_OBJ, OBJ) (0)
 
 /*
 * 默认传输器

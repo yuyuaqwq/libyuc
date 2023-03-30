@@ -106,6 +106,7 @@ typedef enum _HashEntryType {
     } ##hash_table_type_name##HashTable; \
     \
     void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator); \
+    size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
     bool hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj); \
     bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key); \
@@ -130,7 +131,8 @@ typedef enum _HashEntryType {
         element_type* obj = hash_table_type_name##HashTableIteratorFirst(table, &iter); \
         while (obj) { \
             hash_table_type_name##HashTablePut(&temp_table, obj); \
-            hash_table_type_name##HashTableDelete(table, &accessor##_GetKey(table, *obj)); \
+            key_type key = accessor##_GetKey(table, *obj); \
+            hash_table_type_name##HashTableDelete(table, &key); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
         } \
         \
@@ -156,11 +158,13 @@ typedef enum _HashEntryType {
         hash_table_type_name##HashTableIterator iter; \
         element_type* obj = hash_table_type_name##HashTableIteratorFirst(table, &iter); \
         while (obj) { \
-            hash_table_type_name##HashTableDelete(table, &accessor##_GetKey(table, *obj)); \
+            key_type key = accessor##_GetKey(table, *obj); \
+            hash_table_type_name##HashTableDelete(table, &key); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
         } \
         hash_table_type_name##HashTableVectorRelease(&table->bucket); \
     } \
+    size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
         uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
