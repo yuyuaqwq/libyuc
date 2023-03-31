@@ -30,6 +30,7 @@ extern "C" {
     void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, id_type count); \
     id_type ds_list_type_name##DoublyStaticListPop(ds_list_type_name##DoublyStaticList* list, id_type list_order); \
     void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index); \
+    void ds_list_type_name##DoublyStaticListSwitch(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index, id_type new_list_order); \
 
 #define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, list_count) \
     void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, id_type count) { \

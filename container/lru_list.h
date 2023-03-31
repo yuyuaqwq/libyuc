@@ -79,13 +79,13 @@ extern "C" {
 	} \
 
 
-CUTILS_CONTAINER_LRU_LIST_DECLARATION(Int, int)
-typedef struct _IntLru_Entry {
-	IntLruListEntry lru_entry;
-	int key;
-} IntLru_Entry;
-#define IntLruListEntryAccessor_GetKey(LRU_LIST, LRU_LIST_ENTRY) (((IntLru_Entry*)&(LRU_LIST_ENTRY))->key)
-#define IntLruListEntryAccessor IntLruListEntryAccessor
+//CUTILS_CONTAINER_LRU_LIST_DECLARATION(Int, int)
+//typedef struct _IntLru_Entry {
+//	IntLruListEntry lru_entry;
+//	int key;
+//} IntLru_Entry;
+//#define IntLruListEntryAccessor_GetKey(LRU_LIST, LRU_LIST_ENTRY) (((IntLru_Entry*)&(LRU_LIST_ENTRY))->key)
+//#define IntLruListEntryAccessor IntLruListEntryAccessor
 
 //CUTILS_CONTAINER_LRU_LIST_DEFINE(Int, int, IntLruListEntryAccessor, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_OBJECT_HASHER_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
 
