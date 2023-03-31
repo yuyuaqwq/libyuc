@@ -18,7 +18,7 @@
   - 单向链表
 - [模板]StaticList
   - 静态链表
-- DoublyStaticList
+- [模板]DoublyStaticList
   - 双向静态链表
 - SkipList
   - 跳表
