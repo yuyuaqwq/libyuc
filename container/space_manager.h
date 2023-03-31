@@ -17,14 +17,14 @@ extern "C" {
 /*
 * 空间管理
 */
-#define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION(space_manager_type_name, id_type, list_count) \
+#define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION(space_manager_type_name, id_type, list_count, space_count) \
     typedef struct _##space_manager_type_name##SpaceBlock { \
         id_type next_block_offset; \
         id_type len; \
     } space_manager_type_name##SpaceBlock; \
     typedef struct _##space_manager_type_name##SpaceHead { \
         id_type first_block[list_count];        /* 分别指向不同队列的第一个空闲块 */ \
-        /* uint8_t space[]; */ \
+        uint8_t space[space_count]; \
     } space_manager_type_name##SpaceHead; \
 
 #define CUTILS_CONTAINER_SPACE_MANAGER_DEFINE(space_manager_type_name, id_type, referencer, list_count) \
@@ -32,26 +32,24 @@ extern "C" {
     * 初始化
     */ \
     void space_manager_type_name##SpaceManagerInit(space_manager_type_name##SpaceHead* head, id_type space_size) { \
-        head->first_block[0] = sizeof(space_manager_type_name##SpaceHead); \
+        head->first_block[0] = 0; \
         for (int16_t i = 1; i < list_count; i++) { \
             head->first_block[i] = referencer##_InvalidId; \
         } \
-        space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + sizeof(space_manager_type_name##SpaceHead)); \
+        space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)(&head->space[0]); \
         block->next_block_offset = referencer##_InvalidId; \
-        block->len = space_size - sizeof(space_manager_type_name##SpaceHead); \
+        block->len = space_size; \
     } \
     /*
     * 分配块，返回偏移
     */ \
     id_type space_manager_type_name##SpaceManagerAlloc(space_manager_type_name##SpaceHead* head, id_type list_order, id_type len) { \
-        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
-        \
+        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)(&head->first_block[list_order]); \
         id_type free_offset = head->first_block[list_order]; \
         while (free_offset != referencer##_InvalidId) { \
-            space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
+            space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)(&head->space[free_offset]); \
             if (block->len > len) { \
-                void* mem = (void*)(&block->next_block_offset); \
-                space_manager_type_name##SpaceBlock* new_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset + len); \
+                space_manager_type_name##SpaceBlock* new_block = (space_manager_type_name##SpaceBlock*)(&head->space[free_offset+len]); \
                 new_block->next_block_offset = block->next_block_offset; \
                 new_block->len = block->len - len; \
                 prev_block->next_block_offset += len; \
@@ -71,13 +69,13 @@ extern "C" {
     */ \
     void space_manager_type_name##SpaceManagerFree(space_manager_type_name##SpaceHead* head, id_type list_order, id_type free_offset, id_type len) { \
         id_type cur_offset = head->first_block[list_order]; \
-        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)&head->first_block[list_order]); \
+        space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)(&head->first_block[list_order]); \
         \
-        space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
+        space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)(&head->space[free_offset]); \
         /* 尝试合并与当前块连续的前后空闲块 */ \
         bool prev = false, next = false; \
         while (cur_offset != referencer##_InvalidId) { \
-            space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + cur_offset); \
+            space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)(&head->space[cur_offset]); \
             if (!next && free_offset + len == cur_offset) { \
                 /* 找到连续的空闲下一块 */ \
                 len += cur_block->len; \
@@ -118,14 +116,13 @@ extern "C" {
         id_type free_offset = head->first_block[list_order]; \
         id_type max = 0; \
         while (free_offset != referencer##_InvalidId) { \
-            space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)((uintptr_t)head + free_offset); \
+            space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)(&head->space[free_offset]); \
             if (block->len > max) { \
                 max = block->len; \
             } \
         } \
         return max; \
     } \
-
 
 
 #ifdef __cplusplus
