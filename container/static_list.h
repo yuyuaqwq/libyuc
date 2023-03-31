@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_STATIC_LIST_DECLARATION(static_list_type_name, id_type, element_type, list_count) \
+#define CUTILS_CONTAINER_STATIC_LIST_DECLARATION(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
     /*
     * 若只有一条队列，由Pop分配的节点，此结构体可以被覆盖，可以使用union
     * StaticListEntry必须是偏移为0的字段
@@ -25,7 +25,7 @@ extern "C" {
     } static_list_type_name##StaticListEntry; \
     typedef struct _##static_list_type_name##StaticList { \
         id_type list_first[list_count]; /* 最少应为1 */ \
-        element_type obj_arr[]; \
+        element_type obj_arr[obj_arr_count]; \
     } static_list_type_name##StaticList; \
     \
     void static_list_type_name##StaticListInit(static_list_type_name##StaticList* list, id_type count); \
