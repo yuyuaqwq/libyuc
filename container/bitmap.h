@@ -22,7 +22,7 @@ extern "C" {
 #define CUTILS_CONTAINER_BIT_MAP_DECLARATION(bit_map_type_name) \
     typedef struct _##bit_map_type_name##Bitmap { \
         size_t count; \
-        uint8_t byte_arr[1]; \
+        uint8_t byte_arr[]; \
     } bit_map_type_name##Bitmap; \
 
 #define CUTILS_CONTAINER_BIT_MAP_DEFINE(bit_map_type_name) \
@@ -157,6 +157,8 @@ extern "C" {
         } \
         return max_free_count; \
     } \
+
+CUTILS_CONTAINER_BIT_MAP_DECLARATION()
 
 #ifdef __cplusplus
 }
