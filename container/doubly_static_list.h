@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_1(ds_list_type_name, id_type) \
     /*
     * 若只有一条队列，由Pop分配的节点，此结构体可以被覆盖，可以使用union
     */ \
@@ -22,6 +22,8 @@ extern "C" {
         id_type prev; \
         id_type next; \
     } ds_list_type_name##DoublyStaticListEntry; \
+
+#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
     typedef struct _##ds_list_type_name##DoublyStaticList{ \
         id_type list_first[list_count]; /* 最少应为1 */ \
         element_type obj_arr[obj_arr_count]; \
@@ -31,6 +33,11 @@ extern "C" {
     id_type ds_list_type_name##DoublyStaticListPop(ds_list_type_name##DoublyStaticList* list, id_type list_order); \
     void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index); \
     void ds_list_type_name##DoublyStaticListSwitch(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index, id_type new_list_order); \
+
+#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+    CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_1(ds_list_type_name, id_type) \
+    CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+
 
 #define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, list_count) \
     void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, id_type count) { \

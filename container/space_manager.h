@@ -17,15 +17,23 @@ extern "C" {
 /*
 * 空间管理
 */
-#define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION(space_manager_type_name, id_type, element_type, list_count, obj_count) \
+#define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION_1(space_manager_type_name, id_type) \
     typedef struct _##space_manager_type_name##SpaceBlock { \
         id_type next_block_offset; \
         id_type len; \
     } space_manager_type_name##SpaceBlock; \
+
+
+#define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION_2(space_manager_type_name, id_type, element_type, list_count, obj_count) \
     typedef struct _##space_manager_type_name##SpaceHead { \
-        id_type first_block[list_count];        /* 分别指向不同队列的第一个空闲块 */ \
+        id_type first_block[list_count];        /* 分别指向不同队列的第一个块 */ \
         element_type obj_arr[obj_count]; \
     } space_manager_type_name##SpaceHead; \
+
+#define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION(space_manager_type_name, id_type, element_type, list_count, obj_count) \
+    CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION_1(space_manager_type_name, id_type) \
+    CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION_2(space_manager_type_name, id_type, element_type, list_count, obj_count)
+
 
 #define CUTILS_CONTAINER_SPACE_MANAGER_DEFINE(space_manager_type_name, id_type, element_type, referencer, list_count) \
     /*
