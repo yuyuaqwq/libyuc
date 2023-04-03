@@ -31,6 +31,7 @@ extern "C" {
     id_type list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id); \
     id_type list_type_name##ListDeleteFirst(list_type_name##ListHead* head); \
     id_type list_type_name##ListDeleteLast(list_type_name##ListHead* head); \
+    void list_type_name##ListReplaceEntry(list_type_name##ListHead* head, id_type entry_id, id_type new_entry_id); \
     size_t list_type_name##ListGetCount(list_type_name##ListHead* head); \
     id_type list_type_name##ListFirst(list_type_name##ListHead* head); \
     id_type list_type_name##ListLast(list_type_name##ListHead* head); \
@@ -130,6 +131,30 @@ extern "C" {
     } \
     id_type list_type_name##ListDeleteLast(list_type_name##ListHead* head) { \
         return list_type_name##ListDeleteEntry(head, head->last); \
+    } \
+    void list_type_name##ListReplaceEntry(list_type_name##ListHead* head, id_type entry_id, id_type new_entry_id) { \
+        list_type_name##ListEntry* entry = referencer##_Reference(head, entry_id); \
+        list_type_name##ListEntry* new_entry = referencer##_Reference(head, new_entry_id); \
+        id_type prev_id = entry->prev; \
+        id_type next_id = entry->next; \
+        if (prev_id == entry_id) { prev_id = new_entry_id; } \
+        if (next_id == entry_id) { next_id = new_entry_id; } \
+        new_entry->prev = prev_id; \
+        new_entry->next = next_id; \
+        list_type_name##ListEntry* prev = referencer##_Reference(head, prev_id); \
+        list_type_name##ListEntry* next = referencer##_Reference(head, next_id); \
+        prev->next = new_entry_id; \
+        next->prev = new_entry_id; \
+        referencer##_Dereference(head, prev); \
+        referencer##_Dereference(head, next); \
+        if (entry_id == head->first) { \
+            head->first = new_entry_id; \
+        } \
+        if (entry_id == head->last) { \
+            head->last = new_entry_id; \
+        } \
+        referencer##_Dereference(head, entry); \
+        referencer##_Dereference(head, new_entry); \
     } \
     size_t list_type_name##ListGetCount(list_type_name##ListHead* head) { \
         size_t count = 0; \

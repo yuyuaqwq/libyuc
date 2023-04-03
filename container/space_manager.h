@@ -20,7 +20,7 @@ extern "C" {
 #define CUTILS_CONTAINER_SPACE_MANAGER_DECLARATION_1(space_manager_type_name, id_type) \
     typedef struct _##space_manager_type_name##SpaceBlock { \
         id_type next_block_offset; \
-        id_type len; \
+        id_type count; \
     } space_manager_type_name##SpaceBlock; \
 
 
@@ -46,24 +46,24 @@ extern "C" {
         } \
         space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)(&head->obj_arr[0]); \
         block->next_block_offset = referencer##_InvalidId; \
-        block->len = element_count; \
+        block->count = element_count; \
     } \
     /*
     * 分配块，返回偏移
     */ \
-    id_type space_manager_type_name##SpaceManagerAlloc(space_manager_type_name##SpaceHead* head, id_type list_order, id_type len) { \
+    id_type space_manager_type_name##SpaceManagerAlloc(space_manager_type_name##SpaceHead* head, id_type list_order, id_type count) { \
         space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)(&head->first_block[list_order]); \
         id_type free_offset = head->first_block[list_order]; \
         while (free_offset != referencer##_InvalidId) { \
             space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)(&head->obj_arr[free_offset]); \
-            if (block->len > len) { \
-                space_manager_type_name##SpaceBlock* new_block = (space_manager_type_name##SpaceBlock*)(&head->obj_arr[free_offset+len]); \
+            if (block->count > count) { \
+                space_manager_type_name##SpaceBlock* new_block = (space_manager_type_name##SpaceBlock*)(&head->obj_arr[free_offset+ count]); \
                 new_block->next_block_offset = block->next_block_offset; \
-                new_block->len = block->len - len; \
-                prev_block->next_block_offset += len; \
+                new_block->count = block->count - count; \
+                prev_block->next_block_offset += count; \
                 return free_offset; \
             } \
-            else if (block->len == len) { \
+            else if (block->count == count) { \
                 prev_block->next_block_offset = block->next_block_offset; \
                 return free_offset; \
             } \
@@ -75,7 +75,7 @@ extern "C" {
     /*
     * 释放块
     */ \
-    void space_manager_type_name##SpaceManagerFree(space_manager_type_name##SpaceHead* head, id_type list_order, id_type free_offset, id_type len) { \
+    void space_manager_type_name##SpaceManagerFree(space_manager_type_name##SpaceHead* head, id_type list_order, id_type free_offset, id_type count) { \
         id_type cur_offset = head->first_block[list_order]; \
         space_manager_type_name##SpaceBlock* prev_block = (space_manager_type_name##SpaceBlock*)(&head->first_block[list_order]); \
         \
@@ -84,21 +84,18 @@ extern "C" {
         bool prev = false, next = false; \
         while (cur_offset != referencer##_InvalidId) { \
             space_manager_type_name##SpaceBlock* cur_block = (space_manager_type_name##SpaceBlock*)(&head->obj_arr[cur_offset]); \
-            if (!next && free_offset + len == cur_offset) { \
+            if (!next && free_offset + count == cur_offset) { \
                 /* 找到连续的空闲下一块 */ \
-                len += cur_block->len; \
-                cur_block->len = len; \
-                cur_block->next_block_offset = cur_block->next_block_offset; \
+                count += cur_block->count; \
+                cur_block->count = count; \
                 prev_block->next_block_offset = free_offset; \
-                cur_block = cur_block; \
                 next = true; \
             } \
-            else if (!prev && cur_offset + cur_block->len == free_offset) { \
+            else if (!prev && cur_offset + cur_block->count == free_offset) { \
                 /* 找到连续的空闲上一块 */ \
                 free_offset = cur_offset; \
-                len += cur_block->len;\
-                cur_block->len = len; \
-                cur_block = cur_block; \
+                count += cur_block->count;\
+                cur_block->count = count; \
                 prev_block->next_block_offset = free_offset; \
                 prev = true; \
             } \
@@ -112,7 +109,7 @@ extern "C" {
         } \
         if (!prev && !next) { \
             cur_block->next_block_offset = head->first_block[list_order]; \
-            cur_block->len = len; \
+            cur_block->count = count; \
             head->first_block[list_order] = free_offset; \
         } \
     } \
@@ -125,9 +122,10 @@ extern "C" {
         id_type max = 0; \
         while (free_offset != referencer##_InvalidId) { \
             space_manager_type_name##SpaceBlock* block = (space_manager_type_name##SpaceBlock*)(&head->obj_arr[free_offset]); \
-            if (block->len > max) { \
-                max = block->len; \
+            if (block->count > max) { \
+                max = block->count; \
             } \
+            free_offset = block->next_block_offset; \
         } \
         return max; \
     } \

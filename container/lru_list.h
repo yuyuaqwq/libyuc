@@ -1,3 +1,10 @@
+/*
+* @yuyuaqwq - ÓãÓã
+* email:1454832774@qq.com
+* project:https://github.com/yuyuaqwq/CUtils
+* Çë±£Áô´ËÉùÃ÷
+*/
+
 #ifndef CUTILS_CONTAINER_LRU_H_
 #define CUTILS_CONTAINER_LRU_H_
 
@@ -47,10 +54,10 @@ extern "C" {
 		if (put_first) { \
 			ListPutFirst(&list->list_head, ListDeleteEntry(&list->list_head, &hash_entry->lru_entry->list_entry)); \
 		} \
-		return &hash_entry->lru_entry; \
+		return hash_entry->lru_entry; \
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListPut(lru_type_name##LruList* list, lru_type_name##LruListEntry* entry) { \
-		key_type key = accessor##_GetKey(list, entry); \
+		key_type key = accessor##_GetKey(list, *entry); \
 		lru_type_name##LruHashEntry* hash_entry = lru_type_name##LruListHashTableFind(&list->hash_table, &key); \
 		if (hash_entry) { \
 			lru_type_name##LruListDelete(list, &key); \
@@ -62,7 +69,7 @@ extern "C" {
 		put_hash_entry.lru_entry = entry; \
 		lru_type_name##LruListHashTablePut(&list->hash_table, &put_hash_entry); \
 		ListPutFirst(&list->list_head, &entry->list_entry); \
-		return hash_entry; \
+		return hash_entry ? hash_entry->lru_entry : NULL; \
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListPop(lru_type_name##LruList* list) { \
 		ListEntry* del_list_entry = ListDeleteLast(&list->list_head); \
@@ -71,11 +78,11 @@ extern "C" {
 		return (lru_type_name##LruListEntry*)del_list_entry; \
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListDelete(lru_type_name##LruList* list, key_type* key) { \
-		lru_type_name##LruHashEntry* del_hash_entry = lru_type_name##HashTableDelete(&list->hash_table, key); \
+		lru_type_name##LruHashEntry* del_hash_entry = lru_type_name##LruListHashTableDelete(&list->hash_table, key); \
 		if (del_hash_entry) { \
 			ListDeleteEntry(&list->list_head, &del_hash_entry->lru_entry->list_entry); \
 		} \
-		return del_hash_entry; \
+		return del_hash_entry ? del_hash_entry->lru_entry : NULL; \
 	} \
 
 

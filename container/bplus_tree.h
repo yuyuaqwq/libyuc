@@ -66,10 +66,11 @@ typedef enum {
         int16_t index_m; \
         int16_t leaf_m; \
     } bp_tree_type_name##BPlusTree; \
+    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(bp_tree_type_name##BPlusIndex, int16_t) \
+    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(bp_tree_type_name##BPlusLeaf, int16_t) \
     typedef struct _##bp_tree_type_name##BPlusLeafElement { \
         union { \
-            /* BPlusLeafStaticListEntry next; */ \
-            int16_t next; \
+            bp_tree_type_name##BPlusLeafStaticListEntry next; \
             bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
         }; \
         key_type key; \
@@ -77,8 +78,7 @@ typedef enum {
     } bp_tree_type_name##BPlusLeafElement; \
     typedef struct _##bp_tree_type_name##BPlusIndexElement { \
         union { \
-            /* BPlusIndexStaticListEntry next; */ \
-            int16_t next; \
+            bp_tree_type_name##BPlusIndexStaticListEntry next; \
             bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
         }; \
         entry_id_type child_id; \
@@ -90,8 +90,8 @@ typedef enum {
             bp_tree_type_name##BPlusLeafElement leaf; \
         }; \
     } bp_tree_type_name##BPlusElement; \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, 1) \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, 1) \
+    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_2(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, 1) \
+    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_2(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, 1) \
     typedef struct _##bp_tree_type_name##BPlusIndexEntry { \
         entry_id_type tail_child_id;       /* 末尾孩子id存在这里 */ \
         bp_tree_type_name##BPlusIndexStaticList element_space; \
@@ -174,9 +174,21 @@ typedef enum {
     CUTILS_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, int16_t, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
     \
     \
-    static const int16_t bp_tree_type_name##BPlusElementStaticReferencer_InvalidId = (-1); \
-    CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, bp_tree_type_name##BPlusElementStaticReferencer, 1) \
-    CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, bp_tree_type_name##BPlusElementStaticReferencer, 1) \
+    static const int16_t bp_tree_type_name##BPlusElementStaticListReferencer_InvalidId = (-1) ; \
+    forceinline int16_t bp_tree_type_name##BPlusIndexStaticAccessor_GetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement element) { \
+        return element.next.next; \
+    } \
+    forceinline void bp_tree_type_name##BPlusIndexStaticAccessor_SetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement element, int16_t new_next) { \
+        element.next.next = new_next; \
+    } \
+    CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, bp_tree_type_name##BPlusElementStaticListReferencer, bp_tree_type_name##BPlusIndexStaticAccessor, 1) \
+    forceinline int16_t bp_tree_type_name##BPlusLeafStaticAccessor_GetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement element) { \
+        return element.next.next; \
+    } \
+    forceinline void bp_tree_type_name##BPlusLeafStaticAccessor_SetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement element, int16_t new_next) { \
+        element.next.next = new_next; \
+    } \
+    CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, bp_tree_type_name##BPlusElementStaticListReferencer, bp_tree_type_name##BPlusLeafStaticAccessor, 1) \
     \
     static bp_tree_type_name##BPlusElement* bp_tree_type_name##BPlusElementGet(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, int16_t element_id) { \
           assert(element_id >= 0); \
@@ -402,7 +414,7 @@ typedef enum {
                 insert = true; \
                 continue; \
             } \
-              assert(left_elemeng_id != CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId); \
+              assert(left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
             int16_t next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
             bp_tree_type_name##BPlusEntryInsertElement(tree, right, bp_tree_type_name##BPlusEntryDeleteElement(tree, left, left_elemeng_id)); \
             left_elemeng_id = next_elemeng_id; \
@@ -461,7 +473,7 @@ typedef enum {
     static void bp_tree_type_name##BPlusEntryMerge(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* right, entry_id_type right_id, bp_tree_type_name##BPlusEntry* parent, int16_t parent_index) { \
         int16_t right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&right->rb_tree); \
         for (int32_t i = 0; i < right->element_count; i++) { \
-              assert(right_elemeng_id != CUTILS_CONTAINER_BPLUS_RB_TREE_REFERENCER_InvalidId); \
+              assert(right_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
             bp_tree_type_name##BPlusEntryInsertElement(tree, left, bp_tree_type_name##BPlusElementGet(tree, right, right_elemeng_id)); \
             right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, right_elemeng_id); \
         } \
@@ -587,7 +599,7 @@ typedef enum {
                 parent_pos->element_id = sibling_element_id;     /* 更新一下，给父节点删除使用 */ \
             } \
               assert(common_parent_element_id != -1); \
-              assert(sibling_entry_id != kBPlusEntryInvalidId); \
+              assert(sibling_entry_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
             if (sibling->element_count > (m - 1) / 2) { \
                 /* 向兄弟借节点 */ \

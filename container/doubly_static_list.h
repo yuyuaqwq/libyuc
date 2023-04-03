@@ -39,69 +39,71 @@ extern "C" {
     CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
 
 
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, list_count) \
+/*
+* 访问器需要提供_GetNext、_SetNext、_GetPrev、_SetPrev方法
+*/
+#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, accessor, list_count) \
     void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, id_type count) { \
         list->list_first[0] = 0; \
         id_type i = 0; \
         for (; i < count; i++) { \
             if (i + 1 == count) { \
-                list->obj_arr[i].next = referencer##_InvalidId; \
+                accessor##_SetNext(list, list->obj_arr[i], referencer##_InvalidId); \
             } \
             else { \
-                list->obj_arr[i].next = i + 1; \
+                accessor##_SetNext(list, list->obj_arr[i], i + 1); \
             } \
             if (i == 0) { \
-                list->obj_arr[i].prev = referencer##_InvalidId; \
+                accessor##_SetPrev(list, list->obj_arr[i], referencer##_InvalidId); \
             } \
             else { \
-                list->obj_arr[i].prev = i - 1; \
+                accessor##_SetPrev(list, list->obj_arr[i], i - 1); \
             } \
         } \
-        \
         for (i = 1; i < list_count; i++) { \
-            list->obj_arr[i].list_first[i] = referencer##_InvalidId; \
+            list->list_first[i] = referencer##_InvalidId; \
         } \
     } \
-    id_type ds_list_type_name##DoublyStaticListRemove(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type remove_index) { \
-        if (list->obj_arr[remove_index].prev == referencer##_InvalidId) { \
-            list->list_first[list_order] = list->obj_arr[remove_index].next; \
+    id_type ds_list_type_name##DoublyStaticListDelete(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type delete_index) { \
+        if (accessor##_GetPrev(list, list->obj_arr[delete_index]) == referencer##_InvalidId) { \
+            list->list_first[list_order] = accessor##_GetNext(list, list->obj_arr[delete_index]); \
         } \
         else { \
-            list->obj_arr[list->obj_arr[remove_index].prev].next = list->obj_arr[remove_index].next; \
+            accessor##_SetNext(list, list->obj_arr[accessor##_GetPrev(list, list->obj_arr[delete_index])], accessor##_GetNext(list, list->obj_arr[delete_index])); \
         } \
         \
-        if (list->obj_arr[remove_index].next != referencer##_InvalidId) { \
-            list->obj_arr[list->obj_arr[remove_index].next].prev = list->obj_arr[remove_index].prev; \
+        if (accessor##_GetNext(list, list->obj_arr[delete_index]) != referencer##_InvalidId) { \
+            accessor##_SetPrev(list, list->obj_arr[accessor##_GetNext(list, list->obj_arr[delete_index])], accessor##_GetPrev(list, list->obj_arr[delete_index])); \
         } \
-        return remove_index; \
+        return delete_index; \
     } \
-    id_type ds_list_type_name##DoublyStaticListPop(DoublyStaticList* list, id_type list_order) { \
+    id_type ds_list_type_name##DoublyStaticListPop(ds_list_type_name##DoublyStaticList* list, id_type list_order) { \
         if (list->list_first[list_order] == referencer##_InvalidId) { \
             return referencer##_InvalidId; \
         } \
-        return DoublyStaticListRemove(list, list_order, list->list_first[list_order]); \
+        return ds_list_type_name##DoublyStaticListDelete(list, list_order, list->list_first[list_order]); \
     } \
     void ds_list_type_name##DoublyStaticListInsert(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type prev_index, id_type insert_index) { \
         if (prev_index == referencer##_InvalidId) { \
-            list->obj_arr[insert_index].prev = referencer##_InvalidId; \
-            list->obj_arr[insert_index].next = list->list_first[list_order]; \
+            accessor##_SetPrev(list, list->obj_arr[insert_index], referencer##_InvalidId); \
+            accessor##_SetNext(list, list->obj_arr[insert_index], list->list_first[list_order]); \
             list->list_first[list_order] = insert_index; \
         } \
         else { \
-            list->obj_arr[insert_index].prev = prev_index; \
-            list->obj_arr[insert_index].next = list->obj_arr[prev_index].next; \
-            list->obj_arr[prev_index].next = insert_index; \
+            accessor##_SetPrev(list, list->obj_arr[insert_index], prev_index); \
+            accessor##_SetNext(list, list->obj_arr[insert_index], accessor##_GetNext(list, list->obj_arr[prev_index])); \
+            accessor##_SetNext(list, list->obj_arr[prev_index], insert_index); \
         } \
-        if (list->obj_arr[insert_index].next != referencer##_InvalidId) { \
-            list->obj_arr[list->obj_arr[insert_index].next].prev = insert_index; \
+        if (accessor##_GetNext(list, list->obj_arr[insert_index]) != referencer##_InvalidId) { \
+            accessor##_SetPrev(list, list->obj_arr[accessor##_GetNext(list, list->obj_arr[insert_index])], insert_index); \
         } \
     } \
     void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type push_index) { \
          ds_list_type_name##DoublyStaticListInsert(list, list_order, referencer##_InvalidId, push_index); \
     } \
     void ds_list_type_name##DoublyStaticListSwitch(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index, id_type new_list_order) { \
-        DoublyStaticListRemove(list, list_order, index); \
-        DoublyStaticListPush(list, new_list_order, index); \
+        ds_list_type_name##DoublyStaticListDelete(list, list_order, index); \
+        ds_list_type_name##DoublyStaticListPush(list, new_list_order, index); \
     } \
 
 #ifdef __cplusplus
