@@ -92,9 +92,12 @@ extern "C" {
 		/* 从二叉树根节点向下找正好符合分配要求的尺寸 */ \
 		id_type index = 1; \
 		id_type node_size = CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
+		id_type size_logn = CUTILS_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(size); \
 		for (; node_size != size; node_size /= 2) { \
 			/* 优先找更小块的，就不必分割大块的了 */ \
-			if (indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)) >= size && indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)) <= indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index))) { \
+			id_type left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
+			id_type right_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index)); \
+			if (left_logn >= size_logn && left_logn <= right_logn) { \
 				index = CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index); \
 			} \
 			else { \
