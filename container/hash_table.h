@@ -186,7 +186,8 @@ typedef enum _HashEntryType {
         return NULL; \
     } \
     bool hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
-        uint32_t index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, *obj)); \
+        key_type key = accessor##_GetKey(table, *obj); \
+        uint32_t index = hash_table_type_name##HashGetIndex(table, &key); \
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
         \
         if (entry->type == kHashEntryFree) { \

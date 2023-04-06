@@ -78,11 +78,14 @@ extern "C" {
 		return (lru_type_name##LruListEntry*)del_list_entry; \
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListDelete(lru_type_name##LruList* list, key_type* key) { \
-		lru_type_name##LruHashEntry* del_hash_entry = lru_type_name##LruListHashTableDelete(&list->hash_table, key); \
+		lru_type_name##LruListEntry* lru_entry = NULL; \
+		lru_type_name##LruHashEntry* del_hash_entry = lru_type_name##LruListHashTableFind(&list->hash_table, key); \
 		if (del_hash_entry) { \
+			lru_entry = del_hash_entry->lru_entry; \
 			ListDeleteEntry(&list->list_head, &del_hash_entry->lru_entry->list_entry); \
+			lru_type_name##LruListHashTableDelete(&list->hash_table, key); \
 		} \
-		return del_hash_entry ? del_hash_entry->lru_entry : NULL; \
+		return del_hash_entry ? lru_entry : NULL; \
 	} \
 
 
