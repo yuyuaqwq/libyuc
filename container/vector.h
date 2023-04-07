@@ -26,7 +26,7 @@ extern "C" {
     ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
-#define CUTILS_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator) \
+#define CUTILS_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator, callbacker) \
     void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, size_t capacity) { \
         element_type* new_buf = allocator##_CreateMultiple(arr, element_type, capacity); \
         if (arr->obj_arr) { \
@@ -37,7 +37,8 @@ extern "C" {
         arr->capacity = capacity; \
     } \
     void vector_type_name##VectorExpand(vector_type_name##Vector* arr, size_t add_count) { \
-        size_t cur_capacity = arr->capacity; \
+        size_t old_capacity = arr->capacity; \
+        size_t cur_capacity = old_capacity; \
         size_t target_count = cur_capacity + add_count; \
         if (cur_capacity == 0) { \
             cur_capacity = 1; \
@@ -46,6 +47,7 @@ extern "C" {
             cur_capacity *= 2; \
         } \
         vector_type_name##VectorResetCapacity(arr, cur_capacity); \
+        callbacker##_Expand(arr, old_capacity, cur_capacity); \
     } \
     void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create) { \
         arr->count = count; \
@@ -79,6 +81,8 @@ extern "C" {
         return &arr->obj_arr[--arr->count]; \
     } \
 
+#define CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER_Expand(ARR, OLD_CAPACITY, NEW_CAPACITY)
+#define CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER
 
 #ifdef __cplusplus
 }

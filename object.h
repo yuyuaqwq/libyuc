@@ -119,6 +119,12 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(MAIN_OBJ, OBJ1, OBJ2) ((OBJ1) = (OBJ2))
 #define CUTILS_OBJECT_MOVER_DEFALUT CUTILS_OBJECT_MOVER_DEFALUT
 
+/*
+* 默认回调器
+* 比较自由，在某个时刻回调某个方法
+*/
+#define CUTILS_OBJECT_CALLBAKCER_DEFALUT
+
 
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline

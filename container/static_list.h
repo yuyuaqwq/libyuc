@@ -45,18 +45,23 @@ extern "C" {
     void static_list_type_name##StaticListInit(static_list_type_name##StaticList* list, id_type count) { \
         list->list_first[0] = 0; \
         id_type i = 0; \
-        for (; i < count; i++) { \
-            if (i + 1 == count) { \
-                accessor##_SetNext(list, list->obj_arr[i], referencer##_InvalidId); \
-            } \
-            else { \
-                accessor##_SetNext(list, list->obj_arr[i], i + 1); \
-            } \
+        for (; i < count - 1; i++) { \
+            accessor##_SetNext(list, list->obj_arr[i], i + 1); \
         } \
+        accessor##_SetNext(list, list->obj_arr[i], referencer##_InvalidId); \
         \
         for (i = 1; i < list_count; i++) { \
             list->list_first[i] = referencer##_InvalidId; \
         } \
+    } \
+    void static_list_type_name##StaticListExpand(static_list_type_name##StaticList* list, id_type old_count, id_type new_count) { \
+        id_type old_first = list->list_first[0]; \
+        list->list_first[0] = new_count - 1; \
+        id_type i = old_count; \
+        for (; i < new_count - 1; i++) { \
+            accessor##_SetNext(list, list->obj_arr[i], i + 1); \
+        } \
+        accessor##_SetNext(list, list->obj_arr[i], old_first); \
     } \
     id_type static_list_type_name##StaticListPop(static_list_type_name##StaticList* list, id_type list_order) { \
         if (list->list_first[list_order] == referencer##_InvalidId) { \

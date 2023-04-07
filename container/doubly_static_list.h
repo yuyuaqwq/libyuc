@@ -46,13 +46,8 @@ extern "C" {
     void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, id_type count) { \
         list->list_first[0] = 0; \
         id_type i = 0; \
-        for (; i < count; i++) { \
-            if (i + 1 == count) { \
-                accessor##_SetNext(list, list->obj_arr[i], referencer##_InvalidId); \
-            } \
-            else { \
-                accessor##_SetNext(list, list->obj_arr[i], i + 1); \
-            } \
+        for (; i < count - 1; i++) { \
+            accessor##_SetNext(list, list->obj_arr[i], i + 1); \
             if (i == 0) { \
                 accessor##_SetPrev(list, list->obj_arr[i], referencer##_InvalidId); \
             } \
@@ -60,6 +55,7 @@ extern "C" {
                 accessor##_SetPrev(list, list->obj_arr[i], i - 1); \
             } \
         } \
+        accessor##_SetNext(list, list->obj_arr[i], referencer##_InvalidId); \
         for (i = 1; i < list_count; i++) { \
             list->list_first[i] = referencer##_InvalidId; \
         } \

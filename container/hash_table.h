@@ -101,6 +101,7 @@ typedef enum _HashEntryType {
     } hash_table_type_name##HashEntryList; \
     typedef struct _##hash_table_type_name##HashTable { \
         hash_table_type_name##HashTableVector bucket; \
+        /*hash_table_type_name##HashTableLinkVector link_bucket;*/ \
         /* hash_table_type_name##HashTableVector temp_bucket;        // 保留，可优化为逐渐搬迁 */ \
         uint32_t load_fator; \
     } ##hash_table_type_name##HashTable; \
@@ -115,7 +116,7 @@ typedef enum _HashEntryType {
 
 // 访问器需要提供_GetKey方法
 #define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashTable, hash_table_type_name##HashEntry, allocator) \
+    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashTable, hash_table_type_name##HashEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     static inline uint32_t hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
         return hasher(table, *key) % table->bucket.capacity; \
     } \
