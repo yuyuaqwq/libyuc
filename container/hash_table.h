@@ -11,7 +11,8 @@
 #include <CUtils/object.h>
 #include <CUtils/algorithm/hash_map.h>
 #include <CUtils/container/vector.h>
-#include <CUtils/container/singly_list.h>
+#include <CUtils/container/static_list.h>
+#include <CUtils/container/rb_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,13 +73,10 @@ extern "C" {
 typedef enum _HashEntryType {
     kHashEntryFree,
     kHashEntryObj,
-    kHashEntryList,
+    kHashEntryTree,
 } HashEntryType;
 
-
 #define CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
-    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashTable, struct _##hash_table_type_name##HashEntry) \
-    \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
         uint32_t cur_index; \
         struct _##hash_table_type_name##HashEntryList* cur_list_entry; \
@@ -88,21 +86,29 @@ typedef enum _HashEntryType {
     element_type* hash_table_type_name##HashTableIteratorFirst(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     element_type* hash_table_type_name##HashTableIteratorNext(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
-    typedef struct _##hash_table_type_name##HashEntry { \
-        HashEntryType type; \
-        union { \
-            element_type obj; \
-            SinglyListHead list_head; \
-        }; \
-    } hash_table_type_name##HashEntry; \
+    \
+    CUTILS_CONTAINER_RB_TREE_DECLARATION(hash_table_type_name##HashLink, int32_t, key_type) \
     typedef struct _##hash_table_type_name##HashEntryList { \
-        SinglyListEntry list_entry; \
+        hash_table_type_name##HashLinkRbEntry rb_entry; \
         element_type obj; \
     } hash_table_type_name##HashEntryList; \
+    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(hash_table_type_name##HashLink, hash_table_type_name##HashEntryList) \
+    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, hash_table_type_name##HashEntryList) \
+    \
+    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashType, HashEntryType) \
+    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashEntry) \
+    \
+    typedef struct _##hash_table_type_name##HashEntry { \
+        union { \
+            element_type obj; \
+            hash_table_type_name##HashLinkRbTree rb_tree; \
+        }; \
+    } hash_table_type_name##HashEntry; \
     typedef struct _##hash_table_type_name##HashTable { \
-        hash_table_type_name##HashTableVector bucket; \
-        /*hash_table_type_name##HashTableLinkVector link_bucket;*/ \
-        /* hash_table_type_name##HashTableVector temp_bucket;        // 保留，可优化为逐渐搬迁 */ \
+        hash_table_type_name##HashTypeVector type; \
+        hash_table_type_name##HashBucketVector bucket; \
+        hash_table_type_name##HashLinkVector link_bucket; \
+        /* hash_table_type_name##HashBucketVector temp_bucket;        // 保留，可优化为逐渐搬迁 */ \
         uint32_t load_fator; \
     } ##hash_table_type_name##HashTable; \
     \
@@ -116,11 +122,41 @@ typedef enum _HashEntryType {
 
 // 访问器需要提供_GetKey方法
 #define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashTable, hash_table_type_name##HashEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
-    static inline uint32_t hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
+    static const int32_t hash_table_type_name##HashLinkRbReferencer_InvalidId = (-1) ; \
+    forceinline hash_table_type_name##HashLinkRbEntry* hash_table_type_name##HashLinkRbReferencer_Reference(hash_table_type_name##HashLinkRbTree* tree, int16_t element_id) { \
+        if (element_id == hash_table_type_name##HashLinkRbReferencer_InvalidId) { \
+            return NULL; \
+        } \
+        hash_table_type_name##HashEntry* entry = ObjectGetFromField(tree, hash_table_type_name##HashEntry, rb_tree); \
+    } \
+    forceinline void hash_table_type_name##HashLinkRbReferencer_Dereference(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbEntry* entry) {  } \
+    \
+    typedef struct { \
+        int32_t color : 1; \
+        int32_t parent : sizeof(int32_t) * 8 - 1; \
+    } hash_table_type_name##HashLinkRbParentColor; \
+    forceinline int32_t rb_accessor##_GetParent(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
+        return (((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->parent); \
+    } \
+    forceinline RbColor rb_accessor##_GetColor(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
+        return (((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->color == -1 ? 1 : 0); \
+    } \
+    forceinline void rb_accessor##_SetParent(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry, int32_t new_id) { \
+        ((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->parent = new_id; \
+    } \
+    forceinline void rb_accessor##_SetColor(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry, RbColor new_color) { \
+        return ((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->color = new_color; \
+    } \
+    CUTILS_CONTAINER_RB_TREE_DEFINE(hash_table_type_name##HashLink, int32_t, key_type, hash_table_type_name##HashLinkRbReferencer, rb_accessor, rb_comparer) \
+    \
+    \
+    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashType, int8_t, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    \
+    static forceinline uint32_t hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
         return hasher(table, *key) % table->bucket.capacity; \
     } \
-    static inline uint32_t hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
+    static forceinline uint32_t hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
     } \
     static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, size_t new_capacity) {  \
@@ -137,18 +173,19 @@ typedef enum _HashEntryType {
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
         } \
         \
-        hash_table_type_name##HashTableVectorRelease(&table->bucket); \
+        hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     } \
     void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator) { \
         if (capacity == 0) { \
             capacity = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
-        hash_table_type_name##HashTableVectorInit(&table->bucket, capacity, true); \
+        hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, true); \
+        hash_table_type_name##HashTypeVectorInit(&table->type, capacity, true); \
         table->bucket.count = 0; \
         \
         for (int i = 0; i < table->bucket.capacity; i++) { \
-            table->bucket.obj_arr[i].type = kHashEntryFree; \
+            table->type.obj_arr[i] = kHashEntryFree; \
         } \
         if (load_fator == 0) { \
             load_fator = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
@@ -163,18 +200,20 @@ typedef enum _HashEntryType {
             hash_table_type_name##HashTableDelete(table, &key); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
         } \
-        hash_table_type_name##HashTableVectorRelease(&table->bucket); \
+        hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
+        hash_table_type_name##HashTypeVectorRelease(&table->type); \
     } \
     size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
         uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
-        if (entry->type == kHashEntryObj) { \
+        HashEntryType type = table->type.obj_arr[index]; \
+        if (type == kHashEntryObj) { \
             if(comparer##_Equal(table, accessor##_GetKey(table, entry->obj), *key)) { \
                 return &entry->obj; \
             } \
         } \
-        else if (entry->type == kHashEntryList) { \
+        else if (type == kHashEntryTree) { \
             SinglyListEntry* cur = SinglyListIteratorFirst(&entry->list_head); \
             while (cur) { \
                 hash_table_type_name##HashEntryList* list_entry = (hash_table_type_name##HashEntryList*)cur; \
@@ -190,17 +229,17 @@ typedef enum _HashEntryType {
         key_type key = accessor##_GetKey(table, *obj); \
         uint32_t index = hash_table_type_name##HashGetIndex(table, &key); \
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
-        \
-        if (entry->type == kHashEntryFree) { \
+        HashEntryType type = table->type.obj_arr[index]; \
+        if (type == kHashEntryFree) { \
             obj_mover##_Assignment(table, entry->obj, *obj); \
             entry->type = kHashEntryObj; \
         } \
-        else if (entry->type == kHashEntryObj) { \
+        else if (type == kHashEntryObj) { \
             if (comparer##_Equal(table, accessor##_GetKey(table, entry->obj), accessor##_GetKey(table, *obj))) { \
                 obj_mover##_Assignment(table, entry->obj, *obj); \
                 return true; \
             } \
-            entry->type = kHashEntryList; \
+            table->type.obj_arr[index] = kHashEntryTree; \
             hash_table_type_name##HashEntryList* list_entry = allocator##_Create(table, hash_table_type_name##HashEntryList); \
             obj_mover##_Assignment(table, list_entry->obj, entry->obj); \
             SinglyListHeadInit(&entry->list_head); \
@@ -209,7 +248,7 @@ typedef enum _HashEntryType {
             obj_mover##_Assignment(table, list_entry->obj, *obj); \
             SinglyListPutFirst(&entry->list_head, &list_entry->list_entry); \
         } \
-        else if (entry->type == kHashEntryList) { \
+        else if (type == kHashEntryTree) { \
             SinglyListEntry* cur = SinglyListIteratorFirst(&entry->list_head); \
             while (cur) { \
                 hash_table_type_name##HashEntryList* list_entry = (hash_table_type_name##HashEntryList*)cur; \
@@ -236,18 +275,19 @@ typedef enum _HashEntryType {
     bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
         uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
         hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
+        HashEntryType type = table->type.obj_arr[index]; \
         bool success = true; \
-        if (entry->type == kHashEntryFree) { \
+        if (type == kHashEntryFree) { \
             return false; \
         } \
-        else if (entry->type == kHashEntryObj) { \
+        else if (type == kHashEntryObj) { \
             if (!comparer##_Equal(table, accessor##_GetKey(table, entry->obj), *key)) { \
                 return false; \
             } \
-            entry->type = kHashEntryFree; \
+            table->type.obj_arr[index] = kHashEntryFree; \
             success = true; \
         } \
-        else if (entry->type == kHashEntryList) { \
+        else if (type == kHashEntryTree) { \
             SinglyListEntry* prev = NULL; \
             SinglyListEntry* cur = SinglyListIteratorFirst(&entry->list_head); \
             while (cur) { \
@@ -262,7 +302,7 @@ typedef enum _HashEntryType {
                 else { \
                     SinglyListDeleteFirst(&entry->list_head); \
                     if (SinglyListIsEmpty(&entry->list_head)) { \
-                        entry->type = kHashEntryFree; \
+                        table->type.obj_arr[index] = kHashEntryFree; \
                     } \
                 } \
                 allocator##_Release(table, cur); \
@@ -306,7 +346,7 @@ typedef enum _HashEntryType {
                 iter->cur_index++; \
                 return &entry->obj; \
             } \
-            if (entry->type == kHashEntryList) { \
+            if (entry->type == kHashEntryTree) { \
                 CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5 \
                 iter->cur_list_entry = (hash_table_type_name##HashEntryList*)entry->list_head.first; \
                 return hash_table_type_name##HashTableIteratorNext(table, iter); \

@@ -57,7 +57,9 @@ typedef enum {
         BPlusCursorStatus leaf_status; \
     } bp_tree_type_name##BPlusCursor; \
     \
-    \
+    /*
+    * 页内红黑树
+    */\
     CUTILS_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, int16_t, key_type) \
     CUTILS_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type) \
     typedef struct _##bp_tree_type_name##BPlusTree { \
@@ -66,6 +68,9 @@ typedef enum {
         int16_t index_m; \
         int16_t leaf_m; \
     } bp_tree_type_name##BPlusTree; \
+    /*
+    * B+树
+    */ \
     CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(bp_tree_type_name##BPlusIndex, int16_t) \
     CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(bp_tree_type_name##BPlusLeaf, int16_t) \
     typedef struct _##bp_tree_type_name##BPlusLeafElement { \
@@ -126,6 +131,9 @@ typedef enum {
 
 
 #define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, rb_accessor, rb_comparer) \
+    /*
+    * B+树游标
+    */\
     static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
     forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
         bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
@@ -140,6 +148,9 @@ typedef enum {
     CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
     CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
+    /*
+    * 页内红黑树
+    */\
     static const int16_t bp_tree_type_name##BPlusEntryRbReferencer_InvalidId = (-1) ; \
     forceinline bp_tree_type_name##BPlusEntryRbEntry* bp_tree_type_name##BPlusEntryRbReferencer_Reference(bp_tree_type_name##BPlusEntryRbTree* tree, int16_t element_id) { \
         if (element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
@@ -173,7 +184,9 @@ typedef enum {
     } \
     CUTILS_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, int16_t, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
     \
-    \
+    /*
+    * B+树
+    */\
     static const int16_t bp_tree_type_name##BPlusElementStaticListReferencer_InvalidId = (-1) ; \
     forceinline int16_t bp_tree_type_name##BPlusIndexStaticAccessor_GetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement element) { \
         return element.next.next; \
