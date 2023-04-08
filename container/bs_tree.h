@@ -29,6 +29,7 @@ extern "C" {
     void bs_tree_type_name##BsTreeInit(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key); \
     bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id); \
+    void bs_tree_type_name##BsTreeInsert(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeIteratorLocate(bs_tree_type_name##BsTree* tree, key_type* key, int8_t* cmp_status); \
@@ -162,8 +163,42 @@ extern "C" {
         return status == 0 ? id : referencer##_InvalidId; \
     } \
     /*
+    * 向树中插入节点
+    * 允许重复key
+    */ \
+    void bs_tree_type_name##BsTreeInsert(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
+        bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
+        bs_tree_type_name##BsEntryInit(tree, entry); \
+        if (tree->root == referencer##_InvalidId) { \
+            tree->root = entry_id; \
+            return; \
+        } \
+        id_type cur_id = tree->root; \
+        while (cur_id != referencer##_InvalidId) { \
+            bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
+            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
+                if (cur->right == referencer##_InvalidId) { \
+                    cur->right = entry_id; \
+                    break; \
+                } \
+                cur_id = cur->right; \
+            } \
+            else { \
+                if (cur->left == referencer##_InvalidId) { \
+                    cur->left = entry_id; \
+                    break; \
+                } \
+                cur_id = cur->left; \
+            } \
+            referencer##_Dereference(tree, cur); \
+        } \
+        accessor##_SetParent(tree, entry, cur_id); \
+        referencer##_Dereference(tree, entry); \
+        return; \
+    } \
+    /*
     * 向树中推入节点
-    * 不允许存在重复节点
+    * 不允许重复key
     * 成功返回true，失败返回false
     */ \
     bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
@@ -183,7 +218,7 @@ extern "C" {
                 } \
                 cur_id = cur->right; \
             } \
-            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
+            else  if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
                 if (cur->left == referencer##_InvalidId) { \
                     cur->left = entry_id; \
                     break; \

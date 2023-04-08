@@ -179,7 +179,7 @@ typedef enum _HashEntryType {
             while (cur) { \
                 hash_table_type_name##HashEntryList* list_entry = (hash_table_type_name##HashEntryList*)cur; \
                 if (comparer##_Equal(table, accessor##_GetKey(table, list_entry->obj), *key)) { \
-                    return &entry->obj; \
+                    return &list_entry->obj; \
                 } \
                 cur = SinglyListIteratorNext(&entry->list_head, cur); \
             } \

@@ -138,7 +138,7 @@ typedef enum {
         entry_referencer##_Dereference(tree, (bp_tree_type_name##BPlusEntry*)entry); \
     } \
     CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator) \
+    CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
     static const int16_t bp_tree_type_name##BPlusEntryRbReferencer_InvalidId = (-1) ; \
     forceinline bp_tree_type_name##BPlusEntryRbEntry* bp_tree_type_name##BPlusEntryRbReferencer_Reference(bp_tree_type_name##BPlusEntryRbTree* tree, int16_t element_id) { \
