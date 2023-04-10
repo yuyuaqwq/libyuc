@@ -241,6 +241,20 @@ extern "C" {
         } \
         return true; \
     } \
+    bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
+        hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
+        hash_table_type_name##HashLinkRbObj rb_obj; \
+		rb_obj.rb_tree = entry->rb_tree; \
+		rb_obj.table = table; \
+        int32_t rb_id = hash_table_type_name##HashLinkRbTreeFind(&rb_obj.rb_tree, &key); \
+        if(rb_id == hash_table_type_name##HashLinkRbReferencer_InvalidId) return false; \
+        bool success = hash_table_type_name##HashLinkRbTreeDelete(&rb_obj.rb_tree, rb_id); \
+        if (success) { \
+            table->bucket.count--; \
+            entry->rb_tree = rb_obj.rb_tree; \
+        }\
+        return success; \
+    } \
     //static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, size_t new_capacity) {  \
     //    hash_table_type_name##HashTable temp_table; \
     //    hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator); \
@@ -259,47 +273,6 @@ extern "C" {
     //    MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     //} \
     //size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
-    //bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
-    //    uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
-    //    hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[index]; \
-    //    HashEntryType type = table->type.obj_arr[index]; \
-    //    bool success = true; \
-    //    if (type == kHashEntryFree) { \
-    //        return false; \
-    //    } \
-    //    else if (type == kHashEntryObj) { \
-    //        if (!comparer##_Equal(table, accessor##_GetKey(table, entry->obj), *key)) { \
-    //            return false; \
-    //        } \
-    //        table->type.obj_arr[index] = kHashEntryFree; \
-    //        success = true; \
-    //    } \
-    //    else if (type == kHashEntryTree) { \
-    //        SinglyListEntry* prev = NULL; \
-    //        SinglyListEntry* cur = SinglyListIteratorFirst(&entry->list_head); \
-    //        while (cur) { \
-    //            if (!comparer##_Equal(table, accessor##_GetKey(table, ((hash_table_type_name##HashLinkEntry*)cur)->obj), *key)) { \
-    //                prev = cur; \
-    //                cur = SinglyListIteratorNext(&entry->list_head, cur); \
-    //                continue; \
-    //            } \
-    //            if (prev) { \
-    //                SinglyListDeleteEntry(&entry->list_head, prev, cur); \
-    //            } \
-    //            else { \
-    //                SinglyListDeleteFirst(&entry->list_head); \
-    //                if (SinglyListIsEmpty(&entry->list_head)) { \
-    //                    table->type.obj_arr[index] = kHashEntryFree; \
-    //                } \
-    //            } \
-    //            allocator##_Release(table, cur); \
-    //            success = true; \
-    //            break; \
-    //        } \
-    //    } \
-    //    if (success) table->bucket.count--; \
-    //    return success; \
-    //} \
     ///* 
     //* 现在的迭代思路是遍历空间所有节点，另外可以用静态链表连接所有已映射的节点，但需要额外空间
     //*/ \
