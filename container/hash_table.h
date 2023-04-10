@@ -25,6 +25,7 @@ extern "C" {
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
 
+
 #ifdef CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS
 #define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
         uint32_t obj_count; \
@@ -116,7 +117,6 @@ extern "C" {
         hash_table_type_name##HashTypeVector type; \
         hash_table_type_name##HashBucketVector bucket; \
         hash_table_type_name##HashLinkVector link; \
-        /* hash_table_type_name##HashBucketVector temp_bucket;        // 保留，可优化为逐渐搬迁 */ \
         uint32_t load_fator; \
     } ##hash_table_type_name##HashTable; \
     \
@@ -214,7 +214,10 @@ extern "C" {
             } \
         } \
         else if (type == kHashEntryTree) { \
-            int32_t rb_id = hash_table_type_name##HashLinkRbTreeFind(&entry->rb_tree, *key); \
+            hash_table_type_name##HashLinkRbObj rb_obj; \
+		    rb_obj.rb_tree = entry->rb_tree; \
+		    rb_obj.table = table; \
+            int32_t rb_id = hash_table_type_name##HashLinkRbTreeFind(&rb_obj.rb_tree, key); \
             if(rb_id != hash_table_type_name##HashLinkRbReferencer_InvalidId) { \
                 return &table->link.obj_arr[rb_id+1].obj; \
             } \
@@ -248,22 +251,30 @@ extern "C" {
             } \
             table->type.obj_arr[index] = kHashEntryTree; \
             int32_t id = hash_table_type_name##HashTableAllocTreeEntry(table); \
-            obj_mover##_Assignment(table, table->link.obj_arr[id + 1], entry->obj); \
-            hash_table_type_name##HashLinkRbTreeInit(&entry->rb_tree); \
-            hash_table_type_name##HashLinkRbTreePut(&entry->rb_tree, id); \
+            obj_mover##_Assignment(table, table->link.obj_arr[id + 1].obj, entry->obj); \
+            hash_table_type_name##HashLinkRbObj rb_obj; \
+		    rb_obj.rb_tree = entry->rb_tree; \
+		    rb_obj.table = table; \
+            hash_table_type_name##HashLinkRbTreeInit(&rb_obj.rb_tree); \
+            hash_table_type_name##HashLinkRbTreePut(&rb_obj.rb_tree, id); \
             id = hash_table_type_name##HashTableAllocTreeEntry(table); \
-            obj_mover##_Assignment(table, table->link.obj_arr[id + 1], *obj); \
-            hash_table_type_name##HashLinkRbTreePut(&entry->rb_tree, id); \
+            obj_mover##_Assignment(table, table->link.obj_arr[id + 1].obj, *obj); \
+            hash_table_type_name##HashLinkRbTreePut(&rb_obj.rb_tree, id); \
+            entry->rb_tree = rb_obj.rb_tree; \
         } \
         else if (type == kHashEntryTree) { \
-            int32_t rb_id = hash_table_type_name##HashLinkRbTreeFind(&entry->rb_tree, *key); \
+            hash_table_type_name##HashLinkRbObj rb_obj; \
+		    rb_obj.rb_tree = entry->rb_tree; \
+		    rb_obj.table = table; \
+            int32_t rb_id = hash_table_type_name##HashLinkRbTreeFind(&rb_obj.rb_tree, &key); \
             if (rb_id != hash_table_type_name##HashLinkRbReferencer_InvalidId) { \
-                hash_table_type_name##HashLinkRbTreeDelete(&entry->rb_tree, rb_id); \
+                hash_table_type_name##HashLinkRbTreeDelete(&rb_obj.rb_tree, rb_id); \
                 hash_table_type_name##HashTableFreeTreeEntry(table, rb_id); \
             } \
             rb_id = hash_table_type_name##HashTableAllocTreeEntry(table); \
-            obj_mover##_Assignment(table, table->link.obj_arr[rb_id + 1], *obj); \
-            hash_table_type_name##HashLinkRbTreePut(&entry->rb_tree, rb_id); \
+            obj_mover##_Assignment(table, table->link.obj_arr[rb_id + 1].obj, *obj); \
+            hash_table_type_name##HashLinkRbTreePut(&rb_obj.rb_tree, rb_id); \
+            entry->rb_tree = rb_obj.rb_tree; \
         } \
         \
         table->bucket.count++; \
