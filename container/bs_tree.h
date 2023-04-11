@@ -28,7 +28,7 @@ extern "C" {
     \
     void bs_tree_type_name##BsTreeInit(bs_tree_type_name##BsTree* tree); \
     id_type bs_tree_type_name##BsTreeFind(bs_tree_type_name##BsTree* tree, key_type* key); \
-    bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id); \
+    id_type bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     void bs_tree_type_name##BsTreeInsert(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id); \
     size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
@@ -174,6 +174,7 @@ extern "C" {
             return; \
         } \
         id_type cur_id = tree->root; \
+        bs_tree_type_name##BsEntry* cur = NULL; \
         while (cur_id != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
             if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
@@ -192,16 +193,16 @@ extern "C" {
             } \
             referencer##_Dereference(tree, cur); \
         } \
+        if (cur) referencer##_Dereference(tree, cur); \
         accessor##_SetParent(tree, entry, cur_id); \
         referencer##_Dereference(tree, entry); \
         return; \
     } \
     /*
     * 向树中推入节点
-    * 不允许重复key
-    * 成功返回true，失败返回false
+    * 覆盖重复key，返回被覆盖的entry_id
     */ \
-    bool bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
+    id_type bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id) { \
         bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
         bs_tree_type_name##BsEntryInit(tree, entry); \
         if (tree->root == referencer##_InvalidId) { \
@@ -209,13 +210,17 @@ extern "C" {
             return true; \
         } \
         id_type cur_id = tree->root; \
+        id_type prev_id = referencer##_InvalidId; \
+        bs_tree_type_name##BsEntry* cur = NULL; \
+        id_type old_id = referencer##_InvalidId; \
         while (cur_id != referencer##_InvalidId) { \
-            bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
+            cur = referencer##_Reference(tree, cur_id); \
             if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
                 if (cur->right == referencer##_InvalidId) { \
                     cur->right = entry_id; \
                     break; \
                 } \
+                prev_id = cur_id; \
                 cur_id = cur->right; \
             } \
             else  if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
@@ -223,17 +228,35 @@ extern "C" {
                     cur->left = entry_id; \
                     break; \
                 } \
+                prev_id = cur_id; \
                 cur_id = cur->left; \
             } \
             else { \
-                referencer##_Dereference(tree, cur); \
-                return false; \
+                bs_tree_type_name##BsEntry* prev = referencer##_Reference(tree, prev_id); \
+                old_id = cur_id; \
+                if (prev->left == cur_id) { \
+                    prev->left = entry_id; \
+                } else { \
+                    prev->right = entry_id; \
+                } \
+                if(cur->left != referencer##_InvalidId) { \
+                    bs_tree_type_name##BsEntry* left = referencer##_Reference(tree, cur->left); \
+                    accessor##_SetParent(tree, left, entry_id); \
+                    referencer##_Dereference(tree, left); \
+                } \
+                if(cur->right != referencer##_InvalidId) { \
+                    bs_tree_type_name##BsEntry* right = referencer##_Reference(tree, cur->right); \
+                    accessor##_SetParent(tree, right, entry_id); \
+                    referencer##_Dereference(tree, right); \
+                } \
+                break; \
             } \
             referencer##_Dereference(tree, cur); \
         } \
+        if (cur) referencer##_Dereference(tree, cur); \
         accessor##_SetParent(tree, entry, cur_id); \
         referencer##_Dereference(tree, entry); \
-        return true; \
+        return old_id; \
     } \
     /*
     * 从树中删除节点

@@ -206,7 +206,6 @@ extern "C" {
             hash_table_type_name##HashTablePut(&temp_table, obj); \
             key_type key = accessor##_GetKey(table, *obj); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
-            hash_table_type_name##HashTableDelete(table, &key); \
         } \
         hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \

@@ -46,7 +46,7 @@ typedef enum {
     void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree); \
     id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key); \
     void rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id); \
-    bool rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
+    id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
     id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
@@ -308,14 +308,12 @@ typedef enum {
     } \
     /*
     * 向树中推入节点
-    * 不允许重复key
+    * 覆盖重复key，返回被覆盖的原entry
     */ \
-    bool rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
-        if (!rb_tree_type_name##RbBsTreePut(&tree->bs_tree, put_entry_id)) { \
-            return false; \
-        } \
-        rb_tree_type_name##RbTreeInsertFixup(tree, put_entry_id); \
-        return true; \
+    id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
+        id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, put_entry_id); \
+        if(old_id != referencer##_InvalidId) rb_tree_type_name##RbTreeInsertFixup(tree, put_entry_id); \
+        return old_id; \
     } \
     /*
     * 删除树中指定节点
