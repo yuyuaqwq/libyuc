@@ -145,9 +145,7 @@ extern "C" {
     */ \
     static const int32_t hash_table_type_name##HashLinkRbReferencer_InvalidId = (-1) ; \
     forceinline hash_table_type_name##HashLinkRbEntry* hash_table_type_name##HashLinkRbReferencer_Reference(hash_table_type_name##HashLinkRbTree* tree, int32_t entry_id) { \
-        if (entry_id == hash_table_type_name##HashLinkRbReferencer_InvalidId) { \
-            return NULL; \
-        } \
+          assert(entry_id != hash_table_type_name##HashLinkRbReferencer_InvalidId); \
         hash_table_type_name##HashLinkRbObj* rb_obj = (hash_table_type_name##HashLinkRbObj*)tree; \
         return &rb_obj->table->link.obj_arr[entry_id+1].rb_entry; \
     } \
@@ -187,8 +185,7 @@ extern "C" {
     static int32_t hash_table_type_name##HashTableAllocTreeEntry(hash_table_type_name##HashTable* table) { \
         hash_table_type_name##HashLinkStaticList* static_list = hash_table_type_name##HashLinkGetStaticList(&table->link); \
         int32_t id = hash_table_type_name##HashLinkStaticListPop(static_list, 0); \
-        if (id == CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId) { \
-        } \
+          assert(id != CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId); \
         return id; \
     } \
     static void hash_table_type_name##HashTableFreeTreeEntry(hash_table_type_name##HashTable* table, int32_t id) { \
@@ -206,7 +203,6 @@ extern "C" {
             hash_table_type_name##HashTablePut(&temp_table, obj); \
             key_type key = accessor##_GetKey(table, *obj); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
-            hash_table_type_name##HashTableDelete(table, &key); \
         } \
         hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
@@ -275,6 +271,7 @@ extern "C" {
         if (rb_id == hash_table_type_name##HashLinkRbReferencer_InvalidId) return false; \
         bool success = hash_table_type_name##HashLinkRbTreeDelete(&rb_obj.rb_tree, rb_id); \
         if (success) { \
+            hash_table_type_name##HashTableFreeTreeEntry(table, rb_id); \
             table->bucket.count--; \
             entry->rb_tree = rb_obj.rb_tree; \
         }\

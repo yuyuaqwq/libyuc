@@ -40,7 +40,7 @@ extern "C" {
     \
     void avl_tree_type_name##AvlTreeInit(avl_tree_type_name##AvlTree* tree); \
     id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key); \
-    bool avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id); \
+    id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id); \
     bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, id_type del_entry_id); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetBalanceFactor方法
@@ -321,14 +321,12 @@ extern "C" {
     } \
     /*
     * 向树中插入节点
-    * 成功返回true，失败返回false
+    * 覆盖重复key
     */ \
-    bool avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id) { \
-        if (!avl_tree_type_name##AvlBsTreePut(&tree->bs_tree, put_entry_id)) { \
-            return false; \
-        } \
-        avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
-        return true; \
+    id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id) { \
+        id_type old_id = avl_tree_type_name##AvlBsTreePut(&tree->bs_tree, put_entry_id); \
+        if(old_id != referencer##_InvalidId) avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
+        return old_id; \
     } \
     /*
     * 删除树中指定节点
