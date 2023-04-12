@@ -349,11 +349,12 @@ extern "C" {
         while (cur_id != referencer##_InvalidId) { \
             perv_id = cur_id; \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), *key)) { \
+            key_type cur_key = accessor##_GetKey(tree, cur); \
+            if (comparer##_Less(tree, cur_key, *key)) { \
                 *cmp_status = 1; \
                 cur_id = cur->right; \
             } \
-            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), *key)) { \
+            else if (comparer##_Greater(tree, cur_key, *key)) { \
                 *cmp_status = -1; \
                 cur_id = cur->left; \
             } \
