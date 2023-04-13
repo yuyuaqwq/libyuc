@@ -747,12 +747,12 @@ typedef enum {
 
 
 //CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(Int, struct _IntBPlusEntry*, int, int)
-//forceinline int CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(IntBPlusEntryRbTree* tree, IntBPlusEntryRbBsEntry* bs_entry) {
+//forceinline int* CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(IntBPlusEntryRbTree* tree, IntBPlusEntryRbBsEntry* bs_entry) {
 //    if (((IntBPlusEntry*)tree)->type == kBPlusEntryLeaf) {
-//        return ((IntBPlusLeafElement*)bs_entry)->key;
+//        return &((IntBPlusLeafElement*)bs_entry)->key;
 //    }
 //    else {
-//        return ((IntBPlusIndexElement*)bs_entry)->key;
+//        return &((IntBPlusIndexElement*)bs_entry)->key;
 //    }
 //}
 //#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR

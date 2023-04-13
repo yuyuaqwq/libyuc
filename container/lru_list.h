@@ -36,7 +36,7 @@ extern "C" {
 	lru_type_name##LruListEntry* lru_type_name##LruListDelete(lru_type_name##LruList* list, key_type* key); \
 	
 #define CUTILS_CONTAINER_LRU_LIST_DEFINE(lru_type_name, key_type, accessor, allocater, hasher, comparer) \
-	forceinline key_type* lru_type_name##LruHashEntryAccessor_GetKey(lru_type_name##LruListHashTable* table, lru_type_name##LruHashEntry* hash_entry){ \
+	forceinline key_type* lru_type_name##LruHashEntryAccessor_GetKey(lru_type_name##LruListHashTable* table, lru_type_name##LruHashEntry* hash_entry) { \
 		return accessor##_GetKey((lru_type_name##LruList*)table, &hash_entry->lru_entry); \
 	} \
     CUTILS_CONTAINER_HASH_TABLE_DEFINE(lru_type_name##LruList, lru_type_name##LruHashEntry, key_type, allocater, lru_type_name##LruHashEntryAccessor, CUTILS_OBJECT_MOVER_DEFALUT, hasher, comparer) \
@@ -57,10 +57,10 @@ extern "C" {
 		return hash_entry->lru_entry; \
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListPut(lru_type_name##LruList* list, lru_type_name##LruListEntry* entry) { \
-		key_type key = accessor##_GetKey(list, *entry); \
-		lru_type_name##LruHashEntry* hash_entry = lru_type_name##LruListHashTableFind(&list->hash_table, &key); \
+		key_type* key = accessor##_GetKey(list, entry); \
+		lru_type_name##LruHashEntry* hash_entry = lru_type_name##LruListHashTableFind(&list->hash_table, key); \
 		if (hash_entry) { \
-			lru_type_name##LruListDelete(list, &key); \
+			lru_type_name##LruListDelete(list, key); \
 		} \
 		else if (lru_type_name##LruListHashTableGetCount(&list->hash_table) >= list->max_count) { \
 			hash_entry = lru_type_name##LruListPop(list); \
@@ -73,8 +73,8 @@ extern "C" {
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListPop(lru_type_name##LruList* list) { \
 		ListEntry* del_list_entry = ListDeleteLast(&list->list_head); \
-		key_type key = accessor##_GetKey(list, *(lru_type_name##LruListEntry*)del_list_entry); \
-		lru_type_name##LruListHashTableDelete(&list->hash_table, &key); \
+		key_type* key = accessor##_GetKey(list, (lru_type_name##LruListEntry*)del_list_entry); \
+		lru_type_name##LruListHashTableDelete(&list->hash_table, key); \
 		return (lru_type_name##LruListEntry*)del_list_entry; \
 	} \
 	lru_type_name##LruListEntry* lru_type_name##LruListDelete(lru_type_name##LruList* list, key_type* key) { \
