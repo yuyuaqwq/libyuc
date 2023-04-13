@@ -36,8 +36,8 @@ extern "C" {
 	lru_type_name##LruListEntry* lru_type_name##LruListDelete(lru_type_name##LruList* list, key_type* key); \
 	
 #define CUTILS_CONTAINER_LRU_LIST_DEFINE(lru_type_name, key_type, accessor, allocater, hasher, comparer) \
-	forceinline key_type lru_type_name##LruHashEntryAccessor_GetKey(lru_type_name##LruListHashTable* table, lru_type_name##LruHashEntry hash_entry){ \
-		return accessor##_GetKey((lru_type_name##LruList*)table, *(hash_entry.lru_entry)); \
+	forceinline key_type* lru_type_name##LruHashEntryAccessor_GetKey(lru_type_name##LruListHashTable* table, lru_type_name##LruHashEntry* hash_entry){ \
+		return accessor##_GetKey((lru_type_name##LruList*)table, &hash_entry->lru_entry); \
 	} \
     CUTILS_CONTAINER_HASH_TABLE_DEFINE(lru_type_name##LruList, lru_type_name##LruHashEntry, key_type, allocater, lru_type_name##LruHashEntryAccessor, CUTILS_OBJECT_MOVER_DEFALUT, hasher, comparer) \
     \

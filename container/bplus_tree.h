@@ -188,18 +188,18 @@ typedef enum {
     * B+树
     */\
     static const int16_t bp_tree_type_name##BPlusElementStaticListReferencer_InvalidId = (-1) ; \
-    forceinline int16_t bp_tree_type_name##BPlusIndexStaticAccessor_GetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement element) { \
-        return element.next.next; \
+    forceinline int16_t bp_tree_type_name##BPlusIndexStaticAccessor_GetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement* element) { \
+        return element->next.next; \
     } \
-    forceinline void bp_tree_type_name##BPlusIndexStaticAccessor_SetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement element, int16_t new_next) { \
-        element.next.next = new_next; \
+    forceinline void bp_tree_type_name##BPlusIndexStaticAccessor_SetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement* element, int16_t new_next) { \
+        element->next.next = new_next; \
     } \
     CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, bp_tree_type_name##BPlusElementStaticListReferencer, bp_tree_type_name##BPlusIndexStaticAccessor, 1) \
-    forceinline int16_t bp_tree_type_name##BPlusLeafStaticAccessor_GetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement element) { \
-        return element.next.next; \
+    forceinline int16_t bp_tree_type_name##BPlusLeafStaticAccessor_GetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement* element) { \
+        return element->next.next; \
     } \
-    forceinline void bp_tree_type_name##BPlusLeafStaticAccessor_SetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement element, int16_t new_next) { \
-        element.next.next = new_next; \
+    forceinline void bp_tree_type_name##BPlusLeafStaticAccessor_SetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement* element, int16_t new_next) { \
+        element->next.next = new_next; \
     } \
     CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, bp_tree_type_name##BPlusElementStaticListReferencer, bp_tree_type_name##BPlusLeafStaticAccessor, 1) \
     \

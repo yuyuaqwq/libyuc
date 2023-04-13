@@ -39,7 +39,9 @@ extern "C" {
     id_type bs_tree_type_name##BsTreeIteratorPrev(bs_tree_type_name##BsTree* tree, id_type cur_id); \
 
 
-// 访问器需要提供_GetKey和_GetParent、_SetParent方法
+/*
+* 访问器需要提供_GetKey和_GetParent、_SetParent方法
+*/
 #define CUTILS_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
     /*
     * new_entry代替entry挂接到其父节点下
@@ -58,7 +60,7 @@ extern "C" {
             else { \
                 entry_parent->right = new_entry_id; \
             } \
-            referencer##_Dereference(tree, entry_parent); \
+            referencer##_Dereference(tree, &entry_parent); \
         } \
         if (new_entry_id != referencer##_InvalidId) { \
             accessor##_SetParent(tree, new_entry, accessor##_GetParent(tree, entry)); \
@@ -177,7 +179,9 @@ extern "C" {
         bs_tree_type_name##BsEntry* cur = NULL; \
         while (cur_id != referencer##_InvalidId) { \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
+            key_type* cur_key = accessor##_GetKey(tree, cur); \
+            key_type* entry_key = accessor##_GetKey(tree, entry); \
+            if (comparer##_Less(tree, cur_key, entry_key)) { \
                 if (cur->right == referencer##_InvalidId) { \
                     cur->right = entry_id; \
                     break; \
@@ -207,7 +211,7 @@ extern "C" {
         bs_tree_type_name##BsEntryInit(tree, entry); \
         if (tree->root == referencer##_InvalidId) { \
             tree->root = entry_id; \
-            return true; \
+            return entry_id; \
         } \
         id_type cur_id = tree->root; \
         id_type prev_id = referencer##_InvalidId; \
@@ -215,7 +219,9 @@ extern "C" {
         id_type old_id = referencer##_InvalidId; \
         while (cur_id != referencer##_InvalidId) { \
             cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
+            key_type* cur_key = accessor##_GetKey(tree, cur); \
+            key_type* entry_key = accessor##_GetKey(tree, entry); \
+            if (comparer##_Less(tree, cur_key, entry_key)) { \
                 if (cur->right == referencer##_InvalidId) { \
                     cur->right = entry_id; \
                     break; \
@@ -223,7 +229,7 @@ extern "C" {
                 prev_id = cur_id; \
                 cur_id = cur->right; \
             } \
-            else  if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), accessor##_GetKey(tree, entry))) { \
+            else if (comparer##_Greater(tree, cur_key, entry_key)) { \
                 if (cur->left == referencer##_InvalidId) { \
                     cur->left = entry_id; \
                     break; \
@@ -372,11 +378,12 @@ extern "C" {
         while (cur_id != referencer##_InvalidId) { \
             perv_id = cur_id; \
             bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-            if (comparer##_Less(tree, accessor##_GetKey(tree, cur), *key)) { \
+            key_type* cur_key = accessor##_GetKey(tree, cur); \
+            if (comparer##_Less(tree, cur_key, key)) { \
                 *cmp_status = 1; \
                 cur_id = cur->right; \
             } \
-            else if (comparer##_Greater(tree, accessor##_GetKey(tree, cur), *key)) { \
+            else if (comparer##_Greater(tree, cur_key, key)) { \
                 *cmp_status = -1; \
                 cur_id = cur->left; \
             } \

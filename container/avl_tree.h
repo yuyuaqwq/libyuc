@@ -119,6 +119,7 @@ extern "C" {
         avl_tree_type_name##AvlEntry* new_sub_root_id = NULL; \
         avl_tree_type_name##AvlEntry* sub_root = *sub_root_io; \
         id_type sub_root_id = *sub_root_id_io; \
+          assert(cur_bf >= -2 || cur_bf <= 2); \
         if (cur_bf == 2) { \
             /* 是失衡节点(最小失衡子树的根节点)，左子树高度高于右子树高度 */ \
             /* avl_tree_type_name##AvlEntry* deep_child = sub_root->left; */ \
@@ -131,10 +132,9 @@ extern "C" {
                     o
                  需要先左旋转 */ \
                 avl_tree_type_name##AvlEntry* deep_child_right = referencer##_Reference(tree, deep_child->right); \
+                  assert(deep_child_right); \
                 int8_t right_bf = accessor##_GetBalanceFactor(tree, deep_child_right); \
-                if (deep_child_right) { \
-                    accessor##_SetBalanceFactor(tree, deep_child_right, 0); \
-                } \
+                accessor##_SetBalanceFactor(tree, deep_child_right, 0); \
                 referencer##_Dereference(tree, tree, deep_child_right); \
                 avl_tree_type_name##AvlRotateLeft(tree, deep_child_id, deep_child); \
                 new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, sub_root_id, sub_root); \
@@ -186,10 +186,9 @@ extern "C" {
                       o
                  需要先右旋转 */ \
                 avl_tree_type_name##AvlEntry* deep_child_left = referencer##_Reference(tree, deep_child->left); \
+                  assert(deep_child_left); \
                 int8_t left_bf = accessor##_GetBalanceFactor(tree, deep_child_left); \
-                if (deep_child_left) { \
-                    accessor##_SetBalanceFactor(tree, deep_child_left, 0); \
-                } \
+                accessor##_SetBalanceFactor(tree, deep_child_left, 0); \
                 referencer##_Dereference(tree, deep_child_left); \
                 avl_tree_type_name##AvlRotateRight(tree, deep_child_id, deep_child); \
                 new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, sub_root_id, sub_root); \
@@ -325,7 +324,7 @@ extern "C" {
     */ \
     id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id) { \
         id_type old_id = avl_tree_type_name##AvlBsTreePut(&tree->bs_tree, put_entry_id); \
-        if(old_id != referencer##_InvalidId) avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
+        avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
         return old_id; \
     } \
     /*

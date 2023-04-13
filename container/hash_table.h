@@ -145,7 +145,7 @@ extern "C" {
     */ \
     static const int32_t hash_table_type_name##HashLinkRbReferencer_InvalidId = (-1) ; \
     forceinline hash_table_type_name##HashLinkRbEntry* hash_table_type_name##HashLinkRbReferencer_Reference(hash_table_type_name##HashLinkRbTree* tree, int32_t entry_id) { \
-          assert(entry_id != hash_table_type_name##HashLinkRbReferencer_InvalidId); \
+        if (entry_id == hash_table_type_name##HashLinkRbReferencer_InvalidId) return NULL; \
         hash_table_type_name##HashLinkRbObj* rb_obj = (hash_table_type_name##HashLinkRbObj*)tree; \
         return &rb_obj->table->link.obj_arr[entry_id+1].rb_entry; \
     } \
@@ -155,9 +155,9 @@ extern "C" {
         int32_t color : 1; \
         int32_t parent : sizeof(int32_t) * 8 - 1; \
     } hash_table_type_name##HashLinkRbParentColor; \
-    forceinline key_type hash_table_type_name##HashLinkRbAccessor##_GetKey(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
+    forceinline key_type* hash_table_type_name##HashLinkRbAccessor##_GetKey(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
         hash_table_type_name##HashLinkRbObj* rb_obj = (hash_table_type_name##HashLinkRbObj*)tree; \
-        return accessor##_GetKey(rb_obj->table, ((hash_table_type_name##HashLinkEntry*)bs_entry)->obj); \
+        return accessor##_GetKey(rb_obj->table, &((hash_table_type_name##HashLinkEntry*)bs_entry)->obj); \
     } \
     forceinline int32_t hash_table_type_name##HashLinkRbAccessor##_GetParent(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
         return (((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->parent); \
@@ -177,7 +177,7 @@ extern "C" {
     * 哈希表
     */ \
     static forceinline uint32_t hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
-        return hasher(table, *key) % table->bucket.capacity; \
+        return hasher(table, key) % table->bucket.capacity; \
     } \
     static forceinline uint32_t hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
@@ -201,7 +201,7 @@ extern "C" {
         element_type* obj = hash_table_type_name##HashTableIteratorFirst(table, &iter); \
         while (obj) { \
             hash_table_type_name##HashTablePut(&temp_table, obj); \
-            key_type key = accessor##_GetKey(table, *obj); \
+            key_type* key = accessor##_GetKey(table, obj); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
         } \
         hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
@@ -240,8 +240,8 @@ extern "C" {
         return NULL; \
     } \
     bool hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
-        key_type key = accessor##_GetKey(table, *obj); \
-        hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, &key)]; \
+        key_type* key = accessor##_GetKey(table, obj); \
+        hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
         hash_table_type_name##HashLinkRbObj rb_obj; \
 		rb_obj.rb_tree = entry->rb_tree; \
 		rb_obj.table = table; \
@@ -251,7 +251,7 @@ extern "C" {
             hash_table_type_name##HashTableFreeTreeEntry(table, rb_id); \
         } \
         rb_id = hash_table_type_name##HashTableAllocTreeEntry(table); \
-        obj_mover##_Assignment(table, table->link.obj_arr[rb_id + 1].obj, *obj); \
+        obj_mover##_Assignment(table, &table->link.obj_arr[rb_id + 1].obj, obj); \
         hash_table_type_name##HashLinkRbTreePut(&rb_obj.rb_tree, rb_id); \
         entry->rb_tree = rb_obj.rb_tree; \
         \

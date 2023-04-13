@@ -51,19 +51,17 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
 /*
-* 对象：
-* 对象操作器间传递(参数、返回值)的对象以对象本身进行
-* 外部函数间传递的对象以指针进行(参考C++引用)
+* 设计原则：
+* 对象传递统一使用指针
 * 
 * 主对象：
 * 对象进行某些操作时需要的关联对象，如引用器，若通过哈希表对id进行引用，仅id自然无法查找到对应的引用关系
 * 通常传递的是指针
-* 
-* 原则：
-* 无拷贝成本才使用对象本身，否则使用对象指针
 */
 
-
+/*
+* id类型通常可以直接传值
+*/
 
 
 /*
@@ -80,10 +78,10 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 默认比较器
 * 负责对象与对象的大小比较，相当于重载 < > ==
 */
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Equal(MAIN_OBJ, OBJ1, OBJ2) ((OBJ1) == (OBJ2))
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Greater(MAIN_OBJ, OBJ1, OBJ2) ((OBJ1) > (OBJ2))
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Less(MAIN_OBJ, OBJ1, OBJ2) ((OBJ1) < (OBJ2))
-#define CUTILS_OBJECT_COMPARER_DEFALUT_Subrrac(MAIN_OBJ, OBJ1, OBJ2) ((OBJ1) - (OBJ2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Equal(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) == *(OBJ2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Greater(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) > *(OBJ2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Less(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) < *(OBJ2))
+#define CUTILS_OBJECT_COMPARER_DEFALUT_Subrrac(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) - *(OBJ2))
 #define CUTILS_OBJECT_COMPARER_DEFALUT CUTILS_OBJECT_COMPARER_DEFALUT
 
 /*
@@ -91,15 +89,15 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 负责对象指定字段的访问，相当于重载 ->
 */
 #define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_GetTest(MAIN_OBJ, OBJ_PTR) ((OBJ_PTR)->test)
-#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_SetTest(MAIN_OBJ, OBJ_PTR, NEW_TEST) ((OBJ_PTR)->test = (NEW_TEST))
+#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_SetTest(MAIN_OBJ, OBJ_PTR, NEW_TEST) ((OBJ_PTR)->test = *(NEW_TEST))
 #define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT
 
 /*
 * 默认索引器
 * 负责数组对象的元素访问，相当于重载[]
 */
-#define CUTILS_OBJECT_INDEXER_DEFALUT_Get(MAIN_OBJ, OBJ_ARR, INDEX) ((OBJ_ARR)[INDEX])
-#define CUTILS_OBJECT_INDEXER_DEFALUT_Set(MAIN_OBJ, OBJ_ARR, INDEX, NEW_VALUE) ((OBJ_ARR)[INDEX] = NEW_VALUE)
+#define CUTILS_OBJECT_INDEXER_DEFALUT_Get(MAIN_OBJ, OBJ_ARR, INDEX) ((*(OBJ_ARR))[INDEX])
+#define CUTILS_OBJECT_INDEXER_DEFALUT_Set(MAIN_OBJ, OBJ_ARR, INDEX, NEW_VALUE) ((*(OBJ_ARR))[INDEX] = NEW_VALUE)
 #define CUTILS_OBJECT_INDEXER_DEFALUT CUTILS_OBJECT_INDEXER_DEFALUT
 
 
@@ -122,12 +120,12 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 默认传输器
 * 负责对象之间的传输、拷贝等操作，相当于重载 =
 */
-#define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(MAIN_OBJ, OBJ1, OBJ2) ((OBJ1) = (OBJ2))
+#define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) = *(OBJ2))
 #define CUTILS_OBJECT_MOVER_DEFALUT CUTILS_OBJECT_MOVER_DEFALUT
 
 /*
 * 默认回调器
-* 比较自由，在某个时刻回调某个方法
+* 在某个时刻回调某个方法
 */
 #define CUTILS_OBJECT_CALLBAKCER_DEFALUT
 

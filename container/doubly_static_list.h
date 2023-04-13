@@ -47,29 +47,29 @@ extern "C" {
         list->list_first[0] = 0; \
         id_type i = 0; \
         for (; i < count - 1; i++) { \
-            accessor##_SetNext(list, list->obj_arr[i], i + 1); \
+            accessor##_SetNext(list, &list->obj_arr[i], i + 1); \
             if (i == 0) { \
-                accessor##_SetPrev(list, list->obj_arr[i], referencer##_InvalidId); \
+                accessor##_SetPrev(list, &list->obj_arr[i], referencer##_InvalidId); \
             } \
             else { \
-                accessor##_SetPrev(list, list->obj_arr[i], i - 1); \
+                accessor##_SetPrev(list, &list->obj_arr[i], i - 1); \
             } \
         } \
-        accessor##_SetNext(list, list->obj_arr[i], referencer##_InvalidId); \
+        accessor##_SetNext(list, &list->obj_arr[i], referencer##_InvalidId); \
         for (i = 1; i < list_count; i++) { \
             list->list_first[i] = referencer##_InvalidId; \
         } \
     } \
     id_type ds_list_type_name##DoublyStaticListDelete(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type delete_index) { \
-        if (accessor##_GetPrev(list, list->obj_arr[delete_index]) == referencer##_InvalidId) { \
+        if (accessor##_GetPrev(list, &list->obj_arr[delete_index]) == referencer##_InvalidId) { \
             list->list_first[list_order] = accessor##_GetNext(list, list->obj_arr[delete_index]); \
         } \
         else { \
-            accessor##_SetNext(list, list->obj_arr[accessor##_GetPrev(list, list->obj_arr[delete_index])], accessor##_GetNext(list, list->obj_arr[delete_index])); \
+            accessor##_SetNext(list, &list->obj_arr[accessor##_GetPrev(list, &list->obj_arr[delete_index])], accessor##_GetNext(list, &list->obj_arr[delete_index])); \
         } \
         \
-        if (accessor##_GetNext(list, list->obj_arr[delete_index]) != referencer##_InvalidId) { \
-            accessor##_SetPrev(list, list->obj_arr[accessor##_GetNext(list, list->obj_arr[delete_index])], accessor##_GetPrev(list, list->obj_arr[delete_index])); \
+        if (accessor##_GetNext(list, &list->obj_arr[delete_index]) != referencer##_InvalidId) { \
+            accessor##_SetPrev(list, &list->obj_arr[accessor##_GetNext(list, &list->obj_arr[delete_index])], accessor##_GetPrev(list, &list->obj_arr[delete_index])); \
         } \
         return delete_index; \
     } \
@@ -81,17 +81,17 @@ extern "C" {
     } \
     void ds_list_type_name##DoublyStaticListInsert(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type prev_index, id_type insert_index) { \
         if (prev_index == referencer##_InvalidId) { \
-            accessor##_SetPrev(list, list->obj_arr[insert_index], referencer##_InvalidId); \
-            accessor##_SetNext(list, list->obj_arr[insert_index], list->list_first[list_order]); \
+            accessor##_SetPrev(list, &list->obj_arr[insert_index], referencer##_InvalidId); \
+            accessor##_SetNext(list, &list->obj_arr[insert_index], list->list_first[list_order]); \
             list->list_first[list_order] = insert_index; \
         } \
         else { \
-            accessor##_SetPrev(list, list->obj_arr[insert_index], prev_index); \
-            accessor##_SetNext(list, list->obj_arr[insert_index], accessor##_GetNext(list, list->obj_arr[prev_index])); \
-            accessor##_SetNext(list, list->obj_arr[prev_index], insert_index); \
+            accessor##_SetPrev(list, &list->obj_arr[insert_index], prev_index); \
+            accessor##_SetNext(list, &list->obj_arr[insert_index], accessor##_GetNext(list, list->obj_arr[prev_index])); \
+            accessor##_SetNext(list, &list->obj_arr[prev_index], insert_index); \
         } \
-        if (accessor##_GetNext(list, list->obj_arr[insert_index]) != referencer##_InvalidId) { \
-            accessor##_SetPrev(list, list->obj_arr[accessor##_GetNext(list, list->obj_arr[insert_index])], insert_index); \
+        if (accessor##_GetNext(list, &list->obj_arr[insert_index]) != referencer##_InvalidId) { \
+            accessor##_SetPrev(list, &list->obj_arr[accessor##_GetNext(list, &list->obj_arr[insert_index])], insert_index); \
         } \
     } \
     void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type push_index) { \

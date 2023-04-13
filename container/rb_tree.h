@@ -312,7 +312,7 @@ typedef enum {
     */ \
     id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
         id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, put_entry_id); \
-        if(old_id != referencer##_InvalidId) rb_tree_type_name##RbTreeInsertFixup(tree, put_entry_id); \
+        rb_tree_type_name##RbTreeInsertFixup(tree, put_entry_id); \
         return old_id; \
     } \
     /*
