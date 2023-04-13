@@ -62,7 +62,7 @@ extern "C" {
     } \
     id_type ds_list_type_name##DoublyStaticListDelete(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type delete_index) { \
         if (accessor##_GetPrev(list, &list->obj_arr[delete_index]) == referencer##_InvalidId) { \
-            list->list_first[list_order] = accessor##_GetNext(list, list->obj_arr[delete_index]); \
+            list->list_first[list_order] = accessor##_GetNext(list, &list->obj_arr[delete_index]); \
         } \
         else { \
             accessor##_SetNext(list, &list->obj_arr[accessor##_GetPrev(list, &list->obj_arr[delete_index])], accessor##_GetNext(list, &list->obj_arr[delete_index])); \
@@ -87,7 +87,7 @@ extern "C" {
         } \
         else { \
             accessor##_SetPrev(list, &list->obj_arr[insert_index], prev_index); \
-            accessor##_SetNext(list, &list->obj_arr[insert_index], accessor##_GetNext(list, list->obj_arr[prev_index])); \
+            accessor##_SetNext(list, &list->obj_arr[insert_index], accessor##_GetNext(list, &list->obj_arr[prev_index])); \
             accessor##_SetNext(list, &list->obj_arr[prev_index], insert_index); \
         } \
         if (accessor##_GetNext(list, &list->obj_arr[insert_index]) != referencer##_InvalidId) { \

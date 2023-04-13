@@ -42,7 +42,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define ObjectRelease(OBJ) (MemoryFree(OBJ))
 #define ObjectMultipleAt(ARR, INDEX, OBJ_SIZE) ((void*)((((uintptr_t)ARR) + (OBJ_SIZE) * (INDEX))))
 #define ObjectSwap(OBJ_TYPE, OBJ1, OBJ2) { OBJ_TYPE temp = OBJ1; OBJ1 = OBJ2; OBJ2 = temp; }
-#define ObjectGetFieldOffset(OBJ_TYPE, FIELD_NAME) ( (int)&(((OBJ_TYPE*)0)->FIELD_NAME) )
+#define ObjectGetFieldOffset(OBJ_TYPE, FIELD_NAME) ( (uintptr_t)&(((OBJ_TYPE*)0)->FIELD_NAME) )
 #define ObjectGetFieldSize(OBJ_TYPE, FIELD_NAME) ( sizeof(((OBJ_TYPE*)0)->FIELD_NAME) )
 #define ObjectGetFieldByOffset(OBJ, FIELD_OFFSET, OBJ_TYPE) ( (OBJ_TYPE*)((uintptr_t)(OBJ) + (FIELD_OFFSET)) )
 #define ObjectGetFromFieldOffset(OBJ_FIELD, FIELD_OFFSET, OBJ_TYPE) ( (OBJ_TYPE*)((uintptr_t)(OBJ_FIELD) - (FIELD_OFFSET)) )
