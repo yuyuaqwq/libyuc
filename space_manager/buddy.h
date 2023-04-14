@@ -97,7 +97,7 @@ extern "C" {
 			/* 优先找更小块的，就不必分割大块的了 */ \
 			id_type left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
 			id_type right_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index)); \
-			if (left_logn >= size_logn && left_logn <= right_logn) { \
+			if (right_logn < size_logn || left_logn >= size_logn && left_logn <= right_logn) { \
 				index = CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index); \
 			} \
 			else { \
@@ -151,7 +151,7 @@ extern "C" {
 	} \
 
 #define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER_Get(BUDDY, LOGN, INDEX) ((INDEX) % 2 ? (LOGN)[(INDEX) / 2] & 0xf : (LOGN)[(INDEX) / 2] >> 4)
-#define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER_Set(BUDDY, LOGN, INDEX, NEW_LOGN) ((LOGN)[(INDEX) / 2] = (INDEX) % 2 ? (NEW_LOGN) | ((LOGN)[(INDEX) / 2] & 0xf0) : (NEW_LOGN) << 4 | ((LOGN)[(INDEX) / 2] & 0xf))
+#define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER_Set(BUDDY, LOGN, INDEX, NEW_LOGN) ((LOGN)[(INDEX) / 2] = ((INDEX) % 2) ? ((NEW_LOGN) | ((LOGN)[(INDEX) / 2] & 0xf0)) : ((NEW_LOGN) << 4 | ((LOGN)[(INDEX) / 2] & 0xf)))
 #define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER
 
 
