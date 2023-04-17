@@ -42,6 +42,10 @@ typedef struct _ArNodeHead {
 	uint8_t prefix[4];
 } ArNodeHead;
 
+/*
+* »Ùsizeof(element_type) <= id_type£¨‘Ú
+*/
+
 typedef struct {
 	ArNodeHead head;
 	uint8_t keys[4];
