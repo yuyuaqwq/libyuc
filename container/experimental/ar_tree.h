@@ -23,28 +23,29 @@ extern "C" {
 typedef struct _ArNode* id_type;
 typedef int key_type;
 typedef int element_type;
-
 #define InvaildId 0
+#define prefix_max_len 10
+#define prefix_type int32_t
+
+/*
+* 可以通过两个宏选项来声明不同的结构体
+* 叶子节点是指针还是嵌入
+* 通过传参传递
+*/
 
 typedef struct _ArLeaf {
-	uint8_t is_leaf : 1;
-	uint8_t : 7;
 	element_type element;
 } ArLeaf;
 
 typedef struct _ArNodeHead {
+	prefix_type prefix_len;
 	struct {
 		uint8_t is_leaf : 1;
 		uint8_t type : 7;
 	};
 	uint8_t child_count;
-	int16_t prefix_len;
-	uint8_t prefix[4];
+	uint8_t prefix[prefix_max_len];
 } ArNodeHead;
-
-/*
-* 若sizeof(element_type) <= id_type，则
-*/
 
 typedef struct {
 	ArNodeHead head;
