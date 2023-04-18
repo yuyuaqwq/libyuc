@@ -1,4 +1,5 @@
 #include <CUtils/concurrency/mutex_lock.h>
+#include <CUtils/concurrency/thread.h>
 #include <CUtils/concurrency/atomic.h>
 
 void MutexLockInit(MutexLock* lock) {
@@ -6,7 +7,7 @@ void MutexLockInit(MutexLock* lock) {
 }
 
 void MutexLockAcquire(MutexLock* lock) {
-	while (AtomicExchange32(&lock->state, true) == true) { Switch(0); continue; }
+	while (AtomicExchange32(&lock->state, true) == true) { ThreadSwitch(0); continue; }
 }
 
 void MutexLockRelease(MutexLock* lock) {

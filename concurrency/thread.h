@@ -19,21 +19,21 @@ extern "C" {
 /*
 * 空转，使CPU得以稍加休息
 */
-static inline void Pause() {
+static inline void ThreadPause() {
 	YieldProcessor();
 }
 
 /*
 * 切换，让出CPU控制权切换线程
 */
-static inline void Switch() {
+static inline void ThreadSwitch() {
 	Sleep(0);
 }
 
 /*
 * 休眠，一定时间后再被唤醒
 */
-static inline void Dormancy(int duration) {
+static inline void ThreadSleep(int duration) {
 	Sleep(duration);
 }
 

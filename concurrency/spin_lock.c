@@ -1,4 +1,5 @@
 #include <CUtils/concurrency/spin_lock.h>
+#include <CUtils/concurrency/thread.h>
 #include <CUtils/concurrency/atomic.h>
 
 void SpinLockInit(SpinLock* lock) {
@@ -6,7 +7,7 @@ void SpinLockInit(SpinLock* lock) {
 }
 
 void SpinLockAcquire(SpinLock* lock) {
-	while (AtomicExchange32(&lock->state, true) == true) { Pause(); continue; }
+	while (AtomicExchange32(&lock->state, true) == true) { ThreadPause(); continue; }
 }
 
 void SpinLockRelease(SpinLock* lock) {
