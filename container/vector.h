@@ -23,6 +23,7 @@ extern "C" {
     } vector_type_name##Vector; \
     void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create); \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
+    ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, size_t count); \
     ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
@@ -73,6 +74,14 @@ extern "C" {
         } \
         MemoryCopy(&arr->obj_arr[arr->count++], obj, sizeof(element_type)); \
         return arr->count - 1; \
+    } \
+    ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, size_t count) { \
+        if (arr->capacity <= arr->count + count) { \
+            vector_type_name##VectorExpand(arr, count); \
+        } \
+        MemoryCopy(&arr->obj_arr[arr->count], obj, sizeof(element_type) * count); \
+        arr->count+=count; \
+        return arr->count - count; \
     } \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr) { \
         if (arr->count == 0) { \
