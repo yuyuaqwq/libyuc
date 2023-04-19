@@ -24,7 +24,7 @@ typedef struct _ArNode* id_type;
 typedef int key_type;
 typedef int element_type;
 #define InvaildId 0
-#define prefix_max_len 10
+#define prefix_max_len 8
 #define prefix_type int32_t
 
 /*
@@ -34,16 +34,20 @@ typedef int element_type;
 */
 
 typedef struct _ArLeaf {
+	struct {
+		uint8_t is_leaf : 1;
+		uint8_t type : 7;
+	};
 	element_type element;
 } ArLeaf;
 
 typedef struct _ArNodeHead {
-	prefix_type prefix_len;
 	struct {
 		uint8_t is_leaf : 1;
 		uint8_t type : 7;
 	};
 	uint8_t child_count;
+	prefix_type prefix_len;
 	uint8_t prefix[prefix_max_len];
 } ArNodeHead;
 
@@ -99,7 +103,7 @@ void ArTreeInit(ArTree* tree) {
 	tree->element_count = 0;
 }
 
-static ArNode* ArTreeFindChild(ArNode* node, uint8_t key_byte) {
+static id_type ArTreeFindChild(ArNode* node, uint8_t key_byte) {
 	  assert(node->head.is_leaf == false);
 	switch (node->head.type) {
 	case kNode4: {
@@ -139,7 +143,7 @@ static ArNode* ArTreeFindChild(ArNode* node, uint8_t key_byte) {
 
 
 element_type* ArTreeFind(ArTree* tree, key_type* key) {
-	ArNode* cur = tree->root;
+	id_type cur = tree->root;
 	int depth = 0;
 	while (cur) {
 		if (cur->head.is_leaf == true) {
@@ -149,7 +153,7 @@ element_type* ArTreeFind(ArTree* tree, key_type* key) {
 			return NULL;
 		}
 		if (cur->head.prefix_len != 0) {
-			if (memcmp(cur->head.prefix, key, cur->head.prefix_len)) {
+			if (cur->head.prefix_len <= sizeof(cur->head.prefix) && memcmp(cur->head.prefix, key, cur->head.prefix_len)) {
 				return NULL;
 			}
 			depth += cur->head.prefix_len;
