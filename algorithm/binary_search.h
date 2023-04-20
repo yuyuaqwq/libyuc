@@ -27,10 +27,10 @@ extern "C" {
         id_type mid; \
         while (first <= last) { \
             mid = first + (last - first) / 2; \
-            if (comparer##_Greater(accessor##_GetKey(indexer(arr, mid)), *key)) { \
+            if (comparer##_Greater(arr, accessor##_GetKey(arr, &arr[mid]), key)) { \
                 last = mid - 1; \
             } \
-            else if (comparer##_Less(accessor##_GetKey(indexer(arr, mid)), *key)) { \
+            else if (comparer##_Less(arr, accessor##_GetKey(arr, &arr[mid]), key)) { \
                 first = mid + 1; \
             } \
             else { \
@@ -42,11 +42,11 @@ extern "C" {
     /*
     * 找到了返回正确下标，否则返回第一个小于或大于key的元素下标，(通常返回第一个大于key的元素下标，若所有元素都小于key，则返回最后一个元素的下标)
     */ \
-    id_type binary_search_func_name##BinarySearch_Range(element_type* arr, id_type first, id_type last, key_type* key) { \
+    id_type binary_search_func_name##BinarySearch_Range(obj_type* arr, id_type first, id_type last, key_type* key) { \
         id_type mid = 0; \
         while (first < last) { \
             mid = first + (last - first) / 2; \
-            if (comparer##_Less(accessor##_GetKey(indexer(arr, mid)), *key)) first = mid + 1; \
+            if (comparer##_Less(, accessor##_GetKey(arr, &arr[mid]), key)) first = mid + 1; \
             else last = mid; \
         } \
         return first; \

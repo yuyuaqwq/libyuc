@@ -7,8 +7,6 @@
 ## 数组
 - [模板]vector
   - 动态数组
-- queue
-  - 基于数组的循环队列
 - bitmap
   - 位图
 ## 链表
@@ -20,12 +18,14 @@
   - 静态链表
 - [模板]DoublyStaticList
   - 双向静态链表
-- SkipList
-  - 跳表
-## 散列表
+## 队列
+- queue
+  - 基于数组的循环队列
+- Heap
+  - 堆
+## 索引
 - [模板]HashTable
   - 数组+红黑树实现的树表混合哈希表
-## 树
 - [模板]BsTree
   - 二叉搜索树
 - [模板]AvlTree
@@ -36,6 +36,7 @@
   - 页内嵌入红黑树的B+树
 - RadixTree
   - 映射定长key的基数树
-- Heap
-  - 堆
-
+- ArTree
+  - 自适应基数树
+- SkipList
+  - 跳表
