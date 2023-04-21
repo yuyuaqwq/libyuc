@@ -517,6 +517,7 @@ static void ArNode48Delete(ArNode48** node_ptr, uint8_t key_byte) {
 	ArNode48* node = *node_ptr;
 	uint8_t child_index = node->keys[key_byte];
 	if (child_index != 0xff) {
+		ArNode48StaticListPush(&node->child_arr, 0, node->keys[key_byte]);
 		node->head.child_count--;
 		node->keys[key_byte] = 0xff;
 		if (node->head.child_count <= 12) {
