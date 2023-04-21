@@ -614,7 +614,7 @@ typedef enum {
               assert(common_parent_element_id != -1); \
               assert(sibling_entry_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
-            if (sibling->element_count > (m - 1) / 2) { \
+            if (sibling->element_count > (m - 1) * 10 / 25) /* 40% */ { \
                 /* 向兄弟借节点 */ \
                 if (entry->type == kBPlusEntryLeaf) { \
                     /* 叶子节点处理较简单，可以直接移动 */ \

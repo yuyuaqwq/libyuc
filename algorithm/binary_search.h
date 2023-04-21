@@ -40,7 +40,7 @@ extern "C" {
         return -1; \
 	} \
     /*
-    * 找到了返回正确下标，否则返回第一个小于或大于key的元素下标，(通常返回第一个大于key的元素下标，若所有元素都小于key，则返回最后一个元素的下标)
+    * 找到了返回正确下标，否则返回第一个小于或大于key的元素下标，(通常返回第一个大于等于key的元素下标，若所有元素都小于key，则返回最后一个元素的下标)
     */ \
     id_type binary_search_func_name##BinarySearch_Range(obj_type* arr, id_type first, id_type last, key_type* key) { \
         id_type mid = 0; \
