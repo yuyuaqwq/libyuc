@@ -5,8 +5,8 @@
 * 请保留此声明
 */
 
-#ifndef CUTILS_ALGORITHM_SEARCH_H_
-#define CUTILS_ALGORITHM_SEARCH_H_
+#ifndef CUTILS_ALGORITHM_BINARY_SEARCH_H_
+#define CUTILS_ALGORITHM_BINARY_SEARCH_H_
 
 #include <CUtils/object.h>
 
@@ -14,12 +14,12 @@
 extern "C" {
 #endif
 
-#define CUTILS_ALGORITHM_SEARCH_DECLARATION(binary_search_func_name, obj_type, key_type, id_type) \
+#define CUTILS_ALGORITHM_BINARY_SEARCH_DECLARATION(binary_search_func_name, obj_type, key_type, id_type) \
 	id_type binary_search_func_name##BinarySearch(obj_type* arr, id_type first, id_type last, key_type element); \
     id_type binary_search_func_name##BinarySearch_Range(obj_type* arr, id_type first, id_type last, key_type key); \
 
 // 访问器需提供_GetKey方法
-#define CUTILS_ALGORITHM_SEARCH_DEFINE(binary_search_func_name, obj_type, key_type, id_type, accessor, indexer, comparer) \
+#define CUTILS_ALGORITHM_BINARY_SEARCH_DEFINE(binary_search_func_name, obj_type, key_type, id_type, accessor, indexer, comparer) \
     /*
     * 找到了返回正确下标，否则返回-1
     */ \
@@ -56,4 +56,4 @@ extern "C" {
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_SEARCH_H_
+#endif // CUTILS_ALGORITHM_BINARY_SEARCH_H_

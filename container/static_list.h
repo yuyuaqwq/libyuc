@@ -30,7 +30,7 @@ extern "C" {
     id_type static_list_type_name##StaticListPop(static_list_type_name##StaticList* list, id_type list_order); \
     void static_list_type_name##StaticListPush(static_list_type_name##StaticList* list, id_type list_order, id_type index); \
     id_type static_list_type_name##StaticListDelete(static_list_type_name##StaticList* list, id_type list_order, id_type prev_id, id_type delete_id); \
-    void static_list_type_name##StaticListSwitch(static_list_type_name##StaticList* list, id_type list_order, id_type id, id_type new_list_order); \
+    void static_list_type_name##StaticListSwitch(static_list_type_name##StaticList* list, id_type list_order, id_type prev_id, id_type id, id_type new_list_order); \
     id_type static_list_type_name##StaticListIteratorFirst(static_list_type_name##StaticList* list, id_type list_order); \
     id_type static_list_type_name##StaticListIteratorNext(static_list_type_name##StaticList* list, id_type cur_id); \
 
