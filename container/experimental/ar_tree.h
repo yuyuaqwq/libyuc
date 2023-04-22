@@ -167,10 +167,10 @@ void ArTreeInit(ArTree* tree) {
 uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
 	return element;
 }
-CUTILS_ALGORITHM_BINARY_SEARCH_DEFINE(ArNode16, uint8_t, uint8_t, int32_t, ArBsAccessor, CUTILS_OBJECT_INDEXER_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
+CUTILS_ALGORITHM_BINARY_SEARCH_DEFINE(ArNode, uint8_t, uint8_t, int32_t, ArBsAccessor, CUTILS_OBJECT_INDEXER_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
 CUTILS_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1)
-CUTILS_ALGORITHM_ARRAY_DEFINE(ArNode16Key, uint8_t, uint32_t)
-CUTILS_ALGORITHM_ARRAY_DEFINE(ArNode16Child, ArNode*, uint32_t)
+CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, uint32_t)
+CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t)
 
 
 static ArNode** ArSkipNode2(ArNode** node_ptr, uint8_t key_rem_len) {
@@ -193,16 +193,15 @@ static ArNode** ArTreeFindChild(ArNode* node, uint8_t key_byte) {
 	ArNode** node_ptr = InvalidId;
 	switch (node->head.node_type) {
 	case kArNode4: {
-		for (int i = 0; i < node->head.child_count; i++) {
-			if (node->node4.child_arr[i] != InvalidId && node->node4.keys[i] == key_byte) {
-				node_ptr = &node->node4.child_arr[i];
-				break;
-			}
+		int32_t i = ArNodeBinarySearch(node->node4.keys, 0, node->head.child_count - 1, &key_byte);
+		if (i == -1) {
+			break;
 		}
+		node_ptr = &node->node4.child_arr[i];
 		break;
 	}
 	case kArNode16: {
-		int32_t i = ArNode16BinarySearch(node->node16.keys, 0, node->head.child_count - 1, &key_byte);
+		int32_t i = ArNodeBinarySearch(node->node16.keys, 0, node->head.child_count - 1, &key_byte);
 		if (i == -1) {
 			break;
 		}
@@ -349,7 +348,8 @@ static ArNode4* ArNode4Create() {
 static ArNode16* ArNode16Create() {
 	ArNode16* node16 = ObjectCreate(ArNode16);
 	for (int i = 0; i < 16; i++) {
-		node16->keys[i] = -1;
+		node16->keys[i] = 0;
+		node16->child_arr[i] = InvalidId;
 	}
 	ArHeadInit(&node16->head, kArNode16);
 	return node16;
@@ -435,7 +435,7 @@ static void ArNode16Insert(ArNode16** node_ptr, uint8_t key_byte, ArNode* child)
 	ArNode16* node = *node_ptr;
 	int32_t i;
 	if (node->head.child_count > 0) {
-		i = ArNode16BinarySearch_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
+		i = ArNodeBinarySearch_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
 		if (key_byte == node->keys[i]) {
 			node->keys[i] = key_byte;
 			node->child_arr[i] = child;
@@ -447,8 +447,8 @@ static void ArNode16Insert(ArNode16** node_ptr, uint8_t key_byte, ArNode* child)
 		i = 0;
 	}
 	if (node->head.child_count < 16) {
-		ArNode16KeyArrayInsert(node->keys, node->head.child_count, i, key_byte);
-		ArNode16ChildArrayInsert(node->child_arr, node->head.child_count, i, child);
+		ArNodeKeyArrayInsert(node->keys, node->head.child_count, i, key_byte);
+		ArNodeChildArrayInsert(node->child_arr, node->head.child_count, i, child);
 		node->head.child_count++;
 	}
 	else {
@@ -464,21 +464,22 @@ static void ArNode16Insert(ArNode16** node_ptr, uint8_t key_byte, ArNode* child)
 
 static void ArNode4Insert(ArNode4** node_ptr, uint8_t key_byte, ArNode* child) {
 	ArNode4* node = *node_ptr;
-	for (int i = 0; i < 4; i++) {
-		if (node->child_arr[i] != InvalidId && node->keys[i] == key_byte) {
+	int32_t i;
+	if (node->head.child_count > 0) {
+		i = ArNodeBinarySearch_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
+		if (key_byte == node->keys[i]) {
 			node->keys[i] = key_byte;
 			node->child_arr[i] = child;
 			return;
 		}
+		if (key_byte > node->keys[i]) i++;
+	}
+	else {
+		i = 0;
 	}
 	if (node->head.child_count < 4) {
-		for (int i = 0; i < 4; i++) {
-			if (node->child_arr[i] == InvalidId) {
-				node->keys[i] = key_byte;
-				node->child_arr[i] = child;
-				break;
-			}
-		}
+		ArNodeKeyArrayInsert(node->keys, node->head.child_count, i, key_byte);
+		ArNodeChildArrayInsert(node->child_arr, node->head.child_count, i, child);
 		node->head.child_count++;
 	}
 	else {
@@ -519,23 +520,21 @@ static void ArNodeInsert(ArNode** node, uint8_t key_byte, ArNode* child) {
 
 static void ArNode4Delete(ArNode4** node_ptr, uint8_t key_byte) {
 	ArNode4* node = *node_ptr;
-	for (int i = 0; i < 4; i++) {
-		if (node->child_arr[i] != InvalidId && node->keys[i] == key_byte) {
-			node->head.child_count--;
-			node->child_arr[i] = NULL;
-			node->keys[i] = 0;
-			return;
-		}
+	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+	if (i != -1) {
+		ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
+		ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
+		node->head.child_count--;
 	}
 }
 
 static void ArNode16Delete(ArNode16** node_ptr, uint8_t key_byte) {
 	ArNode16* node = *node_ptr;
 	  assert(node->head.child_count < 3);
-	int32_t i = ArNode16BinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
 	if (i != -1) {
-		ArNode16KeyArrayDelete(node->keys, node->head.child_count, i);
-		ArNode16ChildArrayDelete(node->child_arr, node->head.child_count, i);
+		ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
+		ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
 		node->head.child_count--;
 		if (node->head.child_count <= 2) {
 			ArNode4* new_node4 = ArNode4Create();
