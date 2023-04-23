@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - é±¼é±¼
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* è¯·ä¿ç•™æ­¤å£°æ˜
 */
 
 
@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 /*
-* Adaptive Radix Tree - ×ÔÊÊÓ¦»ùÊıÊ÷
+* Adaptive Radix Tree - è‡ªé€‚åº”åŸºæ•°æ ‘
 */
 
 typedef struct _ArNode* id_type;
@@ -34,19 +34,19 @@ typedef struct data element_type;
 #define prefix_max_len 8
 
 /*
-* ¿ÉÒÔÍ¨¹ıÁ½¸öºêÑ¡ÏîÀ´ÉùÃ÷²»Í¬µÄ½á¹¹Ìå
-* Ò¶×Ó½ÚµãÊÇÖ¸Õë»¹ÊÇÇ¶Èë
-* Í¨¹ı´«²Î´«µİ
+* å¯ä»¥é€šè¿‡ä¸¤ä¸ªå®é€‰é¡¹æ¥å£°æ˜ä¸åŒçš„ç»“æ„ä½“
+* å¶å­èŠ‚ç‚¹æ˜¯æŒ‡é’ˆè¿˜æ˜¯åµŒå…¥
+* é€šè¿‡ä¼ å‚ä¼ é€’
 */
 
 typedef struct _ArLeaf {
 	uint8_t node_type : 4;
-	uint8_t : 4;
 	element_type element;
 } ArLeaf;
 
+
 typedef enum {
-	kArLeaf,		// Èç¹ûÊÇÖ¸ÕëµÄ»°£¬¿ÉÒÔÇ¶Èë£¬²»ÓÃ·ÅÔÚÕâÀï
+	kArLeaf,		// å¦‚æœæ˜¯æŒ‡é’ˆçš„è¯ï¼Œå¯ä»¥åµŒå…¥ï¼Œä¸ç”¨æ”¾åœ¨è¿™é‡Œ
 	kArNode2,
 	kArNode4,
 	kArNode16,
@@ -71,8 +71,9 @@ typedef struct _ArNodeHead {
 	};
 } ArNodeHead;
 
+/* Node2ç†è®ºä¸Šä¸è¡¨ç¤ºä¸€å±‚æ ‘é«˜(ç±»ä¼¼çº¢é»‘æ ‘çš„çº¢è‰²èŠ‚ç‚¹è®¾è®¡)ï¼Œåªæ˜¯ä¸€ä¸ªä¸­è½¬ç”¨çš„èŠ‚ç‚¹ï¼Œä¸èƒ½å•ç‹¬å­˜åœ¨ */
 typedef struct {
-	/* sub_nodeÊÇnodeµÄÇ°×º/Ò¶×ÓµÄ×Ó´® */
+	/* sub_nodeæ˜¯nodeçš„å‰ç¼€/å¶å­çš„å­ä¸² */
 	uint8_t node_type : 4;
 	uint8_t : 4;
 	uint32_t sub_node_len;
@@ -131,6 +132,7 @@ typedef struct {
 
 
 
+
 key_type* ArGetKey(element_type* element) {
 	return element;
 }
@@ -151,10 +153,17 @@ key_type* ArGetLeafKey(ArNode* child) {
 	return ArGetKey(&child->leaf.element);
 }
 
+
 element_type* ArGetElement(ArNode* child) {
 	return &child->leaf.element;
 }
 
+
+
+void ArTreeInit(ArTree* tree) {
+	tree->root = InvalidId;
+	tree->element_count = 0;
+}
 
 uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
 	return element;
@@ -165,14 +174,23 @@ CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, uint32_t)
 CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t)
 
 
-
-static void ArHeadInit(ArNodeHead* head, ArNodeType type) {
-	head->child_count = 0;
-	head->node_type = type;
-	head->prefix_type = kArNotPrefix;
+static ArNode** ArSkipNode2(ArNode** node_ptr, uint8_t key_rem_len) {
+	ArNode** cur_ptr = node_ptr;
+	ArNode* node = *cur_ptr;
+	while (node->head.node_type == kArNode2) {
+		/* ä½™ä¸‹é•¿åº¦<=sub_node_lenåˆ™é€‰æ‹©sub_nodeï¼Œå¦åˆ™é€‰æ‹©node */
+		if (key_rem_len <= node->node2.sub_node_len) {
+			cur_ptr = &node->node2.ar_sub_node;
+		}
+		else {
+			cur_ptr = &node->node2.ar_node;
+		}
+		node = *cur_ptr;
+	}
+	return cur_ptr;
 }
 
-static ArNode** ArNodeFind(ArNode* node, uint8_t key_byte) {
+static ArNode** ArTreeFindChild(ArNode* node, uint8_t key_byte) {
 	ArNode** node_ptr = InvalidId;
 	switch (node->head.node_type) {
 	case kArNode4: {
@@ -213,6 +231,97 @@ static ArNode** ArNodeFind(ArNode* node, uint8_t key_byte) {
 	}
 	return node_ptr;
 }
+
+/*
+* æ¯”è¾ƒå‰ç¼€ï¼Œè¿”å›åŒ¹é…çš„é•¿åº¦
+*/
+static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bool* optimistic, uint32_t* prefix_len) {
+	if (head->prefix_type == kArLongPrefix) {
+		*prefix_len = head->prefix_long_len;
+	}
+	else if (head->prefix_type == kArInlinePrefix) {
+		*prefix_len = head->prefix_len;
+	}
+	else {
+		*prefix_len = 0;
+	}
+	uint32_t match_len = min(*prefix_len, key_len);
+	if (match_len) {
+		if (*optimistic == false) {
+			uint32_t match_length;
+			if (head->prefix_type == kArLongPrefix) {
+				/* ç»Ÿä¸€ä½¿ç”¨ä¹è§‚ï¼Œæœ€åå†æ¯”è¾ƒ */
+				*optimistic = true;
+			}
+			else  {
+				/* ä½¿ç”¨æ‚²è§‚ç­–ç•¥ */
+				uint32_t i = 0;
+				for (; i < match_len; i++) {
+					if (key[i] != head->prefix[i]) {
+						break;
+					}
+				}
+				match_len = i;
+			}
+		}
+		else {
+			/* ä½¿ç”¨ä¹è§‚ç­–ç•¥ï¼Œè·³è¿‡æ¯”è¾ƒ */
+		}
+	}
+	return match_len;
+}
+
+element_type* ArTreeFind(ArTree* tree, key_type* key) {
+	ArNode* cur = tree->root;
+	bool optimistic = false;
+	uint32_t offset = 0;
+	uint32_t optimistic_offset = -1;
+	uint8_t* key_buf = ArGetKeyByte(key, 0);
+	uint32_t key_len = ArGetKeyLen(key);
+	while (cur) {
+		cur = *ArSkipNode2(&cur, key_len - offset);
+		  assert(cur->head.node_type != kArNode2);
+		if (cur->head.node_type == kArLeaf) {
+			if (optimistic) {
+				/* éœ€è¦è¿›è¡Œä¹è§‚æ¯”è¾ƒ */
+				offset = optimistic_offset;
+			}
+			key_type* leaf_key = ArGetKey(&cur->leaf.element);
+			if (!ArKeyEqual(key, leaf_key, offset)) {
+				return NULL;
+			}
+			return ArGetElement(cur);
+		}
+
+		if (offset >= key_len) {
+			break;
+		}
+
+		uint32_t prefix_len;
+		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, &prefix_len);
+		if (match_len != prefix_len) {
+			return NULL;
+		}
+		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
+		offset += match_len;
+
+		ArNode** cur_ptr = ArTreeFindChild(cur, key_buf[offset]);
+		if (!cur_ptr) {
+			break;
+		}
+		cur = *cur_ptr;
+		offset++;
+	}
+	return NULL;
+}
+
+
+static void ArHeadInit(ArNodeHead* head, ArNodeType type) {
+	head->child_count = 0;
+	head->node_type = type;
+	head->prefix_type = kArNotPrefix;
+}
+
 
 static ArLeaf* ArLeafCreate(element_type* ele) {
 	ArLeaf* leaf = ObjectCreate(ArLeaf);
@@ -291,7 +400,10 @@ static void ArNode256Release(ArNode256* node256) {
 	ObjectRelease(node256);
 }
 
-static void ArNodeHeadCopy(ArNodeHead* dst, ArNodeHead* src) {
+
+
+
+void ArNodeCopyHead(ArNodeHead* dst, ArNodeHead* src) {
 	dst->prefix_type = src->prefix_type;
 	if (src->prefix_type == kArInlinePrefix) {
 		memcpy(dst->prefix, src->prefix, src->prefix_len);
@@ -317,7 +429,7 @@ static void ArNode48Insert(ArNode48** node_ptr, uint8_t key_byte, ArNode* child)
 	if (child_index == 0xff) {
 		if (node->head.child_count >= 48) {
 			ArNode256* new_node256 = ArNode256Create();
-			ArNodeHeadCopy(&new_node256->head, &node->head);
+			ArNodeCopyHead(&new_node256->head, &node->head);
 			*node_ptr = (ArNode48*)new_node256;
 			for (int32_t i = 0; i < 256; i++) {
 				if (node->keys[i] != 0xff) {
@@ -357,7 +469,7 @@ static void ArNode16Insert(ArNode16** node_ptr, uint8_t key_byte, ArNode* child)
 	}
 	else {
 		ArNode48* new_node48 = ArNode48Create();
-		ArNodeHeadCopy(&new_node48->head, &node->head);
+		ArNodeCopyHead(&new_node48->head, &node->head);
 		*node_ptr = (ArNode16*)new_node48;
 		for (int32_t i = 0; i < 16; i++) {
 			ArNode48Insert((ArNode48**)node_ptr, node->keys[i], node->child_arr[i]);
@@ -389,7 +501,7 @@ static void ArNode4Insert(ArNode4** node_ptr, uint8_t key_byte, ArNode* child) {
 	}
 	else {
 		ArNode16* new_node16 = ArNode16Create();
-		ArNodeHeadCopy(&new_node16->head, &node->head);
+		ArNodeCopyHead(&new_node16->head, &node->head);
 		*node_ptr = (ArNode4*)new_node16;
 		for (int32_t i = 0; i < 4; i++) {
 			ArNode16Insert((ArNode16**)node_ptr, node->keys[i], node->child_arr[i]);
@@ -436,7 +548,7 @@ static void ArNode4Delete(ArNode4** node_ptr, uint8_t key_byte) {
 
 static void ArNode16Delete(ArNode16** node_ptr, uint8_t key_byte) {
 	ArNode16* node = *node_ptr;
-	assert(node->head.child_count < 3);
+	  assert(node->head.child_count < 3);
 	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
 	if (i != -1) {
 		ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
@@ -444,7 +556,7 @@ static void ArNode16Delete(ArNode16** node_ptr, uint8_t key_byte) {
 		node->head.child_count--;
 		if (node->head.child_count <= 2) {
 			ArNode4* new_node4 = ArNode4Create();
-			ArNodeHeadCopy(&new_node4->head, &node->head);
+			ArNodeCopyHead(&new_node4->head, &node->head);
 			*node_ptr = (ArNode16*)new_node4;
 			for (int i = 0; i < 2; i++) {
 				ArNode4Insert((ArNode4**)node_ptr, node->keys[i], node->child_arr[i]);
@@ -461,9 +573,9 @@ static void ArNode48Delete(ArNode48** node_ptr, uint8_t key_byte) {
 		ArNode48StaticListPush(&node->child_arr, 0, node->keys[key_byte]);
 		node->head.child_count--;
 		node->keys[key_byte] = 0xff;
-		if (node->head.child_count <= 12) {
+		if (node->head.child_count <= 10) {
 			ArNode16* new_node16 = ArNode16Create();
-			ArNodeHeadCopy(&new_node16->head, &node->head);
+			ArNodeCopyHead(&new_node16->head, &node->head);
 			*node_ptr = (ArNode48*)new_node16;
 			for (int32_t i = 0; i < 256; i++) {
 				if (node->keys[i] != 0xff) {
@@ -475,15 +587,15 @@ static void ArNode48Delete(ArNode48** node_ptr, uint8_t key_byte) {
 	}
 }
 
-static void ArNode256Delete(ArNode256** node_ptr, uint8_t key_byte) {
+static void ArNode256Delete (ArNode256** node_ptr, uint8_t key_byte) {
 	ArNode256* node = *node_ptr;
 	ArNode* find_node = node->child_arr[key_byte];
 	if (find_node != InvalidId) {
 		node->head.child_count--;
 		node->child_arr[key_byte] = InvalidId;
-		if (node->head.child_count <= 36) {
+		if (node->head.child_count <= 32) {
 			ArNode48* new_node48 = ArNode48Create();
-			ArNodeHeadCopy(&new_node48->head, &node->head);
+			ArNodeCopyHead(&new_node48->head, &node->head);
 			*node_ptr = (ArNode256*)new_node48;
 			for (int32_t i = 0; i < node->head.child_count; i++) {
 				ArNode48Insert((ArNode48**)node_ptr, i, node->child_arr[i]);
@@ -493,115 +605,9 @@ static void ArNode256Delete(ArNode256** node_ptr, uint8_t key_byte) {
 	}
 }
 
-static ArNode** ArSkipNode2(ArNode** node_ptr, uint8_t key_rem_len) {
-	ArNode** cur_ptr = node_ptr;
-	ArNode* node = *cur_ptr;
-	while (node->head.node_type == kArNode2) {
-		/* ÓàÏÂ³¤¶È<=sub_node_lenÔòÑ¡Ôñsub_node£¬·ñÔòÑ¡Ôñnode */
-		if (key_rem_len <= node->node2.sub_node_len) {
-			cur_ptr = &node->node2.ar_sub_node;
-		}
-		else {
-			cur_ptr = &node->node2.ar_node;
-		}
-		node = *cur_ptr;
-	}
-	return cur_ptr;
-}
-
-
-
 
 /*
-* ±È½ÏÇ°×º£¬·µ»ØÆ¥ÅäµÄ³¤¶È
-*/
-static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bool* optimistic, uint32_t* prefix_len) {
-	if (head->prefix_type == kArLongPrefix) {
-		*prefix_len = head->prefix_long_len;
-	}
-	else if (head->prefix_type == kArInlinePrefix) {
-		*prefix_len = head->prefix_len;
-	}
-	else {
-		*prefix_len = 0;
-	}
-	uint32_t match_len = min(*prefix_len, key_len);
-	if (match_len) {
-		if (*optimistic == false) {
-			uint32_t match_length;
-			if (head->prefix_type == kArLongPrefix) {
-				/* Í³Ò»Ê¹ÓÃÀÖ¹Û£¬×îºóÔÙ±È½Ï */
-				*optimistic = true;
-			}
-			else  {
-				/* Ê¹ÓÃ±¯¹Û²ßÂÔ */
-				uint32_t i = 0;
-				for (; i < match_len; i++) {
-					if (key[i] != head->prefix[i]) {
-						break;
-					}
-				}
-				match_len = i;
-			}
-		}
-		else {
-			/* Ê¹ÓÃÀÖ¹Û²ßÂÔ£¬Ìø¹ı±È½Ï */
-		}
-	}
-	return match_len;
-}
-
-void ArTreeInit(ArTree* tree) {
-	tree->root = InvalidId;
-	tree->element_count = 0;
-}
-
-element_type* ArTreeFind(ArTree* tree, key_type* key) {
-	ArNode* cur = tree->root;
-	bool optimistic = false;
-	uint32_t offset = 0;
-	uint32_t optimistic_offset = -1;
-	uint8_t* key_buf = ArGetKeyByte(key, 0);
-	uint32_t key_len = ArGetKeyLen(key);
-	while (cur) {
-		cur = *ArSkipNode2(&cur, key_len - offset);
-		  assert(cur->head.node_type != kArNode2);
-		if (cur->head.node_type == kArLeaf) {
-			if (optimistic) {
-				/* ĞèÒª½øĞĞÀÖ¹Û±È½Ï */
-				offset = optimistic_offset;
-			}
-			key_type* leaf_key = ArGetKey(&cur->leaf.element);
-			if (!ArKeyEqual(key, leaf_key, offset)) {
-				return NULL;
-			}
-			return ArGetElement(cur);
-		}
-
-		if (offset >= key_len) {
-			break;
-		}
-
-		uint32_t prefix_len;
-		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, &prefix_len);
-		if (match_len != prefix_len) {
-			return NULL;
-		}
-		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
-		offset += match_len;
-
-		ArNode** cur_ptr = ArNodeFind(cur, key_buf[offset]);
-		if (!cur_ptr) {
-			break;
-		}
-		cur = *cur_ptr;
-		offset++;
-	}
-	return NULL;
-}
-
-/*
-* Îªµ±Ç°½ÚµãÍ·²¿¸üĞÂ¹²Í¬Ç°×º£¬·µ»Ø³¤¶È
+* ä¸ºå½“å‰èŠ‚ç‚¹å¤´éƒ¨æ›´æ–°å…±åŒå‰ç¼€ï¼Œè¿”å›é•¿åº¦
 */
 static void UpdatePrefix(ArNodeHead* head, uint8_t* prefix, int32_t match_len) {
 	if (match_len > sizeof(head->prefix)) {
@@ -621,18 +627,18 @@ static void UpdatePrefix(ArNodeHead* head, uint8_t* prefix, int32_t match_len) {
 }
 
 
-// ½Úµã·ÖÁÑ£º
-// »áÖ´ĞĞ½Úµã·ÖÁÑµÄÇé¿ö£º
-// 1.×ßµ½Ò¶×Ó½Úµã(nodeÎªÒ¶×Ó)
-// 2.²éÕÒkey³¤¶È²»×ã
-//   Ê£Óà³¤¶ÈÎª0(ÕıºÃÓëÇ°×ºÏàµÈ/²éÕÒÏÂÒ»¸ö×Ö·ûµÄoffset++£¬ÇÒ²»ÊÇÒ¶×Ó)
-//   ²»×ãÒÔÆ¥ÅänodeµÄÇ°×º
-// 3.Ç°×º²»Æ¥Åä
+// èŠ‚ç‚¹åˆ†è£‚ï¼š
+// ä¼šæ‰§è¡ŒèŠ‚ç‚¹åˆ†è£‚çš„æƒ…å†µï¼š
+// 1.èµ°åˆ°å¶å­èŠ‚ç‚¹(nodeä¸ºå¶å­)
+// 2.æŸ¥æ‰¾keyé•¿åº¦ä¸è¶³
+//   å‰©ä½™é•¿åº¦ä¸º0(æ­£å¥½ä¸å‰ç¼€ç›¸ç­‰/æŸ¥æ‰¾ä¸‹ä¸€ä¸ªå­—ç¬¦çš„offset++ï¼Œä¸”ä¸æ˜¯å¶å­)
+//   ä¸è¶³ä»¥åŒ¹é…nodeçš„å‰ç¼€
+// 3.å‰ç¼€ä¸åŒ¹é…
 // 
-// ²éÑ¯Ç°×º/Ò¶×ÓÆ¥ÅäÇé¿ö
-// Èç¹ûÁ½Õß²»ÊÇ×Ó´®¹ØÏµ£¬Ôò´´½¨Node4£¬·ñÔò´´½¨Node2
+// æŸ¥è¯¢å‰ç¼€/å¶å­åŒ¹é…æƒ…å†µ
+// å¦‚æœä¸¤è€…ä¸æ˜¯å­ä¸²å…³ç³»ï¼Œåˆ™åˆ›å»ºNode4ï¼Œå¦åˆ™åˆ›å»ºNode2
 
-static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset, int32_t match_len) {
+static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset) {
 	key_type* leaf_key = ArGetKey(&leaf->element);
 	uint8_t* leaf_key_buf = ArGetKeyByte(leaf_key, offset);
 	uint32_t leaf_key_len = ArGetKeyLen(leaf_key) - offset;
@@ -655,17 +661,15 @@ static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset, int32_t 
 		}
 	}
 	min_len = min(node_key_len, leaf_key_len);
-	if (match_len == -1) {
-		match_len = 0;
-		for (; match_len < min_len; match_len++) {
-			if (leaf_key_buf[match_len] != node_key_buf[match_len]) {
-				break;
-			}
+	uint32_t match_len = 0;
+	for (; match_len < min_len; match_len++) {
+		if (leaf_key_buf[match_len] != node_key_buf[match_len]) {
+			break;
 		}
 	}
 	if (match_len == min_len) {
-		// ÊÇ×Ó´®£¬¸ù¾İ°üº¬¹ØÏµ¹¹½¨Node2
-		// Èç¹û¶¼Îª0£¬ÓÅÏÈÊÇnode°üº¬leaf£¬ÒòÎªnode³ıÁËÇ°×º»¹ÓĞ±ğµÄ½Úµã£¬Êµ¼Ê³¤¶È¸ü³¤
+		// æ˜¯å­ä¸²ï¼Œæ ¹æ®åŒ…å«å…³ç³»æ„å»ºNode2
+		// å¦‚æœéƒ½ä¸º0ï¼Œä¼˜å…ˆæ˜¯nodeåŒ…å«leafï¼Œå› ä¸ºnodeé™¤äº†å‰ç¼€è¿˜æœ‰åˆ«çš„èŠ‚ç‚¹ï¼Œå®é™…é•¿åº¦æ›´é•¿
 		ArNode2* new_node2 = ArNode2Create();
 		if (match_len == leaf_key_len) {
 			new_node2->ar_sub_node = (ArNode*)leaf;
@@ -679,7 +683,7 @@ static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset, int32_t 
 		return (ArNode*)new_node2;
 	}
 	else {
-		// ²»ÊÇ×Ó´®£¬ÏàÍ¬µÄÇ°×º×é³É¹²Í¬Ç°×º¹¹½¨Node4
+		// ä¸æ˜¯å­ä¸²ï¼Œç›¸åŒçš„å‰ç¼€ç»„æˆå…±åŒå‰ç¼€æ„å»ºNode4
 		ArNode4* new_node4 = ArNode4Create();
 		UpdatePrefix(&new_node4->head, leaf_key_buf, match_len);
 		ArNode4Insert(&new_node4, node_key_buf[match_len], node);
@@ -689,7 +693,7 @@ static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset, int32_t 
 }
 
 /*
-* »¹Î´´¦ÀíÀÖ¹Û²ßÂÔ
+* è¿˜æœªå¤„ç†ä¹è§‚ç­–ç•¥
 */
 void ArTreeInsert(ArTree* tree, element_type* element) {
 	if (tree->root == InvalidId) {
@@ -712,7 +716,7 @@ void ArTreeInsert(ArTree* tree, element_type* element) {
 		  assert(cur->head.node_type != kArNode2);
 		if (cur->head.node_type == kArLeaf) {
 			if (optimistic) {
-				/* ĞèÒª½øĞĞÀÖ¹Û±È½Ï */
+				/* éœ€è¦è¿›è¡Œä¹è§‚æ¯”è¾ƒ */
 				offset = optimistic_offset;
 			}
 			key_type* leaf_key = ArGetKey(&cur->leaf.element);
@@ -722,23 +726,23 @@ void ArTreeInsert(ArTree* tree, element_type* element) {
 				/* only update */
 				return;
 			}
-			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset, -1);
+			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset);
 			return;
 		}
 		uint32_t match_len = 0;
 		if (cur->head.prefix_type != kArNotPrefix) {
 			/*
-			* ÀÖ¹Û²ßÂÔÔÚ±È½ÏÊ±»áÖ±½ÓÌø¹ı£¬ÔÚ×îºóÕÒµ½Ò¶×ÓÊ±£¬µÃµ½²»Æ¥ÅäµÄÆ«ÒÆ
-			* ÔÙ´Î´ÓÀÖ¹ÛÆğÊ¼Î»ÖÃÏòÏÂÕÒ£¬¸ù¾İ²»Æ¥ÅäµÄÆ«ÒÆ¶¨Î»µ½²»Æ¥ÅäµÄ½Úµã
+			* ä¹è§‚ç­–ç•¥åœ¨æ¯”è¾ƒæ—¶ä¼šç›´æ¥è·³è¿‡ï¼Œåœ¨æœ€åæ‰¾åˆ°å¶å­æ—¶ï¼Œå¾—åˆ°ä¸åŒ¹é…çš„åç§»
+			* å†æ¬¡ä»ä¹è§‚èµ·å§‹ä½ç½®å‘ä¸‹æ‰¾ï¼Œæ ¹æ®ä¸åŒ¹é…çš„åç§»å®šä½åˆ°ä¸åŒ¹é…çš„èŠ‚ç‚¹
 			*/
 			uint32_t prefix_len;
 			match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, &prefix_len);
 			if (match_len != prefix_len) {
-				*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset, match_len);
+				*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset);
 				if ((*cur_ptr)->head.node_type == kArNode4) {
-					// Èç¹ûÊÇ·ÖÁÑ³ÉÁËnode4²Å»á¸üĞÂÇ°×º
-					// ·ÖÁÑºóĞèÒªÈ¥µôÒ»¸öÇ°×º£¬ÒòÎªÔÚĞÂµÄnew_node4ÖĞµÄkeys¼ÇÂ¼ÁËµ±Ç°node4µÄµÚÒ»¸ö×Ö·û
-					// Æ¥ÅäµÄÇ°×ºÒÑ¾­¸üĞÂµ½ĞÂµÄnode4ÉÏÁË£¬²»Æ¥ÅäµÄÇ°×º½øĞĞÇ°ÒÆ
+					// å¦‚æœæ˜¯åˆ†è£‚æˆäº†node4æ‰ä¼šæ›´æ–°å‰ç¼€
+					// åˆ†è£‚åéœ€è¦å»æ‰ä¸€ä¸ªå‰ç¼€ï¼Œå› ä¸ºåœ¨æ–°çš„new_node4ä¸­çš„keysè®°å½•äº†å½“å‰node4çš„ç¬¬ä¸€ä¸ªå­—ç¬¦
+					// åŒ¹é…çš„å‰ç¼€å·²ç»æ›´æ–°åˆ°æ–°çš„node4ä¸Šäº†ï¼Œä¸åŒ¹é…çš„å‰ç¼€è¿›è¡Œå‰ç§»
 					match_len++;
 					if (cur->head.prefix_type == kArInlinePrefix) {
 						cur->head.prefix_len -= match_len;
@@ -756,12 +760,12 @@ void ArTreeInsert(ArTree* tree, element_type* element) {
 			offset += match_len;
 		}
 		if (offset >= key_len) {
-			// ´ÓÇ°×ºÆ¥ÅäµÄµØ·½ÖØĞÂ¼ÆÆğ£¬·ÖÁÑÎªnode2/node4
-			// ÕâÀïÓĞÊÇÖØ¸´Ç°×º³¤¶È¼ÆËã(ĞÔÄÜÓĞµãÓ°Ïì)£¬Êµ¼ÊÉÏÉÏÃæÄÇ¸öifÒÑ¾­ËãºÃÁË
-			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset - match_len, match_len);
+			// ä»å‰ç¼€åŒ¹é…çš„åœ°æ–¹é‡æ–°è®¡èµ·ï¼Œåˆ†è£‚ä¸ºnode2/node4
+			// è¿™é‡Œæœ‰æ˜¯é‡å¤å‰ç¼€é•¿åº¦è®¡ç®—(æ€§èƒ½æœ‰ç‚¹å½±å“)ï¼Œå®é™…ä¸Šä¸Šé¢é‚£ä¸ªifå·²ç»ç®—å¥½äº†
+			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset - match_len);
 			return;
 		}
-		ArNode** down_ptr = ArNodeFind(cur, key_buf[offset]);
+		ArNode** down_ptr = ArTreeFindChild(cur, key_buf[offset]);
 		if (!down_ptr) {
 			ArLeaf* new_leaf = ArLeafCreate(element);
 			ArNodeInsert(cur_ptr, key_buf[offset], (ArNode*)new_leaf);
