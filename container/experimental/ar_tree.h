@@ -160,10 +160,6 @@ element_type* ArGetElement(ArNode* child) {
 
 
 
-void ArTreeInit(ArTree* tree) {
-	tree->root = InvalidId;
-	tree->element_count = 0;
-}
 
 uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
 	return element;
@@ -173,22 +169,24 @@ CUTILS_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, CUTILS_CONTAINE
 CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, uint32_t)
 CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t)
 
-
-static ArNode** ArSkipNode2(ArNode** node_ptr, uint8_t key_rem_len) {
-	ArNode** cur_ptr = node_ptr;
-	ArNode* node = *cur_ptr;
-	while (node->head.node_type == kArNode2) {
-		/* 余下长度<=sub_node_len则选择sub_node，否则选择node */
-		if (key_rem_len <= node->node2.sub_node_len) {
-			cur_ptr = &node->node2.ar_sub_node;
-		}
-		else {
-			cur_ptr = &node->node2.ar_node;
-		}
-		node = *cur_ptr;
-	}
-	return cur_ptr;
+static void ArHeadInit(ArNodeHead* head, ArNodeType type) {
+	head->child_count = 0;
+	head->node_type = type;
+	head->prefix_type = kArNotPrefix;
 }
+
+void ArNodeCopyHead(ArNodeHead* dst, ArNodeHead* src) {
+	dst->prefix_type = src->prefix_type;
+	if (src->prefix_type == kArInlinePrefix) {
+		memcpy(dst->prefix, src->prefix, src->prefix_len);
+		dst->prefix_len = src->prefix_len;
+	}
+	else {
+		dst->prefix_long_len = src->prefix_long_len;
+	}
+}
+
+
 
 static ArNode** ArTreeFindChild(ArNode* node, uint8_t key_byte) {
 	ArNode** node_ptr = InvalidId;
@@ -232,95 +230,6 @@ static ArNode** ArTreeFindChild(ArNode* node, uint8_t key_byte) {
 	return node_ptr;
 }
 
-/*
-* 比较前缀，返回匹配的长度
-*/
-static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bool* optimistic, uint32_t* prefix_len) {
-	if (head->prefix_type == kArLongPrefix) {
-		*prefix_len = head->prefix_long_len;
-	}
-	else if (head->prefix_type == kArInlinePrefix) {
-		*prefix_len = head->prefix_len;
-	}
-	else {
-		*prefix_len = 0;
-	}
-	uint32_t match_len = min(*prefix_len, key_len);
-	if (match_len) {
-		if (*optimistic == false) {
-			uint32_t match_length;
-			if (head->prefix_type == kArLongPrefix) {
-				/* 统一使用乐观，最后再比较 */
-				*optimistic = true;
-			}
-			else  {
-				/* 使用悲观策略 */
-				uint32_t i = 0;
-				for (; i < match_len; i++) {
-					if (key[i] != head->prefix[i]) {
-						break;
-					}
-				}
-				match_len = i;
-			}
-		}
-		else {
-			/* 使用乐观策略，跳过比较 */
-		}
-	}
-	return match_len;
-}
-
-element_type* ArTreeFind(ArTree* tree, key_type* key) {
-	ArNode* cur = tree->root;
-	bool optimistic = false;
-	uint32_t offset = 0;
-	uint32_t optimistic_offset = -1;
-	uint8_t* key_buf = ArGetKeyByte(key, 0);
-	uint32_t key_len = ArGetKeyLen(key);
-	while (cur) {
-		cur = *ArSkipNode2(&cur, key_len - offset);
-		  assert(cur->head.node_type != kArNode2);
-		if (cur->head.node_type == kArLeaf) {
-			if (optimistic) {
-				/* 需要进行乐观比较 */
-				offset = optimistic_offset;
-			}
-			key_type* leaf_key = ArGetKey(&cur->leaf.element);
-			if (!ArKeyEqual(key, leaf_key, offset)) {
-				return NULL;
-			}
-			return ArGetElement(cur);
-		}
-
-		if (offset >= key_len) {
-			break;
-		}
-
-		uint32_t prefix_len;
-		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, &prefix_len);
-		if (match_len != prefix_len) {
-			return NULL;
-		}
-		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
-		offset += match_len;
-
-		ArNode** cur_ptr = ArTreeFindChild(cur, key_buf[offset]);
-		if (!cur_ptr) {
-			break;
-		}
-		cur = *cur_ptr;
-		offset++;
-	}
-	return NULL;
-}
-
-
-static void ArHeadInit(ArNodeHead* head, ArNodeType type) {
-	head->child_count = 0;
-	head->node_type = type;
-	head->prefix_type = kArNotPrefix;
-}
 
 
 static ArLeaf* ArLeafCreate(element_type* ele) {
@@ -400,19 +309,6 @@ static void ArNode256Release(ArNode256* node256) {
 	ObjectRelease(node256);
 }
 
-
-
-
-void ArNodeCopyHead(ArNodeHead* dst, ArNodeHead* src) {
-	dst->prefix_type = src->prefix_type;
-	if (src->prefix_type == kArInlinePrefix) {
-		memcpy(dst->prefix, src->prefix, src->prefix_len);
-		dst->prefix_len = src->prefix_len;
-	}
-	else {
-		dst->prefix_long_len = src->prefix_long_len;
-	}
-}
 
 static void ArNode256Insert(ArNode256** node_ptr, uint8_t key_byte, ArNode* child) {
 	ArNode256* node = *node_ptr;
@@ -606,6 +502,49 @@ static void ArNode256Delete (ArNode256** node_ptr, uint8_t key_byte) {
 }
 
 
+
+
+
+
+/*
+* 比较前缀，返回匹配的长度
+*/
+static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bool* optimistic, uint32_t* prefix_len) {
+	if (head->prefix_type == kArLongPrefix) {
+		*prefix_len = head->prefix_long_len;
+	}
+	else if (head->prefix_type == kArInlinePrefix) {
+		*prefix_len = head->prefix_len;
+	}
+	else {
+		*prefix_len = 0;
+	}
+	uint32_t match_len = min(*prefix_len, key_len);
+	if (match_len) {
+		if (*optimistic == false) {
+			uint32_t match_length;
+			if (head->prefix_type == kArLongPrefix) {
+				/* 统一使用乐观，最后再比较 */
+				*optimistic = true;
+			}
+			else  {
+				/* 使用悲观策略 */
+				uint32_t i = 0;
+				for (; i < match_len; i++) {
+					if (key[i] != head->prefix[i]) {
+						break;
+					}
+				}
+				match_len = i;
+			}
+		}
+		else {
+			/* 使用乐观策略，跳过比较 */
+		}
+	}
+	return match_len;
+}
+
 /*
 * 为当前节点头部更新共同前缀，返回长度
 */
@@ -691,6 +630,76 @@ static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset) {
 		return (ArNode*)new_node4;
 	}
 }
+
+static ArNode** ArSkipNode2(ArNode** node_ptr, uint8_t key_rem_len) {
+	ArNode** cur_ptr = node_ptr;
+	ArNode* node = *cur_ptr;
+	while (node->head.node_type == kArNode2) {
+		/* 余下长度<=sub_node_len则选择sub_node，否则选择node */
+		if (key_rem_len <= node->node2.sub_node_len) {
+			cur_ptr = &node->node2.ar_sub_node;
+		}
+		else {
+			cur_ptr = &node->node2.ar_node;
+		}
+		node = *cur_ptr;
+	}
+	return cur_ptr;
+}
+
+
+
+void ArTreeInit(ArTree* tree) {
+	tree->root = InvalidId;
+	tree->element_count = 0;
+}
+
+
+element_type* ArTreeFind(ArTree* tree, key_type* key) {
+	ArNode* cur = tree->root;
+	bool optimistic = false;
+	uint32_t offset = 0;
+	uint32_t optimistic_offset = -1;
+	uint8_t* key_buf = ArGetKeyByte(key, 0);
+	uint32_t key_len = ArGetKeyLen(key);
+	while (cur) {
+		cur = *ArSkipNode2(&cur, key_len - offset);
+		  assert(cur->head.node_type != kArNode2);
+		if (cur->head.node_type == kArLeaf) {
+			if (optimistic) {
+				/* 需要进行乐观比较 */
+				offset = optimistic_offset;
+			}
+			key_type* leaf_key = ArGetKey(&cur->leaf.element);
+			if (!ArKeyEqual(key, leaf_key, offset)) {
+				return NULL;
+			}
+			return ArGetElement(cur);
+		}
+
+		if (offset >= key_len) {
+			break;
+		}
+
+		uint32_t prefix_len;
+		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, &prefix_len);
+		if (match_len != prefix_len) {
+			return NULL;
+		}
+		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
+		offset += match_len;
+
+		ArNode** cur_ptr = ArTreeFindChild(cur, key_buf[offset]);
+		if (!cur_ptr) {
+			break;
+		}
+		cur = *cur_ptr;
+		offset++;
+	}
+	return NULL;
+}
+
+
 
 /*
 * 还未处理乐观策略
