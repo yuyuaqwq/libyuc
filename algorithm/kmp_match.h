@@ -64,9 +64,37 @@ static int* BuildNext(const char* pattern, size_t len) {
 // 在进行字符串匹配时匹配出好前缀，然后将好前缀截取出来(得到长度)，获取该长度的好前缀中的最长可匹配前缀/后缀子串
 // next存放的就是各长度的好前缀中的最长可匹配前缀子串的长度
 // 这样子一旦出现好前缀时，直接通过该好前缀的长度作为next的下标，即可获得该好前缀中最长可匹配前缀子串的长度了
+
+
+// 匹配示例
+// kmp是不回头的，所以匹配是O(n)的时间复杂度，加上O(m)构建next数组就是O(m+n)
+// 113113113112
+// ↑
+// 112
+
+// 113113113112
+//  ↑
+// 112
+
+// 113113113112
+//   ↑
+// 112
+
+// 此时不匹配，根据好前缀next[1](len2)移动子串指针为1：
+// 113113113112
+//   ↑
+//  112
+
+// 发现不匹配，好前缀next[0]=0，移动子串指针为0：
+// 113113113112
+//    ↑
+//    112
+
+// 继续
+
+
 int KmpMatch(const char* main, size_t mainLen, const char* pattern, size_t patternLen) {
 	int* next = BuildNext(pattern, patternLen);
-
 	int i = 0;		// 主串指针
 	int j = 0;		// 模式串指针
 	int pos = -1;
