@@ -353,19 +353,17 @@ typedef enum {
 
 
 
-            
-//CUTILS_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int)
-//typedef struct _IntEntry_Rb {
-//    IntRbEntry entry;
-//    int key;
-//} IntEntry_Rb;
-//#define INT_RB_TREE_ACCESSOR_DEFALUT_GetKey(TREE, ENTRY) (((IntEntry_Rb*)ENTRY)->key)
-//#define INT_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY) ((IntRbEntry*)(((uintptr_t)(((IntRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
-//#define INT_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((IntRbEntry*)ENTRY)->parent_color) & 0x1))
-//#define INT_RB_TREE_ACCESSOR_DEFALUT_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntRbEntry*)ENTRY)->parent_color = (IntRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY))));
-//#define INT_RB_TREE_ACCESSOR_DEFALUT_SetColor(TREE, ENTRY, COLOR) (ENTRY->parent_color = (IntRbEntry*)(((uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
-//#define INT_RB_TREE_ACCESSOR_DEFALUT INT_RB_TREE_ACCESSOR_DEFALUT
-//CUTILS_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, int, CUTILS_OBJECT_REFERENCER_DEFALUT, CUTILS_CONTAINER_RB_TREE_ACCESSOR_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
+CUTILS_CONTAINER_RB_TREE_DECLARATION(Defalut, struct _DefalutRbEntry*, int)
+typedef struct _DefalutRb {
+    DefalutRbEntry rb_entry;
+    int key;
+} DefalutRb;
+#define CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetKey(TREE, ENTRY) (((DefalutRb*)ENTRY)->key)
+#define CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY) ((((uintptr_t)(((DefalutRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
+#define CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((DefalutRbEntry*)ENTRY)->parent_color) & 0x1))
+#define CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetParent(TREE, ENTRY, NEW_PARENT_ID) ((DefalutRbEntry*)((DefalutRbEntry*)ENTRY)->parent_color = (DefalutRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY))));
+#define CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetColor(TREE, ENTRY, COLOR) (((DefalutRbEntry*)ENTRY)->parent_color = (((uintptr_t)CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
+#define CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT CUTILS_CONTINUE_RB_TREE_ACCESSOR_DEFALUT
 
 #ifdef __cplusplus
 }
