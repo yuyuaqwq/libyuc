@@ -216,7 +216,7 @@ extern "C" {
         id_type cur_id = tree->root; \
         id_type prev_id = referencer##_InvalidId; \
         bs_tree_type_name##BsEntry* cur = NULL; \
-        id_type old_id = referencer##_InvalidId; \
+        id_type old_id = entry_id; \
         while (cur_id != referencer##_InvalidId) { \
             cur = referencer##_Reference(tree, cur_id); \
             key_type* cur_key = accessor##_GetKey(tree, cur); \
