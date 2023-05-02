@@ -34,6 +34,7 @@ extern "C" {
 	lru_type_name##LruListEntry* lru_type_name##LruListPut(lru_type_name##LruList* list, lru_type_name##LruListEntry* entry); \
 	lru_type_name##LruListEntry* lru_type_name##LruListPop(lru_type_name##LruList* list); \
 	lru_type_name##LruListEntry* lru_type_name##LruListDelete(lru_type_name##LruList* list, key_type* key); \
+	lru_type_name##LruListEntry* lru_type_name##LruListIteratorLast(lru_type_name##LruList* list); \
 	
 #define CUTILS_CONTAINER_LRU_LIST_DEFINE(lru_type_name, key_type, accessor, allocater, hasher, comparer) \
 	forceinline key_type* lru_type_name##LruHashEntryAccessor_GetKey(lru_type_name##LruListHashTable* table, lru_type_name##LruHashEntry* hash_entry) { \
@@ -86,6 +87,10 @@ extern "C" {
 			lru_type_name##LruListHashTableDelete(&list->hash_table, key); \
 		} \
 		return del_hash_entry ? lru_entry : NULL; \
+	} \
+	lru_type_name##LruListEntry* lru_type_name##LruListIteratorLast(lru_type_name##LruList* list) { \
+		ListEntry* list_entry = ListLast(&list->list_head); \
+		return (lru_type_name##LruListEntry*)list_entry; \
 	} \
 
 
