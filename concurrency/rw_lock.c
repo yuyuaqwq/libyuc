@@ -7,7 +7,7 @@ void RwLockInit(RwLock* lock) {
 }
 
 void RwLockReadAcquire(RwLock* lock) {
-	while (lock->write_wait) { Pause(); continue; }      // 防止写饥饿，一旦有写开始等待读完成，后来的读就不再参与抢占
+	while (lock->write_wait) { ThreadSwitch(); continue; }      // 防止写饥饿，一旦有写开始等待读完成，后来的读就不再参与抢占
 	MutexLockAcquire(&lock->write_lock);		// 先抢占写锁
 	// 随后增加读计数并释放写锁
 	AtomicIncrement32(&lock->read_count);		// 抢占了写锁依旧使用原子自增是因为可能存在另一个读正好释放读锁
@@ -21,7 +21,7 @@ void RwLockReadRelease(RwLock* lock) {
 void RwLockWriteAcquire(RwLock* lock) {
 	MutexLockAcquire(&lock->write_lock);		// 抢占写锁
 	lock->write_wait = true;
-	while (lock->read_count == 0) { Pause();  continue; }		// 等待正在进行的读完成
+	while (lock->read_count != 0) { ThreadSwitch();  continue; }		// 等待正在进行的读完成
 	lock->write_wait = false;
 }
 

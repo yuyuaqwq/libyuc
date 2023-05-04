@@ -324,7 +324,7 @@ extern "C" {
     */ \
     id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id) { \
         id_type old_id = avl_tree_type_name##AvlBsTreePut(&tree->bs_tree, put_entry_id); \
-        avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
+        if (old_id == referencer##_InvalidId) avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
         return old_id; \
     } \
     /*

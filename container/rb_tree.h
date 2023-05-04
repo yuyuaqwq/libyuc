@@ -300,19 +300,20 @@ typedef enum {
     } \
     /*
     * 向树中插入节点
-    * 允许重复key
+    * 允许重复key，但插入同一个节点时返回false
     */ \
-    void rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id) { \
-        rb_tree_type_name##RbBsTreeInsert(&tree->bs_tree, insert_entry_id); \
+    bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id) { \
+        if(!rb_tree_type_name##RbBsTreeInsert(&tree->bs_tree, insert_entry_id)) return false; \
         rb_tree_type_name##RbTreeInsertFixup(tree, insert_entry_id); \
+        return true; \
     } \
     /*
     * 向树中推入节点
-    * 覆盖重复key，返回被覆盖的原entry，否则返回插入的entry
+    * 允许覆盖重复key，返回被覆盖的原entry，否则InvalidId，如果put_entry_id已经被插入过了，也会被返回
     */ \
     id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
         id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, put_entry_id); \
-        rb_tree_type_name##RbTreeInsertFixup(tree, put_entry_id); \
+        if (old_id == referencer##_InvalidId) rb_tree_type_name##RbTreeInsertFixup(tree, put_entry_id); \
         return old_id; \
     } \
     /*
