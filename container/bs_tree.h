@@ -249,7 +249,7 @@ extern "C" {
                 old_id = cur_id; \
                 if (cur_id == entry_id) break; \
                 bs_tree_type_name##BsEntryInit(tree, entry); \
-                id_type parent_id = accessor##_GetParent(tree, cur_id); \
+                id_type parent_id = accessor##_GetParent(tree, cur); \
                 if (parent_id != referencer##_InvalidId) { \
                     bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
                     if (parent->left == cur_id) { \
