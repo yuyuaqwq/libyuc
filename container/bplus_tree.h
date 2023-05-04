@@ -224,13 +224,13 @@ typedef enum {
         } \
     } \
     static entry_id_type bp_tree_type_name##BPlusElementGetChildId(bp_tree_type_name##BPlusTree* tree, const bp_tree_type_name##BPlusEntry* index, int16_t element_id) { \
-        if (element_id == -1) { \
+        if (element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             return index->index.tail_child_id; \
         } \
         return index->index.element_space.obj_arr[element_id].child_id; \
     } \
     static void bp_tree_type_name##BPlusElementSetChildId(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* index, int16_t element_id, entry_id_type entry_id) { \
-        if (element_id == -1) { \
+        if (element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             index->index.tail_child_id = entry_id; \
             return; \
         } \
@@ -314,7 +314,7 @@ typedef enum {
             } \
         } \
         else { \
-            cur.element_id = -1; \
+            cur.element_id = bp_tree_type_name##BPlusEntryRbReferencer_InvalidId; \
         } \
         bp_tree_type_name##BPlusCursorStackVectorPushTail(&cursor->stack, &cur); \
         BPlusCursorStatus status = kBPlusCursorNext; \
@@ -346,9 +346,10 @@ typedef enum {
     */ \
     static int16_t bp_tree_type_name##BPlusEntryInsertElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, bp_tree_type_name##BPlusElement* insert_element) { \
         int16_t element_id = bp_tree_type_name##BPlusElementCreate(tree, entry); \
-          assert(element_id != -1); \
+          assert(element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
         bp_tree_type_name##BPlusElementSet(tree, entry, element_id, insert_element); \
-        bp_tree_type_name##BPlusEntryRbTreePut(&entry->rb_tree, element_id); \
+        int16_t old_element_id = bp_tree_type_name##BPlusEntryRbTreePut(&entry->rb_tree, element_id); \
+        if (old_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId && old_element_id != element_id) bp_tree_type_name##BPlusElementRelease(tree, entry, old_element_id); \
         entry->element_count++; \
         return element_id; \
     } \
@@ -358,7 +359,7 @@ typedef enum {
     * 返回被删除的元素
     */ \
     static bp_tree_type_name##BPlusElement* bp_tree_type_name##BPlusEntryDeleteElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, int16_t element_id) { \
-          assert(element_id != -1); \
+          assert(element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
         bp_tree_type_name##BPlusEntryRbTreeDelete(&entry->rb_tree, element_id); \
         entry->element_count--; \
         return bp_tree_type_name##BPlusElementRelease(tree, entry, element_id); \
@@ -399,7 +400,7 @@ typedef enum {
     * 这个时候无论怎么插入元素都不会插入到该节点最左元素的左侧(比它小的会被分到左侧节点，因为父元素key等于该元素)，该节点再分裂也就不存在最左元素再次上升的可能了
     */ \
     static bp_tree_type_name##BPlusElement bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, int16_t parent_element_id, bp_tree_type_name##BPlusElement* insert_element, int16_t insert_id, entry_id_type* out_right_id) { \
-        /* assert(insert_id != -1); */ \
+        /* assert(insert_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); */ \
         entry_id_type right_id = bp_tree_type_name##BPlusEntryCreate(tree, left->type); \
         bp_tree_type_name##BPlusEntry* right = entry_referencer##_Reference(tree, right_id); \
         bp_tree_type_name##BPlusElement up_element; \
@@ -530,7 +531,7 @@ typedef enum {
                 break; \
             } \
             /* 没有多余位置，需要分裂向上插入，插入的位置需要是第一个小于key的元素，element_id指向第一个大于key的元素 */ \
-            if (cur_pos->element_id == -1) { /* 不存在大于key的元素，直接拿末尾元素 */ \
+            if (cur_pos->element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的元素，直接拿末尾元素 */ \
                 cur_pos->element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&cur->rb_tree); \
             } else { \
                 cur_pos->element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&cur->rb_tree, cur_pos->element_id); \
@@ -591,27 +592,27 @@ typedef enum {
             bool left_sibling = true; \
             int16_t common_parent_element_id = parent_pos->element_id;     /* 始终是指向左侧元素 */ \
             int16_t sibling_element_id; \
-            if (common_parent_element_id == -1) { /* 不存在大于key的父元素，当前节点是末尾节点，是左兄弟 */ \
+            if (common_parent_element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的父元素，当前节点是末尾节点，是左兄弟 */ \
                 sibling_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&parent->rb_tree); \
             } \
             else { \
                 sibling_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&parent->rb_tree, common_parent_element_id); \
-                if (sibling_element_id == -1) {     /* 当前元素已经是最小的元素 */ \
+                if (sibling_element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) {     /* 当前元素已经是最小的元素 */ \
                     left_sibling = false; \
                     sibling_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&parent->rb_tree, common_parent_element_id); \
-                    if (sibling_element_id == -1) { /* 直接找既没有左兄弟也没有右兄弟，那就是末尾节点是右兄弟 */ \
+                    if (sibling_element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 直接找既没有左兄弟也没有右兄弟，那就是末尾节点是右兄弟 */ \
                         sibling_entry_id = parent->index.tail_child_id; \
                     } \
                 } \
             } \
-            if (sibling_element_id != -1) { \
+            if (sibling_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
                 sibling_entry_id = parent->index.element_space.obj_arr[sibling_element_id].child_id; \
             } \
             if (left_sibling) { \
                 common_parent_element_id = sibling_element_id; \
                 parent_pos->element_id = sibling_element_id;     /* 更新一下，给父节点删除使用 */ \
             } \
-              assert(common_parent_element_id != -1); \
+              assert(common_parent_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
               assert(sibling_entry_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
             if (sibling->element_count > (m - 1) * 10 / 25) /* 40% */ { \
@@ -621,7 +622,7 @@ typedef enum {
                     if (left_sibling) { \
                         /* 左兄弟节点的末尾的元素插入到当前节点的头部，更新父元素key为借来的key */ \
                         int16_t last = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree); \
-                          assert(last != -1); \
+                          assert(last != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* element = bp_tree_type_name##BPlusEntryDeleteElement(tree, sibling, last); \
                         bp_tree_type_name##BPlusEntryInsertElement(tree, entry, element); \
                         parent->index.element_space.obj_arr[common_parent_element_id].key = element->leaf.key;       /* 更新索引 */ \
@@ -630,8 +631,8 @@ typedef enum {
                         /* 右兄弟节点的头部的元素插入到当前节点的尾部，并新父元素key为右兄弟的新首元素 */ \
                         int16_t first = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree); \
                         int16_t new_first = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&sibling->rb_tree, first); \
-                          assert(first != -1); \
-                          assert(new_first != -1); \
+                          assert(first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+                          assert(new_first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* element = bp_tree_type_name##BPlusEntryDeleteElement(tree, sibling, first); \
                         bp_tree_type_name##BPlusEntryInsertElement(tree, entry, element); \
                         /* 右节点的头元素key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首元素是最好的 */ \
@@ -643,7 +644,7 @@ typedef enum {
                     if (left_sibling) { \
                         /* 左兄弟节点的末尾元素上升到父节点的头部，父节点的对应元素下降到当前节点的头部，上升元素其右子节点挂在下降的父节点元素的左侧 */ \
                         int16_t last = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree); \
-                          assert(last != -1); \
+                          assert(last != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* left_element = bp_tree_type_name##BPlusEntryDeleteElement(tree, sibling, last); \
                         ObjectSwap(entry_id_type, left_element->index.child_id, sibling->index.tail_child_id);        /* 要拿的是末尾的子节点，处理一下 */ \
                         bp_tree_type_name##BPlusElement* par_element = bp_tree_type_name##BPlusEntryDeleteElement(tree, parent, common_parent_element_id); \
@@ -655,7 +656,7 @@ typedef enum {
                     else { \
                         /* 右兄弟节点的头元素上升到父节点的头部，父节点的对应元素下降到当前节点的尾部，上升元素其左子节点挂在下降的父节点元素的右侧 */ \
                         int16_t first = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree); \
-                          assert(first != -1); \
+                          assert(first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* right_element = bp_tree_type_name##BPlusEntryDeleteElement(tree, sibling, first); \
                         bp_tree_type_name##BPlusElement* par_element = bp_tree_type_name##BPlusEntryDeleteElement(tree, parent, common_parent_element_id); \
                         par_element->index.child_id = right_element->index.child_id; \
