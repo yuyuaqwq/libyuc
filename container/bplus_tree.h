@@ -38,11 +38,41 @@ typedef enum {
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
 
 
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name) CUTILS_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListHead leaf_list;
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListEntry list_entry;       /* 连接所有叶子节点 */
+
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name) \
+    forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
+        bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
+        bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
+        return &entry->leaf.list_entry; \
+    } \
+    forceinline void bp_tree_type_name##BPlusLeafEntryReferencer_Dereference(bp_tree_type_name##BPlusLeafListHead* head, bp_tree_type_name##BPlusLeafListEntry* list_entry) { \
+        bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
+        bp_tree_type_name##BPlusLeafEntry* entry = ObjectGetFromField(list_entry,  bp_tree_type_name##BPlusLeafEntry, list_entry); \
+        entry_referencer##_Dereference(tree, (bp_tree_type_name##BPlusEntry*)entry); \
+    } \
+    CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
+
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id);
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListDeleteEntry(&tree->leaf_list, right_id);
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_4(bp_tree_type_name) bp_tree_type_name##BPlusLeafListInit(&tree->leaf_list); bp_tree_type_name##BPlusLeafListPutFirst(&tree->leaf_list, tree->root_id);
 
 
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL
+
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_2(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_3(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_1(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_2(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_3(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_4(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, entry_id_type, key_type, value_type) \
+#define CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, key_type, value_type) \
     /*
     * B+树游标
     */ \
@@ -61,10 +91,10 @@ typedef enum {
     * 页内红黑树
     */\
     CUTILS_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, int16_t, key_type) \
-    CUTILS_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type) \
+    leaf_link_mode##_DECLARATION_1(bp_tree_type_name) \
     typedef struct _##bp_tree_type_name##BPlusTree { \
         entry_id_type root_id; \
-        bp_tree_type_name##BPlusLeafListHead leaf_list; \
+        leaf_link_mode##_DECLARATION_2(bp_tree_type_name) \
         int16_t index_m; \
         int16_t leaf_m; \
     } bp_tree_type_name##BPlusTree; \
@@ -102,7 +132,7 @@ typedef enum {
         bp_tree_type_name##BPlusIndexStaticList element_space; \
     } bp_tree_type_name##BPlusIndexEntry; \
     typedef struct _##bp_tree_type_name##BPlusLeafEntry { \
-        bp_tree_type_name##BPlusLeafListEntry list_entry;       /* 连接所有叶子节点 */ \
+        leaf_link_mode##_DECLARATION_3(bp_tree_type_name) \
         bp_tree_type_name##BPlusLeafStaticList element_space; \
     } bp_tree_type_name##BPlusLeafEntry; \
     typedef struct _##bp_tree_type_name##BPlusEntry { \
@@ -130,22 +160,12 @@ typedef enum {
 
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, rb_accessor, rb_comparer) \
+#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, rb_accessor, rb_comparer) \
     /*
     * B+树游标
     */\
     static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
-    forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
-        bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
-        bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
-        return &entry->leaf.list_entry; \
-    } \
-    forceinline void bp_tree_type_name##BPlusLeafEntryReferencer_Dereference(bp_tree_type_name##BPlusLeafListHead* head, bp_tree_type_name##BPlusLeafListEntry* list_entry) { \
-        bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
-        bp_tree_type_name##BPlusLeafEntry* entry = ObjectGetFromField(list_entry,  bp_tree_type_name##BPlusLeafEntry, list_entry); \
-        entry_referencer##_Dereference(tree, (bp_tree_type_name##BPlusEntry*)entry); \
-    } \
-    CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
+    leaf_link_mode##_DEFINE_1(bp_tree_type_name) \
     CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
     /*
@@ -407,7 +427,7 @@ typedef enum {
         int32_t mid; \
         int32_t right_count; \
         if (left->type == kBPlusEntryLeaf) { \
-            bp_tree_type_name##BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id); \
+            leaf_link_mode##_DEFINE_2(bp_tree_type_name) \
             /* 原地分裂思路：mid将未插入的元素也算上，好计算newCount，4阶插入后4节点就是2(左2右2)，5阶插入后5节点还是2(左2右3)
              就是提前算好右侧应当有多少个元素，拷贝过去，中间遇到新元素插入就代替这一次的拷贝，没插入再插入到左侧 */ \
             mid = tree->leaf_m / 2; \
@@ -492,7 +512,7 @@ typedef enum {
             right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, right_elemeng_id); \
         } \
         if (left->type == kBPlusEntryLeaf) { \
-            bp_tree_type_name##BPlusLeafListDeleteEntry(&tree->leaf_list, right_id); \
+            leaf_link_mode##_DEFINE_3(bp_tree_type_name) \
             /* 是叶子节点，将right并入left中，并删除父元素 */ \
         } \
         else { \
@@ -703,8 +723,7 @@ typedef enum {
         tree->index_m = index_m; \
         tree->leaf_m = leaf_m; \
         tree->root_id = bp_tree_type_name##BPlusEntryCreate(tree, kBPlusEntryLeaf); \
-        bp_tree_type_name##BPlusLeafListInit(&tree->leaf_list); \
-        bp_tree_type_name##BPlusLeafListPutFirst(&tree->leaf_list, tree->root_id); \
+        leaf_link_mode##_DEFINE_4(bp_tree_type_name) \
     } \
     /*
     * 从B+树中查找指定key
