@@ -309,7 +309,7 @@ typedef enum {
     } \
     /*
     * 向树中推入节点
-    * 允许覆盖重复key，返回被覆盖的原entry，否则InvalidId，如果put_entry_id已经被插入过了，也会被返回
+    * 允许覆盖重复key，返回被覆盖的原entry，否则InvalidId，如果put_entry_id已经被插入过了，也会被返回(返回值 == put_entry_id)
     */ \
     id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
         id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, put_entry_id); \

@@ -118,8 +118,8 @@ extern "C" {
     void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator); \
     size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
-    bool hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj); \
-    bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key); \
+    element_type* hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj); \
+    element_type* hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key); \
 
 
 
@@ -239,20 +239,24 @@ extern "C" {
         } \
         return NULL; \
     } \
-    bool hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
+    /*
+    * 返回被覆盖的element
+    * 调用后返回值仅在临时有效(在调用其他接口前进行拷贝)
+    */ \
+    element_type* hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
         key_type* key = accessor##_GetKey(table, obj); \
         hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
         hash_table_type_name##HashLinkRbObj rb_obj; \
 		rb_obj.rb_tree = entry->rb_tree; \
 		rb_obj.table = table; \
-        int32_t rb_id = hash_table_type_name##HashLinkRbTreeFind(&rb_obj.rb_tree, &key); \
-        if (rb_id != hash_table_type_name##HashLinkRbReferencer_InvalidId) { \
-            hash_table_type_name##HashLinkRbTreeDelete(&rb_obj.rb_tree, rb_id); \
-            hash_table_type_name##HashTableFreeTreeEntry(table, rb_id); \
-        } \
-        rb_id = hash_table_type_name##HashTableAllocTreeEntry(table); \
+        int32_t rb_id = hash_table_type_name##HashTableAllocTreeEntry(table); \
         obj_mover##_Assignment(table, &table->link.obj_arr[rb_id + 1].obj, obj); \
-        hash_table_type_name##HashLinkRbTreePut(&rb_obj.rb_tree, rb_id); \
+        int32_t old_rb_id = hash_table_type_name##HashLinkRbTreePut(&rb_obj.rb_tree, rb_id); \
+        element_type* old_element = NULL; \
+        if (old_rb_id != hash_table_type_name##HashLinkRbReferencer_InvalidId) { \
+            old_element = &table->link.obj_arr[old_rb_id + 1].obj; \
+            hash_table_type_name##HashTableFreeTreeEntry(table, old_rb_id); \
+        } \
         entry->rb_tree = rb_obj.rb_tree; \
         \
         table->bucket.count++; \
@@ -260,9 +264,9 @@ extern "C" {
             /* 触发扩容 */ \
             hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
         } \
-        return true; \
+        return old_element; \
     } \
-    bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
+    element_type* hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
         hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
         hash_table_type_name##HashLinkRbObj rb_obj; \
 		rb_obj.rb_tree = entry->rb_tree; \
@@ -271,11 +275,13 @@ extern "C" {
         if (rb_id == hash_table_type_name##HashLinkRbReferencer_InvalidId) return false; \
         bool success = hash_table_type_name##HashLinkRbTreeDelete(&rb_obj.rb_tree, rb_id); \
         if (success) { \
+            element_type* old_element = &table->link.obj_arr[rb_id + 1].obj; \
             hash_table_type_name##HashTableFreeTreeEntry(table, rb_id); \
             table->bucket.count--; \
             entry->rb_tree = rb_obj.rb_tree; \
+            return old_element; \
         }\
-        return success; \
+        return NULL; \
     } \
     element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         iter->cur_index = -1; \
