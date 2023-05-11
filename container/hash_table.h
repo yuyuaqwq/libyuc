@@ -71,11 +71,11 @@ extern "C" {
 #endif
 
 
-    typedef enum _HashEntryType {
-        kHashEntryFree,
-        kHashEntryObj,
-        kHashEntryTree,
-    } HashEntryType;
+    typedef enum _HashTableEntryType {
+        kHashTableEntryFree,
+        kHashTableEntryObj,
+        kHashTableEntryTree,
+    } HashTableEntryType;
 
 #define CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
@@ -104,11 +104,11 @@ extern "C" {
     CUTILS_CONTAINER_STATIC_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, 1) \
     CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry) \
     \
-    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashEntry) \
+    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashTableEntry) \
     \
-    typedef struct _##hash_table_type_name##HashEntry { \
+    typedef struct _##hash_table_type_name##HashTableEntry { \
         hash_table_type_name##HashLinkRbTree rb_tree; \
-    } hash_table_type_name##HashEntry; \
+    } hash_table_type_name##HashTableEntry; \
     typedef struct _##hash_table_type_name##HashTable { \
         hash_table_type_name##HashBucketVector bucket; \
         hash_table_type_name##HashLinkVector link; \
@@ -139,7 +139,7 @@ extern "C" {
         hash_table_type_name##HashLinkStaticListExpand(hash_table_type_name##HashLinkGetStaticList(arr), old_capacity, new_capacity); \
     } \
     CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashTableEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     /*
     * 红黑树
     */ \
@@ -229,7 +229,7 @@ extern "C" {
         hash_table_type_name##HashLinkVectorRelease(&table->link); \
     } \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
-        hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
+        hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
         hash_table_type_name##HashLinkRbObj rb_obj; \
 		rb_obj.rb_tree = entry->rb_tree; \
 		rb_obj.table = table; \
@@ -241,7 +241,7 @@ extern "C" {
     } \
     bool hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
         key_type* key = accessor##_GetKey(table, obj); \
-        hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
+        hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
         hash_table_type_name##HashLinkRbObj rb_obj; \
 		rb_obj.rb_tree = entry->rb_tree; \
 		rb_obj.table = table; \
@@ -263,7 +263,7 @@ extern "C" {
         return true; \
     } \
     bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
-        hash_table_type_name##HashEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
+        hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[hash_table_type_name##HashGetIndex(table, key)]; \
         hash_table_type_name##HashLinkRbObj rb_obj; \
 		rb_obj.rb_tree = entry->rb_tree; \
 		rb_obj.table = table; \
