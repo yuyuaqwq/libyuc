@@ -59,13 +59,12 @@ extern "C" {
 	} \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListPut(hash_list_type_name##HashList* list, hash_list_type_name##HashListEntry* entry) { \
 		key_type* key = accessor##_GetKey(list, entry); \
-		hash_list_type_name##HashListHashEntry* hash_entry = hash_list_type_name##HashListHashTableFind(&list->hash_table, key); \
+		hash_list_type_name##HashListHashEntry put_hash_entry; \
+		put_hash_entry.hash_list_entry = entry; \
+		hash_list_type_name##HashListHashEntry* hash_entry = hash_list_type_name##HashListHashTablePut(&list->hash_table, &put_hash_entry); \
 		if (hash_entry) { \
 			hash_list_type_name##HashListDelete(list, key); \
 		} \
-		hash_list_type_name##HashListHashEntry put_hash_entry; \
-		put_hash_entry.hash_list_entry = entry; \
-		hash_list_type_name##HashListHashTablePut(&list->hash_table, &put_hash_entry); \
 		ListPutFirst(&list->list_head, &entry->list_entry); \
 		return hash_entry ? hash_entry->hash_list_entry : NULL; \
 	} \
@@ -77,11 +76,10 @@ extern "C" {
 	} \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListDelete(hash_list_type_name##HashList* list, key_type* key) { \
 		hash_list_type_name##HashListEntry* hash_list_entry = NULL; \
-		hash_list_type_name##HashListHashEntry* del_hash_entry = hash_list_type_name##HashListHashTableFind(&list->hash_table, key); \
+		hash_list_type_name##HashListHashEntry* del_hash_entry = hash_list_type_name##HashListHashTableDelete(&list->hash_table, key); \
 		if (del_hash_entry) { \
 			hash_list_entry = del_hash_entry->hash_list_entry; \
 			ListDeleteEntry(&list->list_head, &del_hash_entry->hash_list_entry->list_entry); \
-			hash_list_type_name##HashListHashTableDelete(&list->hash_table, key); \
 		} \
 		return del_hash_entry ? hash_list_entry : NULL; \
 	} \
