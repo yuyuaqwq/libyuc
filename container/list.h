@@ -103,6 +103,7 @@ extern "C" {
     } \
     id_type list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id) { \
         if (head->first == head->last) { \
+            if (head->first == referencer##_InvalidId) return referencer##_InvalidId; \
             entry_id = head->first; \
             list_type_name##ListInit(head); \
             return entry_id; \

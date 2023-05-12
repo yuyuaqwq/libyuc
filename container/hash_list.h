@@ -70,6 +70,7 @@ extern "C" {
 	} \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListPop(hash_list_type_name##HashList* list) { \
 		ListEntry* del_list_entry = ListDeleteLast(&list->list_head); \
+		if (!del_list_entry) return NULL; \
 		key_type* key = accessor##_GetKey(list, (hash_list_type_name##HashListEntry*)del_list_entry); \
 		hash_list_type_name##HashListHashTableDelete(&list->hash_table, key); \
 		return (hash_list_type_name##HashListEntry*)del_list_entry; \
