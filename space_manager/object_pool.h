@@ -55,7 +55,7 @@ extern "C" {
 		object_pool_name##ObjectPoolBucketHashTableInit(&table, 0, 0); \
 		while (bucket_id != bucket_referencer##_InvalidId) { \
 			obj_type* bucket = (obj_type*)bucket_referencer##_Reference(pool, bucket_id); \
-			object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, index); \
+			object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)indexer##_GetPtr(pool, &bucket, index); \
 			object_pool_name##ObjectPoolBucketHashTablePut(&table, &bucket_id); \
 			bucket_id = bucket_entry->bucket_id; \
 			index = bucket_entry->index; \
@@ -79,11 +79,11 @@ extern "C" {
 			bucket_id_type bucket_id = (bucket_id_type)bucket_allocator##_CreateMultiple(pool, obj_type, bucket_accessor##_GetMaxCount(pool)); \
 			obj_type* bucket = (obj_type*)bucket_referencer##_Reference(pool, bucket_id); \
 			for (ptrdiff_t i = 0; i < bucket_accessor##_GetMaxCount(pool) - 1; i++) { \
-				object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, i); \
+				object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)indexer##_GetPtr(pool, &bucket, i); \
 				bucket_entry->bucket_id = bucket_id; \
 				bucket_entry->index = i + 1; \
 			} \
-			object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, bucket_accessor##_GetMaxCount(pool) - 1); \
+			object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)indexer##_GetPtr(pool, &bucket, bucket_accessor##_GetMaxCount(pool) - 1); \
 			bucket_entry->bucket_id = pool->first_entry.bucket_id; \
 			bucket_entry->index = pool->first_entry.index; \
 			\
@@ -94,7 +94,7 @@ extern "C" {
 		ret_entry->bucket_id = pool->first_entry.bucket_id; \
 		ret_entry->index = pool->first_entry.index; \
 		obj_type* bucket = (obj_type*)bucket_referencer##_Reference(pool, ret_entry->bucket_id); \
-		object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, ret_entry->index); \
+		object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)indexer##_GetPtr(pool, &bucket, ret_entry->index); \
 		pool->first_entry.bucket_id = bucket_entry->bucket_id; \
 		pool->first_entry.index = bucket_entry->index; \
 		bucket_referencer##_Dereference(pool, bucket); \
@@ -102,7 +102,7 @@ extern "C" {
 	} \
 	void object_pool_name##ObjectPoolFree(object_pool_name##ObjectPool* pool, object_pool_name##ObjectPoolBucketEntry* free_entry) { \
 		obj_type* bucket = (obj_type*)bucket_referencer##_Reference(pool, free_entry->bucket_id); \
-		object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, free_entry->index); \
+		object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)indexer##_GetPtr(pool, &bucket, free_entry->index); \
 		bucket_entry->bucket_id = pool->first_entry.bucket_id; \
 		bucket_entry->index = pool->first_entry.index; \
 		pool->first_entry.bucket_id = free_entry->bucket_id; \
