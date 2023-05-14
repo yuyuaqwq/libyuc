@@ -83,7 +83,7 @@ extern "C" {
 				bucket_entry->bucket_id = bucket_id; \
 				bucket_entry->index = i + 1; \
 			} \
-			object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, bucket_accessor##_GetMaxCount() - 1); \
+			object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, bucket_accessor##_GetMaxCount(pool) - 1); \
 			bucket_entry->bucket_id = pool->first_entry.bucket_id; \
 			bucket_entry->index = pool->first_entry.index; \
 			\
