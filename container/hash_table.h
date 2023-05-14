@@ -257,9 +257,11 @@ extern "C" {
             old_element = &table->link.obj_arr[old_rb_id + 1].obj; \
             hash_table_type_name##HashTableFreeTreeEntry(table, old_rb_id); \
         } \
+        else { \
+            table->bucket.count++; \
+        } \
         entry->rb_tree = rb_obj.rb_tree; \
         \
-        table->bucket.count++; \
         if (hash_table_type_name##HashGetCurrentLoadFator(table) >= table->load_fator) { \
             /* 触发扩容 */ \
             hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
