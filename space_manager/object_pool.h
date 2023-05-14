@@ -76,7 +76,7 @@ extern "C" {
 	*/ \
 	obj_type* object_pool_name##ObjectPoolAlloc(object_pool_name##ObjectPool* pool, object_pool_name##ObjectPoolBucketEntry* ret_entry) { \
 		if (pool->first_entry.bucket_id == bucket_referencer##_InvalidId) { \
-			bucket_id_type bucket_id = (bucket_id_type)bucket_allocator##_CreateMultiple(pool, obj_type, bucket_accessor##_GetMaxCount()); \
+			bucket_id_type bucket_id = (bucket_id_type)bucket_allocator##_CreateMultiple(pool, obj_type, bucket_accessor##_GetMaxCount(pool)); \
 			obj_type* bucket = (obj_type*)bucket_referencer##_Reference(pool, bucket_id); \
 			for (ptrdiff_t i = 0; i < bucket_accessor##_GetMaxCount(pool) - 1; i++) { \
 				object_pool_name##ObjectPoolBucketEntry* bucket_entry = (object_pool_name##ObjectPoolBucketEntry*)&indexer##_Get(pool, &bucket, i); \
