@@ -31,9 +31,6 @@ typedef enum {
 } BPlusCursorStatus;
 
 
-
-
-
 // 阶(m)，4阶B树可以有4个子节点，3个内部节点，m = t * 2
 // 度(t)，即除根节点外，每个节点最少有t个内部节点
 
@@ -94,8 +91,8 @@ typedef enum {
     typedef struct _##bp_tree_type_name##BPlusTree { \
         entry_id_type root_id; \
         leaf_link_mode##_DECLARATION_2(bp_tree_type_name) \
-        int16_t index_m; \
-        int16_t leaf_m; \
+        /*int16_t index_m; \
+        int16_t leaf_m;*/ \
     } bp_tree_type_name##BPlusTree; \
     /*
     * B+树
@@ -385,13 +382,7 @@ typedef enum {
     } \
     entry_id_type bp_tree_type_name##BPlusEntryCreate(bp_tree_type_name##BPlusTree* tree, BPlusEntryType type) { \
         size_t size; \
-        if (type == kBPlusEntryIndex) { \
-            size = (tree->index_m - 1) * sizeof(bp_tree_type_name##BPlusIndexElement); \
-        } \
-        else { \
-            size = (tree->leaf_m - 1) * sizeof(bp_tree_type_name##BPlusLeafElement); \
-        } \
-        entry_id_type entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusEntry) + size); \
+        entry_id_type entry_id = entry_allocator##_Create(tree, bp_tree_type_name##BPlusEntry); \
         bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
         entry->type = type; \
         entry->element_count = 0; \
@@ -713,14 +704,14 @@ typedef enum {
     * 初始化B+树
     */ \
     void bp_tree_type_name##BPlusTreeInit(bp_tree_type_name##BPlusTree* tree, uint32_t index_m, uint32_t leaf_m) { \
-        if (index_m < 3) { \
-            index_m = 3;      /* 最少3阶，否则索引节点分裂会出现一侧没有节点的情况 */ \
+        /*if (index_m < 3) { \
+            index_m = 3;      /* 最少3阶，否则索引节点分裂会出现一侧没有节点的情况  \
         } \
         if (leaf_m < 3) { \
-            leaf_m = 3;     /* 可以2阶，但是删除有地方需要加强判断 */ \
+            leaf_m = 3;     /* 可以2阶，但是删除有地方需要加强判断  \
         } \
         tree->index_m = index_m; \
-        tree->leaf_m = leaf_m; \
+        tree->leaf_m = leaf_m; */ \
         tree->root_id = bp_tree_type_name##BPlusEntryCreate(tree, kBPlusEntryLeaf); \
         leaf_link_mode##_DEFINE_4(bp_tree_type_name) \
     } \
