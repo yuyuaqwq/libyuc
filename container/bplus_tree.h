@@ -31,8 +31,9 @@ typedef enum {
 } BPlusCursorStatus;
 
 
-// 阶(m)，4阶B树可以有4个子节点，3个内部节点，m = t * 2
-// 度(t)，即除根节点外，每个节点最少有t个内部节点
+/*
+为支持变长kv，不实现m阶等概念
+*/
 
 
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name, entry_id_type) CUTILS_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type)
@@ -91,8 +92,6 @@ typedef enum {
     typedef struct _##bp_tree_type_name##BPlusTree { \
         entry_id_type root_id; \
         leaf_link_mode##_DECLARATION_2(bp_tree_type_name) \
-        /*int16_t index_m; \
-        int16_t leaf_m;*/ \
     } bp_tree_type_name##BPlusTree; \
     /*
     * B+树
@@ -149,14 +148,43 @@ typedef enum {
     void bp_tree_type_name##BPlusCursorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
     BPlusCursorStatus bp_tree_type_name##BPlusCursorNext(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
     \
-    void bp_tree_type_name##BPlusTreeInit(bp_tree_type_name##BPlusTree* tree, uint32_t index_m, uint32_t leaf_m); \
+    void bp_tree_type_name##BPlusTreeInit(bp_tree_type_name##BPlusTree* tree); \
     bool bp_tree_type_name##BPlusTreeFind(bp_tree_type_name##BPlusTree* tree, key_type* key); \
     bool bp_tree_type_name##BPlusTreeInsert(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusLeafElement* element); \
     bool bp_tree_type_name##BPlusTreeDelete(bp_tree_type_name##BPlusTree* tree, key_type* key); \
 
 
+/*
+entry访问器需要提供
+GetFillPercent(获取填充率)
 
-#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, rb_accessor, rb_comparer) \
+element不定长，填充率占用不同
+
+插入时，分配元素节点失败，触发分裂
+    分裂时，当前Entry必须至少有2个Element(叶子可以1个，索引必须2个，否则没有上升节点)
+    分裂的时候根据填充率进行分裂，使得被插入的一侧分裂后能有足够的空位分配并插入新元素
+    每个element最大占用25%(为了简化实现，必须是2的次幂，由于Entry头部的存在，装不下2个Element，而Entry至少要2个Element)，需要确保每次分裂后都一定能装下新元素
+    分裂思路：倒着遍历节点并摘除，移动的时候还需要插入element的参与
+        一直释放旧，插入新，一直到旧Entry填充率<=50%就停止分裂
+        如果此时需要插入element，直接插入到新的一侧，等到旧Entry填充率达到标准即返回
+        如果旧Entry填充率<=50%，还没有插入element
+            检查旧Entry空位是否足够插入element，不足就继续移动，直到足够插入时将其插入到旧Entry
+        这个过程还需要确保旧Entry最后至少有2个Element，因为分裂完还会从旧Entry末尾上升一个Element
+
+
+删除时，两边填充率<=40%(两边加起来<=80%)则触发合并
+    由于两侧都是40%，一定能够合并成功
+一边填充率<=40%(两边加起来>80%)则触发element移动
+    element一定可以移动，因为单个element最大是25%
+    如果移动一个之后还不足40%(就继续移动)
+    可能会出现移动之后兄弟entry的填充率不足40%(比如末尾直接是25%占用率的element)
+        因此每次移动前判断移动后兄弟的填充率会变为多少，如果低于40%就不再移动，直接返回
+
+element访问器需要提供
+GetUsagePercent(获取占用率)
+用于获取当前element的占用率
+*/
+#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, rb_accessor, rb_comparer) \
     /*
     * B+树游标
     */\
@@ -388,12 +416,6 @@ typedef enum {
         entry->element_count = 0; \
         entry_referencer##_Dereference(tree, entry); \
         bp_tree_type_name##BPlusEntryRbTreeInit(&entry->rb_tree); \
-        if (type == kBPlusEntryIndex) { \
-            bp_tree_type_name##BPlusIndexStaticListInit(&entry->index.element_space, tree->index_m - 1); \
-        } \
-        else { \
-            bp_tree_type_name##BPlusLeafStaticListInit(&entry->leaf.element_space, tree->leaf_m - 1); \
-        } \
         return entry_id; \
     } \
     void bp_tree_type_name##BPlusEntryRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry) { \
@@ -414,33 +436,21 @@ typedef enum {
         entry_id_type right_id = bp_tree_type_name##BPlusEntryCreate(tree, left->type); \
         bp_tree_type_name##BPlusEntry* right = entry_referencer##_Reference(tree, right_id); \
         bp_tree_type_name##BPlusElement up_element; \
-        int32_t mid; \
-        int32_t right_count; \
         if (left->type == kBPlusEntryLeaf) { \
             leaf_link_mode##_DEFINE_2(bp_tree_type_name) \
-            /* 原地分裂思路：mid将未插入的元素也算上，好计算newCount，4阶插入后4节点就是2(左2右2)，5阶插入后5节点还是2(左2右3)
-             就是提前算好右侧应当有多少个元素，拷贝过去，中间遇到新元素插入就代替这一次的拷贝，没插入再插入到左侧 */ \
-            mid = tree->leaf_m / 2; \
-            right_count = left->element_count + 1 - mid;        /* +1是因为这个时候entry->count并没有把未插入元素也算上 */ \
         } \
-        else { \
-            /* 原地分裂思路：mid将未插入的元素和即将上升的元素都算上，好计算newCount，4阶插入后4节点就是4/2=2(左1右2)，5阶插入后5节点也是2(左2右2)，少了一个是因为上升的也算上了
-             先将后半部分拷贝到新节点，如果中间遇到了索引的插入，那就一并插入，最后的midkey是entry->indexData[entry->count-1]，因为右侧的数量是提前算好的，多出来的一定放到左侧 */ \
-            mid = (tree->index_m - 1) / 2; \
-            right_count = left->element_count - mid;        /* 这个时候entry->count并没有把未插入元素也算上，但是会上升一个元素，抵消故不计入 */ \
-        } \
-        int32_t i = right_count - 1; \
         int16_t left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
-        for (; i >= 0; i--) { \
+        while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
+            /* 在这里检查旧 */ \
+            int16_t next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
             if (!insert && left_elemeng_id == insert_id) { \
                 bp_tree_type_name##BPlusEntryInsertElement(tree, right, insert_element); \
                 insert = true; \
-                continue; \
             } \
-              assert(left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-            int16_t next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
-            bp_tree_type_name##BPlusEntryInsertElement(tree, right, bp_tree_type_name##BPlusEntryDeleteElement(tree, left, left_elemeng_id)); \
+            else { \
+                bp_tree_type_name##BPlusEntryInsertElement(tree, right, bp_tree_type_name##BPlusEntryDeleteElement(tree, left, left_elemeng_id)); \
+            } \
             left_elemeng_id = next_elemeng_id; \
         } \
         /* 新元素还没有插入，将其插入 */ \
@@ -703,15 +713,9 @@ typedef enum {
     /*
     * 初始化B+树
     */ \
-    void bp_tree_type_name##BPlusTreeInit(bp_tree_type_name##BPlusTree* tree, uint32_t index_m, uint32_t leaf_m) { \
-        /*if (index_m < 3) { \
-            index_m = 3;      /* 最少3阶，否则索引节点分裂会出现一侧没有节点的情况  \
-        } \
-        if (leaf_m < 3) { \
-            leaf_m = 3;     /* 可以2阶，但是删除有地方需要加强判断  \
-        } \
-        tree->index_m = index_m; \
-        tree->leaf_m = leaf_m; */ \
+    void bp_tree_type_name##BPlusTreeInit(bp_tree_type_name##BPlusTree* tree) { \
+        /* 索引最少3阶，否则索引节点分裂会出现一侧没有节点的情况 */  \
+        /* 叶子可以2阶，但是删除有地方需要加强判断 */ \
         tree->root_id = bp_tree_type_name##BPlusEntryCreate(tree, kBPlusEntryLeaf); \
         leaf_link_mode##_DEFINE_4(bp_tree_type_name) \
     } \
