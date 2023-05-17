@@ -96,21 +96,13 @@ typedef enum {
     /*
     * B+树
     */ \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(bp_tree_type_name##BPlusIndex, int16_t) \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(bp_tree_type_name##BPlusLeaf, int16_t) \
     typedef struct _##bp_tree_type_name##BPlusLeafElement { \
-        union { \
-            bp_tree_type_name##BPlusLeafStaticListEntry next; \
-            bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
-        }; \
+        bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
         key_type key; \
         value_type value; \
     } bp_tree_type_name##BPlusLeafElement; \
     typedef struct _##bp_tree_type_name##BPlusIndexElement { \
-        union { \
-            bp_tree_type_name##BPlusIndexStaticListEntry next; \
-            bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
-        }; \
+        bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
         entry_id_type child_id; \
         key_type key; \
     } bp_tree_type_name##BPlusIndexElement; \
@@ -118,17 +110,14 @@ typedef enum {
         union { \
             bp_tree_type_name##BPlusIndexElement index; \
             bp_tree_type_name##BPlusLeafElement leaf; \
+            bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
         }; \
     } bp_tree_type_name##BPlusElement; \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_2(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, 1) \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_2(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, 1) \
     typedef struct _##bp_tree_type_name##BPlusIndexEntry { \
         entry_id_type tail_child_id;       /* 末尾孩子id存在这里 */ \
-        bp_tree_type_name##BPlusIndexStaticList element_space; \
     } bp_tree_type_name##BPlusIndexEntry; \
     typedef struct _##bp_tree_type_name##BPlusLeafEntry { \
         leaf_link_mode##_DECLARATION_3(bp_tree_type_name) \
-        bp_tree_type_name##BPlusLeafStaticList element_space; \
     } bp_tree_type_name##BPlusLeafEntry; \
     typedef struct _##bp_tree_type_name##BPlusEntry { \
         bp_tree_type_name##BPlusEntryRbTree rb_tree; \
@@ -158,35 +147,44 @@ typedef enum {
 entry访问器需要提供
 GetFillPercent(获取填充率)
 
-element不定长，填充率占用不同
+element定长，附属kv可能不定长
 
-插入时，分配元素节点失败，触发分裂
-    分裂时，当前Entry必须至少有2个Element(叶子可以1个，索引必须2个，否则没有上升节点)
+插入时，分配element/kv失败时就触发分裂
+    分裂时，当前entry必须至少有2个element(叶子可以1个，索引必须2个，否则没有上升节点，同一规定2个)
+    首先计算当前entry的填充率，再加上新element的总占用率再/2
     分裂的时候根据填充率进行分裂，使得被插入的一侧分裂后能有足够的空位分配并插入新元素
-    每个element最大占用25%(为了简化实现，必须是2的次幂，由于Entry头部的存在，装不下2个Element，而Entry至少要2个Element)，需要确保每次分裂后都一定能装下新元素
+    value最大占用25%, key最大占用12.5%
+        为了简化实现，必须是2的次幂，entry至少要2个element, 因此必须限制单个element总占用率不能超过50%，需要确保每次分裂后都一定能装下新元素
+        过大的value就分配独立页面
     分裂思路：倒着遍历节点并摘除，移动的时候还需要插入element的参与
-        一直释放旧，插入新，一直到旧Entry填充率<=50%就停止分裂
-        如果此时需要插入element，直接插入到新的一侧，等到旧Entry填充率达到标准即返回
-        如果旧Entry填充率<=50%，还没有插入element
-            检查旧Entry空位是否足够插入element，不足就继续移动，直到足够插入时将其插入到旧Entry
-        这个过程还需要确保旧Entry最后至少有2个Element，因为分裂完还会从旧Entry末尾上升一个Element
+        一直释放旧，插入新，一直到旧entry填充率<=1/2%就停止分裂
+        如果此时需要插入element，直接插入到新的一侧，等到旧entry填充率达到标准即返回
+        如果旧entry填充率<=1/2%，还没有插入element
+            检查旧entry空位是否足够插入element，不足就触发碎片整理，再插入
 
 
 删除时，两边填充率<=40%(两边加起来<=80%)则触发合并
-    由于两侧都是40%，一定能够合并成功(并不一定，有可能有空间碎片)
+    由于两侧都是40%，一定能够合并成功(并不一定，有可能有空间碎片问题)
 一边填充率<=40%(两边加起来>80%)则触发element移动
     element一定可以移动，因为单个element最大是25%(并不一定，有可能有空间碎片)
     如果移动一个之后还不足40%(就继续移动)
     可能会出现移动之后兄弟entry的填充率不足40%(比如末尾直接是25%占用率的element)
         因此每次移动前判断移动后兄弟的填充率会变为多少，如果低于40%就不再移动，直接返回
 
-    如果出现空间碎片(即填充率不足但无法分配)，就触发碎片整理，即创建新的entry，遍历旧entry的element，逐个插入即可
+    如果出现空间碎片(即总空闲足够但无法分配)，就触发碎片整理
+    碎片整理流程：按占用率从大到小重新分配所有block
 
 element访问器需要提供
-GetUsagePercent(获取占用率)
-用于获取当前element的占用率
+GetUsagePercent(获取使用率)
+用于获取element的使用率
+
+
+kv分离是外层处理的，b+树操作的只有element
+碎片整理也在外边进行，当空闲位足够但分配失败时处理
+
+
 */
-#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, rb_accessor, rb_comparer) \
+#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer) \
     /*
     * B+树游标
     */\
@@ -203,14 +201,13 @@ GetUsagePercent(获取占用率)
             return NULL; \
         } \
         bp_tree_type_name##BPlusEntry* entry = ObjectGetFromField(tree, bp_tree_type_name##BPlusEntry, rb_tree); \
-        if (entry->type == kBPlusEntryIndex) { \
-            return &entry->index.element_space.obj_arr[element_id].rb_entry; \
-        } \
-        else { \
-            return &entry->leaf.element_space.obj_arr[element_id].rb_entry; \
-        } \
+        return &(element_referencer##_Reference(entry, element_id)->rb_entry); \
     } \
-    forceinline void bp_tree_type_name##BPlusEntryRbReferencer_Dereference(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbEntry* entry) {  } \
+    forceinline void bp_tree_type_name##BPlusEntryRbReferencer_Dereference(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbEntry* rb_entry) { \
+        bp_tree_type_name##BPlusEntry* entry = ObjectGetFromField(tree, bp_tree_type_name##BPlusEntry, rb_tree); \
+        bp_tree_type_name##BPlusElement* element = ObjectGetFromField(rb_entry, bp_tree_type_name##BPlusElement, rb_entry); \
+        element_referencer##_Dereference(entry, element); \
+    } \
     \
     typedef struct { \
         int16_t color : 1; \
@@ -233,76 +230,48 @@ GetUsagePercent(获取占用率)
     /*
     * B+树
     */\
-    static const int16_t bp_tree_type_name##BPlusElementStaticListReferencer_InvalidId = (-1) ; \
-    forceinline int16_t bp_tree_type_name##BPlusIndexStaticAccessor_GetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement* element) { \
-        return element->next.next; \
-    } \
-    forceinline void bp_tree_type_name##BPlusIndexStaticAccessor_SetNext(bp_tree_type_name##BPlusIndexStaticList* list, bp_tree_type_name##BPlusIndexElement* element, int16_t new_next) { \
-        element->next.next = new_next; \
-    } \
-    CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusIndex, int16_t, bp_tree_type_name##BPlusIndexElement, bp_tree_type_name##BPlusElementStaticListReferencer, bp_tree_type_name##BPlusIndexStaticAccessor, 1) \
-    forceinline int16_t bp_tree_type_name##BPlusLeafStaticAccessor_GetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement* element) { \
-        return element->next.next; \
-    } \
-    forceinline void bp_tree_type_name##BPlusLeafStaticAccessor_SetNext(bp_tree_type_name##BPlusLeafStaticList* list, bp_tree_type_name##BPlusLeafElement* element, int16_t new_next) { \
-        element->next.next = new_next; \
-    } \
-    CUTILS_CONTAINER_STATIC_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, int16_t, bp_tree_type_name##BPlusLeafElement, bp_tree_type_name##BPlusElementStaticListReferencer, bp_tree_type_name##BPlusLeafStaticAccessor, 1) \
-    \
-    static bp_tree_type_name##BPlusElement* bp_tree_type_name##BPlusElementGet(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, int16_t element_id) { \
-          assert(element_id >= 0); \
-        if (entry->type == kBPlusEntryLeaf) { \
-            return (bp_tree_type_name##BPlusElement*)&entry->leaf.element_space.obj_arr[element_id]; \
-        } \
-        else { \
-            return (bp_tree_type_name##BPlusElement*)&entry->index.element_space.obj_arr[element_id]; \
-        } \
-    } \
     static void bp_tree_type_name##BPlusElementSet(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, int16_t element_id, bp_tree_type_name##BPlusElement* element) { \
           assert(element_id >= 0); \
+        bp_tree_type_name##BPlusElement* dst_element = element_referencer##_Reference(entry, element_id); \
         if (entry->type == kBPlusEntryLeaf) { \
-            entry->leaf.element_space.obj_arr[element_id].key = element->leaf.key; \
-            entry->leaf.element_space.obj_arr[element_id].value = element->leaf.value; \
+            dst_element->leaf.key = element->leaf.key; \
+            dst_element->leaf.value = element->leaf.value; \
         } \
-        else if (entry->type == kBPlusEntryIndex) { \
-            entry->index.element_space.obj_arr[element_id].key = element->index.key; \
-            entry->index.element_space.obj_arr[element_id].child_id = element->index.child_id; \
+        else { \
+            dst_element->index.key = element->index.key; \
+            dst_element->index.child_id = element->index.child_id; \
         } \
+        element_referencer##_Dereference(entry, dst_element); \
     } \
     static entry_id_type bp_tree_type_name##BPlusElementGetChildId(bp_tree_type_name##BPlusTree* tree, const bp_tree_type_name##BPlusEntry* index, int16_t element_id) { \
         if (element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             return index->index.tail_child_id; \
         } \
-        return index->index.element_space.obj_arr[element_id].child_id; \
+        bp_tree_type_name##BPlusElement* element = element_referencer##_Reference(index, element_id); \
+        int16_t child_id = element->index.child_id; \
+        element_referencer##_Dereference(index, element); \
+        return child_id; \
     } \
     static void bp_tree_type_name##BPlusElementSetChildId(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* index, int16_t element_id, entry_id_type entry_id) { \
         if (element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             index->index.tail_child_id = entry_id; \
             return; \
         } \
-        index->index.element_space.obj_arr[element_id].child_id = entry_id; \
+        bp_tree_type_name##BPlusElement* element = element_referencer##_Reference(index, element_id); \
+        element->index.child_id = entry_id; \
+        element_referencer##_Dereference(index, element); \
     } \
     static int16_t bp_tree_type_name##BPlusElementCreate(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry) { \
-        int16_t element_id; \
-        if (entry->type == kBPlusEntryLeaf) { \
-            element_id = bp_tree_type_name##BPlusLeafStaticListPop(&entry->leaf.element_space, 0); \
-        } \
-        else { \
-            element_id = bp_tree_type_name##BPlusIndexStaticListPop(&entry->index.element_space, 0); \
-        } \
+        int16_t element_id = element_allocator##_CreateBySize(entry, entry->type == kBPlusEntryLeaf ? sizeof(bp_tree_type_name##BPlusLeafElement) : sizeof(bp_tree_type_name##BPlusIndexElement)); \
           assert(element_id >= 0); \
         return element_id; \
     } \
     static bp_tree_type_name##BPlusElement* bp_tree_type_name##BPlusElementRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, int16_t element_id) { \
           assert(element_id >= 0); \
-        if (entry->type == kBPlusEntryLeaf) { \
-            bp_tree_type_name##BPlusLeafStaticListPush(&entry->leaf.element_space, 0, element_id); \
-            return (bp_tree_type_name##BPlusElement*)&entry->leaf.element_space.obj_arr[element_id]; \
-        } \
-        else { \
-            bp_tree_type_name##BPlusIndexStaticListPush(&entry->index.element_space, 0, element_id); \
-            return (bp_tree_type_name##BPlusElement*)&entry->index.element_space.obj_arr[element_id]; \
-        } \
+        bp_tree_type_name##BPlusElement* element = element_referencer##_Reference(entry, element_id); \
+        element_referencer##_Dereference(entry, element); \
+        element_allocator##_Release(entry, element_id); \
+        return element; \
     } \
     \
     bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
@@ -444,7 +413,7 @@ GetUsagePercent(获取占用率)
         int16_t left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
         while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
-            /* 在这里检查旧 */ \
+            /* 在这里检查填充率 */ \
             int16_t next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
             if (!insert && left_elemeng_id == insert_id) { \
                 bp_tree_type_name##BPlusEntryInsertElement(tree, right, insert_element); \
@@ -462,7 +431,9 @@ GetUsagePercent(获取占用率)
         \
         if (left->type == kBPlusEntryLeaf) { \
             /* 从mid拿到上升元素，叶子元素转换为索引元素，上升元素的子节点指向左节点 */ \
-            up_element = *bp_tree_type_name##BPlusElementGet(tree, right, bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&right->rb_tree)); \
+            bp_tree_type_name##BPlusElement* first_element = element_referencer##_Reference(right, bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&right->rb_tree)); \
+            up_element = *first_element; \
+            element_referencer##_Dereference(right, first_element); \
             key_type key = up_element.leaf.key; \
             up_element.index.key = key; \
         } \
@@ -510,7 +481,9 @@ GetUsagePercent(获取占用率)
         int16_t right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&right->rb_tree); \
         for (int32_t i = 0; i < right->element_count; i++) { \
               assert(right_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-            bp_tree_type_name##BPlusEntryInsertElement(tree, left, bp_tree_type_name##BPlusElementGet(tree, right, right_elemeng_id)); \
+            bp_tree_type_name##BPlusElement* right_elemeng = element_referencer##_Reference(right, right_elemeng_id); \
+            bp_tree_type_name##BPlusEntryInsertElement(tree, left, right_elemeng); \
+            element_referencer##_Dereference(right, right_elemeng); \
             right_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, right_elemeng_id); \
         } \
         if (left->type == kBPlusEntryLeaf) { \
@@ -519,7 +492,9 @@ GetUsagePercent(获取占用率)
         } \
         else { \
             /* 是索引节点，将父元素(子节点原先指向左和右，下降需要指向左的末尾子节点)和right都并入到left中，向上传递删除父元素 */ \
-            int16_t left_element_id = bp_tree_type_name##BPlusEntryInsertElement(tree, left, bp_tree_type_name##BPlusElementGet(tree, parent, parent_index)); \
+            bp_tree_type_name##BPlusElement* parent_element = element_referencer##_Reference(parent, parent_index); \
+            int16_t left_element_id = bp_tree_type_name##BPlusEntryInsertElement(tree, left, parent_element); \
+            element_referencer##_Dereference(parent, parent_element); \
             bp_tree_type_name##BPlusElementSetChildId(tree, left, left_element_id, left->index.tail_child_id);       /* left的末尾元素此时为下降的父元素，修改其子节点 */ \
             bp_tree_type_name##BPlusElementSetChildId(tree, left, -1, right->index.tail_child_id); \
         } \
@@ -628,7 +603,9 @@ GetUsagePercent(获取占用率)
                 } \
             } \
             if (sibling_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
-                sibling_entry_id = parent->index.element_space.obj_arr[sibling_element_id].child_id; \
+                bp_tree_type_name##BPlusElement* sibling_element = element_referencer##_Reference(parent, sibling_element_id); \
+                sibling_entry_id = sibling_element->index.child_id; \
+                element_referencer##_Dereference(parent, sibling_element); \
             } \
             if (left_sibling) { \
                 common_parent_element_id = sibling_element_id; \
@@ -647,7 +624,10 @@ GetUsagePercent(获取占用率)
                           assert(last != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* element = bp_tree_type_name##BPlusEntryDeleteElement(tree, sibling, last); \
                         bp_tree_type_name##BPlusEntryInsertElement(tree, entry, element); \
-                        parent->index.element_space.obj_arr[common_parent_element_id].key = element->leaf.key;       /* 更新索引 */ \
+                        \
+                        bp_tree_type_name##BPlusElement* common_parent_element = element_referencer##_Reference(parent, common_parent_element_id); \
+                        common_parent_element->index.key = element->leaf.key;       /* 更新索引 */ \
+                        element_referencer##_Dereference(parent, common_parent_element); \
                     } \
                     else { \
                         /* 右兄弟节点的头部的元素插入到当前节点的尾部，并新父元素key为右兄弟的新首元素 */ \
@@ -658,7 +638,11 @@ GetUsagePercent(获取占用率)
                         bp_tree_type_name##BPlusElement* element = bp_tree_type_name##BPlusEntryDeleteElement(tree, sibling, first); \
                         bp_tree_type_name##BPlusEntryInsertElement(tree, entry, element); \
                         /* 右节点的头元素key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首元素是最好的 */ \
-                        parent->index.element_space.obj_arr[common_parent_element_id].key = sibling->leaf.element_space.obj_arr[new_first].key;       /* 更新索引 */ \
+                        bp_tree_type_name##BPlusElement* common_parent_element = element_referencer##_Reference(parent, common_parent_element_id); \
+                        bp_tree_type_name##BPlusElement* sibling_element = element_referencer##_Reference(sibling, new_first); \
+                        common_parent_element->index.key = sibling_element->leaf.key;       /* 更新索引 */ \
+                        element_referencer##_Dereference(parent, common_parent_element); \
+                        element_referencer##_Dereference(sibling, sibling_element); \
                     } \
                 } \
                 else { \
