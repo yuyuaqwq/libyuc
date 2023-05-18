@@ -42,15 +42,15 @@ extern "C" {
 	id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
 
 #define CUTILS_SPACE_MANAGER_BUDDY_DEFINE(buddy_type_name, id_type, indexer, allocator) \
-	static uint8_t CUTILS_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(id_type power) { \
+	static uint8_t buddy_type_name##Buddy_TO_EXPONENT_OF_2(id_type power) { \
 		uint8_t exponent = 0; \
 		while (power != 0) { \
 			exponent++; \
 			power >>= 1; \
 		} \
-		return exponent;  /* - 1 */ \
+		return exponent - 1; \
 	} \
-	static id_type AlignToPowersOf2(id_type size) { \
+	static id_type buddy_type_name##Buddy_AlignToPowersOf2(id_type size) { \
 		for (int i = 1; i < sizeof(size) * 8 / 2 + 1; i *= 2) { \
 			size |= size >> i; \
 		} \
@@ -69,13 +69,13 @@ extern "C" {
 		if (size < 1 || !CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(size)) { \
 			return false; \
 		} \
-		indexer##_Set(buddy, buddy->logn, 0, CUTILS_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(size)); \
+		indexer##_Set(buddy, buddy->logn, 0, buddy_type_name##Buddy_TO_EXPONENT_OF_2(size) + 1); \
 		id_type node_size = size * 2; \
 		for (id_type i = 1; i < 2 * size; i++) { \
 			if (CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(i)) { \
 				node_size /= 2; \
 			} \
-			indexer##_Set(buddy, buddy->logn, i, CUTILS_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(node_size)); \
+			indexer##_Set(buddy, buddy->logn, i, buddy_type_name##Buddy_TO_EXPONENT_OF_2(node_size) + 1); \
 		} \
 		return true; \
 	} \
@@ -84,7 +84,7 @@ extern "C" {
 			return -1; \
 		} \
 		if (!CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(size)) { \
-			size = AlignToPowersOf2(size); \
+			size = buddy_type_name##Buddy_AlignToPowersOf2(size); \
 		} \
 		if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)) < size) { \
 			return -1; \
@@ -92,7 +92,7 @@ extern "C" {
 		/* 从二叉树根节点向下找正好符合分配要求的尺寸 */ \
 		id_type index = 1; \
 		id_type node_size = CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
-		id_type size_logn = CUTILS_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(size); \
+		id_type size_logn = buddy_type_name##Buddy_TO_EXPONENT_OF_2(size) + 1; \
 		for (; node_size != size; node_size /= 2) { \
 			/* 优先找更小块的，就不必分割大块的了 */ \
 			id_type left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \

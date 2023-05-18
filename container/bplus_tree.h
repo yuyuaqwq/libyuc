@@ -40,7 +40,7 @@ typedef enum {
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListHead leaf_list;
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListEntry list_entry;       /* 连接所有叶子节点 */
 
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name, entry_id_type) \
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
     forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
         bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
         bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
@@ -144,13 +144,17 @@ typedef enum {
 
 
 /*
+
+Rate为万分比
+
 entry访问器需要提供
-GetFillPercent(获取填充率)
+GetMaxUsabilityRate(获取最大连续可用率)，向下取整
+GetFillRate(获取填充率)，向上取整
 
 element定长，附属kv可能不定长
 
 插入时，分配element/kv失败时就触发分裂
-    分裂时，当前entry必须至少有2个element(叶子可以1个，索引必须2个，否则没有上升节点，同一规定2个)
+    分裂后，当前entry必须至少有2个element(叶子可以1个，索引必须2个，否则没有上升节点，同一规定2个)
     首先计算当前entry的填充率，再加上新element的总占用率再/2
     分裂的时候根据填充率进行分裂，使得被插入的一侧分裂后能有足够的空位分配并插入新元素
     value最大占用25%, key最大占用12.5%
@@ -175,7 +179,7 @@ element定长，附属kv可能不定长
     碎片整理流程：按占用率从大到小重新分配所有block
 
 element访问器需要提供
-GetUsagePercent(获取使用率)
+GetUsageRate(获取使用率)，向上取整
 用于获取element的使用率
 
 
@@ -189,7 +193,7 @@ kv分离是外层处理的，b+树操作的只有element
     * B+树游标
     */\
     static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
-    leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type) \
+    leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
     CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
     /*
@@ -381,7 +385,13 @@ kv分离是外层处理的，b+树操作的只有element
     } \
     entry_id_type bp_tree_type_name##BPlusEntryCreate(bp_tree_type_name##BPlusTree* tree, BPlusEntryType type) { \
         size_t size; \
-        entry_id_type entry_id = entry_allocator##_Create(tree, bp_tree_type_name##BPlusEntry); \
+        entry_id_type entry_id; \
+        if (type == kBPlusEntryIndex) { \
+            entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusIndexEntry)); \
+        } \
+        else { \
+            entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusLeafEntry)); \
+        } \
         bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
         entry->type = type; \
         entry->element_count = 0; \
@@ -412,8 +422,12 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         int16_t left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
+        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetUsageRate(left, insert_element)) / 2; \
         while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             /* 在这里检查填充率 */ \
+            if (entry_accessor##_GetFillRate(tree, left) <= fill_rate || left->element_count == 2) { \
+                break; \
+            } \
             int16_t next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
             if (!insert && left_elemeng_id == insert_id) { \
                 bp_tree_type_name##BPlusEntryInsertElement(tree, right, insert_element); \
@@ -424,6 +438,7 @@ kv分离是外层处理的，b+树操作的只有element
             } \
             left_elemeng_id = next_elemeng_id; \
         } \
+          assert(left->element_count >= 2); \
         /* 新元素还没有插入，将其插入 */ \
         if (!insert) { \
             bp_tree_type_name##BPlusEntryInsertElement(tree, left, insert_element); \
@@ -521,8 +536,7 @@ kv分离是外层处理的，b+树操作的只有element
                 bp_tree_type_name##BPlusElementSet(tree, cur, cur_pos->element_id, insert_element); \
                 break; \
             } \
-            uint32_t m = cur->type == kBPlusEntryIndex ? tree->index_m : tree->leaf_m; \
-            if (cur->element_count < m - 1) { \
+            if (entry_accessor##_GetMaxUsabilityRate(tree, cur) >= element_accessor##_GetUsageRate(cur, insert_element)) { \
                 /* 有空余的位置插入 */ \
                 bp_tree_type_name##BPlusEntryInsertElement(tree, cur, insert_element); \
                 break; \
@@ -568,8 +582,7 @@ kv分离是外层处理的，b+树操作的只有element
         bool success = true, delete_up = false; \
         bp_tree_type_name##BPlusEntryDeleteElement(tree, entry, cur_pos->element_id);      /* 直接删除即可，叶子元素没有子节点，索引元素在合并时已经处理子节点了 */ \
         do { \
-            uint32_t m = entry->type == kBPlusEntryIndex ? tree->index_m : tree->leaf_m; \
-            if (entry->element_count >= (m - 1) / 2) { \
+            if (entry_accessor##_GetFillRate(tree, entry) >= 4000) { \
                 break; \
             } \
             if (!parent_pos) { \
@@ -614,7 +627,7 @@ kv分离是外层处理的，b+树操作的只有element
               assert(common_parent_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
               assert(sibling_entry_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
-            if (sibling->element_count > (m - 1) * 10 / 25) /* 40% */ { \
+            if (entry_accessor##_GetFillRate(tree, sibling) > 4000) /* 40% */ { \
                 /* 向兄弟借节点 */ \
                 if (entry->type == kBPlusEntryLeaf) { \
                     /* 叶子节点处理较简单，可以直接移动 */ \
