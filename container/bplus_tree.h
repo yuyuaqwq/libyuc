@@ -387,10 +387,10 @@ kv分离是外层处理的，b+树操作的只有element
         size_t size; \
         entry_id_type entry_id; \
         if (type == kBPlusEntryIndex) { \
-            entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusIndexEntry)); \
+            entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusEntry) - sizeof(bp_tree_type_name##BPlusLeafEntry) + sizeof(bp_tree_type_name##BPlusIndexEntry)); \
         } \
         else { \
-            entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusLeafEntry)); \
+            entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusEntry) - sizeof(bp_tree_type_name##BPlusIndexEntry) + sizeof(bp_tree_type_name##BPlusLeafEntry)); \
         } \
         bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
         entry->type = type; \
