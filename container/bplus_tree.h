@@ -59,7 +59,7 @@ typedef enum {
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name)
+#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name, entry_id_type)
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_2(bp_tree_type_name)
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_3(bp_tree_type_name)
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_1(bp_tree_type_name)
@@ -118,6 +118,7 @@ typedef enum {
     } bp_tree_type_name##BPlusIndexEntry; \
     typedef struct _##bp_tree_type_name##BPlusLeafEntry { \
         leaf_link_mode##_DECLARATION_3(bp_tree_type_name) \
+        uint8_t buf[]; \
     } bp_tree_type_name##BPlusLeafEntry; \
     typedef struct _##bp_tree_type_name##BPlusEntry { \
         bp_tree_type_name##BPlusEntryRbTree rb_tree; \
