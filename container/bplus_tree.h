@@ -145,11 +145,14 @@ typedef enum {
 
 /*
 
+请确保1个entry至少能分配3个element
+
 Rate自行根据页面来指定
 比如页面是4096，就返回4096分比
 
 entry访问器需要提供
 GetMergeThresholdRate(获取分裂阈值n分比)
+    >该百分比的entry至少有2个element
 GetMaxUsabilityRate(获取最大连续可用n分比)
 GetFillRate(获取填充n分比)
 
@@ -629,8 +632,9 @@ kv分离是外层处理的，b+树操作的只有element
               assert(common_parent_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
               assert(sibling_entry_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
-            if (entry_accessor##_GetFillRate(tree, sibling) > 4000) /* 40% */ { \
+            if (entry_accessor##_GetFillRate(tree, sibling) > entry_accessor##_GetMergeThresholdRate(tree, entry)) { \
                 /* 向兄弟借节点 */ \
+                  assert(sibling->element_count >= 2); \
                 if (entry->type == kBPlusEntryLeaf) { \
                     /* 叶子节点处理较简单，可以直接移动 */ \
                     if (left_sibling) { \
