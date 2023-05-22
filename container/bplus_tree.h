@@ -151,7 +151,7 @@ Rate自行根据页面来指定
 比如页面是4096，就返回4096分比
 
 entry访问器需要提供
-GetMergeThresholdRate(获取分裂阈值n分比)
+GetMergeThresholdRate(获取合并阈值n分比)
     >该百分比的entry至少有2个element
 GetMaxUsabilityRate(获取最大连续可用n分比)
 GetFillRate(获取填充n分比)
