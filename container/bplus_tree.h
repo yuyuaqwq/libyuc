@@ -145,20 +145,27 @@ typedef enum {
 
 /*
 
-请确保1个entry至少能分配3个element
+entry：
+    请确保1个entry至少能分配3个element
 
-Rate自行根据页面来指定
-比如页面是4096，就返回4096分比
+    Rate自行根据页面来指定
+    比如页面是4096，就返回4096分比
 
-entry访问器需要提供
-GetMergeThresholdRate(获取合并阈值n分比)
-    >该百分比的entry至少有2个element
-GetMaxUsabilityRate(获取最大连续可用n分比)
-GetFillRate(获取填充n分比)
+    entry访问器需要提供
+        GetMergeThresholdRate(获取合并阈值n分比)
+            >该百分比的entry至少有2个element
+        GetMaxUsabilityRate(获取最大可用n分比)
+        GetFillRate(获取entry填充n分比)
 
-element定长，附属kv可能不定长
+element:
+    基本element定长，附属kv可能不定长
+    element访问器需要提供
+        GetUsageRate(获取element使用n分比)
+        用于获取element的使用n分比
 
-插入时，分配element/kv失败时就触发分裂
+
+
+插入时，element所需的空间不足插入新element时触发分裂
     分裂前，当前entry必须至少有2个element(叶子可以1个，索引必须2个，否则没有上升节点，统一规定2个)
     首先计算当前entry的填充率，再加上新element的总占用率再/2
     分裂的时候根据填充率进行分裂，使得被插入的一侧分裂后能有足够的空位分配并插入新元素
@@ -181,11 +188,11 @@ element定长，附属kv可能不定长
         因此每次移动前判断移动后兄弟的填充率会变为多少，如果低于40%就不再移动，直接返回
 
     如果出现空间碎片(即总空闲足够但无法分配)，就触发碎片整理
-    碎片整理流程：按占用率从大到小重新分配所有block
+    碎片整理流程指导：
+        buddy:
+            按占用率从大到小重新分配所有block
+    如果使用相等大小的块分配，通过链表连接则不存在内存碎片
 
-element访问器需要提供
-GetUsageRate(获取使用n分比)
-用于获取element的使用n分比
 
 
 kv分离是外层处理的，b+树操作的只有element
