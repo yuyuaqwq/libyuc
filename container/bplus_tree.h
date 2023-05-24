@@ -161,9 +161,7 @@ entry：
 element:
     基本element定长，附属kv可能不定长
     element访问器需要提供
-        GetNeedRate(获取element需要使用n分比)
-        用于获取element的使用n分比
-
+        GetNeedRate(获取element需要的n分比)
 
 
 插入时，element所需的空间不足插入新element时触发分裂
@@ -197,8 +195,10 @@ element:
 
     碎片整理问题：
         必须保证整理时b+树不存在任何引用element的情况，否则将会导致element_id失效
+        b+树保证InsertElement时，不会存在引用entry中element的情况
 
     如果使用相等大小的块进行分配，逻辑上连续的块通过链表连接则不存在内存碎片
+        缺点是大块的分配释放较慢
 
 
 kv分离是外层处理的，b+树操作的只有element
@@ -645,7 +645,7 @@ kv分离是外层处理的，b+树操作的只有element
               assert(common_parent_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
               assert(sibling_entry_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
-            if (entry_accessor##_GetFillRate(tree, sibling) > entry_accessor##_GetMergeThresholdRate(tree, entry)) { \
+            if (entry_accessor##_GetFillRate(tree, sibling) > entry_accessor##_GetMergeThresholdRate(tree, sibling)) { \
                 /* 向兄弟借节点 */ \
                   assert(sibling->element_count >= 2); \
                 if (entry->type == kBPlusEntryLeaf) { \
