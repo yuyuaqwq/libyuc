@@ -155,13 +155,13 @@ entry：
     entry访问器需要提供
         GetMergeThresholdRate(获取合并阈值n分比)
             >该百分比的entry至少有2个element
-        GetMaxUsabilityRate(获取最大可用n分比)
-        GetFillRate(获取entry填充n分比)
+        GetFreeRate(获取空闲n分比，可分配的最大空闲)
+        GetFillRate(获取已填充n分比)
 
 element:
     基本element定长，附属kv可能不定长
     element访问器需要提供
-        GetUsageRate(获取element使用n分比)
+        GetNeedRate(获取element需要使用n分比)
         用于获取element的使用n分比
 
 
@@ -188,12 +188,17 @@ element:
     可能会出现移动之后兄弟entry的填充率不足40%(比如末尾直接是25%占用率的element)
         因此每次移动前判断移动后兄弟的填充率会变为多少，如果低于40%就不再移动，直接返回
 
-    如果出现空间碎片(即总空闲足够但无法分配)，就触发碎片整理
+
+碎片整理：
+    如果出现空间碎片(即总空闲足够但无法分配)，就需要进行碎片整理
     碎片整理流程指导：
         buddy:
             按占用率从大到小重新分配所有block
-    如果使用相等大小的块分配，通过链表连接则不存在内存碎片
 
+    碎片整理问题：
+        必须保证整理时b+树不存在任何引用element的情况，否则将会导致element_id失效
+
+    如果使用相等大小的块进行分配，逻辑上连续的块通过链表连接则不存在内存碎片
 
 
 kv分离是外层处理的，b+树操作的只有element
@@ -435,7 +440,7 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         element_id_type left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
-        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetUsageRate(left, insert_element)) / 2; \
+        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(left, insert_element)) / 2; \
         while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             /* 检查填充率 */ \
             if (entry_accessor##_GetFillRate(tree, left) <= fill_rate || left->element_count == 2) { \
@@ -549,7 +554,7 @@ kv分离是外层处理的，b+树操作的只有element
                 bp_tree_type_name##BPlusElementSet(tree, cur, cur_pos->element_id, insert_element); \
                 break; \
             } \
-            if (entry_accessor##_GetMaxUsabilityRate(tree, cur) >= element_accessor##_GetUsageRate(cur, insert_element)) { \
+            if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, insert_element)) { \
                 /* 有空余的位置插入 */ \
                 bp_tree_type_name##BPlusEntryInsertElement(tree, cur, insert_element); \
                 break; \
