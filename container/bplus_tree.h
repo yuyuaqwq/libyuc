@@ -195,7 +195,7 @@ element:
 
     碎片整理问题：
         必须保证整理时b+树不存在任何引用element的情况，否则将会导致element_id失效
-        b+树保证InsertElement时，不会存在引用entry中element的情况
+        b+树保证调用InsertElement的上下文中，不会存在引用entry中element的情况，故建议在InsertElement中进行碎片整理
 
     如果使用相等大小的块进行分配，逻辑上连续的块通过链表连接则不存在内存碎片
         缺点是大块的分配释放较慢
