@@ -38,6 +38,7 @@ extern "C" {
 	bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, id_type size); \
 	id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, id_type size); \
 	void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset); \
+	id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset); \
 	id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy); \
 	id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
 
@@ -142,6 +143,17 @@ extern "C" {
 				indexer##_Set(buddy, buddy->logn, index, CUTILS_SPACE_MANAGER_BUDDY_MAX(left_logn, right_logn));		/* 另一侧未被释放，无法合并 */ \
 			} \
 		} \
+	} \
+	id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset) { \
+		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0))); \
+		id_type node_size_logn = 1; \
+		/* 定位到最底层叶子节点，并向上找到为0的节点(被分配的节点) */ \
+		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
+		for (; indexer##_Get(buddy, buddy->logn, index); index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index)) { \
+			node_size_logn++; \
+			if (index == 1) return -1; /* 没有找到被分配的节点 */ \
+		} \
+		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn); \
 	} \
 	id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy) { \
 		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)); \
