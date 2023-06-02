@@ -256,11 +256,11 @@ kv分离是外层处理的，b+树操作的只有element
           assert(element_id >= 0); \
         bp_tree_type_name##BPlusElement* dst_element = element_referencer##_Reference(tree, entry, element_id); \
         if (entry->type == kBPlusEntryLeaf) { \
-            dst_element->leaf.key = element->leaf.key; \
-            dst_element->leaf.value = element->leaf.value; \
+            element_accessor##_SetKey(tree, entry, dst_element, &element->leaf.key); \
+            element_accessor##_SetValue(tree, entry, dst_element, &element->leaf.value); \
         } \
         else { \
-            dst_element->index.key = element->index.key; \
+            element_accessor##_SetKey(tree, entry, dst_element, &element->index.key); \
             dst_element->index.child_id = element->index.child_id; \
         } \
         element_referencer##_Dereference(tree, entry, dst_element); \
