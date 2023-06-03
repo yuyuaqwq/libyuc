@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - é±¼é±¼
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* è¯·ä¿ç•™æ­¤å£°æ˜
 */
 
 #ifndef CUTILS_SPACE_MANAGER_BUDDY_H_
@@ -16,7 +16,7 @@ extern "C" {
 
 
 /*
-* Ö÷Òª²Î¿¼×ÔÏîÄ¿£ºhttps://github.com/wuwenbin/buddy2
+* ä¸»è¦å‚è€ƒè‡ªé¡¹ç›®ï¼šhttps://github.com/wuwenbin/buddy2
 */
 
 
@@ -32,7 +32,7 @@ extern "C" {
 #define CUTILS_SPACE_MANAGER_BUDDY_DECLARATION(buddy_type_name, id_type) \
 	typedef struct _##buddy_type_name##Buddy { \
 		/*uint8_t size;*/ \
-		uint8_t logn[];		/* Êµ¼Ê´æ·ÅÖ¸Êı+1£¬ÒòÎª0ÓÃÀ´±íÊ¾Ã»ÓĞ¿Õ¼ä£¬¶ø2^0Ó¦¸ÃÊÇ1 */ \
+		uint8_t logn[];		/* å®é™…å­˜æ”¾æŒ‡æ•°+1ï¼Œå› ä¸º0ç”¨æ¥è¡¨ç¤ºæ²¡æœ‰ç©ºé—´ï¼Œè€Œ2^0åº”è¯¥æ˜¯1 */ \
 	} buddy_type_name##Buddy; \
 	buddy_type_name##Buddy* buddy_type_name##BuddyCreate(id_type size); \
 	bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, id_type size); \
@@ -90,12 +90,12 @@ extern "C" {
 		if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)) < size) { \
 			return -1; \
 		} \
-		/* ´Ó¶ş²æÊ÷¸ù½ÚµãÏòÏÂÕÒÕıºÃ·ûºÏ·ÖÅäÒªÇóµÄ³ß´ç */ \
+		/* ä»äºŒå‰æ ‘æ ¹èŠ‚ç‚¹å‘ä¸‹æ‰¾æ­£å¥½ç¬¦åˆåˆ†é…è¦æ±‚çš„å°ºå¯¸ */ \
 		id_type index = 1; \
 		id_type node_size = CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
 		id_type size_logn = buddy_type_name##Buddy_TO_EXPONENT_OF_2(size) + 1; \
 		for (; node_size != size; node_size /= 2) { \
-			/* ÓÅÏÈÕÒ¸üĞ¡¿éµÄ£¬¾Í²»±Ø·Ö¸î´ó¿éµÄÁË */ \
+			/* ä¼˜å…ˆæ‰¾æ›´å°å—çš„ï¼Œå°±ä¸å¿…åˆ†å‰²å¤§å—çš„äº† */ \
 			id_type left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
 			id_type right_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index)); \
 			if (right_logn < size_logn || left_logn >= size_logn && left_logn <= right_logn) { \
@@ -105,15 +105,15 @@ extern "C" {
 				index = CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index); \
 			} \
 		} \
-		/* ÏòÉÏ¸üĞÂ¸¸½ÚµãµÄlogn */ \
+		/* å‘ä¸Šæ›´æ–°çˆ¶èŠ‚ç‚¹çš„logn */ \
 		indexer##_Set(buddy, buddy->logn, index, 0); \
-		/* ¶ş²æÊ÷Ë÷Òı×ª»»³É·ÖÅäÆ«ÒÆ */ \
+		/* äºŒå‰æ ‘ç´¢å¼•è½¬æ¢æˆåˆ†é…åç§» */ \
 		id_type offset = index * node_size - CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
 		while (index != 1) { \
 			index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index); \
 			id_type max_logn = CUTILS_SPACE_MANAGER_BUDDY_MAX(indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)), indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index))); \
 			if (max_logn == indexer##_Get(buddy, buddy->logn, index)) { \
-				break; /*´ÓÕâÀï¿ªÊ¼²»»áÓ°ÏìÉÏ²ãµÄlogn*/ \
+				break; /*ä»è¿™é‡Œå¼€å§‹ä¸ä¼šå½±å“ä¸Šå±‚çš„logn*/ \
 			} \
 			indexer##_Set(buddy, buddy->logn, index, max_logn); \
 		} \
@@ -122,13 +122,13 @@ extern "C" {
 	void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
 		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0))); \
 		id_type node_size_logn = 1; \
-		/* ¶¨Î»µ½×îµ×²ãÒ¶×Ó½Úµã£¬²¢ÏòÉÏÕÒµ½Îª0µÄ½Úµã(±»·ÖÅäµÄ½Úµã) */ \
+		/* å®šä½åˆ°æœ€åº•å±‚å¶å­èŠ‚ç‚¹ï¼Œå¹¶å‘ä¸Šæ‰¾åˆ°ä¸º0çš„èŠ‚ç‚¹(è¢«åˆ†é…çš„èŠ‚ç‚¹) */ \
 		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
 		for (; indexer##_Get(buddy, buddy->logn, index); index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index)) { \
 			node_size_logn++; \
-			if (index == 1) return; /* Ã»ÓĞÕÒµ½±»·ÖÅäµÄ½Úµã */ \
+			if (index == 1) return; /* æ²¡æœ‰æ‰¾åˆ°è¢«åˆ†é…çš„èŠ‚ç‚¹ */ \
 		} \
-		/* ÏòÉÏ¸üĞÂ¸¸½ÚµãµÄlogn */ \
+		/* å‘ä¸Šæ›´æ–°çˆ¶èŠ‚ç‚¹çš„logn */ \
 		indexer##_Set(buddy, buddy->logn, index, node_size_logn); \
 		uint8_t left_logn, right_logn; \
 		while (index != 1) { \
@@ -137,21 +137,21 @@ extern "C" {
 			left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
 			right_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index)); \
 			if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(left_logn) + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(right_logn) == CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn)) { \
-				indexer##_Set(buddy, buddy->logn, index, node_size_logn);		/* ºÏ²¢ */ \
+				indexer##_Set(buddy, buddy->logn, index, node_size_logn);		/* åˆå¹¶ */ \
 			} \
 			else { \
-				indexer##_Set(buddy, buddy->logn, index, CUTILS_SPACE_MANAGER_BUDDY_MAX(left_logn, right_logn));		/* ÁíÒ»²àÎ´±»ÊÍ·Å£¬ÎŞ·¨ºÏ²¢ */ \
+				indexer##_Set(buddy, buddy->logn, index, CUTILS_SPACE_MANAGER_BUDDY_MAX(left_logn, right_logn));		/* å¦ä¸€ä¾§æœªè¢«é‡Šæ”¾ï¼Œæ— æ³•åˆå¹¶ */ \
 			} \
 		} \
 	} \
 	id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset) { \
 		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0))); \
 		id_type node_size_logn = 1; \
-		/* ¶¨Î»µ½×îµ×²ãÒ¶×Ó½Úµã£¬²¢ÏòÉÏÕÒµ½Îª0µÄ½Úµã(±»·ÖÅäµÄ½Úµã) */ \
+		/* å®šä½åˆ°æœ€åº•å±‚å¶å­èŠ‚ç‚¹ï¼Œå¹¶å‘ä¸Šæ‰¾åˆ°ä¸º0çš„èŠ‚ç‚¹(è¢«åˆ†é…çš„èŠ‚ç‚¹) */ \
 		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
 		for (; indexer##_Get(buddy, buddy->logn, index); index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index)) { \
 			node_size_logn++; \
-			if (index == 1) return -1; /* Ã»ÓĞÕÒµ½±»·ÖÅäµÄ½Úµã */ \
+			if (index == 1) return -1; /* æ²¡æœ‰æ‰¾åˆ°è¢«åˆ†é…çš„èŠ‚ç‚¹ */ \
 		} \
 		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn); \
 	} \

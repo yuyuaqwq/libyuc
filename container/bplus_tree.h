@@ -417,8 +417,8 @@ kv分离是外层处理的，b+树操作的只有element
         entry_referencer##_Dereference(tree, entry); \
         return entry_id; \
     } \
-    void bp_tree_type_name##BPlusEntryRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry) { \
-        entry_allocator##_Release(tree, entry); \
+    void bp_tree_type_name##BPlusEntryRelease(bp_tree_type_name##BPlusTree* tree, entry_id_type entry_id) { \
+        entry_allocator##_Release(tree, entry_id); \
     } \
     \
     /*

@@ -1,8 +1,8 @@
 /*
-* @yuyuaqwq - ÓãÓã
+* @yuyuaqwq - é±¼é±¼
 * email:1454832774@qq.com
 * project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* è¯·ä¿ç•™æ­¤å£°æ˜
 */
 
 #ifndef CUTILS_ALGORITHM_BRUTE_FORCE_MATCH_H_
