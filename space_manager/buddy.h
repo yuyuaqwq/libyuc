@@ -27,7 +27,8 @@ extern "C" {
 #define CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
 #define CUTILS_SPACE_MANAGER_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(exponent) (1 << ((exponent)-1))
+// 求幂
+#define CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
 
 #define CUTILS_SPACE_MANAGER_BUDDY_DECLARATION(buddy_type_name, id_type) \
 	typedef struct _##buddy_type_name##Buddy { \
@@ -43,7 +44,8 @@ extern "C" {
 	id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
 
 #define CUTILS_SPACE_MANAGER_BUDDY_DEFINE(buddy_type_name, id_type, indexer, allocator) \
-	static uint8_t buddy_type_name##Buddy_TO_EXPONENT_OF_2(id_type power) { \
+	/* 根据幂求指数 */ \
+	static uint8_t buddy_type_name##BuddyToExponentOf2(id_type power) { \
 		uint8_t exponent = 0; \
 		while (power != 0) { \
 			exponent++; \
@@ -51,7 +53,7 @@ extern "C" {
 		} \
 		return exponent - 1; \
 	} \
-	static id_type buddy_type_name##Buddy_AlignToPowersOf2(id_type size) { \
+	static id_type buddy_type_name##BuddyAlignToPowersOf2(id_type size) { \
 		for (int i = 1; i < sizeof(size) * 8 / 2 + 1; i *= 2) { \
 			size |= size >> i; \
 		} \
@@ -70,13 +72,13 @@ extern "C" {
 		if (size < 1 || !CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(size)) { \
 			return false; \
 		} \
-		indexer##_Set(buddy, buddy->logn, 0, buddy_type_name##Buddy_TO_EXPONENT_OF_2(size) + 1); \
+		indexer##_Set(buddy, buddy->logn, 0, buddy_type_name##BuddyToExponentOf2(size) + 1); \
 		id_type node_size = size * 2; \
 		for (id_type i = 1; i < 2 * size; i++) { \
 			if (CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(i)) { \
 				node_size /= 2; \
 			} \
-			indexer##_Set(buddy, buddy->logn, i, buddy_type_name##Buddy_TO_EXPONENT_OF_2(node_size) + 1); \
+			indexer##_Set(buddy, buddy->logn, i, buddy_type_name##BuddyToExponentOf2(node_size) + 1); \
 		} \
 		return true; \
 	} \
@@ -85,15 +87,15 @@ extern "C" {
 			return -1; \
 		} \
 		if (!CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(size)) { \
-			size = buddy_type_name##Buddy_AlignToPowersOf2(size); \
+			size = buddy_type_name##BuddyAlignToPowersOf2(size); \
 		} \
-		if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)) < size) { \
+		if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)-1) < size) { \
 			return -1; \
 		} \
 		/* 从二叉树根节点向下找正好符合分配要求的尺寸 */ \
 		id_type index = 1; \
-		id_type node_size = CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
-		id_type size_logn = buddy_type_name##Buddy_TO_EXPONENT_OF_2(size) + 1; \
+		id_type node_size = CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
+		id_type size_logn = buddy_type_name##BuddyToExponentOf2(size) + 1; \
 		for (; node_size != size; node_size /= 2) { \
 			/* 优先找更小块的，就不必分割大块的了 */ \
 			id_type left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
@@ -108,7 +110,7 @@ extern "C" {
 		/* 向上更新父节点的logn */ \
 		indexer##_Set(buddy, buddy->logn, index, 0); \
 		/* 二叉树索引转换成分配偏移 */ \
-		id_type offset = index * node_size - CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
+		id_type offset = index * node_size - CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
 		while (index != 1) { \
 			index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index); \
 			id_type max_logn = CUTILS_SPACE_MANAGER_BUDDY_MAX(indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)), indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index))); \
@@ -120,10 +122,10 @@ extern "C" {
 		return offset; \
 	} \
 	void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
-		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0))); \
+		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
 		id_type node_size_logn = 1; \
 		/* 定位到最底层叶子节点，并向上找到为0的节点(被分配的节点) */ \
-		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
+		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
 		for (; indexer##_Get(buddy, buddy->logn, index); index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index)) { \
 			node_size_logn++; \
 			if (index == 1) return; /* 没有找到被分配的节点 */ \
@@ -136,7 +138,7 @@ extern "C" {
 			node_size_logn++; \
 			left_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
 			right_logn = indexer##_Get(buddy, buddy->logn, CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index)); \
-			if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(left_logn) + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(right_logn) == CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn)) { \
+			if (CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(left_logn-1) + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(right_logn-1) == CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn-1)) { \
 				indexer##_Set(buddy, buddy->logn, index, node_size_logn);		/* 合并 */ \
 			} \
 			else { \
@@ -145,21 +147,21 @@ extern "C" {
 		} \
 	} \
 	id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset) { \
-		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0))); \
+		  assert(offset != -1 && offset < CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
 		id_type node_size_logn = 1; \
 		/* 定位到最底层叶子节点，并向上找到为0的节点(被分配的节点) */ \
-		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
+		id_type index = offset + CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
 		for (; indexer##_Get(buddy, buddy->logn, index); index = CUTILS_SPACE_MANAGER_BUDDY_PARENT(index)) { \
 			node_size_logn++; \
 			if (index == 1) return -1; /* 没有找到被分配的节点 */ \
 		} \
-		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn); \
+		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn-1); \
 	} \
 	id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy) { \
-		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)); \
+		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)-1); \
 	} \
 	id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy) { \
-		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)); \
+		return CUTILS_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
 	} \
 
 #define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER_Get(BUDDY, LOGN, INDEX) ((INDEX) % 2 ? (LOGN)[(INDEX) / 2] & 0xf : (LOGN)[(INDEX) / 2] >> 4)
