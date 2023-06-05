@@ -54,20 +54,15 @@ typedef enum {
 	kArNode256,
 } ArNodeType;
 
-typedef enum {
-	kArNotPrefix,
-	kArShortPrefix,
-	kArLongPrefix,
-} ArPrefixType;
 
 typedef struct _ArNodeHead {
 	uint8_t node_type : 4;
-	uint8_t prefix_type : 4;
+	uint8_t : 4;
 	uint8_t child_count;
-	uint8_t prefix_len;
+	uint32_t prefix_len;
+	uint32_t vaild_prefix_len;
 	union {
 		uint8_t prefix[prefix_max_len];
-		uint32_t prefix_long_len;
 	};
 } ArNodeHead;
 
@@ -172,17 +167,14 @@ CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t)
 static void ArHeadInit(ArNodeHead* head, ArNodeType type) {
 	head->child_count = 0;
 	head->node_type = type;
-	head->prefix_type = kArNotPrefix;
+	head->prefix_len = 0;
+	head->vaild_prefix_len = 0;
 }
 
 void ArNodeCopyHead(ArNodeHead* dst, ArNodeHead* src) {
-	dst->prefix_type = src->prefix_type;
-	if (src->prefix_type == kArShortPrefix) {
-		memcpy(dst->prefix, src->prefix, src->prefix_len);
-		dst->prefix_len = src->prefix_len;
-	} else {
-		dst->prefix_long_len = src->prefix_long_len;
-	}
+	memcpy(dst->prefix, src->prefix, min(src->prefix_len, prefix_max_len));
+	dst->prefix_len = src->prefix_len;
+	dst->vaild_prefix_len = src->vaild_prefix_len;
 }
 
 
@@ -525,33 +517,53 @@ static void ArNodeDelete(ArNode** node, uint8_t key_byte) {
 	}
 }
 
-
+ArLeaf* ArFirst(ArNode* node) {
+	switch (node->head.node_type) {
+	case kArLeaf:
+		return &node->leaf;
+	case kArNode2:
+		return ArFirst(node->node2.ar_sub_node);
+	case kArNode4:
+		return ArFirst(node->node4.child_arr[0]);
+	case kArNode16:
+		return ArFirst(node->node16.child_arr[0]);
+	case kArNode48:
+		for (int i = 0; i < 255; i++) {
+			if (node->node48.keys[i] != 0xff) {
+				return ArFirst(node->node48.child_arr.obj_arr[node->node48.keys[i]].child);
+			}
+		}
+	case kArNode256:
+		for (int i = 0; i < 255; i++) {
+			if (node->node256.child_arr[i] != NULL) {
+				return ArFirst(node->node256.child_arr[i]);
+			}
+		}
+	}
+	return NULL;
+}
 
 
 
 /*
 * 比较前缀，返回匹配的长度
 */
-static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bool* optimistic, key_type* optimistic_leaf_node_key, uint32_t* prefix_len) {
+static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, uint32_t offset, bool* optimistic, key_type* optimistic_leaf_node_key, uint32_t* prefix_len) {
 	uint8_t* node_key = head->prefix;
-	if (head->prefix_type == kArLongPrefix) {
+	if (head->prefix_len > head->vaild_prefix_len) {
 		if (optimistic_leaf_node_key == NULL) {
 			/* 乐观策略，只比较已保存的前缀 */
-			*prefix_len = prefix_max_len;
+			*prefix_len = head->vaild_prefix_len;
 			if (!*optimistic) *optimistic = true;
 		}
 		else {
 			/* 已经是重试状态，完整进行比较 */
-			*prefix_len = head->prefix_long_len;
-			node_key = optimistic_leaf_node_key->buf;
+			*prefix_len = head->prefix_len;
+			node_key = &optimistic_leaf_node_key->buf[offset];
 		}
 	}
-	else if (head->prefix_type == kArShortPrefix) {
-		*prefix_len = head->prefix_len;
-	}
 	else {
-		*prefix_len = 0;
-		return 0;
+		*prefix_len = head->prefix_len;
 	}
 	uint32_t match_len = min(*prefix_len, key_len);
 	if (match_len) {
@@ -563,6 +575,11 @@ static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bo
 		}
 		match_len = i;
 	}
+	if (head->prefix_len > head->vaild_prefix_len && optimistic_leaf_node_key == NULL && match_len == head->vaild_prefix_len) {
+		// 乐观策略的跳过阶段
+		match_len = head->prefix_len;
+		*prefix_len = match_len;
+	}
 	return match_len;
 }
 
@@ -570,23 +587,36 @@ static uint32_t MatchPrefix(ArNodeHead* head, uint8_t* key, uint32_t key_len, bo
 * 为当前节点头部更新共同前缀，返回长度
 */
 static void UpdatePrefix(ArNodeHead* head, uint8_t* prefix, int32_t match_len) {
-	if (match_len > prefix_max_len) {
-		head->prefix_type = kArLongPrefix;
-		head->prefix_long_len = match_len;
-		for (int32_t i = 0; i < prefix_max_len; i++) {
-			head->prefix[i] = prefix[i];
-		}
+	head->prefix_len = match_len;
+	head->vaild_prefix_len = min(prefix_max_len, match_len);
+	for (int32_t i = 0; i < head->vaild_prefix_len; i++) {
+		head->prefix[i] = prefix[i];
 	}
-	else if (match_len > 0) {
-		head->prefix_type = kArShortPrefix;
-		for (int32_t i = 0; i < match_len; i++) {
-			head->prefix[i] = prefix[i];
-		}
-		head->prefix_len = match_len;
+}
+
+/*
+* 将两个节点的前缀合并到第二个节点
+*/
+static void MergePrefix(ArNodeHead* parent, ArNodeHead* child) {
+	if (child->node_type == kArLeaf || child->node_type == kArNode2) {
+		return;
 	}
-	else {
-		head->prefix_type = kArNotPrefix;
+	uint32_t new_len = parent->prefix_len + child->prefix_len;
+	child->prefix_len = new_len;
+
+	uint8_t temp_buf[prefix_max_len];
+	memcpy(temp_buf, child->prefix, child->vaild_prefix_len);
+
+	memcpy(child->prefix, parent->prefix, parent->vaild_prefix_len);
+	child->vaild_prefix_len = parent->vaild_prefix_len;
+
+	if (parent->prefix_len > parent->vaild_prefix_len) {
+		// 父节点的前缀不完整，没法继续合并了
+		return;
 	}
+	uint32_t child_copy_len = min(prefix_max_len - parent->vaild_prefix_len, child->vaild_prefix_len);
+	memcpy(&child->prefix[parent->vaild_prefix_len], temp_buf, child_copy_len);
+	child->vaild_prefix_len += child_copy_len;
 }
 
 
@@ -601,7 +631,7 @@ static void UpdatePrefix(ArNodeHead* head, uint8_t* prefix, int32_t match_len) {
 // 查询前缀/叶子匹配情况
 // 如果两者不是子串关系，则创建Node4，否则创建Node2
 
-static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset) {
+static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset, key_type* optimistic_leaf_node_key) {
 	key_type* leaf_key = ArGetKey(&leaf->element);
 	uint8_t* leaf_key_buf = ArGetKeyByte(leaf_key, offset);
 	uint32_t leaf_key_len = ArGetKeyLen(leaf_key) - offset;
@@ -614,14 +644,15 @@ static ArNode* ArSplitNode(ArNode* node, ArLeaf* leaf, uint32_t offset) {
 		node_key_len = ArGetKeyLen(node_key) - offset;
 	}
 	else {
-		node_key_buf = node->head.prefix;
-		if (node->head.prefix_type == kArShortPrefix) {
+		if (node->head.prefix_len > node->head.vaild_prefix_len && optimistic_leaf_node_key) {
+			node_key_buf = &optimistic_leaf_node_key->buf[offset];
 			node_key_len = node->head.prefix_len;
-		} else if (node->head.prefix_type == kArLongPrefix) {
-			node_key_len = node->head.prefix_long_len;
-		} else {
-			node_key_len = 0;
 		}
+		else {
+			node_key_buf = node->head.prefix;
+			node_key_len = node->head.vaild_prefix_len;
+		}
+		
 	}
 	min_len = min(node_key_len, leaf_key_len);
 	uint32_t match_len = 0;
@@ -700,17 +731,17 @@ element_type* ArTreeFind(ArTree* tree, key_type* key) {
 			return ArGetElement(cur);
 		}
 
-		if (offset >= key_len) {
-			break;
-		}
-
 		uint32_t prefix_len;
-		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, NULL, &prefix_len);
+		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, offset, &optimistic, NULL, &prefix_len);
 		if (match_len != prefix_len) {
 			return NULL;
 		}
 		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
 		offset += match_len;
+
+		if (offset >= key_len) {
+			break;
+		}
 
 		ArNode** cur_ptr = ArTreeFindChild(cur, key_buf[offset]);
 		if (!cur_ptr) {
@@ -744,7 +775,7 @@ void ArTreePut(ArTree* tree, element_type* element) {
 		ArNode* cur = *cur_ptr;
 		  assert(cur->head.node_type != kArNode2);
 		if (cur->head.node_type == kArLeaf) {
-			if (optimistic) {
+			if (optimistic && optimistic_leaf_node_key == NULL) {
 				/* 需要进行乐观比较 */
 				offset = optimistic_offset;
 			}
@@ -755,40 +786,43 @@ void ArTreePut(ArTree* tree, element_type* element) {
 				/* only update */
 				return;
 			}
-			if (optimistic) {
+			if (optimistic && optimistic_leaf_node_key == NULL) {
 				// 乐观策略的重试
 				optimistic_leaf_node_key = leaf_key;
 				cur_ptr = optimistic_retry_node_ptr;
 				continue;
 			}
-			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset);
+			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset, optimistic_leaf_node_key);
 			return;
 			
 		}
 		uint32_t match_len = 0;
-		if (cur->head.prefix_type != kArNotPrefix) {
+		if (cur->head.prefix_len) {
 			/*
 			* 乐观策略对前缀的比较不完整，在最后找到叶子时，得到不匹配的偏移
 			* 再次从乐观起始位置向下找，根据不匹配的偏移定位到不匹配的节点
 			*/
 			uint32_t prefix_len;
-			match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, optimistic_leaf_node_key, &prefix_len);
+			match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, offset, &optimistic, optimistic_leaf_node_key, &prefix_len);
 			if (match_len != prefix_len) {
 				// 前缀匹配不完整，需要在这里分裂
-				*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset);
+				*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset, optimistic_leaf_node_key);
 				if ((*cur_ptr)->head.node_type == kArNode4) {
 					// 如果是分裂成了node4才会更新前缀
-					// 分裂后需要去掉一个前缀，因为在新的new_node4中的keys记录了当前node4的第一个字符
+					// 分裂后前缀需要去掉一个字节，因为在新的new_node4中的keys记录了当前node4的第一个字符
 					// 匹配的前缀已经更新到新的node4上了，不匹配的前缀进行前移
 					match_len++;
-					if (cur->head.prefix_type == kArShortPrefix) {
-						cur->head.prefix_len -= match_len;
-						for (uint32_t i = 0; i < cur->head.prefix_len; i++) {
-							cur->head.prefix[i] = cur->head.prefix[i + match_len];
-						}
+					cur->head.prefix_len -= match_len;
+					if (match_len >= cur->head.vaild_prefix_len) {
+						cur->head.vaild_prefix_len = 0;
 					}
 					else {
-						cur->head.prefix_long_len -= match_len;
+						cur->head.vaild_prefix_len -= match_len;
+					}
+
+					prefix_len = min(cur->head.vaild_prefix_len, prefix_max_len - match_len);
+					for (uint32_t i = 0; i < prefix_len; i++) {
+						cur->head.prefix[i] = cur->head.prefix[i + match_len];
 					}
 				}
 				return;
@@ -802,11 +836,25 @@ void ArTreePut(ArTree* tree, element_type* element) {
 		if (offset >= key_len) {
 			// 从前缀匹配的地方重新计起，分裂为node2/node4
 			// 这里有重复前缀长度计算(性能有点影响)，实际上上面那个if已经算好了
-			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset - match_len);
+			if (optimistic && optimistic_leaf_node_key == NULL) {
+				//长度不足以定位到叶子节点，此处乐观策略的重试需要一个叶子的key，故尽可能最短路径下降找叶子
+				optimistic_leaf_node_key = ArGetKey(ArGetElement((ArNode*)ArFirst(cur)));
+				cur_ptr = optimistic_retry_node_ptr;
+				offset = optimistic_offset;
+				continue;
+			}
+			*cur_ptr = ArSplitNode(cur, ArLeafCreate(element), offset - match_len, optimistic_leaf_node_key);
 			return;
 		}
 		ArNode** down_ptr = ArTreeFindChild(cur, key_buf[offset]);
 		if (!down_ptr) {
+			if (optimistic && optimistic_leaf_node_key == NULL) {
+				// 到这里不能保证前缀是匹配的，乐观策略的重试需要一个叶子的key，故尽可能最短路径下降找叶子
+				optimistic_leaf_node_key = ArGetKey(ArGetElement((ArNode*)ArFirst(cur)));
+				cur_ptr = optimistic_retry_node_ptr;
+				offset = optimistic_offset;
+				continue;
+			}
 			ArLeaf* new_leaf = ArLeafCreate(element);
 			ArNodeInsert(cur_ptr, key_buf[offset], (ArNode*)new_leaf);
 			break;
@@ -823,10 +871,8 @@ void ArTreePut(ArTree* tree, element_type* element) {
 */
 element_type* ArTreeDelete(ArTree* tree, key_type* key) {
 	ArNode** cur_ptr = &tree->root;
-	uint8_t cur_byte = 0;
 	ArNode** parent_ptr = NULL;
-	uint8_t parent_byte = 0;
-	ArNode** grandpa_ptr = NULL;
+	uint8_t parent_byte;
 	bool optimistic = false;
 	uint32_t offset = 0;
 	uint32_t optimistic_offset = -1;
@@ -851,33 +897,38 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
 				ArLeafRelease(&cur->leaf);
 				return element;
 			}
-			ArNodeDelete(parent_ptr, key_buf[offset - 1]);
+			ArNodeDelete(parent_ptr, parent_byte);
 			if ((*parent_ptr)->head.node_type == kArNode4 && (*parent_ptr)->head.child_count == 1) {
-				// 路径压缩的合并
-				if () {
+				// 路径压缩的合并，使指向父节点的 祖父节点的child_arr元素 指向父节点剩下的一个孩子节点
+				ArNode* temp = *parent_ptr;
+				ArNode* child = (*parent_ptr)->node4.child_arr[0];
+				(*parent_ptr) = child;
 
-				}
-				ArNodeDelete(grandpa_ptr, parent_byte);
-				ArNode4Release(&(*parent_ptr)->node4);
+				// 将父节点的前缀和余下孩子的前缀进行合并
+				MergePrefix(&temp->head, &child->head);
+
+				// 释放父节点
+				ArNode4Release(&temp->node4);
 			}
 			return element;
 		}
+
+		
+
+		uint32_t prefix_len;
+		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, offset, &optimistic, NULL, &prefix_len);
+		if (match_len != prefix_len) {
+			return NULL;
+		}
+		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
+		offset += match_len;
 
 		if (offset >= key_len) {
 			break;
 		}
 
-		uint32_t prefix_len;
-		uint32_t match_len = MatchPrefix(&cur->head, &key_buf[offset], key_len - offset, &optimistic, NULL, &prefix_len);
-		if (match_len != prefix_len) {
-			return false;
-		}
-		if (optimistic_offset == -1 && optimistic) { optimistic_offset = offset; }
-		offset += match_len;
-		grandpa_ptr = parent_ptr;
-		parent_byte = cur_byte;
 		parent_ptr = cur_ptr;
-		cur_byte = key_buf[offset];
+		parent_byte = key_buf[offset];
 		cur_ptr = ArTreeFindChild(cur, key_buf[offset]);
 		if (!cur_ptr) {
 			break;
@@ -885,7 +936,7 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
 		cur = *cur_ptr;
 		offset++;
 	} while (true);
-	return false;
+	return NULL;
 }
 
 
