@@ -605,6 +605,7 @@ static void MergePrefix(ArNode* parent, ArNode* child, uint8_t key_byte) {
 		return;
 	}
 	if (child->head.node_type == kArNode2) {
+		// 将父节点的前缀传递给可能位于更下层的节点
 		MergePrefix(parent, child->node2.ar_node, key_byte);
 		MergePrefix(parent, child->node2.ar_sub_node, key_byte);
 		return;
@@ -909,44 +910,47 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
 				return NULL;
 			}
 			element_type* element = ArGetElement(cur);
-			if (!parent_ptr) {
-				// 是根节点，直接删除
-				ArLeafRelease(&cur->leaf);
-				*cur_ptr = NULL;
-				return element;
-			}
-			if ((*parent_ptr)->head.node_type == kArNode2) {
-				// Node2的收缩处理
-				ArNode* temp = *parent_ptr;
-				ArNode* child;
-				if (temp->node2.ar_node == cur) {
-					child = temp->node2.ar_sub_node;
-				} else {
-					  assert(temp->node2.ar_sub_node == cur);
-					child = temp->node2.ar_node;
+			do {
+				if (!parent_ptr) {
+					// 是根节点，直接删除
+					*cur_ptr = NULL;
+					break;
 				}
-				(*parent_ptr) = child;
+				if ((*parent_ptr)->head.node_type == kArNode2) {
+					// Node2的收缩处理
+					ArNode* temp = *parent_ptr;
+					ArNode* child;
+					if (temp->node2.ar_node == cur) {
+						child = temp->node2.ar_sub_node;
+					}
+					else {
+						assert(temp->node2.ar_sub_node == cur);
+						child = temp->node2.ar_node;
+					}
+					(*parent_ptr) = child;
 
-				ArNode2Release(&temp->node2);
-				return element;
-			}
-			ArNodeDelete(parent_ptr, parent_byte);
-			if ((*parent_ptr)->head.node_type == kArNode4 && (*parent_ptr)->head.child_count == 1) {
-				// Node4路径压缩的合并处理，使指向父节点的 祖父节点的child_arr元素 指向父节点剩下的一个孩子节点
-				ArNode* temp = *parent_ptr;
-				ArNode* child = temp->node4.child_arr[0];
-				(*parent_ptr) = child;
-
-				if (child->head.node_type == kArNode2) {
-					// 如果子节点是node2的情况，由于失去了一层高度+前缀高度，需要调整node2的sub_node_len
-					child->node2.sub_node_len += 1 + temp->head.vaild_prefix_len;
+					ArNode2Release(&temp->node2);
+					break;
 				}
-				// 将父节点的前缀和余下孩子的前缀进行合并
-				MergePrefix(temp, child, temp->node4.keys[0]);
+				ArNodeDelete(parent_ptr, parent_byte);
+				if ((*parent_ptr)->head.node_type == kArNode4 && (*parent_ptr)->head.child_count == 1) {
+					// Node4路径压缩的合并处理，使指向父节点的 祖父节点的child_arr元素 指向父节点剩下的一个孩子节点
+					ArNode* temp = *parent_ptr;
+					ArNode* child = temp->node4.child_arr[0];
+					(*parent_ptr) = child;
 
-				// 释放父节点
-				ArNode4Release(&temp->node4);
-			}
+					if (child->head.node_type == kArNode2) {
+						// 如果子节点是node2的情况，由于失去了一层高度+前缀高度，需要调整node2的sub_node_len
+						child->node2.sub_node_len += 1 + temp->head.vaild_prefix_len;
+					}
+					// 将父节点的前缀和余下孩子的前缀进行合并
+					MergePrefix(temp, child, temp->node4.keys[0]);
+
+					// 释放父节点
+					ArNode4Release(&temp->node4);
+				}
+			} while (false);
+			ArLeafRelease(&cur->leaf);
 			return element;
 		}
 
