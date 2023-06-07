@@ -9,6 +9,7 @@
 #define CUTILS_SPACE_MANAGER_BUDDY_H_
 
 #include <CUtils/object.h>
+#include <CUtils/container/experimental/cb_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,10 +20,9 @@ extern "C" {
 * 主要参考自项目：https://github.com/wuwenbin/buddy2
 */
 
-
-#define CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index) ((index) * 2/* + 1*/)
-#define CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index) ((index) * 2 + 1/*2*/)
-#define CUTILS_SPACE_MANAGER_BUDDY_PARENT(index) ( ((index)/* + 1*/) / 2/* - 1*/)
+#define CUTILS_SPACE_MANAGER_BUDDY_PARENT(index) CUTILS_CONTAINER_CB_TREE_ONE_GET_PARENT(index)
+#define CUTILS_SPACE_MANAGER_BUDDY_LEFT_LEAF(index) CUTILS_CONTAINER_CB_TREE_ONE_GET_LEFT(index)
+#define CUTILS_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index) CUTILS_CONTAINER_CB_TREE_ONE_GET_RIGHT(index)
 
 #define CUTILS_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
 #define CUTILS_SPACE_MANAGER_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -45,8 +45,8 @@ extern "C" {
 
 #define CUTILS_SPACE_MANAGER_BUDDY_DEFINE(buddy_type_name, id_type, indexer, allocator) \
 	/* 根据幂求指数 */ \
-	static uint8_t buddy_type_name##BuddyToExponentOf2(id_type power) { \
-		uint8_t exponent = 0; \
+	static id_type buddy_type_name##BuddyToExponentOf2(id_type power) { \
+		id_type exponent = 0; \
 		while (power != 0) { \
 			exponent++; \
 			power >>= 1; \
@@ -167,7 +167,6 @@ extern "C" {
 #define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER_Get(BUDDY, LOGN, INDEX) ((INDEX) % 2 ? (LOGN)[(INDEX) / 2] & 0xf : (LOGN)[(INDEX) / 2] >> 4)
 #define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER_Set(BUDDY, LOGN, INDEX, NEW_LOGN) ((LOGN)[(INDEX) / 2] = ((INDEX) % 2) ? ((NEW_LOGN) | ((LOGN)[(INDEX) / 2] & 0xf0)) : ((NEW_LOGN) << 4 | ((LOGN)[(INDEX) / 2] & 0xf)))
 #define CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER CUTILS_SPACE_MANAGER_BUDDY_4BIT_INDEXER
-
 
 #ifdef __cplusplus
 }
