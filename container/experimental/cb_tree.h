@@ -17,12 +17,12 @@ extern "C" {
 /* complete binary tree - 完全二叉树 */
 
 #define CUTILS_CONTAINER_CB_TREE_ZERO_GET_PARENT(index) (((index) + 1) / 2 - 1)
-#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_LEFT(index) (((index) * 2 + 1)
-#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_RIGHT(index) (((index) * 2 + 2)
+#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_LEFT(index) ((index) * 2 + 1)
+#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_RIGHT(index) ((index) * 2 + 2)
 
 #define CUTILS_CONTAINER_CB_TREE_ONE_GET_PARENT(index) ((index) / 2)
-#define CUTILS_CONTAINER_CB_TREE_ONE_GET_LEFT(index) (((index) * 2)
-#define CUTILS_CONTAINER_CB_TREE_ONE_GET_RIGHT(index) (((index) * 2 + 1)
+#define CUTILS_CONTAINER_CB_TREE_ONE_GET_LEFT(index) ((index) * 2)
+#define CUTILS_CONTAINER_CB_TREE_ONE_GET_RIGHT(index) ((index) * 2 + 1)
 
 
 #define CUTILS_CONTAINER_CB_TREE_DECLARATION(cb_tree_type_name, id_type, count) \
