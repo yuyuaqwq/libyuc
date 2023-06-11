@@ -460,7 +460,7 @@ kv分离是外层处理的，b+树操作的只有element
             bp_tree_type_name##BPlusEntryInsertElement(tree, left, NULL, insert_element); \
         } \
         \
-        if (*src_entry) entry_referencer##_Dereference(tree, src_entry); \
+        if (*src_entry) entry_referencer##_Dereference(tree, *src_entry); \
         if (left->type == kBPlusEntryLeaf) { \
             /* 从mid拿到上升元素，叶子元素转换为索引元素，上升元素的子节点指向左节点 */ \
             bp_tree_type_name##BPlusElement* first_element = element_referencer##_Reference(right, bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&right->rb_tree)); \
@@ -492,9 +492,9 @@ kv分离是外层处理的，b+树操作的只有element
             right->index.tail_child_id = left->index.tail_child_id; \
             \
             /* 最后从左节点末尾拿到上升元素，将其摘除 */ \
+            up_element = *bp_tree_type_name##BPlusEntryDeleteElement(tree, left, bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree)); \
             *src_entry = left; \
             entry_referencer##_Reference(tree, left_id); \
-            up_element = *bp_tree_type_name##BPlusEntryDeleteElement(tree, left, bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree)); \
             left->index.tail_child_id = up_element.index.child_id;       /* 3指定为2的右侧子节点 */ \
         } \
         /* 上升的4的子节点为左 */ \
