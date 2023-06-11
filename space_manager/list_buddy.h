@@ -52,8 +52,8 @@ extern "C" {
 		list_entry_id_type next; \
 	} list_buddy_type_name##ListBuddyEntry; \
 	typedef struct _##list_buddy_type_name##ListBuddy { \
-		list_buddy_type_name##ListBuddyEntry list_head[];	 \
-		/* Bitmap status; */ \
+		list_buddy_type_name##ListBuddyEntry list_head[];  \
+		/* uint8_t space[]; */ \
 	} list_buddy_type_name##ListBuddy; \
 	list_buddy_type_name##ListBuddy* list_buddy_type_name##ListBuddyCreate(id_type size); \
 	bool list_buddy_type_name##ListBuddyInit(list_buddy_type_name##ListBuddy* buddy, id_type size); \
@@ -73,8 +73,10 @@ extern "C" {
 			} \
 			buddy->list_head[i] = referencer##_InvalidId; \
 		} while (true); \
-		buddy->list_head[i] = ; \
+		buddy->list_head[i] = 0; \
 	} \
+	\
+	
 	
 
 
