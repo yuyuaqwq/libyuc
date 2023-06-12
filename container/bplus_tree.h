@@ -267,7 +267,13 @@ kv分离是外层处理的，b+树操作的只有element
                 dst_element->index.child_id = element_child_id; \
             } else { \
                 element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->index.key); \
-                dst_element->index.child_id = element->index.child_id; \
+                /* 如果有附带的孩子id，则使用附带的孩子id */ \
+                if (element_child_id != entry_referencer##_InvalidId) { \
+                    dst_element->index.child_id = element_child_id; \
+                } \
+                else { \
+                    dst_element->index.child_id = element->index.child_id; \
+                } \
             } \
         } \
         element_referencer##_Dereference(dst_entry, dst_element); \
@@ -440,7 +446,7 @@ kv分离是外层处理的，b+树操作的只有element
     * 因为分裂后选择右节点的最左元素的key作为上升的key
     * 这个时候无论怎么插入元素都不会插入到该节点最左元素的左侧(比它小的会被分到左侧节点，因为父元素key等于该元素)，该节点再分裂也就不存在最左元素再次上升的可能了
     */ \
-    static element_id_type bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_element_id, bp_tree_type_name##BPlusEntry** src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_id, entry_id_type insert_element_child_id, entry_id_type* out_right_id) { \
+    static element_id_type bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_element_id, bp_tree_type_name##BPlusEntry** src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_id, entry_id_type insert_element_child_id, bool dereference_src_entry, entry_id_type* out_right_id) { \
         /* assert(insert_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); */ \
         entry_id_type right_id = bp_tree_type_name##BPlusEntryCreate(tree, left->type); \
         bp_tree_type_name##BPlusEntry* right = entry_referencer##_Reference(tree, right_id); \
@@ -450,7 +456,7 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         element_id_type left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
-        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(*src_entry ? *src_entry : left, insert_element)) / 2; \
+        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(right, *src_entry, insert_element)) / 2; \
         while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             /* 检查填充率 */ \
             if (entry_accessor##_GetFillRate(tree, left) <= fill_rate || left->element_count == 2) { \
@@ -473,7 +479,7 @@ kv分离是外层处理的，b+树操作的只有element
             bp_tree_type_name##BPlusEntryInsertElement(left, *src_entry, insert_element, insert_element_child_id); \
         } \
         \
-        if (*src_entry) entry_referencer##_Dereference(tree, *src_entry); \
+        if (dereference_src_entry && *src_entry) entry_referencer##_Dereference(tree, *src_entry); \
         bp_tree_type_name##BPlusElement* up_element; \
         if (left->type == kBPlusEntryLeaf) { \
             /* 从mid拿到上升元素，叶子元素转换为索引元素，上升元素的子节点指向左节点，叶子上升不需要被摘除 */ \
@@ -573,7 +579,7 @@ kv分离是外层处理的，b+树操作的只有element
                 bp_tree_type_name##BPlusElementSet(cur, cur_pos->element_id, src_entry, insert_element, insert_element_child_id); \
                 break; \
             } \
-            if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(src_entry ? src_entry : cur, insert_element)) { \
+            if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, src_entry, insert_element)) { \
                 /* 有空余的位置插入 */ \
                 bp_tree_type_name##BPlusEntryInsertElement(cur, src_entry, insert_element, insert_element_child_id); \
                 break; \
@@ -588,16 +594,19 @@ kv分离是外层处理的，b+树操作的只有element
                 /* 没有父节点，创建 */ \
                 entry_id_type parent_id = bp_tree_type_name##BPlusEntryCreate(tree, kBPlusEntryIndex); \
                 bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_id); \
-                up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &src_entry, insert_element, cur_pos->element_id, &right_id); \
-                bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(src_entry, up_element_id); \
-                bp_tree_type_name##BPlusEntryInsertElement(parent, src_entry, up_element, cur_pos->entry_id); \
-                element_referencer##_Dereference(src_entry, up_element); \
+                bp_tree_type_name##BPlusEntry* new_src_entry = src_entry; /* 下面还需要释放，不能直接修改 */ \
+                up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &new_src_entry, insert_element, cur_pos->element_id, insert_element_child_id, false, &right_id); \
+                /* 处理引用关系 */ \
+                bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(new_src_entry, up_element_id); \
+                bp_tree_type_name##BPlusEntryInsertElement(parent, new_src_entry, up_element, cur_pos->entry_id); \
+                element_referencer##_Dereference(new_src_entry, up_element); \
+                entry_referencer##_Dereference(tree, new_src_entry); \
                 tree->root_id = parent_id; \
                 entry_referencer##_Dereference(tree, parent); \
                 break; \
             } \
             bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_pos->entry_id); \
-            up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, parent_pos->element_id, &src_entry, insert_element, cur_pos->element_id, &right_id); \
+            up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, parent_pos->element_id, &src_entry, insert_element, cur_pos->element_id, insert_element_child_id, true, &right_id); \
             entry_referencer##_Dereference(tree, parent); \
             insert_up = true; \
         } while (false); \
