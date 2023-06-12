@@ -252,7 +252,7 @@ kv分离是外层处理的，b+树操作的只有element
     /*
     * B+树
     */\
-    static void bp_tree_type_name##BPlusElementSet(bp_tree_type_name##BPlusEntry* dst_entry, element_id_type element_id, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* element) { \
+    static void bp_tree_type_name##BPlusElementSet(bp_tree_type_name##BPlusEntry* dst_entry, element_id_type element_id, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* element, entry_id_type element_child_id) { \
           assert(element_id >= 0); \
         bp_tree_type_name##BPlusElement* dst_element = element_referencer##_Reference(dst_entry, element_id); \
         if (dst_entry->type == kBPlusEntryLeaf) { \
@@ -263,10 +263,12 @@ kv分离是外层处理的，b+树操作的只有element
             /* 如果是插入到index_entry，可能是来自leaf的element */ \
             if (src_entry->type == kBPlusEntryLeaf) { \
                 element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key); \
+                  assert(element_child_id != entry_referencer##_InvalidId); \
+                dst_element->index.child_id = element_child_id; \
             } else { \
                 element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->index.key); \
+                dst_element->index.child_id = element->index.child_id; \
             } \
-            dst_element->index.child_id = element->index.child_id; \
         } \
         element_referencer##_Dereference(dst_entry, dst_element); \
     } \
@@ -302,6 +304,7 @@ kv分离是外层处理的，b+树操作的只有element
     } \
     \
     \
+    /* B+树游标 */ \
     bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
         if (cursor->level < 0) { \
             return NULL; \
@@ -387,10 +390,10 @@ kv分离是外层处理的，b+树操作的只有element
     * 向节点插入元素
     * 不支持处理末尾子节点
     */ \
-    static element_id_type bp_tree_type_name##BPlusEntryInsertElement(bp_tree_type_name##BPlusEntry* dst_entry, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element) { \
+    static element_id_type bp_tree_type_name##BPlusEntryInsertElement(bp_tree_type_name##BPlusEntry* dst_entry, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element, entry_id_type element_child_id) { \
         element_id_type element_id = bp_tree_type_name##BPlusElementCreate(dst_entry); \
           assert(element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-        bp_tree_type_name##BPlusElementSet(dst_entry, element_id, src_entry, insert_element); \
+        bp_tree_type_name##BPlusElementSet(dst_entry, element_id, src_entry, insert_element, element_child_id); \
         element_id_type old_element_id = bp_tree_type_name##BPlusEntryRbTreePut(&dst_entry->rb_tree, element_id); \
         if (old_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId && old_element_id != element_id) bp_tree_type_name##BPlusElementRelease(dst_entry, old_element_id); \
         dst_entry->element_count++; \
@@ -437,7 +440,7 @@ kv分离是外层处理的，b+树操作的只有element
     * 因为分裂后选择右节点的最左元素的key作为上升的key
     * 这个时候无论怎么插入元素都不会插入到该节点最左元素的左侧(比它小的会被分到左侧节点，因为父元素key等于该元素)，该节点再分裂也就不存在最左元素再次上升的可能了
     */ \
-    static element_id_type bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_element_id, bp_tree_type_name##BPlusEntry** src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_id, entry_id_type* out_right_id) { \
+    static element_id_type bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_element_id, bp_tree_type_name##BPlusEntry** src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_id, entry_id_type insert_element_child_id, entry_id_type* out_right_id) { \
         /* assert(insert_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); */ \
         entry_id_type right_id = bp_tree_type_name##BPlusEntryCreate(tree, left->type); \
         bp_tree_type_name##BPlusEntry* right = entry_referencer##_Reference(tree, right_id); \
@@ -447,27 +450,27 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         element_id_type left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
         bool insert = false; \
-        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(left, insert_element)) / 2; \
+        int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(*src_entry ? *src_entry : left, insert_element)) / 2; \
         while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             /* 检查填充率 */ \
             if (entry_accessor##_GetFillRate(tree, left) <= fill_rate || left->element_count == 2) { \
                 break; \
             } \
             if (!insert && left_elemeng_id == insert_id) { \
-                bp_tree_type_name##BPlusEntryInsertElement(right, *src_entry, insert_element); \
+                bp_tree_type_name##BPlusEntryInsertElement(right, *src_entry, insert_element, insert_element_child_id); \
                 insert = true; \
                 continue; \
             } \
             element_id_type next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
             bp_tree_type_name##BPlusElement* left_element = element_referencer##_Reference(left, left_elemeng_id); \
-            bp_tree_type_name##BPlusEntryInsertElement(right, left, left_element); \
+            bp_tree_type_name##BPlusEntryInsertElement(right, left, left_element, entry_referencer##_InvalidId); \
             element_referencer##_Dereference(left, left_element); \
             bp_tree_type_name##BPlusEntryDeleteElement(left, left_elemeng_id); \
             left_elemeng_id = next_elemeng_id; \
         } \
         /* 新元素还没有插入，将其插入 */ \
         if (!insert) { \
-            bp_tree_type_name##BPlusEntryInsertElement(left, *src_entry, insert_element); \
+            bp_tree_type_name##BPlusEntryInsertElement(left, *src_entry, insert_element, insert_element_child_id); \
         } \
         \
         if (*src_entry) entry_referencer##_Dereference(tree, *src_entry); \
@@ -507,7 +510,7 @@ kv分离是外层处理的，b+树操作的只有element
             left->index.tail_child_id = up_element->index.child_id;       /* 3指定为2的右侧子节点 */ \
         } \
         /* 上升的4的子节点为左 */ \
-        up_element->index.child_id = left_id; \
+        /*up_element->index.child_id = left_id; up_element可能是leaf的元素，不能直接在此处赋值 */ \
         element_referencer##_Reference(*src_entry, up_element); \
         \
         /* 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点) */ \
@@ -530,7 +533,7 @@ kv分离是外层处理的，b+树操作的只有element
         for (int32_t i = 0; i < right->element_count; i++) { \
               assert(right_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
             bp_tree_type_name##BPlusElement* right_element = element_referencer##_Reference(right, right_element_id); \
-            bp_tree_type_name##BPlusEntryInsertElement(left, NULL, right_element); \
+            bp_tree_type_name##BPlusEntryInsertElement(left, NULL, right_element, entry_referencer##_InvalidId); \
             element_referencer##_Dereference(right, right_element); \
             right_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, right_element_id); \
         } \
@@ -541,7 +544,7 @@ kv分离是外层处理的，b+树操作的只有element
         else { \
             /* 是索引节点，将父元素(子节点原先指向左和右，下降需要指向左的末尾子节点)和right都并入到left中，向上传递删除父元素 */ \
             bp_tree_type_name##BPlusElement* parent_element = element_referencer##_Reference(parent, parent_index); \
-            element_id_type left_element_id = bp_tree_type_name##BPlusEntryInsertElement(left, NULL, parent_element); \
+            element_id_type left_element_id = bp_tree_type_name##BPlusEntryInsertElement(left, NULL, parent_element, entry_referencer##_InvalidId); \
             element_referencer##_Dereference(parent, parent_element); \
             bp_tree_type_name##BPlusElementSetChildId(left, left_element_id, left->index.tail_child_id);       /* left的末尾元素此时为下降的父元素，修改其子节点 */ \
             bp_tree_type_name##BPlusElementSetChildId(left, -1, right->index.tail_child_id); \
@@ -558,7 +561,7 @@ kv分离是外层处理的，b+树操作的只有element
     * 向树插入元素
     * 会抢夺src_entry的所有权
     */ \
-    static bool bp_tree_type_name##BPlusTreeInsertElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_element_id) { \
+    static bool bp_tree_type_name##BPlusTreeInsertElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_element_id, entry_id_type insert_element_child_id) { \
         bp_tree_type_name##BPlusElementPos* cur_pos = bp_tree_type_name##BPlusCursorCur(tree, cursor); \
         bp_tree_type_name##BPlusElementPos* parent_pos = bp_tree_type_name##BPlusCursorUp(tree, cursor); \
         entry_id_type right_id; \
@@ -567,12 +570,12 @@ kv分离是外层处理的，b+树操作的只有element
         element_id_type up_element_id = element_referencer##_InvalidId; \
         do { \
             if (cursor->leaf_status == kBPlusCursorEq) { \
-                bp_tree_type_name##BPlusElementSet(cur, cur_pos->element_id, src_entry, insert_element); \
+                bp_tree_type_name##BPlusElementSet(cur, cur_pos->element_id, src_entry, insert_element, insert_element_child_id); \
                 break; \
             } \
-            if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, insert_element)) { \
+            if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(src_entry ? src_entry : cur, insert_element)) { \
                 /* 有空余的位置插入 */ \
-                bp_tree_type_name##BPlusEntryInsertElement(cur, src_entry, insert_element); \
+                bp_tree_type_name##BPlusEntryInsertElement(cur, src_entry, insert_element, insert_element_child_id); \
                 break; \
             } \
             /* 没有多余位置，需要分裂向上插入，插入的位置需要是第一个小于key的元素，element_id指向第一个大于key的元素 */ \
@@ -587,7 +590,7 @@ kv分离是外层处理的，b+树操作的只有element
                 bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_id); \
                 up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &src_entry, insert_element, cur_pos->element_id, &right_id); \
                 bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(src_entry, up_element_id); \
-                bp_tree_type_name##BPlusEntryInsertElement(parent, src_entry, up_element); \
+                bp_tree_type_name##BPlusEntryInsertElement(parent, src_entry, up_element, cur_pos->entry_id); \
                 element_referencer##_Dereference(src_entry, up_element); \
                 tree->root_id = parent_id; \
                 entry_referencer##_Dereference(tree, parent); \
@@ -601,7 +604,7 @@ kv分离是外层处理的，b+树操作的只有element
         entry_referencer##_Dereference(tree, cur); \
         if (insert_up) { \
             bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(src_entry, up_element_id); \
-            return bp_tree_type_name##BPlusTreeInsertElement(tree, cursor, src_entry, up_element, up_element_id); \
+            return bp_tree_type_name##BPlusTreeInsertElement(tree, cursor, src_entry, up_element, up_element_id, cur_pos->entry_id); \
         } \
         if (src_entry) { \
             element_referencer##_Dereference(src_entry, insert_element); \
@@ -679,7 +682,7 @@ kv分离是外层处理的，b+树操作的只有element
                         element_id_type last = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree); \
                           assert(last != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* element = entry_referencer##_Reference(sibling, last); \
-                        bp_tree_type_name##BPlusEntryInsertElement(entry, sibling, element); \
+                        bp_tree_type_name##BPlusEntryInsertElement(entry, sibling, element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, element); \
                         bp_tree_type_name##BPlusEntryDeleteElement(sibling, last); \
                         \
@@ -694,7 +697,7 @@ kv分离是外层处理的，b+树操作的只有element
                           assert(first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                           assert(new_first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
                         bp_tree_type_name##BPlusElement* element = entry_referencer##_Reference(sibling, first); \
-                        bp_tree_type_name##BPlusEntryInsertElement(entry, sibling, element); \
+                        bp_tree_type_name##BPlusEntryInsertElement(entry, sibling, element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, element); \
                         bp_tree_type_name##BPlusEntryDeleteElement(sibling, first); \
                         /* 右节点的头元素key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首元素是最好的 */ \
@@ -715,9 +718,9 @@ kv分离是外层处理的，b+树操作的只有element
                         ObjectSwap(entry_id_type, left_element->index.child_id, sibling->index.tail_child_id);        /* 要拿的是末尾的子节点，处理一下 */ \
                         bp_tree_type_name##BPlusElement* par_element = entry_referencer##_Reference(parent, common_parent_element_id); \
                         par_element->index.child_id = left_element->index.child_id; \
-                        bp_tree_type_name##BPlusEntryInsertElement(entry, parent, par_element); \
+                        bp_tree_type_name##BPlusEntryInsertElement(entry, parent, par_element, entry_referencer##_InvalidId); \
                         left_element->index.child_id = sibling_entry_id; \
-                        bp_tree_type_name##BPlusEntryInsertElement(parent, sibling, left_element); \
+                        bp_tree_type_name##BPlusEntryInsertElement(parent, sibling, left_element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, left_element); \
                         bp_tree_type_name##BPlusEntryDeleteElement(sibling, last); \
                         entry_referencer##_Dereference(parent, par_element); \
@@ -731,9 +734,9 @@ kv分离是外层处理的，b+树操作的只有element
                         bp_tree_type_name##BPlusElement* par_element = entry_referencer##_Reference(parent, common_parent_element_id); \
                         par_element->index.child_id = right_element->index.child_id; \
                         ObjectSwap(entry_id_type, par_element->index.child_id, entry->index.tail_child_id);        /* 要插入的是末尾的子节点，处理一下 */ \
-                        bp_tree_type_name##BPlusEntryInsertElement(entry, parent, par_element); \
+                        bp_tree_type_name##BPlusEntryInsertElement(entry, parent, par_element, entry_referencer##_InvalidId); \
                         right_element->index.child_id = cur_pos->entry_id; \
-                        bp_tree_type_name##BPlusEntryInsertElement(parent, sibling, right_element); \
+                        bp_tree_type_name##BPlusEntryInsertElement(parent, sibling, right_element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, right_element); \
                         bp_tree_type_name##BPlusEntryDeleteElement(sibling, first); \
                         entry_referencer##_Dereference(parent, par_element); \
@@ -793,7 +796,7 @@ kv分离是外层处理的，b+树操作的只有element
         while (status == kBPlusCursorNext) { \
             status = bp_tree_type_name##BPlusCursorNext(tree, &cursor, &element->key); \
         } \
-        bool success = bp_tree_type_name##BPlusTreeInsertElement(tree, &cursor, NULL, (bp_tree_type_name##BPlusElement*)element, element_referencer##_InvalidId); \
+        bool success = bp_tree_type_name##BPlusTreeInsertElement(tree, &cursor, NULL, (bp_tree_type_name##BPlusElement*)element, element_referencer##_InvalidId, entry_referencer##_InvalidId); \
         bp_tree_type_name##BPlusCursorRelease(tree, &cursor); \
         return success; \
     } \
