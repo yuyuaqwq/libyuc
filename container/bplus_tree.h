@@ -516,7 +516,7 @@ kv分离是外层处理的，b+树操作的只有element
             left->index.tail_child_id = up_element->index.child_id;       /* 3指定为2的右侧子节点 */ \
         } \
         /* 上升的4的子节点为左 */ \
-        /*up_element->index.child_id = left_id; up_element可能是leaf的元素，不能直接在此处赋值 */ \
+        /*up_element->index.child_id = left_id;     up_element可能是leaf的元素，不能直接在此处赋值 */ \
         element_referencer##_Reference(*src_entry, up_element); \
         \
         /* 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点) */ \
@@ -596,11 +596,10 @@ kv分离是外层处理的，b+树操作的只有element
                 bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_id); \
                 bp_tree_type_name##BPlusEntry* new_src_entry = src_entry; /* 下面还需要释放，不能直接修改 */ \
                 up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &new_src_entry, insert_element, cur_pos->element_id, insert_element_child_id, false, &right_id); \
-                /* 处理引用关系 */ \
                 bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(new_src_entry, up_element_id); \
                 bp_tree_type_name##BPlusEntryInsertElement(parent, new_src_entry, up_element, cur_pos->entry_id); \
                 element_referencer##_Dereference(new_src_entry, up_element); \
-                entry_referencer##_Dereference(tree, new_src_entry); \
+                entry_referencer##_Dereference(tree, new_src_entry); /* 处理引用关系 */ \
                 tree->root_id = parent_id; \
                 entry_referencer##_Dereference(tree, parent); \
                 break; \
