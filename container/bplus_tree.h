@@ -260,7 +260,12 @@ kv分离是外层处理的，b+树操作的只有element
             element_accessor##_SetValue(dst_entry, dst_element, src_entry, &element->leaf.value); \
         } \
         else { \
-            element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->index.key); \
+            /* 如果是插入到index_entry，可能是来自leaf的element */ \
+            if (src_entry->type == kBPlusEntryLeaf) { \
+                element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key); \
+            } else { \
+                element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->index.key); \
+            } \
             dst_element->index.child_id = element->index.child_id; \
         } \
         element_referencer##_Dereference(dst_entry, dst_element); \
@@ -462,7 +467,7 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         /* 新元素还没有插入，将其插入 */ \
         if (!insert) { \
-            bp_tree_type_name##BPlusEntryInsertElement(left, NULL, insert_element); \
+            bp_tree_type_name##BPlusEntryInsertElement(left, *src_entry, insert_element); \
         } \
         \
         if (*src_entry) entry_referencer##_Dereference(tree, *src_entry); \
