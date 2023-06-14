@@ -69,7 +69,7 @@ typedef enum {
 #define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type) \
+#define CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, default_stack_size) \
     /*
     * B+树游标
     */ \
@@ -80,6 +80,7 @@ typedef enum {
     CUTILS_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos) \
     typedef struct _##bp_tree_type_name##BPlusCursor { \
         bp_tree_type_name##BPlusCursorStackVector stack; \
+        bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
         element_id_type level; \
         BPlusCursorStatus leaf_status; \
     } bp_tree_type_name##BPlusCursor; \
@@ -206,7 +207,7 @@ kv分离是外层处理的，b+树操作的只有element
 
 
 */
-#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer) \
+#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer, default_stack_size) \
     /*
     * B+树游标
     */\
@@ -330,15 +331,14 @@ kv分离是外层处理的，b+树操作的只有element
         return &cursor->stack.obj_arr[++cursor->level]; \
     } \
     BPlusCursorStatus bp_tree_type_name##BPlusCursorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key) { \
-        bp_tree_type_name##BPlusCursorStackVectorInit(&cursor->stack, 8, true); \
+        bp_tree_type_name##BPlusCursorStackVectorInit(&cursor->stack, default_stack_size, false); \
+        cursor->stack.obj_arr = cursor->default_stack; \
         cursor->stack.count = 0; \
         cursor->level = -1; \
         return bp_tree_type_name##BPlusCursorNext(tree, cursor, key); \
     } \
     void bp_tree_type_name##BPlusCursorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
-        if (cursor->stack.capacity != 0) { \
-            bp_tree_type_name##BPlusCursorStackVectorRelease(&cursor->stack); \
-        } \
+        bp_tree_type_name##BPlusCursorStackVectorRelease(&cursor->stack); \
     } \
     BPlusCursorStatus bp_tree_type_name##BPlusCursorNext(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key) { \
         bp_tree_type_name##BPlusElementPos cur; \

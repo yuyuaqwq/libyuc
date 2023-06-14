@@ -19,6 +19,7 @@ extern "C" {
     typedef struct _##vector_type_name##Vector { \
         size_t count; \
         size_t capacity; \
+        bool is_vector_alloc; \
         element_type* obj_arr; \
     } vector_type_name##Vector; \
     void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create); \
@@ -32,8 +33,11 @@ extern "C" {
         element_type* new_buf = allocator##_CreateMultiple(arr, element_type, capacity); \
         if (arr->obj_arr) { \
             MemoryCopy(new_buf, arr->obj_arr, sizeof(element_type) * arr->count); \
-            allocator##_Release(arr, arr->obj_arr); \
+            if (arr->is_vector_alloc) { \
+                allocator##_Release(arr, arr->obj_arr); \
+            } \
         } \
+        arr->is_vector_alloc = true; \
         arr->obj_arr = new_buf; \
         arr->capacity = capacity; \
     } \
@@ -53,6 +57,7 @@ extern "C" {
     void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create) { \
         arr->count = count; \
         arr->obj_arr = NULL; \
+        arr->is_vector_alloc = create; \
         if (count != 0 && create) { \
             vector_type_name##VectorResetCapacity(arr, count); \
         } \
@@ -61,7 +66,7 @@ extern "C" {
         } \
     } \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr) { \
-        if (arr->obj_arr) { \
+        if (arr->obj_arr && arr->is_vector_alloc) { \
             allocator##_Release(arr, arr->obj_arr); \
             arr->obj_arr = NULL; \
         } \
