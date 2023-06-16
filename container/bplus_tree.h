@@ -158,6 +158,7 @@ entry：
             >该百分比的entry至少有2个element
         GetFreeRate(获取空闲n分比，可分配的最大空闲)
         GetFillRate(获取已填充n分比)
+        GetMaxRate(获取n)
 
 element:
     基本element定长，附属kv可能不定长
@@ -218,7 +219,7 @@ kv分离是外层处理的，b+树操作的只有element
     /*
     * 页内红黑树
     */\
-    static const element_id_type bp_tree_type_name##BPlusEntryRbReferencer_InvalidId = (-1) ; \
+    static const element_id_type bp_tree_type_name##BPlusEntryRbReferencer_InvalidId = element_referencer##_InvalidId; \
     forceinline bp_tree_type_name##BPlusEntryRbEntry* bp_tree_type_name##BPlusEntryRbReferencer_Reference(bp_tree_type_name##BPlusEntryRbTree* tree, element_id_type element_id) { \
         if (element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
             return NULL; \
@@ -438,6 +439,27 @@ kv分离是外层处理的，b+树操作的只有element
     } \
     \
     /*
+    * 有序链表建树，参考https://leetcode.cn/problems/convert-sorted-list-to-binary-search-tree/solution/you-xu-lian-biao-zhuan-huan-er-cha-sou-suo-shu-1-3/
+    */ \
+    static element_id_type bp_tree_type_name##BuildRbTree(bp_tree_type_name##BPlusEntry* src_entry, element_id_type* src_entry_rb_iter, bp_tree_type_name##BPlusEntry* dst_entry, int32_t left, int32_t right, element_id_type parent_id, int32_t max_level, int32_t level) { \
+        if (left > right) return element_referencer##_InvalidId; \
+        element_id_type mid = (left + right + 1) / 2; \
+        element_id_type new_element_id = bp_tree_type_name##BPlusElementCreate(dst_entry); \
+        bp_tree_type_name##BPlusElement* new_element = element_referencer##_Reference(dst_entry, new_element_id); \
+        bp_tree_type_name##BPlusEntryRbEntry* rb_entry = &new_element->rb_entry; \
+        rb_accessor##_SetParent(&dst_entry->rb_tree, rb_entry, parent_id); \
+        rb_accessor##_SetColor(&dst_entry->rb_tree, rb_entry, level == max_level && max_level > 1 ? kRbRed : kRbBlack); \
+        rb_entry->left = bp_tree_type_name##BuildRbTree(src_entry, src_entry_rb_iter, dst_entry, left, mid - 1, new_element_id, max_level, level+1); \
+          assert(*src_entry_rb_iter != element_referencer##_InvalidId); \
+        bp_tree_type_name##BPlusElement* src_element = element_referencer##_Reference(src_entry, *src_entry_rb_iter); \
+        bp_tree_type_name##BPlusElementSet(dst_entry, new_element_id, src_entry, src_element, entry_referencer##_InvalidId); \
+        element_referencer##_Dereference(src_entry, src_element); \
+        *src_entry_rb_iter = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&src_entry->rb_tree, *src_entry_rb_iter); \
+        rb_entry->right = bp_tree_type_name##BuildRbTree(src_entry, src_entry_rb_iter, dst_entry, mid + 1, right, new_element_id, max_level, level+1); \
+        element_referencer##_Dereference(dst_entry, new_element); \
+        return new_element_id; \
+    } \
+    /*
     * 分裂节点
     * 返回上升的索引元素
     *
@@ -454,30 +476,50 @@ kv分离是外层处理的，b+树操作的只有element
         if (left->type == kBPlusEntryLeaf) { \
             leaf_link_mode##_DEFINE_2(bp_tree_type_name) \
         } \
-        element_id_type left_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
-        bool insert = false; \
+        element_id_type left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
+        bool insert_right = false; \
         int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(right, *src_entry, insert_element)) / 2; \
-        while (left_elemeng_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
-            /* 检查填充率 */ \
-            if (entry_accessor##_GetFillRate(tree, left) <= fill_rate || left->element_count == 2) { \
-                break; \
-            } \
-            if (!insert && left_elemeng_id == insert_id) { \
-                bp_tree_type_name##BPlusEntryInsertElement(right, *src_entry, insert_element, insert_element_child_id); \
-                insert = true; \
+        /*
+        * 计算出右侧两侧各自的节点数量
+        */ \
+        element_id_type right_count = 1, left_count = 0; \
+        int32_t left_fill_rate = entry_accessor##_GetFillRate(tree, left); \
+        while (left_fill_rate > fill_rate && left->element_count > 2) { \
+            if (!insert_right && left_element_id == insert_id) { \
+                insert_right = true; \
                 continue; \
             } \
-            element_id_type next_elemeng_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_elemeng_id); \
-            bp_tree_type_name##BPlusElement* left_element = element_referencer##_Reference(left, left_elemeng_id); \
-            bp_tree_type_name##BPlusEntryInsertElement(right, left, left_element, entry_referencer##_InvalidId); \
-            element_referencer##_Dereference(left, left_element); \
-            bp_tree_type_name##BPlusEntryDeleteElement(left, left_elemeng_id); \
-            left_elemeng_id = next_elemeng_id; \
+            ++right_count; \
+            left_fill_rate -= element_accessor##_GetNeedRate(left, right, insert_element); \
+            left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_element_id); \
         } \
-        /* 新元素还没有插入，将其插入 */ \
-        if (!insert) { \
+          assert(left_element_id != element_referencer##_InvalidId); \
+          assert(right_count > 0); \
+        /* 先构建右侧节点的rb树 */ \
+        element_id_type temp_left_element_id = left_element_id; \
+        int32_t logn = right_count == 1 ? -1 : 0; for (int32_t i = right_count; i > 0; i /= 2) ++logn; \
+        right->rb_tree.root = bp_tree_type_name##BuildRbTree(left, &temp_left_element_id, right, 0, right_count-1, element_referencer##_InvalidId, logn, 0); \
+        /* 拷贝到临时节点，在原节点中重构rb树 */ \
+        bp_tree_type_name##BPlusEntry* temp_entry = entry_accessor##_GetTempCopyEntry(tree, left); \
+        entry_accessor##_Clean(tree, left); \
+        do { \
+            left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_element_id); \
+            ++left_count; \
+        } while (left_element_id != element_referencer##_InvalidId); \
+        left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree); \
+        logn = left_count == 1 ? -1 : 0; for (int32_t i = left_count; i > 0; i /= 2) ++logn; \
+        left->rb_tree.root = bp_tree_type_name##BuildRbTree(temp_entry, &left_element_id, left, 0, left_count-1, element_referencer##_InvalidId, logn, 0); \
+        \
+        /* 最终插入节点 */ \
+        if (insert_right) { \
+            bp_tree_type_name##BPlusEntryInsertElement(right, *src_entry, insert_element, insert_element_child_id); \
+            ++right_count; \
+        } else { \
             bp_tree_type_name##BPlusEntryInsertElement(left, *src_entry, insert_element, insert_element_child_id); \
+            ++left_count; \
         } \
+        left->element_count = left_count; \
+	    right->element_count = right_count; \
         \
         if (dereference_src_entry && *src_entry) entry_referencer##_Dereference(tree, *src_entry); \
         bp_tree_type_name##BPlusElement* up_element; \
