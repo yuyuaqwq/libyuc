@@ -133,8 +133,8 @@ bool ArKeyEqual(key_type* key1, key_type* key2, uint32_t offset) {
 	return key1->size == key2->size && !memcmp(&key1->buf[offset], &key2->buf[offset], key1->size - offset);
 }
 
-key_type* ArGetLeafKey(ArNode* child) {
-	return ArGetKey(&child->leaf.element);
+key_type* ArGetLeafKey(ArLeaf* child) {
+	return ArGetKey(&child->element);
 }
 
 element_type* ArGetElement(ArNode* child) {
@@ -600,32 +600,30 @@ static void ArNodeUpdatePrefix(ArNodeHead* head, uint8_t* prefix, int32_t match_
 /*
 * parent即将被删除，将parent的前缀、索引child的字节合并到child的前缀中
 */
-static void ArNodeMergePrefix(ArNode* parent, ArNode* child, uint8_t key_byte) {
+static void ArNodeMergePrefix(ArLeaf* del_leaf, uint32_t offset, uint32_t len, ArNode* child, uint8_t key_byte) {
 	if (child->head.node_type == kArLeaf) {
 		return;
 	}
 
-	uint32_t new_len = parent->head.prefix_len + child->head.prefix_len + 1;
+	uint32_t new_len = len + child->head.prefix_len + 1;
 	child->head.prefix_len = new_len;
 
 	uint8_t temp_buf[prefix_max_len];
 	memcpy(temp_buf, child->head.prefix, child->head.vaild_prefix_len);
 
-	memcpy(child->head.prefix, parent->head.prefix, parent->head.vaild_prefix_len);
+	// 先拷贝parent的前缀部分
+	uint8_t* buf = ArGetKeyByte(ArGetLeafKey(del_leaf), offset);
+	memcpy(child->head.prefix, buf, len);
 	
-	if (parent->head.prefix_len > parent->head.vaild_prefix_len) {
-		// 父节点的前缀不完整，没法继续合并了
-		child->head.vaild_prefix_len = parent->head.vaild_prefix_len;
-		return;
-	}
+	// 中间是索引字节
+	uint32_t child_byte_copy_len = min(prefix_max_len - len, 1);
+	memcpy(&child->head.prefix[len], &key_byte, child_byte_copy_len);
 
-	uint32_t child_byte_copy_len = min(prefix_max_len - parent->head.vaild_prefix_len, 1);
-	memcpy(&child->head.prefix[parent->head.vaild_prefix_len], &key_byte, child_byte_copy_len);
+	// 最后是child原本的前缀
+	uint32_t child_copy_len = min(prefix_max_len - child_byte_copy_len - len, child->head.vaild_prefix_len);
+	memcpy(&child->head.prefix[len + 1], temp_buf, child_copy_len);
 
-	uint32_t child_copy_len = min(prefix_max_len - child_byte_copy_len - parent->head.vaild_prefix_len, child->head.vaild_prefix_len);
-	memcpy(&child->head.prefix[parent->head.vaild_prefix_len + 1], temp_buf, child_copy_len);
-
-	child->head.vaild_prefix_len = parent->head.vaild_prefix_len;
+	child->head.vaild_prefix_len = len;
 	child->head.vaild_prefix_len += child_byte_copy_len;
 	child->head.vaild_prefix_len += child_copy_len;
 }
@@ -880,6 +878,7 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
 	do {
 		ArNode* cur = *cur_ptr;
 		if (cur->head.node_type == kArLeaf) {
+			uint32_t marge_offset = offset - 1;
 			if (optimistic) {
 				/* 需要进行乐观比较 */
 				offset = optimistic_offset;
@@ -917,7 +916,7 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
 						  assert((*parent_ptr)->head.child_count > 0);
 						child = parent->node4.child_arr[0];
 						// 将父节点的前缀和余下孩子的前缀进行合并
-						ArNodeMergePrefix(parent, child, parent->node4.keys[0]);
+						ArNodeMergePrefix(&cur->leaf, marge_offset - parent->head.prefix_len, parent->head.prefix_len, child, parent->node4.keys[0]);
 					}
 					(*parent_ptr) = child;
 
