@@ -51,6 +51,8 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
 /*
+* 对象处理器
+
 * 设计原则：
 * 对象传递统一使用指针
 * 
@@ -129,6 +131,23 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 * 在某个时刻回调某个方法
 */
 #define CUTILS_OBJECT_CALLBAKCER_DEFALUT
+
+/* 
+* 迭代器
+* 容器的迭代处理
+* 具体说明参考iterator.h
+*/
+#define CUTILS_OBJECT_ITERATOR_DEFALUT
+
+
+/*
+* 继承示例
+#define NEW_REFERENCER_InvalidId CUTILS_OBJECT_REFERENCER_DEFALUT_InvalidId
+#define NEW_REFERENCER_Reference(MAIN_OBJ, OLD_ID) CUTILS_OBJECT_REFERENCER_DEFALUT_Reference(MAIN_OBJ, OLD_ID)
+#define NEW_REFERENCER_Dereference(MAIN_OBJ, OLD_ID) CUTILS_OBJECT_REFERENCER_DEFALUT_Dereference(MAIN_OBJ, OLD_ID)
+#define NEW_REFERENCER CUTILS_OBJECT_REFERENCER_DEFALUT
+*/
+
 
 
 #ifdef _MSC_VER // for MSVC
