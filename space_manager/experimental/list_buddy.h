@@ -82,8 +82,8 @@ extern "C" {
 
 
 
-#define list_entry_id_type int32_t
-#define id_type int32_t
+#define list_entry_id_type uint32_t
+#define id_type uint32_t
 #define list_count
 
 
@@ -125,31 +125,41 @@ void ListBuddyInit(ListBuddy* buddy, id_type size) {
 		buddy->logn = 0;
 		return;
 	}
+	
+	
+	buddy->logn = 0;
+	id_type temp = size;
+	int i = 0;
+	do {
+		buddy->logn++;
+		size /= 2;
+		buddy->list_head[i++].first = -1;
+	} while (size > 0);
+	size = temp;
+
 	id_type head_size = sizeof(ListBuddy) + sizeof(ListBuddySinglyListHead) * buddy->logn;
 	if (!CUTILS_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(head_size)) {
 		head_size = ListBuddyAlignToPowersOf2(head_size);
 	}
-	size -= head_size;
-	buddy->logn = 0;
-	id_type mask = 1 << (sizeof(id_type) * 8 - 1);
-	do {
-		buddy->logn++;
-		size /= 2;
-		if (size == 0) {
-			break;
-		}
-		if (mask & size) {
 
+	id_type mask = 1 << (buddy->logn - 1);
+	id_type pos = size;
+	size -= head_size;
+	i = 1;
+	do {
+		if (mask & size) {
+			id_type cur_size = size & mask;
+			pos -= cur_size;
+			buddy->list_head[buddy->logn - i].first = pos;
+			((ListBuddySinglyListEntry*)((uintptr_t)buddy + pos))->next = -1;
 		}
-		else {
-			buddy->list_head[buddy->logn - 1].first = -1;
-		}
+		++i;
+		size &= (~mask);
 		mask >>= 1;
-	} while (true);
+	} while (size);
 	
-	buddy->list_head[buddy->logn-1].first = head_size;
-	
-	((ListBuddySinglyListEntry*)((uintptr_t)buddy + buddy->list_head[buddy->logn - 1].first))->next = -1;
+	//buddy->list_head[buddy->logn-1].first = head_size;
+	//((ListBuddySinglyListEntry*)((uintptr_t)buddy + buddy->list_head[buddy->logn - 1].first))->next = -1;
 }
 
 id_type ListBuddyAlloc(ListBuddy* buddy, size_t size) {
