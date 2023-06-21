@@ -1,10 +1,7 @@
 
 
 /*
-* @yuyuaqwq - 鱼鱼
-* email:1454832774@qq.com
-* project:https://github.com/yuyuaqwq/CUtils
-* 请保留此声明
+* Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
 #ifndef CUTILS_CONTAINER_AVL_TREE_NP_H_
