@@ -43,12 +43,17 @@ extern "C" {
         } \
         free_list_type_name##FreeBlockEntry* block = (free_list_type_name##FreeBlockEntry*)(&head->obj_arr[0]); \
         block->next_block_offset = referencer##_InvalidId; \
-        block->count = element_count; \
+        block->count = element_count - element_count % sizeof(free_list_type_name##FreeBlockEntry); \
     } \
     /*
     * 分配块，返回偏移
     */ \
-    id_type free_list_type_name##FreeListAlloc(free_list_type_name##FreeList* head, id_type list_order, id_type count) { \
+    id_type free_list_type_name##FreeListAlloc(free_list_type_name##FreeList* head, id_type list_order, id_type* count_) { \
+        id_type count = *count_; \
+        if (count % sizeof(free_list_type_name##FreeBlockEntry)) { \
+		    *count_ = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
+            count = *count; \
+        } \
         free_list_type_name##FreeBlockEntry* prev_block = (free_list_type_name##FreeBlockEntry*)(&head->first_block[list_order]); \
         id_type free_offset = head->first_block[list_order]; \
         while (free_offset != referencer##_InvalidId) { \
@@ -72,7 +77,12 @@ extern "C" {
     /*
     * 释放块
     */ \
-    void free_list_type_name##FreeListFree(free_list_type_name##FreeList* head, id_type list_order, id_type free_offset, id_type count) { \
+    void free_list_type_name##FreeListFree(free_list_type_name##FreeList* head, id_type list_order, id_type free_offset, id_type* count) { \
+        id_type count = *count_; \
+        if (count % sizeof(free_list_type_name##FreeBlockEntry)) { \
+		    *count = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
+            count = *count; \
+        } \
         id_type cur_offset = head->first_block[list_order]; \
         free_list_type_name##FreeBlockEntry* prev_block = (free_list_type_name##FreeBlockEntry*)(&head->first_block[list_order]); \
         free_list_type_name##FreeBlockEntry* cur_block; \
