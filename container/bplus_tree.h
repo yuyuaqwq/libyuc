@@ -481,14 +481,16 @@ kv分离是外层处理的，b+树操作的只有element
         */ \
         element_id_type right_count = 1, left_count = 0; \
         int32_t left_fill_rate = entry_accessor##_GetFillRate(tree, left); \
-        while (left_fill_rate > fill_rate && left->element_count > 2) { \
+        while (true) { \
             if (!insert_right && left_element_id == insert_id) { \
                 insert_right = true; \
-                continue; \
             } \
-            ++right_count; \
+            if (left_fill_rate <= fill_rate || left->element_count <= 2) { \
+                break; \
+            } \
             left_fill_rate -= element_accessor##_GetNeedRate(left, right, insert_element); \
             left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_element_id); \
+            ++right_count; \
         } \
           assert(left_element_id != element_referencer##_InvalidId); \
           assert(right_count > 0); \
@@ -503,6 +505,7 @@ kv分离是外层处理的，b+树操作的只有element
             left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&temp_entry->rb_tree, left_element_id); \
             ++left_count; \
         } while (left_element_id != element_referencer##_InvalidId); \
+        --left_count; \
         left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree); \
         logn = left_count == 1 ? -1 : 0; for (int32_t i = left_count; i > 0; i /= 2) ++logn; \
         left->rb_tree.root = bp_tree_type_name##BuildRbTree(temp_entry, &left_element_id, left, 0, left_count-1, element_referencer##_InvalidId, logn, 0); \
@@ -556,7 +559,6 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         /* 上升的4的子节点为左 */ \
         /*up_element->index.child_id = left_id;     up_element可能是leaf的元素，不能直接在此处赋值 */ \
-        element_referencer##_Reference(*src_entry, up_element); \
         \
         /* 4上升后，原先指向4的父元素，就指向8|12，(原先指向左节点的父元素指向右节点，因为上升的元素会变成父元素的兄弟，指向左节点) */ \
         bp_tree_type_name##BPlusElementSetChildId(parent, parent_element_id, right_id); \
@@ -614,11 +616,30 @@ kv分离是外层处理的，b+树操作的只有element
         bool success = true, insert_up = false; \
         element_id_type up_element_id = element_referencer##_InvalidId; \
         do { \
+            element_id_type free_rate = entry_accessor##_GetFreeRate(tree, cur); \
+            element_id_type need_rate = element_accessor##_GetNeedRate(cur, src_entry, insert_element); \
             if (cursor->leaf_status == kBPlusCursorEq) { \
-                bp_tree_type_name##BPlusElementSet(cur, cur_pos->element_id, src_entry, insert_element, insert_element_child_id); \
                 break; \
+                bp_tree_type_name##BPlusElement* raw = element_referencer##_Reference(cur, cur_pos->element_id); \
+                element_id_type raw_rate = element_accessor##_GetNeedRate(cur, cur, raw); \
+                element_referencer##_Dereference(cur, raw); \
+			    if (free_rate /* + need_rate */ >= raw_rate) { \
+				    /* 实际上可以加上need_rate，为了设计符合直觉要求有足够的拷贝空间 */ \
+                    element_accessor##_SetValue(cur, insert_element, cur, &insert_element->leaf.value); \
+				    break; \
+			    } \
+			    else { \
+				    /* 空间不足将会触发分裂，先将其删除 */ \
+				    cursor->leaf_status = kBPlusCursorNe; \
+                    element_id_type temp = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&cur->rb_tree, cur_pos->element_id); \
+				    if (temp != element_referencer##_InvalidId) { \
+					    temp = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&cur->rb_tree, temp); \
+				    } \
+				    bp_tree_type_name##BPlusEntryDeleteElement(cur, cur_pos->element_id); \
+				    cur_pos->element_id = temp; \
+			    } \
             } \
-            if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, src_entry, insert_element)) { \
+            else if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, src_entry, insert_element)) { \
                 /* 有空余的位置插入 */ \
                 bp_tree_type_name##BPlusEntryInsertElement(cur, src_entry, insert_element, insert_element_child_id); \
                 break; \
