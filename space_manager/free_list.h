@@ -51,8 +51,8 @@ extern "C" {
     id_type free_list_type_name##FreeListAlloc(free_list_type_name##FreeList* head, id_type list_order, id_type* count_) { \
         id_type count = *count_; \
         if (count % sizeof(free_list_type_name##FreeBlockEntry)) { \
-		    *count_ = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
-            count = *count; \
+		    count = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
+            *count_ = count; \
         } \
         free_list_type_name##FreeBlockEntry* prev_block = (free_list_type_name##FreeBlockEntry*)(&head->first_block[list_order]); \
         id_type free_offset = head->first_block[list_order]; \
@@ -77,11 +77,11 @@ extern "C" {
     /*
     * 释放块
     */ \
-    void free_list_type_name##FreeListFree(free_list_type_name##FreeList* head, id_type list_order, id_type free_offset, id_type* count) { \
+    void free_list_type_name##FreeListFree(free_list_type_name##FreeList* head, id_type list_order, id_type free_offset, id_type* count_) { \
         id_type count = *count_; \
         if (count % sizeof(free_list_type_name##FreeBlockEntry)) { \
-		    *count = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
-            count = *count; \
+		    count = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
+            *count_ = count; \
         } \
         id_type cur_offset = head->first_block[list_order]; \
         free_list_type_name##FreeBlockEntry* prev_block = (free_list_type_name##FreeBlockEntry*)(&head->first_block[list_order]); \
@@ -149,7 +149,19 @@ extern "C" {
         } \
         return max; \
     } \
-
+    id_type free_list_type_name##FreeListGetFreeBlockSize(free_list_type_name##FreeList* head, id_type list_order) { \
+        free_list_type_name##FreeBlockEntry* prev_block = (free_list_type_name##FreeBlockEntry*)((uintptr_t)&head->first_block[list_order]); \
+        id_type free_offset = head->first_block[list_order]; \
+        id_type max = 0; \
+        while (free_offset != referencer##_InvalidId) { \
+            free_list_type_name##FreeBlockEntry* block = (free_list_type_name##FreeBlockEntry*)(&head->obj_arr[free_offset]); \
+            if (block->count > max) { \
+                max += block->count; \
+            } \
+            free_offset = block->next_block_offset; \
+        } \
+        return max; \
+    } \
 
 #ifdef __cplusplus
 }
