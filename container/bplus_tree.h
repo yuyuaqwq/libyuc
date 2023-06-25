@@ -500,7 +500,7 @@ kv分离是外层处理的，b+树操作的只有element
         bp_tree_type_name##BPlusEntry* temp_entry = entry_accessor##_GetTempCopyEntry(tree, left); \
         entry_accessor##_Clean(tree, left); \
         do { \
-            left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, left_element_id); \
+            left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&temp_entry->rb_tree, left_element_id); \
             ++left_count; \
         } while (left_element_id != element_referencer##_InvalidId); \
         left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree); \
