@@ -26,6 +26,11 @@ extern "C" {
         id_type first_block[list_count];        /* 分别指向不同队列的第一个块 */ \
         element_type obj_arr[obj_count]; \
     } free_list_type_name##FreeList; \
+    id_type free_list_type_name##FreeListAlloc(free_list_type_name##FreeList* head, id_type list_order, id_type* count_); \
+    id_type free_list_type_name##FreeListAlloc(free_list_type_name##FreeList* head, id_type list_order, id_type* count_); \
+    void free_list_type_name##FreeListFree(free_list_type_name##FreeList* head, id_type list_order, id_type free_offset, id_type* count_); \
+    id_type free_list_type_name##FreeListGetFreeBlockSize(free_list_type_name##FreeList* head, id_type list_order); \
+    id_type free_list_type_name##FreeListGetMaxFreeBlockSize(free_list_type_name##FreeList* head, id_type list_order); \
 
 #define CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION(free_list_type_name, id_type, element_type, list_count, obj_count) \
     CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_1(free_list_type_name, id_type) \
@@ -51,7 +56,7 @@ extern "C" {
     id_type free_list_type_name##FreeListAlloc(free_list_type_name##FreeList* head, id_type list_order, id_type* count_) { \
         id_type count = *count_; \
         if (count % sizeof(free_list_type_name##FreeBlockEntry)) { \
-		    count = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
+		    count = count + ((count % sizeof(free_list_type_name##FreeBlockEntry) ? sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry) : 0)); \
             *count_ = count; \
         } \
         free_list_type_name##FreeBlockEntry* prev_block = (free_list_type_name##FreeBlockEntry*)(&head->first_block[list_order]); \
@@ -80,7 +85,7 @@ extern "C" {
     void free_list_type_name##FreeListFree(free_list_type_name##FreeList* head, id_type list_order, id_type free_offset, id_type* count_) { \
         id_type count = *count_; \
         if (count % sizeof(free_list_type_name##FreeBlockEntry)) { \
-		    count = count + (sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry)); \
+            count = count + ((count % sizeof(free_list_type_name##FreeBlockEntry) ? sizeof(free_list_type_name##FreeBlockEntry) - count % sizeof(free_list_type_name##FreeBlockEntry) : 0)); \
             *count_ = count; \
         } \
         id_type cur_offset = head->first_block[list_order]; \

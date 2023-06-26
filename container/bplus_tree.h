@@ -619,12 +619,11 @@ kv分离是外层处理的，b+树操作的只有element
             element_id_type free_rate = entry_accessor##_GetFreeRate(tree, cur); \
             element_id_type need_rate = element_accessor##_GetNeedRate(cur, src_entry, insert_element); \
             if (cursor->leaf_status == kBPlusCursorEq) { \
-                break; \
                 bp_tree_type_name##BPlusElement* raw = element_referencer##_Reference(cur, cur_pos->element_id); \
                 element_id_type raw_rate = element_accessor##_GetNeedRate(cur, cur, raw); \
                 element_referencer##_Dereference(cur, raw); \
-			    if (free_rate /* + need_rate */ >= raw_rate) { \
-				    /* 实际上可以加上need_rate，为了设计符合直觉要求有足够的拷贝空间 */ \
+			    if (free_rate + need_rate >= raw_rate) { \
+				    /* SetValue会先释放原有空间，因此空闲空间可以计入已分配的部分 */ \
                     element_accessor##_SetValue(cur, insert_element, cur, &insert_element->leaf.value); \
 				    break; \
 			    } \
