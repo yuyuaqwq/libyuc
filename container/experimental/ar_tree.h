@@ -28,7 +28,7 @@ struct data {
 typedef struct data key_type;
 typedef struct data element_type;
 #define InvalidId 0
-#define prefix_max_len 2
+#define prefix_max_len 8
 
 
 /*
