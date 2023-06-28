@@ -58,10 +58,12 @@ extern "C" {
 		key_type* key = accessor##_GetKey(list, entry); \
 		hash_list_type_name##HashListHashEntry put_hash_entry; \
 		put_hash_entry.hash_list_entry = entry; \
-		hash_list_type_name##HashListHashEntry* hash_entry = hash_list_type_name##HashListHashTablePut(&list->hash_table, &put_hash_entry); \
+		hash_list_type_name##HashListHashTableIterator iter; \
+		hash_list_type_name##HashListHashEntry* hash_entry = hash_list_type_name##HashListHashTableIteratorLocate(&list->hash_table, &iter, key); \
 		if (hash_entry) { \
 			hash_list_type_name##HashListDelete(list, key); \
 		} \
+		hash_list_type_name##HashListHashTableIteratorPut(&list->hash_table, &iter, &put_hash_entry); \
 		ListPutFirst(&list->list_head, &entry->list_entry); \
 		return hash_entry ? hash_entry->hash_list_entry : NULL; \
 	} \
@@ -74,11 +76,13 @@ extern "C" {
 	} \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListDelete(hash_list_type_name##HashList* list, key_type* key) { \
 		hash_list_type_name##HashListEntry* hash_list_entry = NULL; \
-		hash_list_type_name##HashListHashEntry* del_hash_entry = hash_list_type_name##HashListHashTableDelete(&list->hash_table, key); \
+		hash_list_type_name##HashListHashTableIterator iter; \
+		hash_list_type_name##HashListHashEntry* del_hash_entry = hash_list_type_name##HashListHashTableIteratorLocate(&list->hash_table, &iter, key); \
 		if (del_hash_entry) { \
 			hash_list_entry = del_hash_entry->hash_list_entry; \
 			ListDeleteEntry(&list->list_head, &del_hash_entry->hash_list_entry->list_entry); \
 		} \
+		hash_list_type_name##HashListHashTableIteratorDelete(&list->hash_table, &iter); \
 		return del_hash_entry ? hash_list_entry : NULL; \
 	} \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListIteratorLast(hash_list_type_name##HashList* list) { \
