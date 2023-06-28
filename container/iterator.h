@@ -29,7 +29,7 @@ extern "C" {
 // 迭代器迭代
 // Next - 转到下一个
 // Prev - 转到上一个
-// Access - 直接定位，如array支持基于整数索引随机定位、map支持基于key定位
+// Locate - 直接定位，如array支持基于整数索引随机定位、map支持基于key定位
 
 // ... 自定义方法，如树可能还会提供Up、Down等迭代方法
 
