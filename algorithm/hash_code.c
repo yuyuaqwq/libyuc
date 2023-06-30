@@ -1,4 +1,4 @@
-#include <CUtils/algorithm/hash_map.h>
+#include <CUtils/algorithm/hash_code.h>
 
 /*
 * 主要哈希算法来源：笨方法学C
@@ -9,7 +9,7 @@
  * Simple Bob Jenkins's hash algorithm taken from the
  * wikipedia description.
  */
-uint32_t Hashmap_jenkins_hash(const void* buf1_, size_t size) {
+uint32_t HashCode_jenkins_hash(const void* buf1_, size_t size) {
     char* key = (char*)buf1_;
     uint32_t hash = 0;
     uint32_t i = 0;
@@ -31,7 +31,7 @@ uint32_t Hashmap_jenkins_hash(const void* buf1_, size_t size) {
 /*
 * http://burtleburtle.net/bob/hash/integer.html
 */
-uint32_t Hashmap_hashint(uint32_t a) {
+uint32_t HashCode_hashint(uint32_t a) {
     a -= (a << 6);
     a ^= (a >> 17);
     a -= (a << 9);
@@ -48,7 +48,7 @@ uint32_t Hashmap_hashint(uint32_t a) {
 // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
 const uint32_t FNV_PRIME = 16777619;
 const uint32_t FNV_OFFSET_BASIS = 2166136261;
-uint32_t Hashmap_fnv1a_hash(const void* data, size_t size)
+uint32_t HashCode_fnv1a_hash(const void* data, size_t size)
 {
     char* s = (char*)data;
     uint32_t hash = FNV_OFFSET_BASIS;
@@ -64,7 +64,7 @@ uint32_t Hashmap_fnv1a_hash(const void* data, size_t size)
 
 
 const int MOD_ADLER = 65521;
-uint32_t Hashmap_adler32_hash(const void* data, size_t size)
+uint32_t HashCode_adler32_hash(const void* data, size_t size)
 {
     char* s = (char*)data;
     uint32_t a = 1, b = 0;
@@ -80,7 +80,7 @@ uint32_t Hashmap_adler32_hash(const void* data, size_t size)
 }
 
 
-uint32_t Hashmap_djb_hash(const void* data, size_t size)
+uint32_t HashCode_djb_hash(const void* data, size_t size)
 {
     char* s = (char*)data;
     uint32_t hash = 5381;
@@ -100,7 +100,7 @@ uint32_t Hashmap_djb_hash(const void* data, size_t size)
  *
  * copyright (c) 2014-2022 joseph werle <joseph.werle@gmail.com>
  */
-uint32_t Hashmap_murmurhash(const void* key_, size_t len/*, uint32_t seed*/) {
+uint32_t HashCode_murmurhash(const void* key_, size_t len/*, uint32_t seed*/) {
     uint32_t seed = 0;
 
     char* key = (char*)key_;

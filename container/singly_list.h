@@ -51,10 +51,18 @@ extern "C" {
         return old_first_id; \
     } \
     id_type singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id) { \
-        singly_list_type_name##SinglyListEntry* prev = referencer##_Reference(head, prev_id); \
+        singly_list_type_name##SinglyListEntry* prev; \
+        if (prev_id != referencer##_InvalidId) { \
+            prev = referencer##_Reference(head, prev_id); \
+        } \
+        else { \
+            prev = (singly_list_type_name##SinglyListEntry*)head; \
+        } \
         singly_list_type_name##SinglyListEntry* del_entry = referencer##_Reference(head, del_entry_id); \
         prev->next = del_entry->next; \
-        referencer##_Dereference(head, prev); \
+        if (prev_id != referencer##_InvalidId) { \
+            referencer##_Dereference(head, prev); \
+        } \
         referencer##_Dereference(head, del_entry); \
         return del_entry_id; \
     } \

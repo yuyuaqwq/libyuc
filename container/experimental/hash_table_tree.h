@@ -9,7 +9,7 @@
 #include <CUtils/algorithm/hash_code.h>
 #include <CUtils/container/vector.h>
 #include <CUtils/container/static_list.h>
-#include <CUtils/container/singly_list.h>
+#include <CUtils/container/rb_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +71,6 @@ extern "C" {
 #define CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
         uint32_t cur_index; \
-        int32_t entry_prev_id; \
         int32_t entry_cur_id; \
         CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
     } hash_table_type_name##HashTableIterator; \
@@ -83,16 +82,16 @@ extern "C" {
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
     \
-    CUTILS_CONTAINER_SINGLY_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t) \
+    CUTILS_CONTAINER_RB_TREE_DECLARATION(hash_table_type_name##HashLink, int32_t, key_type) \
     typedef struct _##hash_table_type_name##HashLinkEntry { \
         union  { \
             int32_t next; \
-            hash_table_type_name##HashLinkSinglyListEntry entry; \
+            hash_table_type_name##HashLinkRbEntry entry; \
         }; \
         element_type obj; \
     } hash_table_type_name##HashLinkEntry; \
     typedef struct _##hash_table_type_name##HashLinkMainObj { /* 传递时的主对象 */ \
-        hash_table_type_name##HashLinkSinglyListHead head; \
+        hash_table_type_name##HashLinkRbTree head; \
         struct _##hash_table_type_name##HashTable* table; \
     } hash_table_type_name##HashLinkMainObj; \
     \
@@ -103,7 +102,7 @@ extern "C" {
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
         union { \
-            hash_table_type_name##HashLinkSinglyListHead list_head; \
+            hash_table_type_name##HashLinkRbTree list_head; \
         }; \
     } hash_table_type_name##HashTableEntry; \
     typedef struct _##hash_table_type_name##HashTable { \
@@ -130,14 +129,6 @@ extern "C" {
     } \
     CUTILS_CONTAINER_STATIC_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1) \
     \
-    static const int32_t hash_table_type_name##HashLinkReferencer_InvalidId = (-1); \
-    forceinline hash_table_type_name##HashLinkSinglyListEntry* hash_table_type_name##HashLinkReferencer_Reference(hash_table_type_name##HashLinkSinglyListHead* head, int32_t entry_id) { \
-        if (entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return NULL; \
-        hash_table_type_name##HashLinkMainObj* obj = (hash_table_type_name##HashLinkMainObj*)head; \
-        return &obj->table->link.obj_arr[entry_id + 1].entry; \
-    } \
-    forceinline void hash_table_type_name##HashLinkReferencer_Dereference(hash_table_type_name##HashLinkSinglyListHead* head, hash_table_type_name##HashLinkSinglyListEntry* entry) {  } \
-    CUTILS_CONTAINER_SINGLY_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkReferencer) \
     /*
     * 动态数组
     */ \
@@ -146,6 +137,38 @@ extern "C" {
     } \
     CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
     CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashTableEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    /*
+    * 红黑树
+    */ \
+    static const int32_t hash_table_type_name##HashLinkReferencer_InvalidId = (-1) ; \
+    forceinline hash_table_type_name##HashLinkRbEntry* hash_table_type_name##HashLinkReferencer_Reference(hash_table_type_name##HashLinkRbTree* tree, int32_t entry_id) { \
+        if (entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return NULL; \
+        hash_table_type_name##HashLinkMainObj* rb_obj = (hash_table_type_name##HashLinkMainObj*)tree; \
+        return &rb_obj->table->link.obj_arr[entry_id+1].entry; \
+    } \
+    forceinline void hash_table_type_name##HashLinkReferencer_Dereference(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbEntry* entry) {  } \
+    \
+    typedef struct { \
+        int32_t color : 1; \
+        int32_t parent : sizeof(int32_t) * 8 - 1; \
+    } hash_table_type_name##HashLinkRbParentColor; \
+    forceinline key_type* hash_table_type_name##HashLinkRbAccessor##_GetKey(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
+        hash_table_type_name##HashLinkMainObj* rb_obj = (hash_table_type_name##HashLinkMainObj*)tree; \
+        return accessor##_GetKey(rb_obj->table, &((hash_table_type_name##HashLinkEntry*)bs_entry)->obj); \
+    } \
+    forceinline int32_t hash_table_type_name##HashLinkRbAccessor##_GetParent(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
+        return (((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->parent); \
+    } \
+    forceinline RbColor hash_table_type_name##HashLinkRbAccessor##_GetColor(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry) { \
+        return (((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->color == -1 ? 1 : 0); \
+    } \
+    forceinline void hash_table_type_name##HashLinkRbAccessor##_SetParent(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry, int32_t new_id) { \
+        ((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->parent = new_id; \
+    } \
+    forceinline void hash_table_type_name##HashLinkRbAccessor##_SetColor(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry, RbColor new_color) { \
+        return ((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->color = new_color; \
+    } \
+    CUTILS_CONTAINER_RB_TREE_DEFINE(hash_table_type_name##HashLink, int32_t, key_type, hash_table_type_name##HashLinkReferencer, hash_table_type_name##HashLinkRbAccessor, comparer) \
     \
     /*
     * 哈希表
@@ -191,7 +214,7 @@ extern "C" {
         table->bucket.count = 0; \
         \
         for (int i = 0; i < table->bucket.capacity; i++) { \
-            hash_table_type_name##HashLinkSinglyListHeadInit(&table->bucket.obj_arr[i].list_head); \
+            hash_table_type_name##HashLinkRbTreeInit(&table->bucket.obj_arr[i].list_head); \
         } \
         if (load_fator == 0) { \
             load_fator = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
@@ -225,15 +248,9 @@ extern "C" {
         hash_table_type_name##HashLinkMainObj main_obj; \
         main_obj.head = entry->list_head; \
         main_obj.table = table; \
-        iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorFirst(&main_obj.head); \
-        iter->entry_prev_id = hash_table_type_name##HashLinkReferencer_InvalidId; \
-        while (iter->entry_cur_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
-            hash_table_type_name##HashLinkEntry* link_entry = &table->link.obj_arr[iter->entry_cur_id + 1]; \
-            if (comparer##_Equal(table, accessor##_GetKey(table, &link_entry->obj), key)) { \
-                return &link_entry->obj; \
-            } \
-            iter->entry_prev_id = iter->entry_cur_id; \
-            iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorNext(&main_obj.head, iter->entry_cur_id); \
+        iter->entry_cur_id = hash_table_type_name##HashLinkRbTreeFind(&main_obj.head, key); \
+        if (iter->entry_cur_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
+            return &table->link.obj_arr[iter->entry_cur_id + 1].obj; \
         } \
         return NULL; \
     } \
@@ -242,18 +259,15 @@ extern "C" {
         hash_table_type_name##HashLinkMainObj main_obj; \
         main_obj.table = table; \
         main_obj.head = entry->list_head; \
-        if (iter->entry_cur_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
-            hash_table_type_name##HashLinkEntry* link_entry = (hash_table_type_name##HashLinkEntry*)hash_table_type_name##HashLinkReferencer_Reference(&main_obj.head, iter->entry_cur_id); \
-            if (comparer##_Equal(table, accessor##_GetKey(table, &link_entry->obj), accessor##_GetKey(table, obj))) { \
-                obj_mover##_Assignment(table, &link_entry->obj, obj); \
-                return; \
-            } \
-            hash_table_type_name##HashLinkReferencer_Dereference(&main_obj.head, link_entry); \
-        } \
         int32_t link_entry_id = hash_table_type_name##HashTableAllocLinkEntry(table); \
         obj_mover##_Assignment(table, &table->link.obj_arr[link_entry_id + 1].obj, obj); \
-        hash_table_type_name##HashLinkSinglyListPutFirst(&main_obj.head, link_entry_id); \
-        table->bucket.count++; \
+        int32_t old_rb_id = hash_table_type_name##HashLinkRbTreePut(&main_obj.head, link_entry_id); \
+        if (old_rb_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
+            hash_table_type_name##HashTableFreeLinkEntry(table, old_rb_id); \
+        } \
+        else { \
+            table->bucket.count++; \
+        } \
         entry->list_head = main_obj.head; \
         \
         if (hash_table_type_name##HashGetCurrentLoadFator(table) >= table->load_fator) { \
@@ -268,8 +282,7 @@ extern "C" {
 		main_obj.table = table; \
         int32_t link_entry_id = iter->entry_cur_id; \
         if (link_entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return false; \
-        hash_table_type_name##HashLinkSinglyListDeleteEntry(&main_obj.head, iter->entry_prev_id, link_entry_id); \
-        element_type* old_element = &table->link.obj_arr[link_entry_id + 1].obj; \
+        hash_table_type_name##HashLinkRbTreeDelete(&main_obj.head, link_entry_id); \
         table->bucket.count--; \
         entry->list_head = main_obj.head; \
         hash_table_type_name##HashTableFreeLinkEntry(table, link_entry_id); \
@@ -290,12 +303,10 @@ extern "C" {
             } \
             if (iter->entry_cur_id == hash_table_type_name##HashLinkReferencer_InvalidId) { \
                 main_obj.head = table->bucket.obj_arr[iter->cur_index].list_head; \
-                iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorFirst(&main_obj.head); \
-                iter->entry_prev_id = hash_table_type_name##HashLinkReferencer_InvalidId; \
+                iter->entry_cur_id = hash_table_type_name##HashLinkRbTreeIteratorFirst(&main_obj.head); \
             } else { \
                 main_obj.head = table->bucket.obj_arr[iter->cur_index].list_head; \
-                iter->entry_prev_id = iter->entry_cur_id; \
-                iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorNext(&main_obj.head, iter->entry_cur_id); \
+                iter->entry_cur_id = hash_table_type_name##HashLinkRbTreeIteratorNext(&main_obj.head, iter->entry_cur_id); \
             } \
             if (iter->entry_cur_id == hash_table_type_name##HashLinkReferencer_InvalidId) { \
                 ++iter->cur_index; \
