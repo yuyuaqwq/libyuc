@@ -17,9 +17,9 @@ extern "C" {
 * 基于开放定址(线性探测)法的哈希表
 */
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
+#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75  //%
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT 8
+#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT 8  // (table->bucket.capacity - 1)
 
 
 #ifdef CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS
@@ -177,7 +177,8 @@ extern "C" {
             if (comparer##_Equal(table, entry_key, &table->empty_key)) { \
                 break; \
             } \
-            iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
+            if (i + 1 != CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT) \
+                iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
         } \
         return NULL; \
     } \
@@ -187,24 +188,29 @@ extern "C" {
             element_mover##_Copy(table, &entry->obj, obj); \
             return; \
         } \
-        do { \
-            int32_t i = 0; \
-            for (; i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT; i++) { \
-                key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
-                if (comparer##_Equal(table, entry_key, &table->empty_key)) { \
-                    element_mover##_Copy(table, &entry->obj, obj); \
+        if (comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), &table->empty_key)) { \
+            element_mover##_Copy(table, &entry->obj, obj); \
+        } \
+        else { \
+            do { \
+                hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
+                iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
+                entry = &table->bucket.obj_arr[iter->cur_index]; \
+                int32_t i = 0; \
+                for (; i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT; i++) { \
+                    key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
+                    if (comparer##_Equal(table, entry_key, &table->empty_key)) { \
+                        element_mover##_Copy(table, &entry->obj, obj); \
+                        break; \
+                    } \
+                    iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
+                    entry = &table->bucket.obj_arr[iter->cur_index]; \
+                } \
+                if (i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT) { \
                     break; \
                 } \
-                iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
-                entry = &table->bucket.obj_arr[iter->cur_index]; \
-            } \
-            if (i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT) { \
-                break; \
-            } \
-            hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
-            iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
-            entry = &table->bucket.obj_arr[iter->cur_index]; \
-        } while (true); \
+            } while (true); \
+        } \
         table->bucket.count++; \
         if (hash_table_type_name##HashGetCurrentLoadFator(table) >= table->load_fator) { \
             /* 触发扩容 */ \
