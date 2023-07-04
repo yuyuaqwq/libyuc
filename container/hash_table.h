@@ -88,9 +88,10 @@ extern "C" {
         hash_table_type_name##HashBucketVector bucket; \
         uint32_t load_fator; \
         key_type empty_key; \
+        element_type empty_obj; \
     } ##hash_table_type_name##HashTable; \
     \
-    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator, const key_type* empty_key); \
+    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator, const element_type* empty_obj, const key_type* empty_key); \
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table); \
     size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
@@ -119,7 +120,7 @@ extern "C" {
     /* 重映射 */ \
     static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, size_t new_capacity) {  \
         hash_table_type_name##HashTable temp_table; \
-        hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator, &table->empty_key); \
+        hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator, &table->empty_obj, &table->empty_key); \
         hash_table_type_name##HashTableIterator iter; \
         element_type* obj = hash_table_type_name##HashTableIteratorFirst(table, &iter); \
         while (obj) { \
@@ -130,17 +131,17 @@ extern "C" {
         hash_table_type_name##HashTableRelease(table); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     } \
-    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator, const key_type* empty_key) { \
+    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator, const element_type* empty_obj, const key_type* empty_key) { \
         if (capacity == 0) { \
             capacity = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
         hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, true); \
         table->bucket.count = 0; \
         table->empty_key = *empty_key; \
+        table->empty_obj = *empty_obj; \
         \
         for (int i = 0; i < table->bucket.capacity; i++) { \
-            key_type* key = accessor##_GetKey(table, &table->bucket.obj_arr[i].obj); \
-            key_mover##_Copy(table, key, empty_key); ; \
+            memcpy(&table->bucket.obj_arr[i].obj, empty_obj, sizeof(*empty_obj)); \
         } \
         if (load_fator == 0) { \
             load_fator = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \

@@ -26,21 +26,25 @@ extern "C" {
 		ListHead list_head; \
 		size_t max_count; \
 	} hash_list_type_name##HashList; \
-	void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count); \
+	void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count, const key_type* empty_key); \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListGet(hash_list_type_name##HashList* list, key_type* key, bool put_first); \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListPut(hash_list_type_name##HashList* list, hash_list_type_name##HashListEntry* entry); \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListPop(hash_list_type_name##HashList* list); \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListDelete(hash_list_type_name##HashList* list, key_type* key); \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListIteratorLast(hash_list_type_name##HashList* list); \
-	
+
+
 #define CUTILS_CONTAINER_HASH_LIST_DEFINE(hash_list_type_name, key_type, accessor, allocater, hasher, comparer) \
 	forceinline key_type* hash_list_type_name##HashListHashEntryAccessor_GetKey(hash_list_type_name##HashListHashTable* table, hash_list_type_name##HashListHashEntry* hash_entry) { \
+		if (!hash_entry->hash_list_entry) return &table->empty_key; \
 		return accessor##_GetKey((hash_list_type_name##HashList*)table, hash_entry->hash_list_entry); \
 	} \
-    CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, CUTILS_OBJECT_MOVER_DEFALUT, hasher, comparer) \
+    CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, CUTILS_OBJECT_MOVER_DEFALUT, CUTILS_OBJECT_MOVER_DEFALUT, hasher, comparer) \
     \
-	void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count) { \
-		hash_list_type_name##HashListHashTableInit(&list->hash_table, max_count, 0); \
+	void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count, const key_type* empty_key) { \
+		hash_list_type_name##HashListHashEntry empty_hash_entry; \
+		empty_hash_entry.hash_list_entry = NULL; \
+		hash_list_type_name##HashListHashTableInit(&list->hash_table, max_count, 0, &empty_hash_entry, empty_key); \
 		ListInit(&list->list_head); \
 		list->max_count = max_count; \
 	} \
