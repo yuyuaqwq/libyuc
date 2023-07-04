@@ -164,3 +164,30 @@ uint32_t HashCode_murmurhash(const void* key_, size_t len/*, uint32_t seed*/) {
 
     return h;
 }
+
+
+/*
+* https://github.com/PeterScott/murmur3
+*/
+
+// Finalization mix - force all bits of a hash block to avalanche
+uint32_t HashCode_murmur3_fmix32(uint32_t h) {
+    h ^= h >> 16;
+    h *= 0x85ebca6b;
+    h ^= h >> 13;
+    h *= 0xc2b2ae35;
+    h ^= h >> 16;
+    return h;
+}
+
+//----------
+
+#define BIG_CONSTANT(x) (x##LLU)
+uint64_t HashCode_murmur3_fmix64(uint64_t k) {
+    k ^= k >> 33;
+    k *= BIG_CONSTANT(0xff51afd7ed558ccd);
+    k ^= k >> 33;
+    k *= BIG_CONSTANT(0xc4ceb9fe1a85ec53);
+    k ^= k >> 33;
+    return k;
+}

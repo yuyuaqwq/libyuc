@@ -24,6 +24,10 @@ uint32_t HashCode_djb_hash(const void* data, size_t size);
 
 uint32_t HashCode_murmurhash(const void* key_, size_t len);
 
+uint32_t HashCode_murmur3_fmix32(uint32_t h);
+
+uint64_t HashCode_murmur3_fmix64(uint64_t k);
+
 #ifdef __cplusplus
 }
 #endif
