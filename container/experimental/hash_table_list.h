@@ -8,18 +8,19 @@
 #include <CUtils/object.h>
 #include <CUtils/algorithm/hash_code.h>
 #include <CUtils/container/vector.h>
+#include <CUtils/container/static_list.h>
+#include <CUtils/container/singly_list.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
-* 基于开放定址(线性探测)法的哈希表
+* 基于链地址法的哈希表
 */
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT 8
 
 
 #ifdef CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS
@@ -70,6 +71,8 @@ extern "C" {
 #define CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
         uint32_t cur_index; \
+        int32_t entry_prev_id; \
+        int32_t entry_cur_id; \
         CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
     } hash_table_type_name##HashTableIterator; \
     \
@@ -79,19 +82,37 @@ extern "C" {
     void hash_table_type_name##HashTableIteratorPut(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const element_type* obj); \
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
+    \
+    CUTILS_CONTAINER_SINGLY_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t) \
+    typedef struct _##hash_table_type_name##HashLinkEntry { \
+        union  { \
+            int32_t next; \
+            hash_table_type_name##HashLinkSinglyListEntry entry; \
+        }; \
+        element_type obj; \
+    } hash_table_type_name##HashLinkEntry; \
+    typedef struct _##hash_table_type_name##HashLinkMainObj { /* 传递时的主对象 */ \
+        hash_table_type_name##HashLinkSinglyListHead head; \
+        struct _##hash_table_type_name##HashTable* table; \
+    } hash_table_type_name##HashLinkMainObj; \
+    \
+    CUTILS_CONTAINER_STATIC_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, 1) \
+    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry) \
+    \
     CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashTableEntry) \
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
-        element_type obj; \
+        union { \
+            hash_table_type_name##HashLinkSinglyListHead list_head; \
+        }; \
     } hash_table_type_name##HashTableEntry; \
     typedef struct _##hash_table_type_name##HashTable { \
         hash_table_type_name##HashBucketVector bucket; \
+        hash_table_type_name##HashLinkVector link; \
         uint32_t load_fator; \
-        key_type empty_key; \
     } ##hash_table_type_name##HashTable; \
     \
-    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator, const key_type* empty_key); \
-    void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table); \
+    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator); \
     size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
     void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj); \
@@ -100,10 +121,30 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey方法
-#define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, element_mover, key_mover, hasher, comparer) \
+#define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
+    /*
+    * 静态链表
+    */ \
+    static hash_table_type_name##HashLinkStaticList* hash_table_type_name##HashLinkGetStaticList(hash_table_type_name##HashLinkVector* link_vector) { \
+        return (hash_table_type_name##HashLinkStaticList*)((uintptr_t)&link_vector->obj_arr[1] - sizeof(hash_table_type_name##HashLinkStaticList)); \
+    } \
+    CUTILS_CONTAINER_STATIC_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1) \
+    \
+    static const int32_t hash_table_type_name##HashLinkReferencer_InvalidId = (-1); \
+    forceinline hash_table_type_name##HashLinkSinglyListEntry* hash_table_type_name##HashLinkReferencer_Reference(hash_table_type_name##HashLinkSinglyListHead* head, int32_t entry_id) { \
+        if (entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return NULL; \
+        hash_table_type_name##HashLinkMainObj* obj = (hash_table_type_name##HashLinkMainObj*)head; \
+        return &obj->table->link.obj_arr[entry_id + 1].entry; \
+    } \
+    forceinline void hash_table_type_name##HashLinkReferencer_Dereference(hash_table_type_name##HashLinkSinglyListHead* head, hash_table_type_name##HashLinkSinglyListEntry* entry) {  } \
+    CUTILS_CONTAINER_SINGLY_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkReferencer) \
     /*
     * 动态数组
     */ \
+    forceinline void hash_table_type_name##HashLinkVectorCallbacker##_Expand(hash_table_type_name##HashLinkVector* arr, size_t old_capacity, size_t new_capacity) { \
+        hash_table_type_name##HashLinkStaticListExpand(hash_table_type_name##HashLinkGetStaticList(arr), old_capacity, new_capacity); \
+    } \
+    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
     CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashTableEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
     /*
@@ -115,11 +156,21 @@ extern "C" {
     static forceinline uint32_t hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
     } \
+    static int32_t hash_table_type_name##HashTableAllocLinkEntry(hash_table_type_name##HashTable* table) { \
+        hash_table_type_name##HashLinkStaticList* static_list = hash_table_type_name##HashLinkGetStaticList(&table->link); \
+        int32_t id = hash_table_type_name##HashLinkStaticListPop(static_list, 0); \
+          assert(id != CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId); \
+        return id; \
+    } \
+    static void hash_table_type_name##HashTableFreeLinkEntry(hash_table_type_name##HashTable* table, int32_t id) { \
+        hash_table_type_name##HashLinkStaticList* static_list = hash_table_type_name##HashLinkGetStaticList(&table->link); \
+        hash_table_type_name##HashLinkStaticListPush(static_list, 0, id); \
+    } \
     size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
     /* 重映射 */ \
     static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, size_t new_capacity) {  \
         hash_table_type_name##HashTable temp_table; \
-        hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator, &table->empty_key); \
+        hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator); \
         hash_table_type_name##HashTableIterator iter; \
         element_type* obj = hash_table_type_name##HashTableIteratorFirst(table, &iter); \
         while (obj) { \
@@ -130,17 +181,17 @@ extern "C" {
         hash_table_type_name##HashTableRelease(table); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     } \
-    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator, const key_type* empty_key) { \
+    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator) { \
         if (capacity == 0) { \
             capacity = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
         hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, true); \
+        hash_table_type_name##HashLinkVectorInit(&table->link, capacity + 1, true); \
+        hash_table_type_name##HashLinkStaticListInit(hash_table_type_name##HashLinkGetStaticList(&table->link), capacity); \
         table->bucket.count = 0; \
-        table->empty_key = *empty_key; \
         \
         for (int i = 0; i < table->bucket.capacity; i++) { \
-            key_type* key = accessor##_GetKey(table, &table->bucket.obj_arr[i].obj); \
-            key_mover##_Copy(table, key, empty_key); ; \
+            hash_table_type_name##HashLinkSinglyListHeadInit(&table->bucket.obj_arr[i].list_head); \
         } \
         if (load_fator == 0) { \
             load_fator = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
@@ -149,6 +200,7 @@ extern "C" {
     } \
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table) { \
         hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
+        hash_table_type_name##HashLinkVectorRelease(&table->link); \
     } \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
         hash_table_type_name##HashTableIterator iter; \
@@ -167,45 +219,43 @@ extern "C" {
     } \
     \
     forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
-        iter->cur_index = hash_table_type_name##HashGetIndex(table, key); \
-        for (int32_t i = 0; i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT; i++) { \
-            hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[iter->cur_index]; \
-            key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
-            if (comparer##_Equal(table, entry_key, key)) { \
-                return &entry->obj; \
+        uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
+        iter->cur_index = index; \
+        hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[index]; \
+        hash_table_type_name##HashLinkMainObj main_obj; \
+        main_obj.head = entry->list_head; \
+        main_obj.table = table; \
+        iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorFirst(&main_obj.head); \
+        iter->entry_prev_id = hash_table_type_name##HashLinkReferencer_InvalidId; \
+        while (iter->entry_cur_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
+            hash_table_type_name##HashLinkEntry* link_entry = &table->link.obj_arr[iter->entry_cur_id + 1]; \
+            if (comparer##_Equal(table, accessor##_GetKey(table, &link_entry->obj), key)) { \
+                return &link_entry->obj; \
             } \
-            if (comparer##_Equal(table, entry_key, &table->empty_key)) { \
-                break; \
-            } \
-            iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
+            iter->entry_prev_id = iter->entry_cur_id; \
+            iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorNext(&main_obj.head, iter->entry_cur_id); \
         } \
         return NULL; \
     } \
     void hash_table_type_name##HashTableIteratorPut(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const element_type* obj) { \
         hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[iter->cur_index]; \
-        if (comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), accessor##_GetKey(table, obj))) { \
-            element_mover##_Copy(table, &entry->obj, obj); \
-            return; \
+        hash_table_type_name##HashLinkMainObj main_obj; \
+        main_obj.table = table; \
+        main_obj.head = entry->list_head; \
+        if (iter->entry_cur_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
+            hash_table_type_name##HashLinkEntry* link_entry = (hash_table_type_name##HashLinkEntry*)hash_table_type_name##HashLinkReferencer_Reference(&main_obj.head, iter->entry_cur_id); \
+            if (comparer##_Equal(table, accessor##_GetKey(table, &link_entry->obj), accessor##_GetKey(table, obj))) { \
+                obj_mover##_Copy(table, &link_entry->obj, obj); \
+                return; \
+            } \
+            hash_table_type_name##HashLinkReferencer_Dereference(&main_obj.head, link_entry); \
         } \
-        do { \
-            int32_t i = 0; \
-            for (; i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT; i++) { \
-                key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
-                if (comparer##_Equal(table, entry_key, &table->empty_key)) { \
-                    element_mover##_Copy(table, &entry->obj, obj); \
-                    break; \
-                } \
-                iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
-                entry = &table->bucket.obj_arr[iter->cur_index]; \
-            } \
-            if (i < CUTILS_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT) { \
-                break; \
-            } \
-            hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
-            iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
-            entry = &table->bucket.obj_arr[iter->cur_index]; \
-        } while (true); \
+        int32_t link_entry_id = hash_table_type_name##HashTableAllocLinkEntry(table); \
+        obj_mover##_Copy(table, &table->link.obj_arr[link_entry_id + 1].obj, obj); \
+        hash_table_type_name##HashLinkSinglyListPutFirst(&main_obj.head, link_entry_id); \
         table->bucket.count++; \
+        entry->list_head = main_obj.head; \
+        \
         if (hash_table_type_name##HashGetCurrentLoadFator(table) >= table->load_fator) { \
             /* 触发扩容 */ \
             hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
@@ -213,30 +263,48 @@ extern "C" {
     } \
     bool hash_table_type_name##HashTableIteratorDelete(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[iter->cur_index]; \
-        if (comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), &table->empty_key)) { \
-            return false; \
-        } \
-        key_mover##_Copy(table, accessor##_GetKey(table, &entry->obj), &table->empty_key); \
+        hash_table_type_name##HashLinkMainObj main_obj; \
+		main_obj.head = entry->list_head; \
+		main_obj.table = table; \
+        int32_t link_entry_id = iter->entry_cur_id; \
+        if (link_entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return false; \
+        hash_table_type_name##HashLinkSinglyListDeleteEntry(&main_obj.head, iter->entry_prev_id, link_entry_id); \
+        element_type* old_element = &table->link.obj_arr[link_entry_id + 1].obj; \
         table->bucket.count--; \
+        entry->list_head = main_obj.head; \
+        hash_table_type_name##HashTableFreeLinkEntry(table, link_entry_id); \
         return true; \
     } \
     element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         iter->cur_index = 0; \
+        iter->entry_cur_id = hash_table_type_name##HashLinkReferencer_InvalidId; \
         CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
         return hash_table_type_name##HashTableIteratorNext(table, iter); \
     } \
     element_type* hash_table_type_name##HashTableIteratorNext(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
-        hash_table_type_name##HashTableEntry* entry = NULL; \
+        hash_table_type_name##HashLinkMainObj main_obj; \
+		main_obj.table = table; \
         do { \
             if ((int32_t)iter->cur_index >= (int32_t)table->bucket.capacity) { \
                 return NULL; \
             } \
-            entry = &table->bucket.obj_arr[iter->cur_index++]; \
-            if (!comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), &table->empty_key)) { \
-                break; \
+            if (iter->entry_cur_id == hash_table_type_name##HashLinkReferencer_InvalidId) { \
+                main_obj.head = table->bucket.obj_arr[iter->cur_index].list_head; \
+                iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorFirst(&main_obj.head); \
+                iter->entry_prev_id = hash_table_type_name##HashLinkReferencer_InvalidId; \
+            } else { \
+                main_obj.head = table->bucket.obj_arr[iter->cur_index].list_head; \
+                iter->entry_prev_id = iter->entry_cur_id; \
+                iter->entry_cur_id = hash_table_type_name##HashLinkSinglyListIteratorNext(&main_obj.head, iter->entry_cur_id); \
             } \
+            if (iter->entry_cur_id == hash_table_type_name##HashLinkReferencer_InvalidId) { \
+                ++iter->cur_index; \
+                continue; \
+            } \
+            break; \
         } while (true); \
-        return &entry->obj; \
+        element_type* element = &table->link.obj_arr[iter->entry_cur_id + 1].obj; \
+        return element; \
     } \
 
 

@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 /*
-* 链式哈希表
+* 基于链地址(红黑树)法的哈希表
 */
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
@@ -201,7 +201,7 @@ extern "C" {
             key_type* key = accessor##_GetKey(table, obj); \
             obj = hash_table_type_name##HashTableIteratorNext(table, &iter); \
         } \
-        hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
+        hash_table_type_name##HashTableRelease(table); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     } \
     void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator) { \
@@ -260,7 +260,7 @@ extern "C" {
         main_obj.table = table; \
         main_obj.head = entry->list_head; \
         int32_t link_entry_id = hash_table_type_name##HashTableAllocLinkEntry(table); \
-        obj_mover##_Assignment(table, &table->link.obj_arr[link_entry_id + 1].obj, obj); \
+        obj_mover##_Copy(table, &table->link.obj_arr[link_entry_id + 1].obj, obj); \
         int32_t old_rb_id = hash_table_type_name##HashLinkRbTreePut(&main_obj.head, link_entry_id); \
         if (old_rb_id != hash_table_type_name##HashLinkReferencer_InvalidId) { \
             hash_table_type_name##HashTableFreeLinkEntry(table, old_rb_id); \
@@ -278,8 +278,8 @@ extern "C" {
     bool hash_table_type_name##HashTableIteratorDelete(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[iter->cur_index]; \
         hash_table_type_name##HashLinkMainObj main_obj; \
-		main_obj.head = entry->list_head; \
-		main_obj.table = table; \
+        main_obj.head = entry->list_head; \
+        main_obj.table = table; \
         int32_t link_entry_id = iter->entry_cur_id; \
         if (link_entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return false; \
         hash_table_type_name##HashLinkRbTreeDelete(&main_obj.head, link_entry_id); \

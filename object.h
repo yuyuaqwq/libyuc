@@ -89,7 +89,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 */
 #define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_GetTest(MAIN_OBJ, OBJ_PTR) (&(OBJ_PTR)->test)
 #define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT_SetTest(MAIN_OBJ, OBJ_PTR, NEW_TEST) ((OBJ_PTR)->test = *(NEW_TEST))
-#define CUObjectGetByFieldTILS_OBJECT_FIELD_ACCESSOR_DEFALUT CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT
+#define CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT CUTILS_OBJECT_FIELD_ACCESSOR_DEFALUT
 
 /*
 * 默认索引器
@@ -118,9 +118,10 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 /*
 * 默认传输器
-* 负责对象之间的传输、拷贝等操作，相当于重载 =
+* 负责对象之间的拷贝、移动等操作，相当于重载 =
 */
-#define CUTILS_OBJECT_MOVER_DEFALUT_Assignment(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) = *(OBJ2))
+#define CUTILS_OBJECT_MOVER_DEFALUT_Copy(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) = *(OBJ2))
+#define CUTILS_OBJECT_MOVER_DEFALUT_Move(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) = *(OBJ2))
 #define CUTILS_OBJECT_MOVER_DEFALUT CUTILS_OBJECT_MOVER_DEFALUT
 
 /*
