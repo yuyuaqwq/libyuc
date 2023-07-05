@@ -145,8 +145,11 @@ uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
 }
 CUTILS_ALGORITHM_BINARY_SEARCH_DEFINE(ArNode, uint8_t, uint8_t, int32_t, ArBsAccessor, CUTILS_OBJECT_INDEXER_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
 CUTILS_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1)
-CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, uint32_t)
-CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t)
+
+#define AR_TREE_ARRAY_REFERENCER_InvalidId (-1)
+#define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
+CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, uint32_t, AR_TREE_ARRAY_REFERENCER, CUTILS_OBJECT_COMPARER_DEFALUT)
+CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t, AR_TREE_ARRAY_REFERENCER, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
 	head->child_count = 0;
@@ -188,8 +191,8 @@ static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
 }
 
 static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
-	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	if (i == -1) {
+	int32_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte); // ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
 		return InvalidId;
 	}
 	return &node->child_arr[i];
@@ -342,8 +345,8 @@ static void ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte, 
 		i = 0;
 	}
 	if (node->head.child_count < 16) {
-		ArNodeKeyArrayInsert(node->keys, node->head.child_count, i, key_byte);
-		ArNodeChildArrayInsert(node->child_arr, node->head.child_count, i, child);
+		ArNodeKeyArrayInsert(node->keys, node->head.child_count, i, &key_byte);
+		ArNodeChildArrayInsert(node->child_arr, node->head.child_count, i, &child);
 		node->head.child_count++;
 	}
 	else {
@@ -374,8 +377,8 @@ static void ArNode4Insert(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte, Ar
 		i = 0;
 	}
 	if (node->head.child_count < 4) {
-		ArNodeKeyArrayInsert(node->keys, node->head.child_count, i, key_byte);
-		ArNodeChildArrayInsert(node->child_arr, node->head.child_count, i, child);
+		ArNodeKeyArrayInsert(node->keys, node->head.child_count, i, &key_byte);
+		ArNodeChildArrayInsert(node->child_arr, node->head.child_count, i, &child);
 		node->head.child_count++;
 	}
 	else {
