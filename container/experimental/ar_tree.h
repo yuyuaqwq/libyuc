@@ -182,8 +182,11 @@ static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
 	return InvalidId;
 }
 
+/*
+* 实测编译器优化会使顺序查找性能更高
+*/
 static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
-	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+	int32_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte); //ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
 	if (i == -1) {
 		return InvalidId;
 	}
