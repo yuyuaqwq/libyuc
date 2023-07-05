@@ -183,7 +183,7 @@ static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
 }
 
 /*
-* 实测编译器优化会使顺序查找性能更高
+* 实测编译器优化会使顺序查找性能略高一些
 */
 static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
 	int32_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte); //ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
