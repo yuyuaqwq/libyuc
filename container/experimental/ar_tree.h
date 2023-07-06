@@ -148,8 +148,8 @@ CUTILS_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, CUTILS_CONTAINE
 
 #define AR_TREE_ARRAY_REFERENCER_InvalidId (-1)
 #define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
-CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, uint32_t, AR_TREE_ARRAY_REFERENCER, CUTILS_OBJECT_COMPARER_DEFALUT)
-CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, uint32_t, AR_TREE_ARRAY_REFERENCER, CUTILS_OBJECT_COMPARER_DEFALUT)
+CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, ptrdiff_t, AR_TREE_ARRAY_REFERENCER, CUTILS_OBJECT_COMPARER_DEFALUT)
+CUTILS_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, ptrdiff_t, AR_TREE_ARRAY_REFERENCER, CUTILS_OBJECT_COMPARER_DEFALUT)
 
 static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
 	head->child_count = 0;
@@ -183,19 +183,26 @@ static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
 }
 
 /*
-* 实测编译器优化会使顺序查找性能略高一些
+* 顺序查找性能略高
+* 如果固定查找长度应该可以使编译器优化为更快的查找
 */
 static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
-	int32_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte); //ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	if (i == -1) {
+	// ptrdiff_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+	// ptrdiff_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
+	// if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+	ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 16, &key_byte); // || i >= node->head.child_count
+	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
 		return InvalidId;
 	}
 	return &node->child_arr[i];
 }
 
 static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
-	int32_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte); // ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+	// ptrdiff_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+	// ptrdiff_t i =  ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
+	// if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+	ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 4, &key_byte);
+	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
 		return InvalidId;
 	}
 	return &node->child_arr[i];
@@ -425,7 +432,7 @@ static void ArNode4Delete(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte) {
 	ArNode4* node = *node_ptr;
 	  assert(node->head.child_count > 0);
 	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	if (i != -1) {
+	if (i != AR_TREE_ARRAY_REFERENCER_InvalidId) {
 		ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
 		ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
 		node->head.child_count--;
@@ -436,7 +443,7 @@ static void ArNode16Delete(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte) 
 	ArNode16* node = *node_ptr;
 	  assert(node->head.child_count >= 2);
 	int32_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	if (i != -1) {
+	if (i != AR_TREE_ARRAY_REFERENCER_InvalidId) {
 		ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
 		ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
 		node->head.child_count--;
