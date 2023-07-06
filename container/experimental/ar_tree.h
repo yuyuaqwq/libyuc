@@ -184,14 +184,14 @@ static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
 
 /*
 * 顺序查找性能略高
-* 如果固定查找长度应该可以使编译器优化为更快的查找
+* 如果固定查找长度或许可以使编译器优化为更快的查找(msvc并未进行优化)
 */
 static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
 	// ptrdiff_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	// ptrdiff_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
-	// if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
-	ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 16, &key_byte); // || i >= node->head.child_count
-	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
+	// ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 16, &key_byte);
+	// if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
+	ptrdiff_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
+	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
 		return InvalidId;
 	}
 	return &node->child_arr[i];
@@ -199,10 +199,10 @@ static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
 
 static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
 	// ptrdiff_t i = ArNodeBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-	// ptrdiff_t i =  ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
-	// if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
-	ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 4, &key_byte);
-	if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
+	//ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 4, &key_byte);
+	//if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
+	 ptrdiff_t i =  ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
+	 if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
 		return InvalidId;
 	}
 	return &node->child_arr[i];
