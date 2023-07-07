@@ -334,7 +334,7 @@ static void ArNode48Insert(ArTree* tree, ArNode48** node_ptr, uint8_t key_byte, 
 
 static void ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte, ArNode* child) {
 	ArNode16* node = *node_ptr;
-	int32_t i;
+	ptrdiff_t i;
 	if (node->head.child_count > 0) {
 		i = ArNodeBinarySearch_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
 		if (key_byte == node->keys[i]) {
@@ -356,7 +356,7 @@ static void ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte, 
 		ArNode48* new_node48 = ArNode48Create(tree);
 		ArNodeHeadCopy(&new_node48->head, &node->head);
 		*node_ptr = (ArNode16*)new_node48;
-		for (int32_t i = 0; i < 16; i++) {
+		for (ptrdiff_t i = 0; i < 16; i++) {
 			ArNode48Insert(tree, (ArNode48**)node_ptr, node->keys[i], node->child_arr[i]);
 		}
 		ArNode48Insert(tree, (ArNode48**)node_ptr, key_byte, child);
@@ -366,15 +366,18 @@ static void ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte, 
 
 static void ArNode4Insert(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte, ArNode* child) {
 	ArNode4* node = *node_ptr;
-	int32_t i;
+	ptrdiff_t i;
 	if (node->head.child_count > 0) {
-		i = ArNodeBinarySearch_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
-		if (key_byte == node->keys[i]) {
-			node->keys[i] = key_byte;
-			node->child_arr[i] = child;
-			return;
+		for (i = 0; i < node->head.child_count; i++) {
+			if (key_byte == node->keys[i]) {
+				node->keys[i] = key_byte;
+				node->child_arr[i] = child;
+				return;
+			}
+			else if (key_byte < node->keys[i]) {
+				break;
+			}
 		}
-		if (key_byte > node->keys[i]) i++;
 	}
 	else {
 		i = 0;
