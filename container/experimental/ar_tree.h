@@ -186,11 +186,24 @@ static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
 * 顺序查找性能略高
 * 如果固定查找长度或许可以使编译器优化为更快的查找(msvc并未进行优化)
 */
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
 static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
+#ifdef _MSC_VER
+    __m128i results = _mm_cmpeq_epi8(_mm_set1_epi8(key_byte), _mm_loadu_si128((__m128i*)&node->keys[0]));
+    ptrdiff_t mask = (1 << node->head.child_count) - 1;
+    ptrdiff_t i = _mm_movemask_epi8(results) & mask;
+    if (!i) {
+        return InvalidId;
+    }
+    i = _tzcnt_u32(i);
+#else
     ptrdiff_t i = ArNodeKeyBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
     if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
         return InvalidId;
     }
+#endif
     return &node->child_arr[i];
 }
 
