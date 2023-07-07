@@ -183,8 +183,7 @@ static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
 }
 
 /*
-* 顺序查找性能略高
-* 如果固定查找长度或许可以使编译器优化为更快的查找(msvc并未进行优化)
+* 在个人运行环境下测试，16字节查找性能如下：SIMD(400+ms) > 顺序查找性能(1000+ms) > 二分查找(1600+ms)
 */
 #ifdef _MSC_VER
 #include <intrin.h>
