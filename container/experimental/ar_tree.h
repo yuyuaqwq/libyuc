@@ -20,6 +20,12 @@ extern "C" {
 * Adaptive Radix Tree - 自适应基数树
 */
 
+/*
+* 定长key优化思路：
+* key直接比较(不通过memcmp)
+* 共同前缀保持与key长度一致，通过位移存放与直接比较
+*/
+
 typedef struct _ArNode* id_type;
 struct data {
     uint32_t size;
