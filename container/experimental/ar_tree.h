@@ -165,80 +165,6 @@ void ArNodeHeadCopy(ArNodeHead* dst, ArNodeHead* src) {
 }
 
 
-
-static ArNode** ArNode256Find(ArNode256* node, uint8_t key_byte) {
-    ArNode** node_ptr = &node->child_arr[key_byte];
-    if (!*node_ptr) {
-        node_ptr = InvalidId;
-    }
-    return node_ptr;
-}
-
-static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
-    uint8_t index = node->keys[key_byte];
-    if (index != 0xff) {
-        return &node->child_arr.obj_arr[index].child;
-    }
-    return InvalidId;
-}
-
-/*
-* 在个人运行环境下测试，16字节查找性能如下：SIMD(400+ms) > 顺序查找性能(1000+ms) > 二分查找(1600+ms)
-*/
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
-static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
-#ifdef _MSC_VER
-    __m128i results = _mm_cmpeq_epi8(_mm_set1_epi8(key_byte), _mm_loadu_si128((__m128i*)&node->keys[0]));
-    ptrdiff_t mask = (1 << node->head.child_count) - 1;
-    ptrdiff_t i = _mm_movemask_epi8(results) & mask;
-    if (!i) {
-        return InvalidId;
-    }
-    i = _tzcnt_u32(i);
-#else
-    ptrdiff_t i = ArNodeKeyBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
-    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
-        return InvalidId;
-    }
-#endif
-    return &node->child_arr[i];
-}
-
-static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
-    // ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 4, &key_byte);
-    // if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
-     ptrdiff_t i =  ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
-     if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
-        return InvalidId;
-    }
-    return &node->child_arr[i];
-}
-
-static ArNode** ArNodeFind(ArNode* node, uint8_t key_byte) {
-    switch (node->head.node_type) {
-    case kArNode4: {
-        return ArNode4Find(&node->node4, key_byte);
-    }
-    case kArNode16: {
-        return ArNode16Find(&node->node16, key_byte);
-    }
-    case kArNode48: {
-        return ArNode48Find(&node->node48, key_byte);
-    }
-    case kArNode256: {
-        return ArNode256Find(&node->node256, key_byte);
-    }
-    default: {
-        assert(0);
-        break;
-    }
-    }
-    return InvalidId;
-}
-
-
 static ArLeaf* ArLeafCreate(ArTree* tree, element_type* ele) {
     ArLeaf* leaf = ObjectCreate(ArLeaf);
     leaf->element = *ele;
@@ -303,6 +229,88 @@ static void ArNode48Release(ArTree* tree, ArNode48* node48) {
 
 static void ArNode256Release(ArTree* tree, ArNode256* node256) {
     ObjectRelease(node256);
+}
+
+
+static ArNode** ArNode256Find(ArNode256* node, uint8_t key_byte) {
+    ArNode** node_ptr = &node->child_arr[key_byte];
+    if (!*node_ptr) {
+        node_ptr = InvalidId;
+    }
+    return node_ptr;
+}
+
+static ArNode** ArNode48Find(ArNode48* node, uint8_t key_byte) {
+    uint8_t index = node->keys[key_byte];
+    if (index != 0xff) {
+        return &node->child_arr.obj_arr[index].child;
+    }
+    return InvalidId;
+}
+
+/*
+* 在个人运行环境下测试，16字节查找性能如下：SIMD(400+ms) > 顺序查找性能(1000+ms) > 二分查找(1600+ms)
+*/
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+static forceinline ptrdiff_t ArNode16KeySearch(ArNode16* node, uint8_t key_byte) {
+#ifdef _MSC_VER
+    __m128i results = _mm_cmpeq_epi8(_mm_set1_epi8(key_byte), _mm_loadu_si128((__m128i*) & node->keys[0]));
+    ptrdiff_t mask = (1 << node->head.child_count) - 1;
+    ptrdiff_t i = _mm_movemask_epi8(results) & mask;
+    if (!i) {
+        return AR_TREE_ARRAY_REFERENCER_InvalidId;
+    }
+    i = _tzcnt_u32(i);
+#else
+    ptrdiff_t i = ArNodeKeyBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+        return AR_TREE_ARRAY_REFERENCER_InvalidId;
+    }
+#endif
+    return i;
+}
+
+static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
+    ptrdiff_t i = ArNode16KeySearch(node, key_byte);
+    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+        return InvalidId;
+    }
+    return &node->child_arr[i];
+}
+
+static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
+    // ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 4, &key_byte);
+    // if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
+    ptrdiff_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
+    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+        return InvalidId;
+    }
+    return &node->child_arr[i];
+}
+
+static ArNode** ArNodeFind(ArNode* node, uint8_t key_byte) {
+    switch (node->head.node_type) {
+    case kArNode4: {
+        return ArNode4Find(&node->node4, key_byte);
+    }
+    case kArNode16: {
+        return ArNode16Find(&node->node16, key_byte);
+    }
+    case kArNode48: {
+        return ArNode48Find(&node->node48, key_byte);
+    }
+    case kArNode256: {
+        return ArNode256Find(&node->node256, key_byte);
+    }
+    default: {
+        assert(0);
+        break;
+    }
+    }
+    return InvalidId;
 }
 
 
@@ -439,6 +447,7 @@ static void ArNodeInsert(ArTree* tree, ArNode** node, uint8_t key_byte, ArNode* 
     }
 }
 
+
 static void ArNode4Delete(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte) {
     ArNode4* node = *node_ptr;
       assert(node->head.child_count > 0);
@@ -453,7 +462,7 @@ static void ArNode4Delete(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte) {
 static void ArNode16Delete(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte) {
     ArNode16* node = *node_ptr;
       assert(node->head.child_count >= 2);
-    int32_t i = ArNodeKeyBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+    int32_t i = ArNode16KeySearch(node, key_byte);
     if (i != AR_TREE_ARRAY_REFERENCER_InvalidId) {
         ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
         ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
