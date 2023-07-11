@@ -1,14 +1,14 @@
 /*
 * @yuyuaqwq - ����
 * email:1454832774@qq.com
-* project:https://github.com/yuyuaqwq/CUtils
+* project:https://github.com/yuyuaqwq/libyuc
 * �뱣��������
 */
 
-#ifndef CUTILS_CONTAINER_BS_TREE_NP_H_
-#define CUTILS_CONTAINER_BS_TREE_NP_H_
+#ifndef LIBYUC_CONTAINER_BS_TREE_NP_H_
+#define LIBYUC_CONTAINER_BS_TREE_NP_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,4 +49,4 @@ bool BsTreeNpInsertEntryByKey(BsTreeNp* tree, BsEntryNp* entry);
 }
 #endif
 
-#endif // CUTILS_CONTAINER_BS_TREE_NP_H_
+#endif // LIBYUC_CONTAINER_BS_TREE_NP_H_

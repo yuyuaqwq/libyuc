@@ -1,17 +1,14 @@
 
 
 /*
-* @yuyuaqwq - 鱼鱼
-* email:1454832774@qq.com
-* project:https://github.com/yuyuaqwq/CUtils
-* 请保留此声明
+* Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_AVL_TREE_NP_H_
-#define CUTILS_CONTAINER_AVL_TREE_NP_H_
+#ifndef LIBYUC_CONTAINER_AVL_TREE_NP_H_
+#define LIBYUC_CONTAINER_AVL_TREE_NP_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/experimental/bs_tree_np.h>
+#include <libyuc/object.h>
+#include <libyuc/container/experimental/bs_tree_np.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,4 +56,4 @@ void* AvlTreeNpDeleteEntryByKey(AvlTreeNp* tree, void* key);
 }
 #endif
 
-#endif // CUTILS_CONTAINER_AVL_TREE_NP_H_
+#endif // LIBYUC_CONTAINER_AVL_TREE_NP_H_

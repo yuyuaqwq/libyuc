@@ -1,44 +1,42 @@
-# CUtils
-C语言便携工具类
-方便我在做一些较底层的开发时使用的纯C工具支持库
+# libyuc
+便于做一些较为底层的开发时使用的基础库
 
 **个人使用项目，代码可能随时调整，仅供学习参考。**
 
 # 容器
 ## 数组
-- array
-  - 存储对象拷贝的动态数组
-- vector
-  - 存储对象指针的动态数组
-- queue
-  - 基于数组的循环队列
+- [模板]vector
+  - 动态数组
 - bitmap
   - 位图
 ## 链表
-- list
+- [模板]list
   - 双向循环链表
-- SinglyList
+- [模板]SinglyList
   - 单向链表
-- StaticList
+- [模板]StaticList
   - 静态链表
-- DoublyStaticList
+- [模板]DoublyStaticList
   - 双向静态链表
-- SkipList
-  - 跳表
-## 散列表
-- HashTable
-  - 存储对象指针的链式哈希表
-## 树
-- BsTree
-  - 二叉搜索树
-- AvlTree
-  - 存储高度/嵌入平衡因子/无父结点的平衡二叉树
-- RbTree
-  - 以234树为原型，嵌入颜色的红黑树
-- BPlusTree
-  - B+树
-- RadixTree
-  - 映射定长key的基数树
+## 队列
+- queue
+  - 基于数组的循环队列
 - Heap
   - 堆
-
+## 索引
+- [模板]HashTable
+  - 基于链地址法的哈希表
+- [模板]BsTree
+  - 二叉搜索树
+- [模板]AvlTree
+  - 嵌入平衡因子的平衡二叉树
+- [模板]RbTree
+  - 以234树为原型，嵌入颜色的红黑树
+- [模板]BPlusTree
+  - 页内嵌入红黑树的B+树
+- RadixTree
+  - 映射定长key的基数树
+- ArTree
+  - 自适应基数树
+- SkipList
+  - 跳表
