@@ -45,6 +45,12 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define ObjectGetFromFieldOffset(OBJ_FIELD, FIELD_OFFSET, OBJ_TYPE) ( (OBJ_TYPE*)((uintptr_t)(OBJ_FIELD) - (FIELD_OFFSET)) )
 #define ObjectGetFromField(OBJ_FIELD, OBJ_TYPE, FIELD_NAME) ( (OBJ_TYPE*)((uintptr_t)(OBJ_FIELD) - ObjectGetFieldOffset(OBJ_TYPE, FIELD_NAME)) )
 
+/*
+* C另一种实现泛型的方法：基于#include
+* 通过#define指定参数(类型等)
+* 再通过#include加载模板，头文件中使用宏代替被替换的类型
+* 好处是方便调试
+*/
 
 
 /*
