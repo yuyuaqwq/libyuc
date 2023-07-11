@@ -2,14 +2,14 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_HASH_TABLE_H_
-#define CUTILS_CONTAINER_HASH_TABLE_H_
+#ifndef LIBYUC_CONTAINER_HASH_TABLE_H_
+#define LIBYUC_CONTAINER_HASH_TABLE_H_
 
-#include <CUtils/object.h>
-#include <CUtils/algorithm/hash_code.h>
-#include <CUtils/container/vector.h>
-#include <CUtils/container/static_list.h>
-#include <CUtils/container/rb_tree.h>
+#include <libyuc/object.h>
+#include <libyuc/algorithm/hash_code.h>
+#include <libyuc/container/vector.h>
+#include <libyuc/container/static_list.h>
+#include <libyuc/container/rb_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,13 +18,13 @@ extern "C" {
 /*
 * 基于链地址(红黑树)法的哈希表
 */
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
 
 
-#ifdef CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
+#ifdef LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
         uint32_t obj_count; \
         uint32_t free_count; \
         uint32_t list_entry_count; \
@@ -32,7 +32,7 @@ extern "C" {
         uint32_t max_list_count; \
         uint32_t cur_list_count; \
 
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
         iter->obj_count = 0; \
         iter->free_count = 0; \
         iter->list_entry_count = 0; \
@@ -40,7 +40,7 @@ extern "C" {
         iter->max_list_count = 0; \
         iter->cur_list_count = 0; \
 
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2 \
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2 \
         iter->cur_list_count++; \
         if (iter->cur_list_count > iter->max_list_count) { \
             \
@@ -48,31 +48,31 @@ extern "C" {
         } \
         iter->list_entry_count++; \
 
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3 \
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3 \
         iter->free_count++;
 
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4 \
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4 \
         iter->obj_count++; \
 
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5 \
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5 \
         iter->cur_list_count = 0; \
         iter->list_head_count++; \
 
 #else
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION 
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4
-#define CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION 
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5
 #endif
 
 
-#define CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
         uint32_t cur_index; \
         int32_t entry_cur_id; \
-        CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
+        LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
     } hash_table_type_name##HashTableIterator; \
     \
     element_type* hash_table_type_name##HashTableIteratorFirst(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
@@ -82,7 +82,7 @@ extern "C" {
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
     \
-    CUTILS_CONTAINER_RB_TREE_DECLARATION(hash_table_type_name##HashLink, int32_t, key_type) \
+    LIBYUC_CONTAINER_RB_TREE_DECLARATION(hash_table_type_name##HashLink, int32_t, key_type) \
     typedef struct _##hash_table_type_name##HashLinkEntry { \
         union  { \
             int32_t next; \
@@ -95,10 +95,10 @@ extern "C" {
         struct _##hash_table_type_name##HashTable* table; \
     } hash_table_type_name##HashLinkMainObj; \
     \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, 1) \
-    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry) \
+    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, 1) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry) \
     \
-    CUTILS_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashTableEntry) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashTableEntry) \
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
         union { \
@@ -120,14 +120,14 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey方法
-#define CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
     /*
     * 静态链表
     */ \
     static hash_table_type_name##HashLinkStaticList* hash_table_type_name##HashLinkGetStaticList(hash_table_type_name##HashLinkVector* link_vector) { \
         return (hash_table_type_name##HashLinkStaticList*)((uintptr_t)&link_vector->obj_arr[1] - sizeof(hash_table_type_name##HashLinkStaticList)); \
     } \
-    CUTILS_CONTAINER_STATIC_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1) \
+    LIBYUC_CONTAINER_STATIC_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1) \
     \
     /*
     * 动态数组
@@ -135,8 +135,8 @@ extern "C" {
     forceinline void hash_table_type_name##HashLinkVectorCallbacker##_Expand(hash_table_type_name##HashLinkVector* arr, size_t old_capacity, size_t new_capacity) { \
         hash_table_type_name##HashLinkStaticListExpand(hash_table_type_name##HashLinkGetStaticList(arr), old_capacity, new_capacity); \
     } \
-    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashTableEntry, allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     /*
     * 红黑树
     */ \
@@ -168,7 +168,7 @@ extern "C" {
     forceinline void hash_table_type_name##HashLinkRbAccessor##_SetColor(hash_table_type_name##HashLinkRbTree* tree, hash_table_type_name##HashLinkRbBsEntry* bs_entry, RbColor new_color) { \
         return ((hash_table_type_name##HashLinkRbParentColor*)&(((hash_table_type_name##HashLinkRbEntry*)bs_entry)->parent_color))->color = new_color; \
     } \
-    CUTILS_CONTAINER_RB_TREE_DEFINE(hash_table_type_name##HashLink, int32_t, key_type, hash_table_type_name##HashLinkReferencer, hash_table_type_name##HashLinkRbAccessor, comparer) \
+    LIBYUC_CONTAINER_RB_TREE_DEFINE(hash_table_type_name##HashLink, int32_t, key_type, hash_table_type_name##HashLinkReferencer, hash_table_type_name##HashLinkRbAccessor, comparer) \
     \
     /*
     * 哈希表
@@ -182,7 +182,7 @@ extern "C" {
     static int32_t hash_table_type_name##HashTableAllocLinkEntry(hash_table_type_name##HashTable* table) { \
         hash_table_type_name##HashLinkStaticList* static_list = hash_table_type_name##HashLinkGetStaticList(&table->link); \
         int32_t id = hash_table_type_name##HashLinkStaticListPop(static_list, 0); \
-          assert(id != CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId); \
+          assert(id != LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId); \
         return id; \
     } \
     static void hash_table_type_name##HashTableFreeLinkEntry(hash_table_type_name##HashTable* table, int32_t id) { \
@@ -206,7 +206,7 @@ extern "C" {
     } \
     void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator) { \
         if (capacity == 0) { \
-            capacity = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
+            capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
         hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, true); \
         hash_table_type_name##HashLinkVectorInit(&table->link, capacity + 1, true); \
@@ -217,7 +217,7 @@ extern "C" {
             hash_table_type_name##HashLinkRbTreeInit(&table->bucket.obj_arr[i].list_head); \
         } \
         if (load_fator == 0) { \
-            load_fator = CUTILS_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
+            load_fator = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
         } \
         table->load_fator = load_fator; \
     } \
@@ -272,7 +272,7 @@ extern "C" {
         \
         if (hash_table_type_name##HashGetCurrentLoadFator(table) >= table->load_fator) { \
             /* 触发扩容 */ \
-            hash_table_type_name##HashRehash(table, table->bucket.capacity * CUTILS_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
+            hash_table_type_name##HashRehash(table, table->bucket.capacity * LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
         } \
     } \
     bool hash_table_type_name##HashTableIteratorDelete(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
@@ -291,7 +291,7 @@ extern "C" {
     element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         iter->cur_index = 0; \
         iter->entry_cur_id = hash_table_type_name##HashLinkReferencer_InvalidId; \
-        CUTILS_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
+        LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
         return hash_table_type_name##HashTableIteratorNext(table, iter); \
     } \
     element_type* hash_table_type_name##HashTableIteratorNext(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
@@ -319,13 +319,13 @@ extern "C" {
     } \
 
 
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR_GetKey(OBJ) (OBJ)
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR CUTILS_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR
-#define CUTILS_CONTAINER_HASH_TABLE_DEFAULT_HASHER(TABLE, KEY) Hashmap_hashint(KEY)
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR_GetKey(OBJ) (OBJ)
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_HASHER(TABLE, KEY) Hashmap_hashint(KEY)
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_HASH_TABLE_H_
+#endif // LIBYUC_CONTAINER_HASH_TABLE_H_

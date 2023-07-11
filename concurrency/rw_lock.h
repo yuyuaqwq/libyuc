@@ -2,11 +2,11 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONCURRENCY_RW_LOCK_H_
-#define CUTILS_CONCURRENCY_RW_LOCK_H_
+#ifndef LIBYUC_CONCURRENCY_RW_LOCK_H_
+#define LIBYUC_CONCURRENCY_RW_LOCK_H_
 
-#include <CUtils/object.h>
-#include <CUtils/concurrency/mutex_lock.h>
+#include <libyuc/object.h>
+#include <libyuc/concurrency/mutex_lock.h>
 
 
 #ifdef __cplusplus
@@ -32,4 +32,4 @@ void RwLockWriteRelease(RwLock* lock);
 }
 #endif
 
-#endif // CUTILS_CONCURRENCY_RW_LOCK_H_
+#endif // LIBYUC_CONCURRENCY_RW_LOCK_H_

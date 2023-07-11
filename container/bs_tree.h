@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_BS_TREE_H_
-#define CUTILS_CONTAINER_BS_TREE_H_
+#ifndef LIBYUC_CONTAINER_BS_TREE_H_
+#define LIBYUC_CONTAINER_BS_TREE_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
 
 
 
-#define CUTILS_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, key_type) \
+#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, key_type) \
     typedef struct _##bs_tree_type_name##BsEntry { \
         id_type parent; \
         id_type left; \
@@ -39,7 +39,7 @@ extern "C" {
 /*
 * 访问器需要提供_GetKey和_GetParent、_SetParent方法
 */
-#define CUTILS_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
+#define LIBYUC_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
     /*
     * new_entry代替entry挂接到其父节点下
     * new_entry的左右子节点不变
@@ -495,7 +495,7 @@ extern "C" {
     } \
 
 
-//CUTILS_CONTAINER_BS_TREE_DECLARATION(Int, struct _IntBsEntry*, int)
+//LIBYUC_CONTAINER_BS_TREE_DECLARATION(Int, struct _IntBsEntry*, int)
 //typedef struct _IntEntry {
 //    IntBsEntry entry;
 //    int key;
@@ -503,11 +503,11 @@ extern "C" {
 //#define INT_BS_TREE_ACCESSOR_GetParent(bs_entry) (bs_entry->parent)
 //#define INT_BS_TREE_ACCESSOR_SetParent(bs_entry, new_parent) (bs_entry->parent = new_parent)
 //#define INT_BS_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry*)bs_entry)->key)
-//CUTILS_CONTAINER_BS_TREE_DEFINE(Int, struct _IntBsEntry*, int, CUTILS_OBJECT_REFERENCER_DEFALUT, INT_BS_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
+//LIBYUC_CONTAINER_BS_TREE_DEFINE(Int, struct _IntBsEntry*, int, LIBYUC_OBJECT_REFERENCER_DEFALUT, INT_BS_TREE_ACCESSOR, LIBYUC_OBJECT_COMPARER_DEFALUT)
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_BS_TREE_H_
+#endif // LIBYUC_CONTAINER_BS_TREE_H_

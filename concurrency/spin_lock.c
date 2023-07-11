@@ -1,6 +1,6 @@
-#include <CUtils/concurrency/spin_lock.h>
-#include <CUtils/concurrency/thread.h>
-#include <CUtils/concurrency/atomic.h>
+#include <libyuc/concurrency/spin_lock.h>
+#include <libyuc/concurrency/thread.h>
+#include <libyuc/concurrency/atomic.h>
 
 void SpinLockInit(SpinLock* lock) {
 	lock->state = false;

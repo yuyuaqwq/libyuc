@@ -2,14 +2,14 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_BPLUS_TREE_H_
-#define CUTILS_CONTAINER_BPLUS_TREE_H_
+#ifndef LIBYUC_CONTAINER_BPLUS_TREE_H_
+#define LIBYUC_CONTAINER_BPLUS_TREE_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/list.h>
-#include <CUtils/container/vector.h>
-#include <CUtils/container/static_list.h>
-#include <CUtils/container/rb_tree.h>
+#include <libyuc/object.h>
+#include <libyuc/container/list.h>
+#include <libyuc/container/vector.h>
+#include <libyuc/container/static_list.h>
+#include <libyuc/container/rb_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,11 +33,11 @@ typedef enum {
 */
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name, entry_id_type) CUTILS_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListHead leaf_list;
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListEntry list_entry;       /* 连接所有叶子节点 */
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name, entry_id_type) LIBYUC_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListHead leaf_list;
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListEntry list_entry;       /* 连接所有叶子节点 */
 
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
     forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
         bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
         bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
@@ -48,25 +48,25 @@ typedef enum {
         bp_tree_type_name##BPlusLeafEntry* entry = ObjectGetFromField(list_entry,  bp_tree_type_name##BPlusLeafEntry, list_entry); \
         entry_referencer##_Dereference(tree, (bp_tree_type_name##BPlusEntry*)entry); \
     } \
-    CUTILS_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
+    LIBYUC_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
 
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id);
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListDeleteEntry(&tree->leaf_list, right_id);
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_4(bp_tree_type_name) bp_tree_type_name##BPlusLeafListInit(&tree->leaf_list); bp_tree_type_name##BPlusLeafListPutFirst(&tree->leaf_list, tree->root_id);
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL
-
-
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name, entry_id_type)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_2(bp_tree_type_name)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_3(bp_tree_type_name)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_1(bp_tree_type_name)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_2(bp_tree_type_name)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_3(bp_tree_type_name)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_4(bp_tree_type_name)
-#define CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK CUTILS_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id);
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListDeleteEntry(&tree->leaf_list, right_id);
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_4(bp_tree_type_name) bp_tree_type_name##BPlusLeafListInit(&tree->leaf_list); bp_tree_type_name##BPlusLeafListPutFirst(&tree->leaf_list, tree->root_id);
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL
 
 
-#define CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, default_stack_size) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name, entry_id_type)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_2(bp_tree_type_name)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_3(bp_tree_type_name)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_1(bp_tree_type_name)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_2(bp_tree_type_name)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_3(bp_tree_type_name)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_4(bp_tree_type_name)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK
+
+
+#define LIBYUC_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, default_stack_size) \
     /*
     * B+树游标
     */ \
@@ -74,7 +74,7 @@ typedef enum {
         entry_id_type entry_id; \
         element_id_type element_id; \
     } bp_tree_type_name##BPlusElementPos; \
-    CUTILS_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos) \
     typedef struct _##bp_tree_type_name##BPlusCursor { \
         bp_tree_type_name##BPlusCursorStackVector stack; \
         bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
@@ -85,7 +85,7 @@ typedef enum {
     /*
     * 页内红黑树
     */\
-    CUTILS_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, element_id_type, key_type) \
+    LIBYUC_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, element_id_type, key_type) \
     leaf_link_mode##_DECLARATION_1(bp_tree_type_name, entry_id_type) \
     typedef struct _##bp_tree_type_name##BPlusTree { \
         entry_id_type root_id; \
@@ -205,13 +205,13 @@ kv分离是外层处理的，b+树操作的只有element
 
 
 */
-#define CUTILS_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer, default_stack_size) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer, default_stack_size) \
     /*
     * B+树游标
     */\
     static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
     leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
-    CUTILS_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
     /*
     * 页内红黑树
@@ -246,7 +246,7 @@ kv分离是外层处理的，b+树操作的只有element
     forceinline void rb_accessor##_SetColor(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry, RbColor new_color) { \
         return ((bp_tree_type_name##BPlusEntryRbParentColor*)&(((bp_tree_type_name##BPlusEntryRbEntry*)bs_entry)->parent_color))->color = new_color; \
     } \
-    CUTILS_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, element_id_type, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
+    LIBYUC_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, element_id_type, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
     \
     /*
     * B+树
@@ -884,8 +884,8 @@ kv分离是外层处理的，b+树操作的只有element
     } \
 
 
-//CUTILS_CONTAINER_BPLUS_TREE_DECLARATION(Int, struct _IntBPlusEntry*, int, int)
-//forceinline int* CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(IntBPlusEntryRbTree* tree, IntBPlusEntryRbBsEntry* bs_entry) {
+//LIBYUC_CONTAINER_BPLUS_TREE_DECLARATION(Int, struct _IntBPlusEntry*, int, int)
+//forceinline int* LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetKey(IntBPlusEntryRbTree* tree, IntBPlusEntryRbBsEntry* bs_entry) {
 //    if (((IntBPlusEntry*)tree)->type == kBPlusEntryLeaf) {
 //        return &((IntBPlusLeafElement*)bs_entry)->key;
 //    }
@@ -893,12 +893,12 @@ kv分离是外层处理的，b+树操作的只有element
 //        return &((IntBPlusIndexElement*)bs_entry)->key;
 //    }
 //}
-//#define CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR
-//CUTILS_CONTAINER_BPLUS_TREE_DEFINE(Int, struct _IntBPlusEntry*, int, int, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_OBJECT_REFERENCER_DEFALUT, CUTILS_CONTAINER_BPLUS_RB_TREE_ACCESSOR, CUTILS_OBJECT_COMPARER_DEFALUT)
+//#define LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR
+//LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(Int, struct _IntBPlusEntry*, int, int, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_OBJECT_REFERENCER_DEFALUT, LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR, LIBYUC_OBJECT_COMPARER_DEFALUT)
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_BPLUS_TREE_H_
+#endif // LIBYUC_CONTAINER_BPLUS_TREE_H_

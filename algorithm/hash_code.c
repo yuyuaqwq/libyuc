@@ -1,4 +1,4 @@
-#include <CUtils/algorithm/hash_code.h>
+#include <libyuc/algorithm/hash_code.h>
 
 /*
 * 主要哈希算法来源：笨方法学C

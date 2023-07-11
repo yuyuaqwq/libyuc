@@ -2,11 +2,11 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_SPACE_MANAGER_OBJECT_POOL_H_
-#define CUTILS_SPACE_MANAGER_OBJECT_POOL_H_
+#ifndef LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/hash_table.h>
+#include <libyuc/object.h>
+#include <libyuc/container/hash_table.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +17,7 @@ extern "C" {
 */
 
 
-#define CUTILS_SPACE_MANAGER_OBJECT_POOL_DECLARATION(object_pool_name, obj_type, bucket_id_type, index_id_type) \
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_DECLARATION(object_pool_name, obj_type, bucket_id_type, index_id_type) \
 	typedef struct _##object_pool_name##ObjectPoolBucketEntry { \
 		bucket_id_type bucket_id; /* 下一个entry的bucket_id */ \
 		index_id_type index; /* 下一个entry的index */ \
@@ -25,15 +25,15 @@ extern "C" {
 	typedef struct _##object_pool_name##ObjectPool { \
 		object_pool_name##ObjectPoolBucketEntry first_entry; \
 	} object_pool_name##ObjectPool; \
-	CUTILS_CONTAINER_HASH_TABLE_DECLARATION(object_pool_name##ObjectPoolBucket, bucket_id_type, bucket_id_type); \
+	LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(object_pool_name##ObjectPoolBucket, bucket_id_type, bucket_id_type); \
 	void object_pool_name##ObjectPoolBucketEntryInit(object_pool_name##ObjectPoolBucketEntry* entry); \
 	void object_pool_name##ObjectPoolInit(object_pool_name##ObjectPool* pool); \
 	void object_pool_name##ObjectPoolRelease(object_pool_name##ObjectPool* pool); \
 	obj_type* object_pool_name##ObjectPoolAlloc(object_pool_name##ObjectPool* pool, object_pool_name##ObjectPoolBucketEntry* ret_entry); \
 	void object_pool_name##ObjectPoolFree(object_pool_name##ObjectPool* pool, object_pool_name##ObjectPoolBucketEntry* free_entry); \
 
-#define CUTILS_SPACE_MANAGER_OBJECT_POOL_DEFINE(object_pool_name, obj_type, bucket_id_type, index_id_type, bucket_accessor, bucket_allocator, bucket_referencer, indexer) \
-	CUTILS_CONTAINER_HASH_TABLE_DEFINE(object_pool_name##ObjectPoolBucket, bucket_id_type, bucket_id_type, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR, CUTILS_OBJECT_MOVER_DEFALUT, CUTILS_CONTAINER_HASH_TABLE_DEFAULT_HASHER, CUTILS_OBJECT_COMPARER_DEFALUT) \
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFINE(object_pool_name, obj_type, bucket_id_type, index_id_type, bucket_accessor, bucket_allocator, bucket_referencer, indexer) \
+	LIBYUC_CONTAINER_HASH_TABLE_DEFINE(object_pool_name##ObjectPoolBucket, bucket_id_type, bucket_id_type, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR, LIBYUC_OBJECT_MOVER_DEFALUT, LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_HASHER, LIBYUC_OBJECT_COMPARER_DEFALUT) \
 	void object_pool_name##ObjectPoolBucketEntryInit(object_pool_name##ObjectPoolBucketEntry* entry) { \
 		entry->bucket_id = bucket_referencer##_InvalidId; \
 		entry->index = 0; \
@@ -109,14 +109,14 @@ extern "C" {
 		bucket_referencer##_Dereference(pool, bucket); \
 	} \
 
-#define CUTILS_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR_GetMaxCount(pool) 512
-#define CUTILS_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR CUTILS_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR_GetMaxCount(pool) 512
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR
 
-//CUTILS_SPACE_MANAGER_OBJECT_POOL_DECLARATION(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t)
-//CUTILS_SPACE_MANAGER_OBJECT_POOL_DEFINE(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t, CUTILS_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_OBJECT_REFERENCER_DEFALUT)
+//LIBYUC_SPACE_MANAGER_OBJECT_POOL_DECLARATION(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t)
+//LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFINE(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t, LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_OBJECT_REFERENCER_DEFALUT)
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_SPACE_MANAGER_OBJECT_POOL_H_
+#endif // LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_

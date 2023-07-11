@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_H_
-#define CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_H_
+#ifndef LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_H_
+#define LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,14 +14,14 @@ extern "C" {
 /*
 * 常规空闲链表
 */
-#define CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_1(free_list_type_name, id_type) \
+#define LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_1(free_list_type_name, id_type) \
     typedef struct _##free_list_type_name##FreeBlockEntry { \
         id_type next_block_offset; \
         id_type count; \
     } free_list_type_name##FreeBlockEntry; \
 
 
-#define CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_2(free_list_type_name, id_type, element_type, list_count, obj_count) \
+#define LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_2(free_list_type_name, id_type, element_type, list_count, obj_count) \
     typedef struct _##free_list_type_name##FreeList { \
         id_type first_block[list_count];        /* 分别指向不同队列的第一个块 */ \
         element_type obj_arr[obj_count]; \
@@ -32,12 +32,12 @@ extern "C" {
     id_type free_list_type_name##FreeListGetFreeBlockSize(free_list_type_name##FreeList* head, id_type list_order); \
     id_type free_list_type_name##FreeListGetMaxFreeBlockSize(free_list_type_name##FreeList* head, id_type list_order); \
 
-#define CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION(free_list_type_name, id_type, element_type, list_count, obj_count) \
-    CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_1(free_list_type_name, id_type) \
-    CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_2(free_list_type_name, id_type, element_type, list_count, obj_count)
+#define LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION(free_list_type_name, id_type, element_type, list_count, obj_count) \
+    LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_1(free_list_type_name, id_type) \
+    LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION_2(free_list_type_name, id_type, element_type, list_count, obj_count)
 
 
-#define CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DEFINE(free_list_type_name, id_type, element_type, referencer, list_count) \
+#define LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DEFINE(free_list_type_name, id_type, element_type, referencer, list_count) \
     /*
     * 初始化
     */ \
@@ -172,4 +172,4 @@ extern "C" {
 }
 #endif
 
-#endif // CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_H_
+#endif // LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_H_

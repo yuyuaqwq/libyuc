@@ -2,25 +2,25 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_HASH_LIST_H_
-#define CUTILS_CONTAINER_HASH_LIST_H_
+#ifndef LIBYUC_CONTAINER_HASH_LIST_H_
+#define LIBYUC_CONTAINER_HASH_LIST_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/list.h>
-#include <CUtils/container/hash_table.h>
+#include <libyuc/object.h>
+#include <libyuc/container/list.h>
+#include <libyuc/container/hash_table.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_HASH_LIST_DECLARATION(hash_list_type_name, key_type) \
+#define LIBYUC_CONTAINER_HASH_LIST_DECLARATION(hash_list_type_name, key_type) \
 	typedef struct _##hash_list_type_name##HashListEntry { \
 		ListEntry list_entry; \
 	} hash_list_type_name##HashListEntry; \
 	typedef struct _##hash_list_type_name##HashListHashEntry { \
 		hash_list_type_name##HashListEntry* hash_list_entry; \
 	} hash_list_type_name##HashListHashEntry; \
-	CUTILS_CONTAINER_HASH_TABLE_DECLARATION(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type) \
+	LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type) \
 	typedef struct _HashList { \
 		hash_list_type_name##HashListHashTable hash_table; \
 		ListHead list_head; \
@@ -33,11 +33,11 @@ extern "C" {
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListDelete(hash_list_type_name##HashList* list, key_type* key); \
 	hash_list_type_name##HashListEntry* hash_list_type_name##HashListIteratorLast(hash_list_type_name##HashList* list); \
 	
-#define CUTILS_CONTAINER_HASH_LIST_DEFINE(hash_list_type_name, key_type, accessor, allocater, hasher, comparer) \
+#define LIBYUC_CONTAINER_HASH_LIST_DEFINE(hash_list_type_name, key_type, accessor, allocater, hasher, comparer) \
 	forceinline key_type* hash_list_type_name##HashListHashEntryAccessor_GetKey(hash_list_type_name##HashListHashTable* table, hash_list_type_name##HashListHashEntry* hash_entry) { \
 		return accessor##_GetKey((hash_list_type_name##HashList*)table, hash_entry->hash_list_entry); \
 	} \
-    CUTILS_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, CUTILS_OBJECT_MOVER_DEFALUT, hasher, comparer) \
+    LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_OBJECT_MOVER_DEFALUT, hasher, comparer) \
     \
 	void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count) { \
 		hash_list_type_name##HashListHashTableInit(&list->hash_table, max_count, 0); \
@@ -87,7 +87,7 @@ extern "C" {
 	} \
 
 
-//CUTILS_CONTAINER_LRU_LIST_DECLARATION(Int, int)
+//LIBYUC_CONTAINER_LRU_LIST_DECLARATION(Int, int)
 //typedef struct _IntLru_Entry {
 //	IntHashListEntry hash_list_entry;
 //	int key;
@@ -95,11 +95,11 @@ extern "C" {
 //#define IntHashListEntryAccessor_GetKey(LRU_LIST, LRU_LIST_ENTRY) (((IntLru_Entry*)(LRU_LIST_ENTRY))->key)
 //#define IntHashListEntryAccessor IntHashListEntryAccessor
 
-//CUTILS_CONTAINER_LRU_LIST_DEFINE(Int, int, IntHashListEntryAccessor, CUTILS_OBJECT_ALLOCATOR_DEFALUT, CUTILS_OBJECT_HASHER_DEFALUT, CUTILS_OBJECT_COMPARER_DEFALUT)
+//LIBYUC_CONTAINER_LRU_LIST_DEFINE(Int, int, IntHashListEntryAccessor, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_OBJECT_HASHER_DEFALUT, LIBYUC_OBJECT_COMPARER_DEFALUT)
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_HASH_LIST_H_
+#endif // LIBYUC_CONTAINER_HASH_LIST_H_

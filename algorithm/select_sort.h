@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_ALGORITHM_SELECT_SORT_H_
-#define CUTILS_ALGORITHM_SELECT_SORT_H_
+#ifndef LIBYUC_ALGORITHM_SELECT_SORT_H_
+#define LIBYUC_ALGORITHM_SELECT_SORT_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -41,4 +41,4 @@ void SelectSort(int* arr, int lenght) {
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_SELECT_SORT_H_
+#endif // LIBYUC_ALGORITHM_SELECT_SORT_H_

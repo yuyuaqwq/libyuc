@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_ALGORITHM_BRUTE_FORCE_MATCH_H_
-#define CUTILS_ALGORITHM_BRUTE_FORCE_MATCH_H_
+#ifndef LIBYUC_ALGORITHM_BRUTE_FORCE_MATCH_H_
+#define LIBYUC_ALGORITHM_BRUTE_FORCE_MATCH_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -34,4 +34,4 @@ int BruteForceMatch(const char* main, size_t mainLen, const char* pattern, size_
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_BRUTE_FORCE_MATCH_H_
+#endif // LIBYUC_ALGORITHM_BRUTE_FORCE_MATCH_H_

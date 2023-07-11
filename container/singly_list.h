@@ -2,17 +2,17 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_SINGLY_LIST_H_
-#define CUTILS_CONTAINER_SINGLY_LIST_H_
+#ifndef LIBYUC_CONTAINER_SINGLY_LIST_H_
+#define LIBYUC_CONTAINER_SINGLY_LIST_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#define CUTILS_CONTAINER_SINGLY_LIST_DECLARATION(singly_list_type_name, id_type) \
+#define LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(singly_list_type_name, id_type) \
     typedef struct _##singly_list_type_name##SinglyListEntry { \
         id_type next; \
     } singly_list_type_name##SinglyListEntry; \
@@ -29,7 +29,7 @@ extern "C" {
     id_type singly_list_type_name##SinglyListIteratorFirst(singly_list_type_name##SinglyListHead* head); \
     id_type singly_list_type_name##SinglyListIteratorNext(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
 
-#define CUTILS_CONTAINER_SINGLY_LIST_DEFINE(singly_list_type_name, id_type, referencer) \
+#define LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(singly_list_type_name, id_type, referencer) \
     void singly_list_type_name##SinglyListHeadInit(singly_list_type_name##SinglyListHead* head) { \
         head->first = referencer##_InvalidId; \
     } \
@@ -88,7 +88,7 @@ extern "C" {
     } \
 
 
-CUTILS_CONTAINER_SINGLY_LIST_DECLARATION(, struct _SinglyListEntry*)
+LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(, struct _SinglyListEntry*)
 
 
 
@@ -96,4 +96,4 @@ CUTILS_CONTAINER_SINGLY_LIST_DECLARATION(, struct _SinglyListEntry*)
 }
 #endif
 
-#endif // CUTILS_CONTAINER_SINGLY_LIST_H_
+#endif // LIBYUC_CONTAINER_SINGLY_LIST_H_

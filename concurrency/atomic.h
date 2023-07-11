@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONCURRENCY_ATOMIC_H_
-#define CUTILS_CONCURRENCY_ATOMIC_H_
+#ifndef LIBYUC_CONCURRENCY_ATOMIC_H_
+#define LIBYUC_CONCURRENCY_ATOMIC_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
@@ -49,4 +49,4 @@ static inline int32_t AtomicCompareExchange32(volatile int32_t* target, int32_t 
 }
 #endif
 
-#endif // CUTILS_CONCURRENCY_ATOMIC_H_
+#endif // LIBYUC_CONCURRENCY_ATOMIC_H_

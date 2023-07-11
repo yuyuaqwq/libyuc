@@ -3,7 +3,7 @@
 */
 
 
-#include "CUtils/container/radix_tree.h"
+#include "libyuc/container/radix_tree.h"
 
 
 inline static bool RadixGetSlotType(RadixEntry* entry, int32_t index) {
@@ -24,12 +24,12 @@ inline static void RadixSetSlotType(RadixEntry* entry, int32_t index, bool is_kv
 }
 
 inline static int32_t RadixGetSlotIndex(RadixKey key, int32_t level) {
-	return (key >> (CUTILS_CONTAINER_RADIX_TREE_MAP_LEVEL - (level + 1)) * CUTILS_CONTAINER_RADIX_TREE_MAP_SHIFT) & CUTILS_CONTAINER_RADIX_TREE_MAP_MASK;
+	return (key >> (LIBYUC_CONTAINER_RADIX_TREE_MAP_LEVEL - (level + 1)) * LIBYUC_CONTAINER_RADIX_TREE_MAP_SHIFT) & LIBYUC_CONTAINER_RADIX_TREE_MAP_MASK;
 }
 
 forceinline static RadixSlot* RadixTreeFindSlot(RadixTree* tree, RadixKey key, RadixEntry** entry, int32_t* ret_slot_index, int32_t* level) {
 	RadixEntry* cur_entry = tree->root;
-	for (int32_t i = 0; cur_entry && i < CUTILS_CONTAINER_RADIX_TREE_MAP_LEVEL; i++) {
+	for (int32_t i = 0; cur_entry && i < LIBYUC_CONTAINER_RADIX_TREE_MAP_LEVEL; i++) {
 		int32_t slot_index = RadixGetSlotIndex(key, i);
 		if (ret_slot_index) { *ret_slot_index = slot_index; }
 		if (entry) { *entry = cur_entry; }
@@ -44,10 +44,10 @@ forceinline static RadixSlot* RadixTreeFindSlot(RadixTree* tree, RadixKey key, R
 
 
 void RadixEntryInit(RadixEntry* entry, RadixEntry* parent) {
-	for (int32_t i = 0; i < CUTILS_CONTAINER_RADIX_TREE_MAP_SIZE; i++) {
+	for (int32_t i = 0; i < LIBYUC_CONTAINER_RADIX_TREE_MAP_SIZE; i++) {
 		entry->slots[i].down = NULL;
 	}
-	for (int32_t i = 0; i < CUTILS_CONTAINER_RADIX_TREE_MAP_BIT_TO_BYTE_COUNT; i++) {
+	for (int32_t i = 0; i < LIBYUC_CONTAINER_RADIX_TREE_MAP_BIT_TO_BYTE_COUNT; i++) {
 		entry->slot_status[i] = 0;
 	}
 	entry->parent = parent;
@@ -63,7 +63,7 @@ static void RadixTreeRecursiveRelease(RadixTree* tree, RadixEntry* entry) {
 	if (entry == NULL) {
 		return;
 	}
-	for (int32_t i = 0; i < CUTILS_CONTAINER_RADIX_TREE_MAP_SIZE; i++) {
+	for (int32_t i = 0; i < LIBYUC_CONTAINER_RADIX_TREE_MAP_SIZE; i++) {
 		if (!RadixGetSlotType(entry, i)) {
 			RadixTreeRecursiveRelease(tree, entry->slots[i].down);
 		}

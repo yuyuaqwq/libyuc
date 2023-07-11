@@ -2,10 +2,10 @@
 * 算法来源：网络
 */
 
-#ifndef CUTILS_ALGORITHM_HASH_CODE_H_
-#define CUTILS_ALGORITHM_HASH_CODE_H_
+#ifndef LIBYUC_ALGORITHM_HASH_CODE_H_
+#define LIBYUC_ALGORITHM_HASH_CODE_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -32,4 +32,4 @@ uint64_t HashCode_murmur3_fmix64(uint64_t k);
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_HASH_CODE_H_
+#endif // LIBYUC_ALGORITHM_HASH_CODE_H_

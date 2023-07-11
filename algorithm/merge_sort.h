@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_ALGORITHM_MERGE_SORT_H_
-#define CUTILS_ALGORITHM_MERGE_SORT_H_
+#ifndef LIBYUC_ALGORITHM_MERGE_SORT_H_
+#define LIBYUC_ALGORITHM_MERGE_SORT_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -54,4 +54,4 @@ void MergeSort(int * arr, int left, int right) {
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_MERGE_SORT_H_
+#endif // LIBYUC_ALGORITHM_MERGE_SORT_H_

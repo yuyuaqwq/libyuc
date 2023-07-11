@@ -2,7 +2,7 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#include <CUtils/container/queue.h>
+#include <libyuc/container/queue.h>
 
 static void QueueExpand(Queue* queue, size_t addCount) {
     Array* arr = &queue->arr;

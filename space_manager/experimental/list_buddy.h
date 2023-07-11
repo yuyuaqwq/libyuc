@@ -1,55 +1,52 @@
 /*
-* @yuyuaqwq - ÓãÓã
-* email:1454832774@qq.com
-* project:https://github.com/yuyuaqwq/CUtils
-* Çë±£Áô´ËÉùÃ÷
+* Copyright Â©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_SPACE_MANAGER_LIST_BUDDY_H_
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_H_
+#ifndef LIBYUC_SPACE_MANAGER_LIST_BUDDY_H_
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/experimental/cb_tree.h>
-#include <CUtils/container/singly_list.h>
-#include <CUtils/container/bitmap.h>
+#include <libyuc/object.h>
+#include <libyuc/container/experimental/cb_tree.h>
+#include <libyuc/container/singly_list.h>
+#include <libyuc/container/bitmap.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_PARENT(index) CUTILS_CONTAINER_CB_TREE_ONE_GET_PARENT(index)
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_LEFT_LEAF(index) CUTILS_CONTAINER_CB_TREE_ONE_GET_LEFT(index)
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_RIGHT_LEAF(index) CUTILS_CONTAINER_CB_TREE_ONE_GET_RIGHT(index)
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_PARENT(index) LIBYUC_CONTAINER_CB_TREE_ONE_GET_PARENT(index)
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_LEFT_LEAF(index) LIBYUC_CONTAINER_CB_TREE_ONE_GET_LEFT(index)
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_RIGHT_LEAF(index) LIBYUC_CONTAINER_CB_TREE_ONE_GET_RIGHT(index)
 
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-// ÇóÃİ
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
+// æ±‚å¹‚
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
 
 /*
-* Á´±íÊ½buddy£º
-* logn¸öË«ÏòÁ´±íÍ·(¿ìËÙÉ¾³ı)
-* Î»Í¼(Ã¿Ò»¸öÏî¾ÍĞèÒªÒ»¸öÎ»µÄ¿Õ¼ä£¬¿ÉÒÔÇ¶Èëµ½Êµ¼Ê·ÖÅäµÄ¿Õ¼äµ«²»¿É±»¸²¸Ç£¬¿¼ÂÇÌá¹©Á½ÖÖÄ£Ê½£¬Ò»ÖÖÎ»Í¼¼¯Ò»ÖÖÄÚÁªµ½½á¹¹ÖĞ)
-* Á´±í½Úµã£¬¿ÉÒÔÇ¶Èëµ½Êµ¼Ê·ÖÅäµÄ¿Õ¼ä(±»·ÖÅäºó¿ÉÒÔ±»¸²¸Ç)
+* é“¾è¡¨å¼buddyï¼š
+* lognä¸ªåŒå‘é“¾è¡¨å¤´(å¿«é€Ÿåˆ é™¤)
+* ä½å›¾(æ¯ä¸€ä¸ªé¡¹å°±éœ€è¦ä¸€ä¸ªä½çš„ç©ºé—´ï¼Œå¯ä»¥åµŒå…¥åˆ°å®é™…åˆ†é…çš„ç©ºé—´ä½†ä¸å¯è¢«è¦†ç›–ï¼Œè€ƒè™‘æä¾›ä¸¤ç§æ¨¡å¼ï¼Œä¸€ç§ä½å›¾é›†ä¸€ç§å†…è”åˆ°ç»“æ„ä¸­)
+* é“¾è¡¨èŠ‚ç‚¹ï¼Œå¯ä»¥åµŒå…¥åˆ°å®é™…åˆ†é…çš„ç©ºé—´(è¢«åˆ†é…åå¯ä»¥è¢«è¦†ç›–)
 * 
-* ³õÊ¼»¯ºóÖ»ÓĞ×î´óµÄÁ´±íÍ·Ö¸ÏòÒ»¸ö½Úµã
+* åˆå§‹åŒ–ååªæœ‰æœ€å¤§çš„é“¾è¡¨å¤´æŒ‡å‘ä¸€ä¸ªèŠ‚ç‚¹
 * 
-* Î»Í¼Êµ¼ÊÉÏ¹¹³ÉÒ»¸öÂú¶ş²æÊ÷£¬×îµ×²ãµÄ½Úµã¶ÔÓ¦Á½¸öÁ¬ĞøµÄÏî£¬ÉÏÒ»²ãµÄ½Úµã¶ÔÓ¦ÏÂ²ãµÄ×óÓÒ×Ó½Úµã
-* ½ÚµãÎª0Ê±±íÊ¾º¢×Ó¶¼Î´±»·ÖÅä»ò¶¼ÒÑ±»·ÖÅä£¬Îª1Ê±±íÊ¾ÆäÖĞÒ»¸öº¢×ÓÒÑ±»·ÖÅä£¬ÁíÒ»¸öº¢×ÓÎ´±»·ÖÅä
+* ä½å›¾å®é™…ä¸Šæ„æˆä¸€ä¸ªæ»¡äºŒå‰æ ‘ï¼Œæœ€åº•å±‚çš„èŠ‚ç‚¹å¯¹åº”ä¸¤ä¸ªè¿ç»­çš„é¡¹ï¼Œä¸Šä¸€å±‚çš„èŠ‚ç‚¹å¯¹åº”ä¸‹å±‚çš„å·¦å³å­èŠ‚ç‚¹
+* èŠ‚ç‚¹ä¸º0æ—¶è¡¨ç¤ºå­©å­éƒ½æœªè¢«åˆ†é…æˆ–éƒ½å·²è¢«åˆ†é…ï¼Œä¸º1æ—¶è¡¨ç¤ºå…¶ä¸­ä¸€ä¸ªå­©å­å·²è¢«åˆ†é…ï¼Œå¦ä¸€ä¸ªå­©å­æœªè¢«åˆ†é…
 * 
-* ·ÖÅäÊ±Ê×ÏÈ¸ù¾İĞèÇó´óĞ¡¶¨Î»µ½¶ÔÓ¦µÄÁ´±íÍ·£¬Èç¹ûÓĞÔò´ÓÁ´±íÖĞÕªÏÂ´Ë½Úµã
-* Ã»ÓĞ¾Í´Ó¸ü´óµÄÁ´±íÍ·ÖĞÕªÏÂ£¬ÆäÖĞÒ»¸ö·ÖÅä£¬ÁíÒ»¸ö¹Òµ½ÏÂ¼¶µÄÁ´±íÖĞ
+* åˆ†é…æ—¶é¦–å…ˆæ ¹æ®éœ€æ±‚å¤§å°å®šä½åˆ°å¯¹åº”çš„é“¾è¡¨å¤´ï¼Œå¦‚æœæœ‰åˆ™ä»é“¾è¡¨ä¸­æ‘˜ä¸‹æ­¤èŠ‚ç‚¹
+* æ²¡æœ‰å°±ä»æ›´å¤§çš„é“¾è¡¨å¤´ä¸­æ‘˜ä¸‹ï¼Œå…¶ä¸­ä¸€ä¸ªåˆ†é…ï¼Œå¦ä¸€ä¸ªæŒ‚åˆ°ä¸‹çº§çš„é“¾è¡¨ä¸­
 * 
-* Ëæºó¸ù¾İ·ÖÅäµÄÎ»ÖÃ¶¨Î»Î»Í¼Ïî£¬»ñÈ¡¸¸Ç×½Úµã£¬Èç¹û¸¸Ç×Îª0Ôò½«ÆäĞŞ¸ÄÎª1£¬·ñÔòĞŞ¸ÄÎª0
+* éšåæ ¹æ®åˆ†é…çš„ä½ç½®å®šä½ä½å›¾é¡¹ï¼Œè·å–çˆ¶äº²èŠ‚ç‚¹ï¼Œå¦‚æœçˆ¶äº²ä¸º0åˆ™å°†å…¶ä¿®æ”¹ä¸º1ï¼Œå¦åˆ™ä¿®æ”¹ä¸º0
 * 
-* ÊÍ·ÅÊ±Èç¹û¸¸Ç×Îª0Ôò½«ÆäĞŞ¸ÄÎª1£¬·ñÔòĞŞ¸ÄÎª0£¬²¢ÕÒµ½ĞÖµÜ½Úµã¶ÔÓ¦µÄ¿ÕÏĞÁ´±í½Úµã(Á´±í½ÚµãÄÚÇ¶µ½Êµ¼Ê·ÖÅäµÄ¿Õ¼äÖĞ£¬Òò´ËÍ¨¹ı¼ÆËã¿ÉÒÔ¶¨Î»)£¬½«Æä´Óµ±Ç°Á´±íÕªÏÂ£¬ËæºóÑ¡Ôñ½«×ó×Ó½Úµã¹Òµ½´óÒ»¼¶µÄÁ´±í
+* é‡Šæ”¾æ—¶å¦‚æœçˆ¶äº²ä¸º0åˆ™å°†å…¶ä¿®æ”¹ä¸º1ï¼Œå¦åˆ™ä¿®æ”¹ä¸º0ï¼Œå¹¶æ‰¾åˆ°å…„å¼ŸèŠ‚ç‚¹å¯¹åº”çš„ç©ºé—²é“¾è¡¨èŠ‚ç‚¹(é“¾è¡¨èŠ‚ç‚¹å†…åµŒåˆ°å®é™…åˆ†é…çš„ç©ºé—´ä¸­ï¼Œå› æ­¤é€šè¿‡è®¡ç®—å¯ä»¥å®šä½)ï¼Œå°†å…¶ä»å½“å‰é“¾è¡¨æ‘˜ä¸‹ï¼Œéšåé€‰æ‹©å°†å·¦å­èŠ‚ç‚¹æŒ‚åˆ°å¤§ä¸€çº§çš„é“¾è¡¨
 */
 
 
 
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_DECLARATION(list_buddy_type_name, id_type, list_entry_id_type) \
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_DECLARATION(list_buddy_type_name, id_type, list_entry_id_type) \
 	typedef struct _##list_buddy_type_name##ListBuddyEntry { \
 		list_entry_id_type next; \
 	} list_buddy_type_name##ListBuddyEntry; \
@@ -65,7 +62,7 @@ extern "C" {
 	id_type list_buddy_type_name##ListBuddyGetMaxFreeCount(list_buddy_type_name##ListBuddy* buddy); \
 	id_type list_buddy_type_name##ListBuddyGetMaxCount(list_buddy_type_name##ListBuddy* buddy); \
 
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_DEFINE(list_buddy_type_name, id_type, indexer, allocator, referencer) \
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_DEFINE(list_buddy_type_name, id_type, indexer, allocator, referencer) \
 	void list_buddy_type_name##ListBuddyInit(list_buddy_type_name##ListBuddy* buddy, id_type size) { \
 		id_type i = 0; \
 		do { \
@@ -89,7 +86,7 @@ extern "C" {
 
 
 
-CUTILS_CONTAINER_SINGLY_LIST_DECLARATION(ListBuddy, list_entry_id_type)
+LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(ListBuddy, list_entry_id_type)
 
 typedef struct _ListBuddyObj {
 	struct _ListBuddy* buddy;
@@ -97,20 +94,20 @@ typedef struct _ListBuddyObj {
 } ListBuddyObj;
 
 typedef struct _ListBuddy {
-	uint8_t logn;		// Êµ¼Ê´æ´¢Ö¸Êı+1
+	uint8_t logn;
 	ListBuddySinglyListHead list_head[];
 	/* uint8_t space[]; */
 } ListBuddy;
 
-forceinline ListBuddySinglyListEntry* CUTILS_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_Reference(ListBuddySinglyListHead* list_head, list_entry_id_type id) {
+forceinline ListBuddySinglyListEntry* LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_Reference(ListBuddySinglyListHead* list_head, list_entry_id_type id) {
 	ListBuddyObj* obj = ObjectGetFromField(list_head, ListBuddyObj, list_head);
 	return (ListBuddySinglyListEntry*)((uintptr_t)obj->buddy + id);
 }
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_Dereference(MAIN_OBJ, OBJ)
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_InvalidId (-1)
-#define CUTILS_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER CUTILS_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_Dereference(MAIN_OBJ, OBJ)
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_InvalidId (-1)
+#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER
 
-CUTILS_CONTAINER_SINGLY_LIST_DEFINE(ListBuddy, list_entry_id_type, CUTILS_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER)
+LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(ListBuddy, list_entry_id_type, LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER)
 
 
 static id_type ListBuddyAlignToPowersOf2(id_type size) {
@@ -138,7 +135,7 @@ void ListBuddyInit(ListBuddy* buddy, id_type size) {
 	size = temp;
 
 	id_type head_size = sizeof(ListBuddy) + sizeof(ListBuddySinglyListHead) * buddy->logn;
-	if (!CUTILS_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(head_size)) {
+	if (!LIBYUC_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(head_size)) {
 		head_size = ListBuddyAlignToPowersOf2(head_size);
 	}
 
@@ -166,7 +163,7 @@ id_type ListBuddyAlloc(ListBuddy* buddy, size_t size) {
 	if (size == 0) {
 		return -1; 
 	} 
-	if (!CUTILS_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(size)) {
+	if (!LIBYUC_SPACE_MANAGER_LIST_BUDDY_IS_POWER_OF_2(size)) {
 		size = ListBuddyAlignToPowersOf2(size);
 	}
 	size_t cur_size = 1;
@@ -184,7 +181,7 @@ id_type ListBuddyAlloc(ListBuddy* buddy, size_t size) {
 	obj.buddy = buddy;
 	list_entry_id_type entry;
 	if (buddy->list_head[i].first == -1) {
-		// µ±Ç°Á´±í²»´æÔÚ¿É·ÖÅäµÄ½Úµã£¬ĞèÒª´Ó¸ü´óµÄÁ´±íÕªÏÂ²¢·ÖÁÑ
+		// å½“å‰é“¾è¡¨ä¸å­˜åœ¨å¯åˆ†é…çš„èŠ‚ç‚¹ï¼Œéœ€è¦ä»æ›´å¤§çš„é“¾è¡¨æ‘˜ä¸‹å¹¶åˆ†è£‚
 		int j = i + 1;
 		for (; j < buddy->logn; j++) {
 			cur_size *= 2;
@@ -201,7 +198,7 @@ id_type ListBuddyAlloc(ListBuddy* buddy, size_t size) {
 		while (j > i) {
 			--j;
 			cur_size /= 2;
-			list_entry_id_type mid = entry + cur_size;		// ºó°ë²¿·Ö·Åµ½ÏÂ¼¶Á´±í
+			list_entry_id_type mid = entry + cur_size;		// ååŠéƒ¨åˆ†æ”¾åˆ°ä¸‹çº§é“¾è¡¨
 			obj.list_head = buddy->list_head[j];
 			ListBuddySinglyListPutFirst(&obj.list_head, mid);
 			buddy->list_head[j] = obj.list_head;
@@ -220,4 +217,4 @@ id_type ListBuddyAlloc(ListBuddy* buddy, size_t size) {
 }
 #endif
 
-#endif // CUTILS_SPACE_MANAGER_LIST_BUDDY_H_
+#endif // LIBYUC_SPACE_MANAGER_LIST_BUDDY_H_

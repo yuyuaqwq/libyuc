@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_ALGORITHM_ARRAY_H_
-#define CUTILS_ALGORITHM_ARRAY_H_
+#ifndef LIBYUC_ALGORITHM_ARRAY_H_
+#define LIBYUC_ALGORITHM_ARRAY_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 
-#define CUTILS_ALGORITHM_ARRAY_DEFINE(array_name, element_type, id_type, referencer, comparer) \
+#define LIBYUC_ALGORITHM_ARRAY_DEFINE(array_name, element_type, id_type, referencer, comparer) \
     id_type array_name##ArrayFind(element_type* array, id_type count, element_type* element) { \
         for(id_type i = 0; i < count; i++) { \
             if (comparer##_Equal(array, &array[i], element)) return i; \
@@ -36,4 +36,4 @@ extern "C" {
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_INSERT_SORT_H_
+#endif // LIBYUC_ALGORITHM_INSERT_SORT_H_

@@ -1,6 +1,6 @@
-#include <CUtils/concurrency/mutex_lock.h>
-#include <CUtils/concurrency/thread.h>
-#include <CUtils/concurrency/atomic.h>
+#include <libyuc/concurrency/mutex_lock.h>
+#include <libyuc/concurrency/thread.h>
+#include <libyuc/concurrency/atomic.h>
 
 void MutexLockInit(MutexLock* lock) {
 	lock->state = false;

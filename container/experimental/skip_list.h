@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_SKIP_LIST_H_
-#define CUTILS_CONTAINER_SKIP_LIST_H_
+#ifndef LIBYUC_CONTAINER_SKIP_LIST_H_
+#define LIBYUC_CONTAINER_SKIP_LIST_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,4 +49,4 @@ SkipListEntry* SkipListNext(SkipList* list, SkipListEntry* cur);
 }
 #endif
 
-#endif // CUTILS_CONTAINER_STATIC_LIST_H_
+#endif // LIBYUC_CONTAINER_STATIC_LIST_H_

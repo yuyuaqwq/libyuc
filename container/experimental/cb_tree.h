@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_CB_TREE_H_
-#define CUTILS_CONTAINER_CB_TREE_H_
+#ifndef LIBYUC_CONTAINER_CB_TREE_H_
+#define LIBYUC_CONTAINER_CB_TREE_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,21 +13,21 @@ extern "C" {
 
 /* complete binary tree - 完全二叉树 */
 
-#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_PARENT(index) (((index) + 1) / 2 - 1)
-#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_LEFT(index) ((index) * 2 + 1)
-#define CUTILS_CONTAINER_CB_TREE_ZERO_GET_RIGHT(index) ((index) * 2 + 2)
+#define LIBYUC_CONTAINER_CB_TREE_ZERO_GET_PARENT(index) (((index) + 1) / 2 - 1)
+#define LIBYUC_CONTAINER_CB_TREE_ZERO_GET_LEFT(index) ((index) * 2 + 1)
+#define LIBYUC_CONTAINER_CB_TREE_ZERO_GET_RIGHT(index) ((index) * 2 + 2)
 
-#define CUTILS_CONTAINER_CB_TREE_ONE_GET_PARENT(index) ((index) / 2)
-#define CUTILS_CONTAINER_CB_TREE_ONE_GET_LEFT(index) ((index) * 2)
-#define CUTILS_CONTAINER_CB_TREE_ONE_GET_RIGHT(index) ((index) * 2 + 1)
+#define LIBYUC_CONTAINER_CB_TREE_ONE_GET_PARENT(index) ((index) / 2)
+#define LIBYUC_CONTAINER_CB_TREE_ONE_GET_LEFT(index) ((index) * 2)
+#define LIBYUC_CONTAINER_CB_TREE_ONE_GET_RIGHT(index) ((index) * 2 + 1)
 
 
-#define CUTILS_CONTAINER_CB_TREE_DECLARATION(cb_tree_type_name, id_type, count) \
+#define LIBYUC_CONTAINER_CB_TREE_DECLARATION(cb_tree_type_name, id_type, count) \
 	typedef struct _##cb_tree_type_name##CbTree { \
 		id_type entry[count]; /* 叶子计数*2才是总计数 */ \
 	} cb_tree_type_name##CbTree; \
 	
-#define CUTILS_CONTAINER_CB_TREE_DEFINE(cb_tree_type_name, id_type, count, indexer) \
+#define LIBYUC_CONTAINER_CB_TREE_DEFINE(cb_tree_type_name, id_type, count, indexer) \
 	static id_type cb_tree_type_name##CbTreeToExponentOf2(id_type power) { \
 		id_type exponent = 0; \
 		while (power != 0) { \
@@ -53,4 +53,4 @@ extern "C" {
 }
 #endif
 
-#endif // CUTILS_CONTAINER_CB_TREE_H_
+#endif // LIBYUC_CONTAINER_CB_TREE_H_

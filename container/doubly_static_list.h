@@ -2,16 +2,16 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_DOUBLY_STATIC_LIST_H_
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_H_
+#ifndef LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_H_
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_1(ds_list_type_name, id_type) \
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_1(ds_list_type_name, id_type) \
     /*
     * 若只有一条队列，由Pop分配的节点，此结构体可以被覆盖，可以使用union
     */ \
@@ -20,7 +20,7 @@ extern "C" {
         id_type next; \
     } ds_list_type_name##DoublyStaticListEntry; \
 
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
     typedef struct _##ds_list_type_name##DoublyStaticList{ \
         id_type list_first[list_count]; /* 最少应为1 */ \
         element_type obj_arr[obj_arr_count]; \
@@ -31,15 +31,15 @@ extern "C" {
     void ds_list_type_name##DoublyStaticListPush(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index); \
     void ds_list_type_name##DoublyStaticListSwitch(ds_list_type_name##DoublyStaticList* list, id_type list_order, id_type index, id_type new_list_order); \
 
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
-    CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_1(ds_list_type_name, id_type) \
-    CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+    LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_1(ds_list_type_name, id_type) \
+    LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DECLARATION_2(ds_list_type_name, id_type, element_type, list_count, obj_arr_count) \
 
 
 /*
 * 访问器需要提供_GetNext、_SetNext、_GetPrev、_SetPrev方法
 */
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, accessor, list_count) \
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DEFINE(ds_list_type_name, id_type, element_type, referencer, accessor, list_count) \
     void ds_list_type_name##DoublyStaticListInit(ds_list_type_name##DoublyStaticList* list, id_type count) { \
         list->list_first[0] = 0; \
         id_type i = 0; \
@@ -99,14 +99,14 @@ extern "C" {
         ds_list_type_name##DoublyStaticListPush(list, new_list_order, index); \
     } \
 
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER_Dereference(LIST, ENTRY)
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER_Reference(LIST, ENTRY) (ENTRY)
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER_InvalidId (-1)
-#define CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER CUTILS_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER_Dereference(LIST, ENTRY)
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER_Reference(LIST, ENTRY) (ENTRY)
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER_InvalidId (-1)
+#define LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_DEFAULT_REFERENCER
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_DOUBLY_STATIC_LIST_H_
+#endif // LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_H_

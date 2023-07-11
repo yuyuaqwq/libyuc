@@ -2,11 +2,11 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_QUEUE_H_
-#define CUTILS_CONTAINER_QUEUE_H_
+#ifndef LIBYUC_CONTAINER_QUEUE_H_
+#define LIBYUC_CONTAINER_QUEUE_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/array.h>
+#include <libyuc/object.h>
+#include <libyuc/container/array.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,4 +40,4 @@ void* QueueDequeue(Queue* queue);
 }
 #endif
 
-#endif // CUTILS_CONTAINER_QUEUE_H_
+#endif // LIBYUC_CONTAINER_QUEUE_H_

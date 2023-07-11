@@ -2,11 +2,11 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_BITMAP_H_
-#define CUTILS_CONTAINER_BITMAP_H_
+#ifndef LIBYUC_CONTAINER_BITMAP_H_
+#define LIBYUC_CONTAINER_BITMAP_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/vector.h>
+#include <libyuc/object.h>
+#include <libyuc/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,13 +16,13 @@ extern "C" {
 /*
 * 位图
 */
-#define CUTILS_CONTAINER_BIT_MAP_DECLARATION(bit_map_type_name, size_type) \
+#define LIBYUC_CONTAINER_BIT_MAP_DECLARATION(bit_map_type_name, size_type) \
     typedef struct _##bit_map_type_name##Bitmap { \
         size_type count; \
         uint8_t byte_arr[]; \
     } bit_map_type_name##Bitmap; \
 
-#define CUTILS_CONTAINER_BIT_MAP_DEFINE(bit_map_type_name, size_type) \
+#define LIBYUC_CONTAINER_BIT_MAP_DEFINE(bit_map_type_name, size_type) \
     /*
     * 必须是8的倍数
     */ \
@@ -155,10 +155,10 @@ extern "C" {
         return max_free_count; \
     } \
 
-CUTILS_CONTAINER_BIT_MAP_DECLARATION(, size_t)
+LIBYUC_CONTAINER_BIT_MAP_DECLARATION(, size_t)
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_BITMAP_H_
+#endif // LIBYUC_CONTAINER_BITMAP_H_

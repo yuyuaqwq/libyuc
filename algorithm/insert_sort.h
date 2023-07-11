@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_ALGORITHM_INSERT_SORT_H_
-#define CUTILS_ALGORITHM_INSERT_SORT_H_
+#ifndef LIBYUC_ALGORITHM_INSERT_SORT_H_
+#define LIBYUC_ALGORITHM_INSERT_SORT_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -15,7 +15,7 @@ extern "C" {
 /*
 * 插入排序
 */
-#define CUTILS_ALGORITHM_INSERT_SORT_DEFINE(insert_sort_name, element_type, id_type) \
+#define LIBYUC_ALGORITHM_INSERT_SORT_DEFINE(insert_sort_name, element_type, id_type) \
     void insert_sort_name##InsertSort(element_type* arr, id_type lenght) { \
         /* 将数组分成两个区域，一边是排序后数组，一边是未排序数组；
         * 最开始时，已排序数组区间只有一个成员，长度是1，未排序数组区间则是整个数组长度-1；
@@ -42,4 +42,4 @@ extern "C" {
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_INSERT_SORT_H_
+#endif // LIBYUC_ALGORITHM_INSERT_SORT_H_

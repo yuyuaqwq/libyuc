@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_ALGORITHM_KMP_MATCH_H_
-#define CUTILS_ALGORITHM_KMP_MATCH_H_
+#ifndef LIBYUC_ALGORITHM_KMP_MATCH_H_
+#define LIBYUC_ALGORITHM_KMP_MATCH_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -119,4 +119,4 @@ int KmpMatch(const char* main, size_t mainLen, const char* pattern, size_t patte
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_MERGE_SORT_H_
+#endif // LIBYUC_ALGORITHM_MERGE_SORT_H_

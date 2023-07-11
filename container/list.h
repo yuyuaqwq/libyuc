@@ -2,16 +2,16 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_LIST_H_
-#define CUTILS_CONTAINER_LIST_H_
+#ifndef LIBYUC_CONTAINER_LIST_H_
+#define LIBYUC_CONTAINER_LIST_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_LIST_DECLARATION(list_type_name, id_type) \
+#define LIBYUC_CONTAINER_LIST_DECLARATION(list_type_name, id_type) \
     typedef struct _##list_type_name##ListEntry { \
         id_type prev; \
         id_type next; \
@@ -36,7 +36,7 @@ extern "C" {
     id_type list_type_name##ListNext(list_type_name##ListHead* head, id_type cur_id); \
 
 
-#define CUTILS_CONTAINER_LIST_DEFINE(list_type_name, id_type, referencer) \
+#define LIBYUC_CONTAINER_LIST_DEFINE(list_type_name, id_type, referencer) \
     void list_type_name##ListInit(list_type_name##ListHead* head) { \
         head->last = referencer##_InvalidId; \
         head->first = referencer##_InvalidId; \
@@ -191,11 +191,11 @@ extern "C" {
     } \
 
 
-CUTILS_CONTAINER_LIST_DECLARATION(, struct _ListEntry*)
+LIBYUC_CONTAINER_LIST_DECLARATION(, struct _ListEntry*)
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_LIST_H_
+#endif // LIBYUC_CONTAINER_LIST_H_

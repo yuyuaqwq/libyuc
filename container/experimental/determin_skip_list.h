@@ -1,11 +1,11 @@
 
 
-#ifndef CUTILS_CONTAINER_DETERMIN_SKIP_LIST_H_
-#define CUTILS_CONTAINER_DETERMIN_SKIP_LIST_H_
+#ifndef LIBYUC_CONTAINER_DETERMIN_SKIP_LIST_H_
+#define LIBYUC_CONTAINER_DETERMIN_SKIP_LIST_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/static_list.h>
-#include <CUtils/container/list.h>
+#include <libyuc/object.h>
+#include <libyuc/container/static_list.h>
+#include <libyuc/container/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -87,4 +87,4 @@ void DeterminSkipListInsert(DeterminSkipList* list, void* entry) {
 }
 #endif
 
-#endif // CUTILS_CONTAINER_DETERMIN_SKIP_LIST_H_
+#endif // LIBYUC_CONTAINER_DETERMIN_SKIP_LIST_H_

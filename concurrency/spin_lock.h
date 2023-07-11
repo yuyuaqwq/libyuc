@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONCURRENCY_SPIN_LOCK_H_
-#define CUTILS_CONCURRENCY_SPIN_LOCK_H_
+#ifndef LIBYUC_CONCURRENCY_SPIN_LOCK_H_
+#define LIBYUC_CONCURRENCY_SPIN_LOCK_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,4 +26,4 @@ void SpinLockRelease(SpinLock* lock);
 }
 #endif
 
-#endif // CUTILS_CONCURRENCY_SPIN_LOCK_H_
+#endif // LIBYUC_CONCURRENCY_SPIN_LOCK_H_

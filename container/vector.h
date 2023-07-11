@@ -2,17 +2,17 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_VECTOR_H_
-#define CUTILS_CONTAINER_VECTOR_H_
+#ifndef LIBYUC_CONTAINER_VECTOR_H_
+#define LIBYUC_CONTAINER_VECTOR_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#define CUTILS_CONTAINER_VECTOR_DECLARATION(vector_type_name, element_type) \
+#define LIBYUC_CONTAINER_VECTOR_DECLARATION(vector_type_name, element_type) \
     typedef struct _##vector_type_name##Vector { \
         size_t count; \
         size_t capacity; \
@@ -25,7 +25,7 @@ extern "C" {
     ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
-#define CUTILS_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator, callbacker) \
+#define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator, callbacker) \
     void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, size_t capacity) { \
         element_type* new_buf = allocator##_CreateMultiple(arr, element_type, capacity); \
         if (arr->obj_arr) { \
@@ -92,11 +92,11 @@ extern "C" {
         return &arr->obj_arr[--arr->count]; \
     } \
 
-#define CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER_Expand(ARR, OLD_CAPACITY, NEW_CAPACITY)
-#define CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER CUTILS_CONTAINER_VECTOR_DEFAULT_CALLBACKER
+#define LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER_Expand(ARR, OLD_CAPACITY, NEW_CAPACITY)
+#define LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_VECTOR_H_
+#endif // LIBYUC_CONTAINER_VECTOR_H_

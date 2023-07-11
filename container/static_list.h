@@ -2,22 +2,22 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_STATIC_LIST_H_
-#define CUTILS_CONTAINER_STATIC_LIST_H_
+#ifndef LIBYUC_CONTAINER_STATIC_LIST_H_
+#define LIBYUC_CONTAINER_STATIC_LIST_H_
 
-#include <CUtils/object.h>
-#include <CUtils/container/vector.h>
+#include <libyuc/object.h>
+#include <libyuc/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(static_list_type_name, id_type) \
+#define LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_1(static_list_type_name, id_type) \
     typedef struct _##static_list_type_name##StaticListEntry { \
         id_type next; \
     } static_list_type_name##StaticListEntry; \
 
-#define CUTILS_CONTAINER_STATIC_LIST_DECLARATION_2(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+#define LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_2(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
     typedef struct _##static_list_type_name##StaticList { \
         id_type list_first[list_count]; /* 最少应为1 */ \
         element_type obj_arr[obj_arr_count]; \
@@ -31,14 +31,14 @@ extern "C" {
     id_type static_list_type_name##StaticListIteratorFirst(static_list_type_name##StaticList* list, id_type list_order); \
     id_type static_list_type_name##StaticListIteratorNext(static_list_type_name##StaticList* list, id_type cur_id); \
 
-#define CUTILS_CONTAINER_STATIC_LIST_DECLARATION(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_1(static_list_type_name, id_type) \
-    CUTILS_CONTAINER_STATIC_LIST_DECLARATION_2(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+#define LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
+    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_1(static_list_type_name, id_type) \
+    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_2(static_list_type_name, id_type, element_type, list_count, obj_arr_count) \
 
 /*
 * 访问器需要提供_GetNext、_SetNext方法
 */
-#define CUTILS_CONTAINER_STATIC_LIST_DEFINE(static_list_type_name, id_type, element_type, referencer, accessor, list_count) \
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFINE(static_list_type_name, id_type, element_type, referencer, accessor, list_count) \
     void static_list_type_name##StaticListInit(static_list_type_name##StaticList* list, id_type count) { \
         list->list_first[0] = 0; \
         id_type i = 0; \
@@ -92,15 +92,15 @@ extern "C" {
         return accessor##_GetNext(list, &list->obj_arr[cur_id]); \
     } \
 
-#define CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId (-1)
-#define CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER CUTILS_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId (-1)
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER
 
-#define CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR_SetNext(LIST, ELEMENT, NEXT) ((ELEMENT)->next = NEXT)
-#define CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR_GetNext(LIST, ELEMENT, NEXT) ((ELEMENT)->next)
-#define CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR CUTILS_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR_SetNext(LIST, ELEMENT, NEXT) ((ELEMENT)->next = NEXT)
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR_GetNext(LIST, ELEMENT, NEXT) ((ELEMENT)->next)
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_STATIC_LIST_H_
+#endif // LIBYUC_CONTAINER_STATIC_LIST_H_

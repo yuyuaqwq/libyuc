@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_H_
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_H_
+#ifndef LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_H_
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_H_
 
-#include <CUtils/space_manager/free_list.h>
+#include <libyuc/space_manager/free_list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,8 +14,8 @@ extern "C" {
 /*
 * 边界标识法(boundary tag method)空闲链表
 */
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_DECLARATION(btm_type_name, id_type, element_type, list_count, obj_coun) \
-    CUTILS_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION(btm_type_name##BtmBase, id_type, ) \
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_DECLARATION(btm_type_name, id_type, element_type, list_count, obj_coun) \
+    LIBYUC_CONTAINER_SPACE_MANAGER_FREE_LIST_DECLARATION(btm_type_name##BtmBase, id_type, ) \
     typedef struct _##btm_type_name##BtmBlockFoot { \
         id_type head_tag; \
     } btm_type_name##BtmBlockFoot; \
@@ -24,7 +24,7 @@ extern "C" {
     } btm_type_name##BtmFreeList; \
 
 
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_DEFINE(btm_type_name, id_type, referencer, accessor) \
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_DEFINE(btm_type_name, id_type, referencer, accessor) \
     static btm_type_name##BtmBlockFoot* btm_type_name##BtmFreeListGetEntryFoot(id_type end) { \
         return (btm_type_name##BtmBlockFoot*)(end - sizeof(btm_type_name##BtmBlockFoot)); \
     } \
@@ -45,14 +45,14 @@ extern "C" {
          \
     } \
 
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetTag(foot) ((foot)->head_tag & 1)
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetId(foot) ((foot)->head_tag & (~1))
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_SetTag(foot, tag) ((foot)->head_tag = CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetId(foot) | tag)
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_SetId(foot, id) ((foot)->head_tag = id | CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetTag(foot))
-#define CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR CUTILS_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetTag(foot) ((foot)->head_tag & 1)
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetId(foot) ((foot)->head_tag & (~1))
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_SetTag(foot, tag) ((foot)->head_tag = LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetId(foot) | tag)
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_SetId(foot, id) ((foot)->head_tag = id | LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR_GetTag(foot))
+#define LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR LIBYUC_CONTAINER_SPACE_MANAGER_BTM_FREE_LIST_ACCESSOR
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CUTILS_CONTAINER_SPACE_MANAGER_BTM_H_
+#endif // LIBYUC_CONTAINER_SPACE_MANAGER_BTM_H_

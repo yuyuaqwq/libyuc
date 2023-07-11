@@ -2,10 +2,10 @@
 https://blog.csdn.net/gongmin856/article/details/77101397
 */
 
-#ifndef CUTILS_ALGORITHM_KMP_MATCH_H_
-#define CUTILS_ALGORITHM_KMP_MATCH_H_
+#ifndef LIBYUC_ALGORITHM_KMP_MATCH_H_
+#define LIBYUC_ALGORITHM_KMP_MATCH_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 
 #ifdef __cplusplus
@@ -21,4 +21,4 @@ uint32_t Crc32End(uint32_t crc);
 }
 #endif
 
-#endif // CUTILS_ALGORITHM_MERGE_SORT_H_
+#endif // LIBYUC_ALGORITHM_MERGE_SORT_H_

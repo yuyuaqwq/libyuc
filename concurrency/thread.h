@@ -2,10 +2,10 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef CUTILS_CONCURRENCY_THREAD_H_
-#define CUTILS_CONCURRENCY_THREAD_H_
+#ifndef LIBYUC_CONCURRENCY_THREAD_H_
+#define LIBYUC_CONCURRENCY_THREAD_H_
 
-#include <CUtils/object.h>
+#include <libyuc/object.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,4 +65,4 @@ static forceinline void ThreadCreate(ThreadEntry entry, void* context) {
 }
 #endif
 
-#endif // CUTILS_CONCURRENCY_THREAD_H_
+#endif // LIBYUC_CONCURRENCY_THREAD_H_
