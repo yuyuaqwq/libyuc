@@ -45,6 +45,7 @@ typedef enum {
     bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id); \
     id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
+    bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree); \
     id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
     id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
@@ -329,10 +330,61 @@ typedef enum {
             RbColor old_color = accessor##_GetColor(tree, del_min_entry); \
             accessor##_SetColor(tree, del_min_entry, accessor##_GetColor(tree, del_entry)); \
             accessor##_SetColor(tree, del_entry, old_color); \
+            referencer##_Dereference(tree, del_min_entry); \
+            referencer##_Dereference(tree, del_entry); \
         } \
         rb_tree_type_name##RbTreeDeleteFixup(tree, del_entry_id, is_parent_left); \
         return true; \
     } \
+    /*
+    * 验证红黑树性质
+    */ \
+    static bool rb_tree_type_name##RbTreeCheckPath(rb_tree_type_name##RbTree* tree, id_type entry_id, int32_t cur_high, int32_t max_high) { \
+        if (entry_id == referencer##_InvalidId) { \
+            return cur_high == max_high; \
+        } \
+        bool correct = false; \
+        rb_tree_type_name##RbEntry* entry = NULL; \
+        rb_tree_type_name##RbEntry* parent = NULL; \
+        do { \
+            entry = referencer##_Reference(tree, entry_id); \
+            id_type parent_id = accessor##_GetParent(tree, entry); \
+            if (parent_id != referencer##_InvalidId) { \
+                parent = referencer##_Reference(tree, parent_id); \
+                if (accessor##_GetColor(tree, entry) == kRbRed && accessor##_GetColor(tree, parent) == kRbRed) { \
+                    break; \
+                } \
+            } \
+            if (accessor##_GetColor(tree, entry) == kRbBlack) { cur_high++; } \
+            correct = rb_tree_type_name##RbTreeCheckPath(tree, entry->left, cur_high, max_high) && rb_tree_type_name##RbTreeCheckPath(tree, entry->right, cur_high, max_high); \
+        } while (false); \
+        if (entry) referencer##_Dereference(tree, entry); \
+        if (parent) referencer##_Dereference(tree, parent); \
+        return correct; \
+    } \
+    bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree) { \
+        rb_tree_type_name##RbEntry* entry = referencer##_Reference(tree, tree->root); \
+        bool correct = false; \
+        do { \
+            if (accessor##_GetColor(tree, entry) != kRbBlack) break; \
+            int32_t high = 1; \
+            while (entry->left != referencer##_InvalidId) { \
+                id_type entry_id = entry->left; \
+                referencer##_Dereference(tree, entry); \
+                entry = referencer##_Reference(tree, entry_id); \
+                /* 红色节点不表示高度 */ \
+                if (accessor##_GetColor(tree, entry) == kRbBlack) { \
+                    high++; \
+                } \
+            } \
+            correct = rb_tree_type_name##RbTreeCheckPath(tree, tree->root, 0, high); \
+        } while (false); \
+        referencer##_Dereference(tree, entry); \
+        return correct; \
+    } \
+    /*
+    * 迭代器相关
+    */ \
     id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status) { \
         return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, key, cmp_status); \
     } \
@@ -357,7 +409,7 @@ typedef struct _DefalutRb {
     int key;
 } DefalutRb;
 #define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetKey(TREE, ENTRY) (((DefalutRb*)ENTRY)->key)
-#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY) ((((uintptr_t)(((DefalutRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY) ((DefalutRbEntry*)(((uintptr_t)(((DefalutRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
 #define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((DefalutRbEntry*)ENTRY)->parent_color) & 0x1))
 #define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetParent(TREE, ENTRY, NEW_PARENT_ID) ((DefalutRbEntry*)((DefalutRbEntry*)ENTRY)->parent_color = (DefalutRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY))));
 #define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetColor(TREE, ENTRY, COLOR) (((DefalutRbEntry*)ENTRY)->parent_color = (((uintptr_t)LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))

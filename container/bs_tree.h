@@ -55,6 +55,7 @@ extern "C" {
                 entry_parent->left = new_entry_id; \
             } \
             else { \
+                  assert(entry_parent->right == entry_id); \
                 entry_parent->right = new_entry_id; \
             } \
             referencer##_Dereference(tree, &entry_parent); \

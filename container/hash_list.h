@@ -23,6 +23,7 @@ extern "C" {
 	LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type) \
 	typedef struct _HashList { \
 		hash_list_type_name##HashListHashTable hash_table; \
+		key_type empty_key; \
 		ListHead list_head; \
 		size_t max_count; \
 	} hash_list_type_name##HashList; \
@@ -36,15 +37,19 @@ extern "C" {
 
 #define LIBYUC_CONTAINER_HASH_LIST_DEFINE(hash_list_type_name, key_type, accessor, allocater, hasher, comparer) \
 	forceinline key_type* hash_list_type_name##HashListHashEntryAccessor_GetKey(hash_list_type_name##HashListHashTable* table, hash_list_type_name##HashListHashEntry* hash_entry) { \
-		if (!hash_entry->hash_list_entry) return &table->empty_key; \
-		return accessor##_GetKey((hash_list_type_name##HashList*)table, hash_entry->hash_list_entry); \
+		if (!hash_entry->hash_list_entry) return &ObjectGetFromField(table, hash_list_type_name##HashList, hash_table)->empty_key; \
+		return accessor##_GetKey(ObjectGetFromField(table, hash_list_type_name##HashList, hash_table), hash_entry->hash_list_entry); \
 	} \
-    LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_OBJECT_MOVER_DEFALUT, LIBYUC_OBJECT_MOVER_DEFALUT, hasher, comparer) \
+	forceinline void hash_list_type_name##HashListHashEntryAccessor_SetKey(hash_list_type_name##HashListHashTable* table, hash_list_type_name##HashListHashEntry* hash_entry, const key_type* key) { \
+		accessor##_SetKey(ObjectGetFromField(table, hash_list_type_name##HashList, hash_table), hash_entry->hash_list_entry, key); \
+	} \
+    LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_OBJECT_MOVER_DEFALUT, hasher, comparer) \
     \
 	void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count, const key_type* empty_key) { \
+		list->empty_key = *empty_key; \
 		hash_list_type_name##HashListHashEntry empty_hash_entry; \
 		empty_hash_entry.hash_list_entry = NULL; \
-		hash_list_type_name##HashListHashTableInit(&list->hash_table, max_count, 0, &empty_hash_entry, empty_key); \
+		hash_list_type_name##HashListHashTableInit(&list->hash_table, max_count, 0, &empty_hash_entry); \
 		ListInit(&list->list_head); \
 		list->max_count = max_count; \
 	} \
