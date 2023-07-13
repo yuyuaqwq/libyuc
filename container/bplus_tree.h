@@ -624,7 +624,7 @@ kv分离是外层处理的，b+树操作的只有element
                 element_referencer##_Dereference(cur, raw); \
 			    if (free_rate + need_rate >= raw_rate) { \
 				    /* SetValue会先释放原有空间，因此空闲空间可以计入已分配的部分 */ \
-                    element_accessor##_SetValue(cur, insert_element, cur, &insert_element->leaf.value); \
+                    element_accessor##_SetValue(cur, raw, cur, &insert_element->leaf.value); \
 				    break; \
 			    } \
 			    else { \
