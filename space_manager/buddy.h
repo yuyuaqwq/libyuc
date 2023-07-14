@@ -24,8 +24,26 @@ extern "C" {
 #define LIBYUC_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
 #define LIBYUC_SPACE_MANAGER_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-// 求幂
+/* 求幂 */
 #define LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
+
+/* 根据幂求指数 */
+static forceinline int32_t LIBYUC_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(uint32_t power) {
+	int32_t exponent = 0;
+	while (power != 0) {
+		exponent++;
+		power >>= 1;
+	}
+	return exponent - 1;
+}
+
+/* 对齐到2的幂 */
+static forceinline uint32_t LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(uint32_t num) {
+	for (uint32_t i = 1; i < sizeof(num) * 8 / 2 + 1; i *= 2) {
+		num |= num >> i;
+	}
+	return num + 1;
+}
 
 #define LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(buddy_type_name, id_type) \
 	typedef struct _##buddy_type_name##Buddy { \
@@ -41,21 +59,6 @@ extern "C" {
 	id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
 
 #define LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(buddy_type_name, id_type, indexer, allocator) \
-	/* 根据幂求指数 */ \
-	static id_type buddy_type_name##BuddyToExponentOf2(id_type power) { \
-		id_type exponent = 0; \
-		while (power != 0) { \
-			exponent++; \
-			power >>= 1; \
-		} \
-		return exponent - 1; \
-	} \
-	static id_type buddy_type_name##BuddyAlignToPowersOf2(id_type size) { \
-		for (int i = 1; i < sizeof(size) * 8 / 2 + 1; i *= 2) { \
-			size |= size >> i; \
-		} \
-		return size + 1; \
-	} \
 	buddy_type_name##Buddy* buddy_type_name##BuddyCreate(id_type size) { \
 		buddy_type_name##Buddy* buddy; \
 		id_type alloc_size = size * sizeof(uint8_t) * 2; \
@@ -69,13 +72,13 @@ extern "C" {
 		if (size < 1 || !LIBYUC_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(size)) { \
 			return false; \
 		} \
-		indexer##_Set(buddy, buddy->logn, 0, buddy_type_name##BuddyToExponentOf2(size) + 1); \
+		indexer##_Set(buddy, buddy->logn, 0, LIBYUC_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(size) + 1); \
 		id_type node_size = size * 2; \
 		for (id_type i = 1; i < 2 * size; i++) { \
 			if (LIBYUC_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(i)) { \
 				node_size /= 2; \
 			} \
-			indexer##_Set(buddy, buddy->logn, i, buddy_type_name##BuddyToExponentOf2(node_size) + 1); \
+			indexer##_Set(buddy, buddy->logn, i, LIBYUC_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(node_size) + 1); \
 		} \
 		return true; \
 	} \
@@ -84,7 +87,7 @@ extern "C" {
 			return -1; \
 		} \
 		if (!LIBYUC_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(size)) { \
-			size = buddy_type_name##BuddyAlignToPowersOf2(size); \
+			size = LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(size); \
 		} \
 		if (LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)-1) < size) { \
 			return -1; \
@@ -92,7 +95,7 @@ extern "C" {
 		/* 从二叉树根节点向下找正好符合分配要求的尺寸 */ \
 		id_type index = 1; \
 		id_type node_size = LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
-		id_type size_logn = buddy_type_name##BuddyToExponentOf2(size) + 1; \
+		id_type size_logn = LIBYUC_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(size) + 1; \
 		for (; node_size != size; node_size /= 2) { \
 			/* 优先找更小块的，就不必分割大块的了 */ \
 			id_type left_logn = indexer##_Get(buddy, buddy->logn, LIBYUC_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)); \
