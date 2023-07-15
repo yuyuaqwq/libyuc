@@ -24,10 +24,10 @@ extern "C" {
 #define LIBYUC_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
 #define LIBYUC_SPACE_MANAGER_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-/* 求幂 */
+/* 根据2的指数求幂 */
 #define LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
 
-/* 根据幂求指数 */
+/* 根据2的幂求指数 */
 static forceinline int32_t LIBYUC_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(uint32_t power) {
 	int32_t exponent = 0;
 	while (power != 0) {
@@ -53,6 +53,7 @@ static forceinline uint32_t LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(uint3
 	buddy_type_name##Buddy* buddy_type_name##BuddyCreate(id_type size); \
 	bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, id_type size); \
 	id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, id_type size); \
+	bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, id_type size); \
 	void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset); \
 	id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset); \
 	id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy); \
@@ -120,6 +121,30 @@ static forceinline uint32_t LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(uint3
 			indexer##_Set(buddy, buddy->logn, index, max_logn); \
 		} \
 		return offset; \
+	} \
+	bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, id_type size) { \
+		  assert(offset != -1 && offset < LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
+		id_type node_size = 1; \
+		/* 定位到最底层叶子节点，并向上找到匹配size的节点 */ \
+		id_type index = offset + LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
+		while (size < node_size) { \
+			node_size *= 2; \
+			index = LIBYUC_SPACE_MANAGER_BUDDY_PARENT(index); \
+			if (index == 1) return false; /* 大小无法匹配 */ \
+		} \
+		if (size != node_size) return false; \
+		if (LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, index)) != node_size) return false; \
+		/* 向上更新父节点的logn */ \
+		indexer##_Set(buddy, buddy->logn, index, 0); \
+		while (index != 1) { \
+			index = LIBYUC_SPACE_MANAGER_BUDDY_PARENT(index); \
+			id_type max_logn = LIBYUC_SPACE_MANAGER_BUDDY_MAX(indexer##_Get(buddy, buddy->logn, LIBYUC_SPACE_MANAGER_BUDDY_LEFT_LEAF(index)), indexer##_Get(buddy, buddy->logn, LIBYUC_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index))); \
+			if (max_logn == indexer##_Get(buddy, buddy->logn, index)) { \
+				break; /*从这里开始不会影响上层的logn*/ \
+			} \
+			indexer##_Set(buddy, buddy->logn, index, max_logn); \
+		} \
+		return true; \
 	} \
 	void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
 		  assert(offset != -1 && offset < LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
