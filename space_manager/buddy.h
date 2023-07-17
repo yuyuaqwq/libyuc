@@ -24,22 +24,15 @@ extern "C" {
 #define LIBYUC_SPACE_MANAGER_BUDDY_IS_POWER_OF_2(x) (!((x)&((x)-1)))
 #define LIBYUC_SPACE_MANAGER_BUDDY_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-<<<<<<< HEAD
 
-/*
-* 求幂
-*/
-#define LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
 
 /*
 * 根据幂求指数
 */
-=======
 /* 根据2的指数求幂 */
 #define LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(exponent) (1 << (exponent))
 
 /* 根据2的幂求指数 */
->>>>>>> ea11ac6ee6e6e69d8cfc73ffdee9be92aa9f48ac
 static forceinline int32_t LIBYUC_SPACE_MANAGER_BUDDY_TO_EXPONENT_OF_2(uint32_t power) {
 	int32_t exponent = 0;
 	while (power != 0) {
