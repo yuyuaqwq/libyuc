@@ -22,7 +22,7 @@ extern "C" {
     void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create); \
     void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
     ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, size_t count); \
-    ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, element_type* obj); \
+    ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
 #define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator, callbacker) \
