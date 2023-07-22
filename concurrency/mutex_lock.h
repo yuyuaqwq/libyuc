@@ -15,7 +15,7 @@ extern "C" {
 * 互斥锁(基于线程切换)
 */
 typedef struct _MutexLock {
-	volatile bool state;
+  volatile bool state;
 } MutexLock;
 
 void MutexLockInit(MutexLock* lock);

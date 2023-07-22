@@ -18,26 +18,26 @@ extern "C" {
 * 无父结点嵌入平衡因子的Avl树
 */
 typedef struct _AvlEntryNp {
-    union {
-        struct {
-            struct _AvlEntryNp* left_balanceFactor;     // 平衡因子嵌入到左指针低2位
-            struct _AvlEntryNp* right;
-        };
-        BsEntryNp bse;
+  union {
+    struct {
+      struct _AvlEntryNp* left_balanceFactor;   // 平衡因子嵌入到左指针低2位
+      struct _AvlEntryNp* right;
     };
+    BsEntryNp bse;
+  };
 } AvlEntryNp;
 
 typedef struct _AvlTreeNp {
-    union {
-        struct {
-            AvlEntryNp* root;
-            int entryFieldOffset;
-            int keyFieldOffset;
-            int keyFieldSize;
-            CmpFunc cmpFunc;        // 间接调用增加一定开销
-        };
-        BsTreeNp bst;
+  union {
+    struct {
+      AvlEntryNp* root;
+      int entryFieldOffset;
+      int keyFieldOffset;
+      int keyFieldSize;
+      CmpFunc cmpFunc;    // 间接调用增加一定开销
     };
+    BsTreeNp bst;
+  };
 } AvlTreeNp;
 
 AvlEntryNp* AvlEntryNpGetLeft(AvlEntryNp* entry);

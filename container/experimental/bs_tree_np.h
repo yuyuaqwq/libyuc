@@ -15,16 +15,16 @@ extern "C" {
 #endif
 
 typedef struct _BsEntryNp {
-    struct _BsEntryNp* left;
-    struct _BsEntryNp* right;
+  struct _BsEntryNp* left;
+  struct _BsEntryNp* right;
 } BsEntryNp;
 
 typedef struct _BsTreeNp {
-    BsEntryNp* root;
-    int entryFieldOffset;
-    int keyFieldOffset;
-    int keyFieldSize;
-    CmpFunc cmpFunc;        // ��ӵ�������һ������
+  BsEntryNp* root;
+  int entryFieldOffset;
+  int keyFieldOffset;
+  int keyFieldSize;
+  CmpFunc cmpFunc;    // ��ӵ�������һ������
 } BsTreeNp;
 
 void BsTreeNpInit(BsTreeNp* tree, int entryFieldOffset, int keyFieldOffset, int keySize, CmpFunc cmpFunc);
@@ -33,14 +33,14 @@ void BsEntryNpInit(BsEntryNp* entry);
 retObj = NULL; \
 BsEntryNp* cur = (BsEntryNp*)((tree)->root); \
 while (cur) { \
-    objName* tempObj = ObjectGetFromField(cur, objName, entryFieldName); \
-    if (tempObj->keyFieldName < (key)) { \
-        cur = cur->right; \
-    } else if (tempObj->keyFieldName > (key)) { \
-        cur = cur->left; \
-    } else { \
-        retObj = tempObj; break; \
-    } \
+  objName* tempObj = ObjectGetFromField(cur, objName, entryFieldName); \
+  if (tempObj->keyFieldName < (key)) { \
+    cur = cur->right; \
+  } else if (tempObj->keyFieldName > (key)) { \
+    cur = cur->left; \
+  } else { \
+    retObj = tempObj; break; \
+  } \
 } \
 }
 bool BsTreeNpInsertEntryByKey(BsTreeNp* tree, BsEntryNp* entry);

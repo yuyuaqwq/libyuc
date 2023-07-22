@@ -17,9 +17,9 @@ extern "C" {
 * 读写锁
 */
 typedef struct _RwLock {
-	volatile int32_t read_count;
-	MutexLock write_lock;
-	volatile bool write_wait;
+  volatile int32_t read_count;
+  MutexLock write_lock;
+  volatile bool write_wait;
 } RwLock;
 
 void RwLockInit(RwLock* lock);

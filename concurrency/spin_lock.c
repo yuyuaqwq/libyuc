@@ -3,13 +3,13 @@
 #include <libyuc/concurrency/atomic.h>
 
 void SpinLockInit(SpinLock* lock) {
-	lock->state = false;
+  lock->state = false;
 }
 
 void SpinLockAcquire(SpinLock* lock) {
-	while (AtomicExchange32(&lock->state, true) == true) { ThreadPause(); continue; }
+  while (AtomicExchange32(&lock->state, true) == true) { ThreadPause(); continue; }
 }
 
 void SpinLockRelease(SpinLock* lock) {
-	lock->state = false;		// AtomicExchange32(&lock->state, false);
+  lock->state = false;    // AtomicExchange32(&lock->state, false);
 }

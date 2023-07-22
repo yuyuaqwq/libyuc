@@ -15,7 +15,7 @@ extern "C" {
 * 自旋锁
 */
 typedef struct _SpinLock {
-	volatile bool state;
+  volatile bool state;
 } SpinLock;
 
 void SpinLockInit(SpinLock* lock);

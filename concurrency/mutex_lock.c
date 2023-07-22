@@ -3,13 +3,13 @@
 #include <libyuc/concurrency/atomic.h>
 
 void MutexLockInit(MutexLock* lock) {
-	lock->state = false;
+  lock->state = false;
 }
 
 void MutexLockAcquire(MutexLock* lock) {
-	while (AtomicExchange32(&lock->state, true) == true) { ThreadSwitch(0); continue; }
+  while (AtomicExchange32(&lock->state, true) == true) { ThreadSwitch(0); continue; }
 }
 
 void MutexLockRelease(MutexLock* lock) {
-	lock->state = false;
+  lock->state = false;
 }

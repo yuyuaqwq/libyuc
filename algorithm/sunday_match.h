@@ -19,26 +19,26 @@ extern "C" {
 * 可以结合kmp算法降低最坏时间复杂度
 */
 int SundayMatch(const char* main, size_t mainLen, const char* pattern, size_t patternLen) {
-	int shift[256];
-	for (int i = 0; i < sizeof(shift) / sizeof(int); i++) {
-		shift[i] = patternLen + 1;		// 先假设所有字符都不存在，即跳过patternLen+1个字符
-	}
-	for (int i = 0; i < patternLen; i++) {
-		shift[(unsigned char)(pattern[i])] = patternLen - i;
-	}
-	int i = 0;
-	int j = 0;
-	while (i < mainLen && i + patternLen <= mainLen) {
-		if (main[i + j] == pattern[j]) {
-			if (++j == patternLen) {
-				return i;
-			}
-			continue;
-		}
-		i += shift[(unsigned char)(main[i + patternLen])];
-		j = 0;
-	}
-	return -1;
+  int shift[256];
+  for (int i = 0; i < sizeof(shift) / sizeof(int); i++) {
+    shift[i] = patternLen + 1;    // 先假设所有字符都不存在，即跳过patternLen+1个字符
+  }
+  for (int i = 0; i < patternLen; i++) {
+    shift[(unsigned char)(pattern[i])] = patternLen - i;
+  }
+  int i = 0;
+  int j = 0;
+  while (i < mainLen && i + patternLen <= mainLen) {
+    if (main[i + j] == pattern[j]) {
+      if (++j == patternLen) {
+        return i;
+      }
+      continue;
+    }
+    i += shift[(unsigned char)(main[i + patternLen])];
+    j = 0;
+  }
+  return -1;
 }
 
 
