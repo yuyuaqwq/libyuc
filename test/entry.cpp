@@ -1,4 +1,4 @@
-﻿
+
 
 #include <stdio.h>
 #include <Windows.h>
@@ -543,171 +543,171 @@ qqqqqq:
 	//PrintArt(&artree, artree.root, 0);
 
 	//ArTreeDelete(&artree, &ele);
-//
-//	l = GetTickCount();
-//	int32_t ii = 0;
-//	for (auto& it : arr2) {
-//		ii++;
-//		/*if (ii == 986) {
-//			printf("??");
-//		}*/
-//		element_type ele;
-//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-//		ele.buf = (uint8_t*)&it->key;
-//		ele.size = sizeof(it->key);
-//#else
-//	    ele = it->key;
-//#endif
-//		//if (ii == 27) {
-//		//	printf("??");
-//		//}
-//
-//		ArTreePut(&artree, &ele);
-//
-//		//printf("插入:%s\n", ele.buf);
-//		//ele.buf = (uint8_t*)"aacdeedb";
-//		//ele.size = strlen((char*)ele.buf);
-//		////
-//		//PrintArt(&artree, artree.root, 0);
-//		////
-//		//if (!ArTreeFind(&artree, &ele)) {
-//		//	printf("找不到");
-//		//}
-//		//else {
-//		//	printf("找到了");
-//		//}
-//
-//	}
-//	printf("插入耗时：%dms\n", GetTickCount() - l);
-//	//PrintArt(&artree, artree.root, 0);
-//	l = GetTickCount();
-//	ii = 0;
-//	for (auto& it : arr2) {
-//		ii++;
-//		element_type ele;
-//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-//		ele.buf = (uint8_t*)&it->key;
-//		ele.size = sizeof(it->key);
-//#else
-//		ele = it->key;
-//#endif
-//		if (!ArTreeFind(&artree, &ele)) {
-//			printf("找不到");
-//		}
-//	}
-//	//PrintArt(&artree, artree.root, 0);
-//	printf("查找耗时：%dms\n", GetTickCount() - l);
-//	l = GetTickCount();
-//	ii = 0;
-//	for (auto& it : arr2) {
-//		ii++;
-//		element_type ele;
-//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-//		ele.buf = (uint8_t*)&it->key;
-//		ele.size = sizeof(it->key);
-//#else
-//		ele = it->key;
-//#endif
-//		//if (ii == 0x4390) {
-//		//	printf("??");
-//		//}
-//
-//		if (!ArTreeDelete(&artree, &ele)) {
-//			printf("找不到");
-//			//PrintArt(&artree, artree.root, 0);
-//		}
-//
-//		//printf("删除:%s\n", ele.buf);
-//		//uint8_t buf[] = {05, 05, 05, 05, 05, 05, 05, 01};
-//		//ele.buf = buf;
-//		//ele.size = 8;
-//		//PrintArt(&artree, artree.root, 0);
-//
-//		//ele = 0x658d2b070e2e2726;
-//		//if (!ArTreeFind(&artree, &ele)) {
-//		//	printf("找不到");
-//		//	//PrintArt(&artree, artree.root, 0);
-//		//}
-//		//else {
-//		//	//printf("找到了");
-//		//}
-//
-//		//PrintArt(&artree, artree.root, 0);
-//	}
-//	printf("删除耗时：%dms\n", GetTickCount() - l);
-//
-//	
-//
-//	//goto qqqqqq;
-//
-//	
-//
+
+	l = GetTickCount();
+	int32_t ii = 0;
+	for (auto& it : arr2) {
+		ii++;
+		/*if (ii == 986) {
+			printf("??");
+		}*/
+		element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		ele.buf = (uint8_t*)&it->key;
+		ele.size = sizeof(it->key);
+#else
+	    ele = it->key;
+#endif
+		//if (ii == 27) {
+		//	printf("??");
+		//}
+
+		ArTreePut(&artree, &ele);
+
+		//printf("插入:%s\n", ele.buf);
+		//ele.buf = (uint8_t*)"aacdeedb";
+		//ele.size = strlen((char*)ele.buf);
+		////
+		//PrintArt(&artree, artree.root, 0);
+		////
+		//if (!ArTreeFind(&artree, &ele)) {
+		//	printf("找不到");
+		//}
+		//else {
+		//	printf("找到了");
+		//}
+
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+	//PrintArt(&artree, artree.root, 0);
+	l = GetTickCount();
+	ii = 0;
+	for (auto& it : arr2) {
+		ii++;
+		element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		ele.buf = (uint8_t*)&it->key;
+		ele.size = sizeof(it->key);
+#else
+		ele = it->key;
+#endif
+		if (!ArTreeFind(&artree, &ele)) {
+			printf("找不到");
+		}
+	}
+	//PrintArt(&artree, artree.root, 0);
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	ii = 0;
+	for (auto& it : arr2) {
+		ii++;
+		element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		ele.buf = (uint8_t*)&it->key;
+		ele.size = sizeof(it->key);
+#else
+		ele = it->key;
+#endif
+		//if (ii == 0x4390) {
+		//	printf("??");
+		//}
+
+		if (!ArTreeDelete(&artree, &ele)) {
+			printf("找不到");
+			//PrintArt(&artree, artree.root, 0);
+		}
+
+		//printf("删除:%s\n", ele.buf);
+		//uint8_t buf[] = {05, 05, 05, 05, 05, 05, 05, 01};
+		//ele.buf = buf;
+		//ele.size = 8;
+		//PrintArt(&artree, artree.root, 0);
+
+		//ele = 0x658d2b070e2e2726;
+		//if (!ArTreeFind(&artree, &ele)) {
+		//	printf("找不到");
+		//	//PrintArt(&artree, artree.root, 0);
+		//}
+		//else {
+		//	//printf("找到了");
+		//}
+
+		//PrintArt(&artree, artree.root, 0);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+	
+
+	//goto qqqqqq;
+
+	
+
 	int qqc = 1;
-//
-//	l = GetTickCount();
-//
-//	//printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
-//	for (int j = 0; j < qqc; j++) {
-//		ArTreeInit(&artree);
-//		for (int i = 0; i < count / qqc; i++) {
-//			element_type ele;
-//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-//			ele.buf = (uint8_t*)&arr2[i]->key;
-//			ele.size = sizeof(arr2[i]->key);
-//#else
-//			ele = arr2[i]->key;
-//#endif
-//			//if (ii == 27) {
-//			//	printf("??");
-//			//}
-//
-//			ArTreePut(&artree, &ele);
-//		}
-//
-//		for (int i = 0; i < count / qqc; i++) {
-//			element_type ele;
-//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-//			ele.buf = (uint8_t*)&arr2[i]->key;
-//			ele.size = sizeof(arr2[i]->key);
-//#else
-//			ele = arr2[i]->key;
-//#endif
-//			//if (ii == 27) {
-//			//	printf("??");
-//			//}
-//
-//			if (!ArTreeFind(&artree, &ele)) {
-//				printf("找不到");
-//			}
-//		}
-//		//printf("查找耗时：%dms\n", GetTickCount() - l);
-//
-//
-//		//PrintRB(&gRb, gRb.root, 0);
-//	   //for (int i = 10000000; i >= 1; i--) {
-//	   //	int key = i;
-//	   //	RBDeleteEntryByKey(&gRb, &key);
-//	   //	// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
-//	   //}
-//
-//		for (int i = 0; i < count / qqc; i++) {
-//			element_type ele;
-//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-//			ele.buf = (uint8_t*)&arr2[i]->key;
-//			ele.size = sizeof(arr2[i]->key);
-//#else
-//			ele = arr2[i]->key;
-//#endif
-//			ArTreeDelete(&artree, &ele);
-//
-//			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
-//		}
-//		//printf("删除耗时：%dms  \n", GetTickCount() - l);
-//
-//	}
-//	printf("总耗时：%dms  \n", GetTickCount() - l);
-//
-//	
+
+	l = GetTickCount();
+
+	//printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
+	for (int j = 0; j < qqc; j++) {
+		ArTreeInit(&artree);
+		for (int i = 0; i < count / qqc; i++) {
+			element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			ele.buf = (uint8_t*)&arr2[i]->key;
+			ele.size = sizeof(arr2[i]->key);
+#else
+			ele = arr2[i]->key;
+#endif
+			//if (ii == 27) {
+			//	printf("??");
+			//}
+
+			ArTreePut(&artree, &ele);
+		}
+
+		for (int i = 0; i < count / qqc; i++) {
+			element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			ele.buf = (uint8_t*)&arr2[i]->key;
+			ele.size = sizeof(arr2[i]->key);
+#else
+			ele = arr2[i]->key;
+#endif
+			//if (ii == 27) {
+			//	printf("??");
+			//}
+
+			if (!ArTreeFind(&artree, &ele)) {
+				printf("找不到");
+			}
+		}
+		//printf("查找耗时：%dms\n", GetTickCount() - l);
+
+
+		//PrintRB(&gRb, gRb.root, 0);
+	   //for (int i = 10000000; i >= 1; i--) {
+	   //	int key = i;
+	   //	RBDeleteEntryByKey(&gRb, &key);
+	   //	// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
+	   //}
+
+		for (int i = 0; i < count / qqc; i++) {
+			element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			ele.buf = (uint8_t*)&arr2[i]->key;
+			ele.size = sizeof(arr2[i]->key);
+#else
+			ele = arr2[i]->key;
+#endif
+			ArTreeDelete(&artree, &ele);
+
+			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
+		}
+		//printf("删除耗时：%dms  \n", GetTickCount() - l);
+
+	}
+	printf("总耗时：%dms  \n", GetTickCount() - l);
+
+	
 	
 	printf("\n红黑树：\n");
 	IntRbTree tree;
