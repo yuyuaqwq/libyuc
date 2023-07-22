@@ -62,7 +62,7 @@ static forceinline int32_t LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(uint32
   bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, id_type size); \
   id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, id_type size); \
   bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, id_type size); \
-  void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset); \
+  id_type buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset); \
   id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset); \
   id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy); \
   id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
@@ -154,15 +154,16 @@ static forceinline int32_t LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(uint32
     } \
     return true; \
   } \
-  void buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
+  id_type buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
       assert(offset != -1 && offset < LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
     id_type node_size_logn = 1; \
     /* 定位到最底层叶子节点，并向上找到为0的节点(被分配的节点) */ \
     id_type index = offset + LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
     for (; indexer##_Get(buddy, buddy->logn, index); index = LIBYUC_SPACE_MANAGER_BUDDY_PARENT(index)) { \
       node_size_logn++; \
-      if (index == 1) return; /* 没有找到被分配的节点 */ \
+      if (index == 1) return 0; /* 没有找到被分配的节点 */ \
     } \
+    id_type alloc_aize = LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(node_size_logn-1); \
     /* 向上更新父节点的logn */ \
     indexer##_Set(buddy, buddy->logn, index, node_size_logn); \
     uint8_t left_logn, right_logn; \
@@ -178,6 +179,7 @@ static forceinline int32_t LIBYUC_SPACE_MANAGER_BUDDY_ALIGN_TO_POWER_OF_2(uint32
         indexer##_Set(buddy, buddy->logn, index, LIBYUC_SPACE_MANAGER_BUDDY_MAX(left_logn, right_logn));    /* 另一侧未被释放，无法合并 */ \
       } \
     } \
+    return alloc_aize; \
   } \
   id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset) { \
       assert(offset != -1 && offset < LIBYUC_SPACE_MANAGER_BUDDY_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
