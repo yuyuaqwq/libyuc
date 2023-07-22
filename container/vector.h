@@ -19,10 +19,11 @@ extern "C" {
     bool is_vector_alloc; \
     element_type* obj_arr; \
   } vector_type_name##Vector; \
-  void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create); \
+  void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t capacity, element_type* external_arr); \
   void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
   ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, size_t count); \
   ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj); \
+  element_type* vector_type_name##VectorGetTail(vector_type_name##Vector* arr); \
   element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
 #define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator, callbacker) \
@@ -51,16 +52,17 @@ extern "C" {
     vector_type_name##VectorResetCapacity(arr, cur_capacity); \
     callbacker##_Expand(arr, old_capacity, cur_capacity); \
   } \
-  void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t count, bool create) { \
-    arr->count = count; \
+  void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t capacity, element_type* external_arr) { \
     arr->obj_arr = NULL; \
-    arr->is_vector_alloc = create; \
-    if (count != 0 && create) { \
-      vector_type_name##VectorResetCapacity(arr, count); \
+    arr->is_vector_alloc = !external_arr; \
+    if (capacity != 0 && !external_arr) { \
+      vector_type_name##VectorResetCapacity(arr, capacity); \
     } \
     else { \
-      arr->capacity = count; \
+      arr->capacity = capacity; \
+      arr->obj_arr = external_arr; \
     } \
+    arr->count = 0; \
   } \
   void vector_type_name##VectorRelease(vector_type_name##Vector* arr) { \
     if (arr->obj_arr && arr->is_vector_alloc) { \
@@ -84,6 +86,12 @@ extern "C" {
     MemoryCopy(&arr->obj_arr[arr->count], obj, sizeof(element_type) * count); \
     arr->count+=count; \
     return arr->count - count; \
+  } \
+  element_type* vector_type_name##VectorGetTail(vector_type_name##Vector* arr) { \
+    if (arr->count == 0) { \
+      return NULL; \
+    } \
+    return &arr->obj_arr[arr->count-1]; \
   } \
   element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr) { \
     if (arr->count == 0) { \

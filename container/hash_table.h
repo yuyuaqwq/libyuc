@@ -134,7 +134,7 @@ extern "C" {
     if (capacity == 0) { \
       capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
     } \
-    hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, true); \
+    hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, NULL); \
     table->bucket.count = 0; \
     element_mover##_Copy(table, &table->empty_obj, empty_obj); \
     \
