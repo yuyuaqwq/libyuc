@@ -149,6 +149,7 @@ extern "C" {
     bs_tree_type_name##BsEntry* cur = NULL; \
     bool success = true; \
     while (cur_id != referencer##_InvalidId) { \
+      bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
       if (cur_id == entry_id) { \
         success = false; \
         break; \
@@ -161,7 +162,6 @@ extern "C" {
           accessor##_SetRight(tree, cur, entry_id); \
           break; \
         } \
-        bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
         cur_id = accessor##_GetRight(tree, cur); \
       } \
       else { \
@@ -170,7 +170,6 @@ extern "C" {
           accessor##_SetLeft(tree, cur, entry_id); \
           break; \
         } \
-        bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
         cur_id = accessor##_GetLeft(tree, cur); \
       } \
       referencer##_Dereference(tree, cur); \
@@ -199,6 +198,7 @@ extern "C" {
     id_type old_id = referencer##_InvalidId; \
     id_type parent_id = referencer##_InvalidId; \
     while (cur_id != referencer##_InvalidId) { \
+      bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
       cur = referencer##_Reference(tree, cur_id); \
       key_type* cur_key = accessor##_GetKey(tree, cur); \
       key_type* entry_key = accessor##_GetKey(tree, entry); \
@@ -222,6 +222,7 @@ extern "C" {
       } \
       else { \
         /* 相等的情况 */ \
+        bs_tree_type_name##BsStackVectorPopTail(stack); \
         old_id = cur_id; \
         if (cur_id == entry_id) break; \
         bs_tree_type_name##BsEntryInit(tree, entry); \
@@ -236,7 +237,6 @@ extern "C" {
         *entry = *cur; \
         break; \
       } \
-      bs_tree_type_name##BsStackVectorPushTail(stack, &parent_id); \
       referencer##_Dereference(tree, cur); \
     } \
     if (cur) referencer##_Dereference(tree, cur); \
@@ -257,17 +257,21 @@ extern "C" {
     } \
     if (accessor##_GetLeft(tree, entry) != referencer##_InvalidId && accessor##_GetRight(tree, entry) != referencer##_InvalidId) { \
       /* 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点 */ \
+      bs_tree_type_name##BsStackVectorPushTail(stack, &entry_id); \
+      id_type* new_entry_id = bs_tree_type_name##BsStackVectorGetTail(stack); \
       id_type min_entry_id = accessor##_GetRight(tree, entry); \
       id_type min_entry_parent_id = referencer##_InvalidId; \
       bs_tree_type_name##BsEntry* min_entry = referencer##_Reference(tree, min_entry_id); \
       while (accessor##_GetLeft(tree, min_entry) != referencer##_InvalidId) { \
+        bs_tree_type_name##BsStackVectorPushTail(stack, &min_entry_id); \
         min_entry_parent_id = min_entry_id; \
         min_entry_id = accessor##_GetLeft(tree, min_entry); \
         referencer##_Dereference(tree, min_entry); \
         min_entry = referencer##_Reference(tree, min_entry_id); \
       } \
+      /* 被替换到当前位置的最小节点，保证回溯路径的正确 */ \
+      *new_entry_id = min_entry_id; \
       bs_tree_type_name##BsEntry* min_entry_parent = referencer##_Reference(tree, min_entry_parent_id); \
-      if(is_parent_left) *is_parent_left = true; \
       \
       /* 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值 */ \
       accessor##_SetLeft(tree, min_entry, accessor##_GetLeft(tree, entry)); \
@@ -279,8 +283,11 @@ extern "C" {
         accessor##_SetLeft(tree, min_entry_parent, accessor##_GetRight(tree, min_entry)); \
         \
         /* 最小节点继承待删除节点的右子树 */ \
-        min_entry->right = entry->right; \
         accessor##_SetRight(tree, min_entry, accessor##_GetRight(tree, entry)); \
+        if (is_parent_left) *is_parent_left = true; \
+      } \
+      else { \
+        if (is_parent_left) *is_parent_left = false; \
       } \
       referencer##_Dereference(tree, min_entry_parent); \
       \
@@ -290,12 +297,16 @@ extern "C" {
       /* 也可以选择直接交换两个节点的数据，但是开销不定 */ \
       \
       entry_id = min_entry_id; \
+      \
+      /* 回溯可能需要的，entry变为原先的min_entry，只是不挂到树上(entry的父节点不指向entry) */ \
+      accessor##_SetLeft(tree, entry, referencer##_InvalidId); \
+      accessor##_SetRight(tree, entry, old_right_id); \
     } \
     else { \
       if (is_parent_left) { \
         if (parent != NULL) { \
           *is_parent_left = accessor##_GetLeft(tree, parent) == entry_id; \
-           assert(!*is_parent_left && accessor##_GetRight(tree, parent) == entry_id); \
+           assert(*is_parent_left || *is_parent_left == false && accessor##_GetRight(tree, parent) == entry_id); \
         } \
         else { \
           *is_parent_left = false; \
@@ -323,6 +334,16 @@ extern "C" {
   /*
   * 获取树的节点数量
   */ \
+  size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack) { \
+    size_t count = 0; \
+    stack->count = 0; \
+    id_type cur_id = bs_tree_type_name##BsTreeIteratorFirst(tree, stack); \
+    while (cur_id != referencer##_InvalidId) { \
+      count++; \
+      cur_id = bs_tree_type_name##BsTreeIteratorNext(tree, stack, cur_id); \
+    } \
+    return count; \
+  } \
   id_type bs_tree_type_name##BsTreeIteratorLocate(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, key_type* key, int8_t* cmp_status) { \
     id_type cur_id = tree->root; \
     stack->count = 0; \
@@ -333,11 +354,11 @@ extern "C" {
       key_type* cur_key = accessor##_GetKey(tree, cur); \
       if (comparer##_Less(tree, cur_key, key)) { \
         *cmp_status = 1; \
-        cur_id = cur->right; \
+        cur_id = accessor##_GetRight(tree, cur); \
       } \
       else if (comparer##_Greater(tree, cur_key, key)) { \
         *cmp_status = -1; \
-        cur_id = cur->left; \
+        cur_id = accessor##_GetLeft(tree, cur); \
       } \
       else { \
         referencer##_Dereference(tree, cur); \
@@ -349,24 +370,15 @@ extern "C" {
     } \
     return perv_id; \
   } \
-  /* 
-   size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree) { \
-    size_t count = 0; \
-    id_type cur_id = bs_tree_type_name##BsTreeIteratorFirst(tree); \
-    while (cur_id != referencer##_InvalidId) { \
-      count++; \
-      cur_id = bs_tree_type_name##BsTreeIteratorNext(tree, cur_id); \
-    } \
-    return count; \
-  } \
   id_type bs_tree_type_name##BsTreeIteratorFirst(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack) { \
     id_type cur_id = tree->root; \
     if (cur_id == referencer##_InvalidId) { \
       return referencer##_InvalidId; \
     } \
     bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-    while (cur->left != referencer##_InvalidId) { \
-      cur_id = cur->left; \
+    while (accessor##_GetLeft(tree, cur) != referencer##_InvalidId) { \
+      bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
+      cur_id = accessor##_GetLeft(tree, cur); \
       referencer##_Dereference(tree, cur); \
       cur = referencer##_Reference(tree, cur_id); \
     } \
@@ -379,8 +391,9 @@ extern "C" {
       return referencer##_InvalidId; \
     } \
     bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-    while (cur->right != referencer##_InvalidId) { \
-      cur_id = cur->right; \
+    while (accessor##_GetRight(tree, cur) != referencer##_InvalidId) { \
+      bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
+      cur_id = accessor##_GetRight(tree, cur); \
       referencer##_Dereference(tree, cur); \
       cur = referencer##_Reference(tree, cur_id); \
     } \
@@ -389,67 +402,62 @@ extern "C" {
   } \
   id_type bs_tree_type_name##BsTreeIteratorNext(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type cur_id) { \
     bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-    if (cur->right != referencer##_InvalidId) { \
-      cur_id = cur->right; \
+    if (accessor##_GetRight(tree, cur) != referencer##_InvalidId) { \
+      bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
+      cur_id = accessor##_GetRight(tree, cur); \
       cur = referencer##_Reference(tree, cur_id); \
-      while (cur->left != referencer##_InvalidId) { \
-        cur_id = cur->left; \
+      while (accessor##_GetLeft(tree, cur) != referencer##_InvalidId) { \
+        bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
+        cur_id = accessor##_GetLeft(tree, cur); \
         referencer##_Dereference(tree, cur); \
         cur = referencer##_Reference(tree, cur_id); \
       } \
       referencer##_Dereference(tree, cur); \
       return cur_id; \
     } \
-    id_type parent_id = accessor##_GetParent(tree, cur); \
-    bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
-    while (parent_id != referencer##_InvalidId && cur_id == parent->right) { \
+    id_type* parent_id = bs_tree_type_name##BsStackVectorPopTail(stack); \
+    bs_tree_type_name##BsEntry* parent = NULL; \
+    while (parent_id != NULL) { \
+      parent = referencer##_Reference(tree, *parent_id); \
+      if (cur_id != accessor##_GetRight(tree, parent)) break; \
       referencer##_Dereference(tree, cur); \
       cur = parent; \
-      cur_id = parent_id; \
-      parent_id = accessor##_GetParent(tree, cur); \
-      parent = referencer##_Reference(tree, parent_id); \
+      cur_id = *parent_id; \
+      parent_id = bs_tree_type_name##BsStackVectorPopTail(stack); \
     } \
     referencer##_Dereference(tree, cur); \
-    referencer##_Dereference(tree, parent); \
-    return parent_id; \
+    if (parent) referencer##_Dereference(tree, parent); \
+    if (parent_id) return *parent_id; \
+    return referencer##_InvalidId; \
   } \
   id_type bs_tree_type_name##BsTreeIteratorPrev(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type cur_id) { \
     bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
-    if (cur->left != referencer##_InvalidId) { \
-      cur_id = cur->left; \
+    if (accessor##_GetLeft(tree, cur) != referencer##_InvalidId) { \
+      cur_id = accessor##_GetLeft(tree, cur); \
       cur = referencer##_Reference(tree, cur_id); \
-      while (cur->right != referencer##_InvalidId) { \
-        cur_id = cur->right; \
+      while (accessor##_GetRight(tree, cur) != referencer##_InvalidId) { \
+        cur_id = accessor##_GetRight(tree, cur); \
         referencer##_Dereference(tree, cur); \
         cur = referencer##_Reference(tree, cur_id); \
       } \
       referencer##_Dereference(tree, cur); \
       return cur_id; \
     } \
-    id_type parent_id = accessor##_GetParent(tree, cur); \
-    bs_tree_type_name##BsEntry* parent = referencer##_Reference(tree, parent_id); \
-    while (parent_id != referencer##_InvalidId && cur_id == parent->left) { \
+    id_type* parent_id = bs_tree_type_name##BsStackVectorPopTail(stack); \
+    bs_tree_type_name##BsEntry* parent = NULL; \
+    while (parent_id != NULL) { \
+      parent = referencer##_Reference(tree, *parent_id); \
+      if (cur_id != accessor##_GetLeft(tree, cur)) break; \
       referencer##_Dereference(tree, cur); \
       cur = parent; \
-      cur_id = parent_id; \
-      parent_id = accessor##_GetParent(tree, cur); \
-      parent = referencer##_Reference(tree, parent_id); \
+      cur_id = *parent_id; \
+      parent_id = bs_tree_type_name##BsStackVectorPopTail(stack); \
     } \
     referencer##_Dereference(tree, cur); \
-    referencer##_Dereference(tree, parent); \
-    return parent_id; \
-  } \*/
-
-
-//LIBYUC_CONTAINER_BS_TREE_DECLARATION(Int, struct _IntBsEntry*, int)
-//typedef struct _IntEntry {
-//  IntBsEntry entry;
-//  int key;
-//} IntEntry;
-//#define INT_BS_TREE_ACCESSOR_GetParent(bs_entry) (bs_entry->parent)
-//#define INT_BS_TREE_ACCESSOR_SetParent(bs_entry, new_parent) (bs_entry->parent = new_parent)
-//#define INT_BS_TREE_ACCESSOR_GetKey(bs_entry) (((IntEntry*)bs_entry)->key)
-//LIBYUC_CONTAINER_BS_TREE_DEFINE(Int, struct _IntBsEntry*, int, LIBYUC_OBJECT_REFERENCER_DEFALUT, INT_BS_TREE_ACCESSOR, LIBYUC_OBJECT_COMPARER_DEFALUT)
+    if (parent) referencer##_Dereference(tree, parent); \
+    if (parent_id) return *parent_id; \
+    return referencer##_InvalidId; \
+  } \
 
 
 #ifdef __cplusplus

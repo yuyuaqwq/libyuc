@@ -6,7 +6,7 @@
 #define LIBYUC_CONTAINER_AVL_TREE_H_
 
 #include <libyuc/object.h>
-#include <libyuc/container/bs_tree.h>
+#include <libyuc/container/experimental/bs_tree.h>
 
 #ifdef __cplusplus
 extern "C" {

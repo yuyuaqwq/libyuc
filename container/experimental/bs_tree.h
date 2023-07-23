@@ -299,7 +299,6 @@ extern "C" {
         min_entry = referencer##_Reference(tree, min_entry_id); \
       } \
       bs_tree_type_name##BsEntry* min_entry_parent = referencer##_Reference(tree, accessor##_GetParent(tree, min_entry)); \
-      if(is_parent_left) *is_parent_left = true; \
       \
       /* 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值 */ \
       min_entry->left = entry->left; \
@@ -329,10 +328,12 @@ extern "C" {
         } \
         /* 如果需要回溯，这里对应entry的父亲是min_entry的父亲的情况，但不能直接修改entry的parent，因为还没挂接 */  \
         backtrack_id = accessor##_GetParent(tree, min_entry); \
+        if (is_parent_left) *is_parent_left = true; \
       } \
       else { \
         /* 如果需要回溯，这里对应entry的父亲是min_entry的情况，但不能直接修改entry的parent，因为还没挂接 */  \
         backtrack_id = min_entry_id; \
+        if (is_parent_left) *is_parent_left = false; \
       } \
       referencer##_Dereference(tree, min_entry_parent); \
       \

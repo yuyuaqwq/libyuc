@@ -45,6 +45,7 @@ typedef enum {
   id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* treee, rb_tree_type_name##RbBsStackVector* stack, id_type put_entry_id); \
   bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* treee, rb_tree_type_name##RbBsStackVector* stack, id_type del_entry_id); \
   bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree); \
+  size_t rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack); \
   id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
   id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
   id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
@@ -113,7 +114,8 @@ typedef enum {
           break; \
         } \
         accessor##_SetColor(tree, ins_entry, kRbRed); \
-        cur = ins_entry; \
+        parent_id = rb_tree_type_name##RbBsStackVectorPopTail(stack); \
+        /* 将parent视作插入节点 */ \
       } \
       else { \
         /* 没有兄弟节点或兄弟节点是黑色，说明是3节点的插入，可以并入，但需要利用旋转将其变为4节点
@@ -126,26 +128,17 @@ typedef enum {
         id_type old_sub_root_id = *parent_id; \
         rb_tree_type_name##RbEntry* old_sub_root = referencer##_Reference(tree, old_sub_root_id); \
         rb_tree_type_name##RbEntry* new_sub_root_parent = NULL; \
-        id_type* new_sub_root_parent_id = NULL; \
+        id_type* new_sub_root_parent_id = rb_tree_type_name##RbBsStackVectorGetTail(stack); \
+        if (new_sub_root_parent_id) new_sub_root_parent = referencer##_Reference(tree, *new_sub_root_parent_id); \
         if (accessor##_GetLeft(tree, old_sub_root) == *cur_id) { \
           if (accessor##_GetRight(tree, cur) == ins_entry_id) { \
             rb_tree_type_name##RbRotateLeft(tree, old_sub_root, *cur_id, cur); \
-            new_sub_root_parent = cur; \
-          } \
-          else { \
-            new_sub_root_parent_id = rb_tree_type_name##RbBsStackVectorGetTail(stack); \
-            if (new_sub_root_parent_id) new_sub_root_parent = referencer##_Reference(tree, new_sub_root_parent_id); \
           } \
           new_sub_root_id = rb_tree_type_name##RbRotateRight(tree, new_sub_root_parent, old_sub_root_id, old_sub_root); \
         } \
         else { \
           if (accessor##_GetLeft(tree, cur) == ins_entry_id) { \
             rb_tree_type_name##RbRotateRight(tree, old_sub_root, *cur_id, cur); \
-            new_sub_root_parent = cur; \
-          } \
-          else { \
-            new_sub_root_parent_id = rb_tree_type_name##RbBsStackVectorGetTail(stack); \
-            if (new_sub_root_parent_id) new_sub_root_parent = referencer##_Reference(tree, new_sub_root_parent_id); \
           } \
           new_sub_root_id = rb_tree_type_name##RbRotateLeft(tree, new_sub_root_parent, old_sub_root_id, old_sub_root); \
         } \
@@ -197,6 +190,7 @@ typedef enum {
       sibling = referencer##_Reference(tree, sibling_id); \
       grandpa_id = rb_tree_type_name##RbBsStackVectorPopTail(stack); \
       if (grandpa_id) grandpa = referencer##_Reference(tree, *grandpa_id); \
+      else grandpa = NULL; \
       /* 黑色节点一定有兄弟节点 */ \
       if (accessor##_GetColor(tree, sibling) == kRbRed) { \
         /* 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
@@ -221,6 +215,10 @@ typedef enum {
           tree->root = new_sub_root_id; \
         } \
         referencer##_Dereference(tree, old_sub_root); \
+        /* grandpa变为新根节点 */ \
+        referencer##_Dereference(tree, grandpa); \
+        grandpa_id = new_sub_root_id; \
+        grandpa = referencer##_Reference(tree, grandpa_id); \
       } \
       \
       /* 至此兄弟节点一定为黑 */ \
@@ -234,34 +232,26 @@ typedef enum {
         accessor##_SetColor(tree, parent, kRbBlack); \
         id_type old_sub_root_id = *parent_id; \
         rb_tree_type_name##RbEntry* new_sub_root_parent = NULL; \
-        id_type* new_sub_root_parent_id = NULL; \
         if (accessor##_GetLeft(tree, parent) == sibling_id) { \
           if (accessor##_GetLeft(tree, sibling) == referencer##_InvalidId || accessor##_GetColor(tree, sibling_left) == kRbBlack) { \
             accessor##_SetColor(tree, sibling_right, kRbBlack); \
             sibling_id = rb_tree_type_name##RbRotateLeft(tree, parent, sibling_id, sibling); \
-            new_sub_root_parent = sibling; \
           } \
           else { \
             accessor##_SetColor(tree, sibling_left, kRbBlack); \
-            new_sub_root_parent_id = rb_tree_type_name##RbBsStackVectorGetTail(stack); \
-            if (new_sub_root_parent_id) new_sub_root_parent = referencer##_Reference(tree, new_sub_root_parent_id); \
           } \
-          new_sub_root_id = rb_tree_type_name##RbRotateRight(tree, new_sub_root_parent, *parent_id, parent); \
+          new_sub_root_id = rb_tree_type_name##RbRotateRight(tree, grandpa, *parent_id, parent); \
         } \
         else { \
           if (accessor##_GetRight(tree, sibling) == referencer##_InvalidId || accessor##_GetColor(tree, sibling_right) == kRbBlack) { \
             accessor##_SetColor(tree, sibling_left, kRbBlack); \
             sibling_id = rb_tree_type_name##RbRotateRight(tree, parent, sibling_id, sibling); \
-            new_sub_root_parent = sibling; \
           } \
           else { \
             accessor##_SetColor(tree, sibling_right, kRbBlack); \
-            new_sub_root_parent_id = rb_tree_type_name##RbBsStackVectorGetTail(stack); \
-            if (new_sub_root_parent_id) new_sub_root_parent = referencer##_Reference(tree, new_sub_root_parent_id); \
           } \
-          new_sub_root_id = rb_tree_type_name##RbRotateLeft(tree, new_sub_root_parent, *parent_id, parent); \
+          new_sub_root_id = rb_tree_type_name##RbRotateLeft(tree, grandpa, *parent_id, parent); \
         } \
-        if (new_sub_root_parent_id) referencer##_Dereference(tree, new_sub_root_parent); \
         referencer##_Dereference(tree, sibling); \
         sibling = referencer##_Reference(tree, sibling_id); \
         /* 该节点会接替原先的子根节点，也要接替颜色 */ \
@@ -291,10 +281,10 @@ typedef enum {
         accessor##_SetColor(tree, sibling, kRbRed); \
       } \
       id_type child_id = *parent_id; \
-      parent_id = rb_tree_type_name##RbBsStackVectorPopTail(stack); \
-      if (parent_id != NULL) { \
-        referencer##_Dereference(tree, parent); \
-        parent = referencer##_Reference(tree, *parent_id); \
+      parent_id = grandpa_id; \
+      referencer##_Dereference(tree, parent); \
+      parent = grandpa; \
+      if (parent != NULL) { \
         is_parent_left = accessor##_GetLeft(tree, parent) == child_id; \
       } \
     } \
@@ -361,70 +351,73 @@ typedef enum {
     rb_tree_type_name##RbTreeDeleteFixup(tree, stack, del_entry_id, is_parent_left); \
     return true; \
   } \
-  ///*
-  //* 验证红黑树性质
-  //*/ \
-  //static bool rb_tree_type_name##RbTreeCheckPath(rb_tree_type_name##RbTree* tree, id_type entry_id, int32_t cur_high, int32_t max_high) { \
-  //  if (entry_id == referencer##_InvalidId) { \
-  //    return cur_high == max_high; \
-  //  } \
-  //  bool correct = false; \
-  //  rb_tree_type_name##RbEntry* entry = NULL; \
-  //  rb_tree_type_name##RbEntry* parent = NULL; \
-  //  do { \
-  //    entry = referencer##_Reference(tree, entry_id); \
-  //    id_type parent_id = accessor##_GetParent(tree, entry); \
-  //    if (parent_id != referencer##_InvalidId) { \
-  //      parent = referencer##_Reference(tree, parent_id); \
-  //      if (accessor##_GetColor(tree, entry) == kRbRed && accessor##_GetColor(tree, parent) == kRbRed) { \
-  //        break; \
-  //      } \
-  //    } \
-  //    if (accessor##_GetColor(tree, entry) == kRbBlack) { cur_high++; } \
-  //    correct = rb_tree_type_name##RbTreeCheckPath(tree, entry->left, cur_high, max_high) && rb_tree_type_name##RbTreeCheckPath(tree, entry->right, cur_high, max_high); \
-  //  } while (false); \
-  //  if (entry) referencer##_Dereference(tree, entry); \
-  //  if (parent) referencer##_Dereference(tree, parent); \
-  //  return correct; \
-  //} \
-  //bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree) { \
-  //  rb_tree_type_name##RbEntry* entry = referencer##_Reference(tree, tree->root); \
-  //  bool correct = false; \
-  //  do { \
-  //    if (accessor##_GetColor(tree, entry) != kRbBlack) break; \
-  //    int32_t high = 1; \
-  //    while (entry->left != referencer##_InvalidId) { \
-  //      id_type entry_id = entry->left; \
-  //      referencer##_Dereference(tree, entry); \
-  //      entry = referencer##_Reference(tree, entry_id); \
-  //      /* 红色节点不表示高度 */ \
-  //      if (accessor##_GetColor(tree, entry) == kRbBlack) { \
-  //        high++; \
-  //      } \
-  //    } \
-  //    correct = rb_tree_type_name##RbTreeCheckPath(tree, tree->root, 0, high); \
-  //  } while (false); \
-  //  referencer##_Dereference(tree, entry); \
-  //  return correct; \
-  //} \
-  ///*
-  //* 迭代器相关
-  //*/ \
-  //id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status) { \
-  //  return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, key, cmp_status); \
-  //} \
-  //id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree) { \
-  //  return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree); \
-  //} \
-  //id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree) { \
-  //  return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree); \
-  //} \
-  //id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, id_type cur_id) { \
-  //  return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, cur_id); \
-  //} \
-  //id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, id_type cur_id) { \
-  //  return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, cur_id); \
-  //} \
+  /*
+  * 验证红黑树性质
+  */ \
+  static bool rb_tree_type_name##RbTreeCheckPath(rb_tree_type_name##RbTree* tree, id_type parent_id, id_type entry_id, int32_t cur_high, int32_t max_high) { \
+    if (entry_id == referencer##_InvalidId) { \
+      return cur_high == max_high; \
+    } \
+    bool correct = false; \
+    rb_tree_type_name##RbEntry* entry = NULL; \
+    rb_tree_type_name##RbEntry* parent = NULL; \
+    do { \
+      entry = referencer##_Reference(tree, entry_id); \
+      if (parent_id != referencer##_InvalidId) { \
+        parent = referencer##_Reference(tree, parent_id); \
+        if (accessor##_GetColor(tree, entry) == kRbRed && accessor##_GetColor(tree, parent) == kRbRed) { \
+          break; \
+        } \
+      } \
+      if (accessor##_GetColor(tree, entry) == kRbBlack) { cur_high++; } \
+      correct = rb_tree_type_name##RbTreeCheckPath(tree, entry_id, accessor##_GetLeft(tree, entry), cur_high, max_high) && rb_tree_type_name##RbTreeCheckPath(tree, entry_id, accessor##_GetRight(tree, entry), cur_high, max_high); \
+    } while (false); \
+    if (entry) referencer##_Dereference(tree, entry); \
+    if (parent) referencer##_Dereference(tree, parent); \
+    return correct; \
+  } \
+  bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
+    rb_tree_type_name##RbEntry* entry = referencer##_Reference(tree, tree->root); \
+    if (!entry) return true; \
+    bool correct = false; \
+    do { \
+      if (accessor##_GetColor(tree, entry) != kRbBlack) break; \
+      int32_t high = 1; \
+      while (accessor##_GetLeft(tree, entry) != referencer##_InvalidId) { \
+        id_type entry_id = accessor##_GetLeft(tree, entry); \
+        referencer##_Dereference(tree, entry); \
+        entry = referencer##_Reference(tree, entry_id); \
+        /* 红色节点不表示高度 */ \
+        if (accessor##_GetColor(tree, entry) == kRbBlack) { \
+          high++; \
+        } \
+      } \
+      correct = rb_tree_type_name##RbTreeCheckPath(tree, referencer##_InvalidId, tree->root, 0, high); \
+    } while (false); \
+    referencer##_Dereference(tree, entry); \
+    return correct; \
+  } \
+  size_t rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
+    return rb_tree_type_name##RbBsTreeGetCount((rb_tree_type_name##RbBsTree*)tree, stack); \
+  } \
+  /*
+  * 迭代器相关
+  */ \
+  id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, key_type* key, int8_t* cmp_status) { \
+    return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, stack, key, cmp_status); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
+    return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree, stack); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
+    return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, stack); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type cur_id) { \
+    return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, stack, cur_id); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type cur_id) { \
+    return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, stack, cur_id); \
+  } \
 
 
 

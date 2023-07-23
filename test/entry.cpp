@@ -1,6 +1,4 @@
-
-
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -10,6 +8,8 @@
 #include <unordered_set>
 #include <thread>
 
+#include <libyuc/container/experimental/ar_tree.h>
+
 
 #include <regex>
 #include "test.h"
@@ -18,7 +18,7 @@ int randInt() {
 }
 
 
-#include <libyuc/container/experimental/ar_tree.h>
+
 
 
 //AvlTree gHead;
@@ -214,8 +214,7 @@ int randInt() {
 
 
 
-DWORD l;
-int count = 1000000;
+
 
 
 
@@ -223,32 +222,24 @@ int count = 1000000;
 //	IntRbEntry* INT_RB_TREE_ACCESSOR_GetParent(IntRbEntry* entry);
 //	int INT_RB_TREE_ACCESSOR_GetColor(IntRbEntry* entry);
 //}
-//void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
-//	if (!entry) return;
-//	PrintRB(tree, entry->right, Level + 1);
-//
-//	//print
-//	const char* str = "Not";
-//	if (INT_RB_TREE_ACCESSOR_GetParent(entry)) {
-//		str = (INT_RB_TREE_ACCESSOR_GetParent(entry)->right == entry ? "Right" : "Left");
-//	}
-//	const char* color = INT_RB_TREE_ACCESSOR_GetColor(entry) == 1 ? "Red" : "Black";
-//
-//	char* empty = (char*)malloc(Level * 8 + 1);
-//	memset(empty, ' ', Level * 8);
-//	empty[Level * 8] = 0;
-//
-//	int parentKey = 0;
-//	if (INT_RB_TREE_ACCESSOR_GetParent(entry)) {
-//		parentKey = ((IntEntry_Rb*)INT_RB_TREE_ACCESSOR_GetParent(entry))->key;
-//	}
-//
-//	printf("%skey:%d\n%sLevel:%d\n%sParent.%s:%x\n%scolor:%s\n\n", empty, ((IntEntry_Rb*)entry)->key, empty, Level, empty, str, parentKey, empty, color);
-//
-//	free(empty);
-//
-//	PrintRB(tree, entry->left, Level + 1);
-//}
+void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
+	if (!entry) return;
+	PrintRB(tree, entry->right, Level + 1);
+
+	//print
+	const char* str = "Not";
+	const char* color = INT_RB_TREE_ACCESSOR_GetColor(tree, entry) == kRbRed ? "Red" : "Black";
+
+	char* empty = (char*)malloc(Level * 8 + 1);
+	memset(empty, ' ', Level * 8);
+	empty[Level * 8] = 0;
+
+	printf("%skey:%d\n%sLevel:%d\n%sParent.%s:%x\n%scolor:%s\n\n", empty, ((IntEntry_Rb*)entry)->key, empty, Level, empty, str, 0, empty, color);
+
+	free(empty);
+
+	PrintRB(tree, INT_RB_TREE_ACCESSOR_GetLeft(tree, entry), Level + 1);
+}
 
 #include <libyuc/container/hash_list.h>
 
@@ -357,101 +348,21 @@ int count = 1000000;
 
 
 
+struct QVQ {
+	IntRbEntry entry;
+	int64_t key;
+	//AvlEntry entry;
+	//int height;
+	//LruEntry lru_entry;
+};
 
-int main() {
+DWORD l;
+int count = 10000000;
+std::vector<QVQ*> arr2;
 
+int section = 1;
 
-
-	//IntLruList lru_list;
-	//IntLru_Entry lru_entry;
-	//IntLruListInit(&lru_list, 5);
-	//IntLruListPut(&lru_list, &lru_entry.lru_entry);
-
-	//InitializeCriticalSection(&cs);
-	//
-
-	//SpinLockInit(&lock);
-	//SleepLockInit(&slock);
-	//
-	//HANDLE hand[10];		//
-	//for (int i = 0; i < sizeof(hand)/sizeof(HANDLE); i++) {
-	//	hand[i] = CreateThread(NULL, NULL, testfunc, (LPVOID)i, NULL, NULL);
-	//};
-	//
-	//l = GetTickCount();
-	//
-	//DWORD pp = WaitForMultipleObjects(sizeof(hand) / sizeof(HANDLE), hand, TRUE, -1);
-	//printf("%d   i:%d, %dms\n\n", GetLastError(), k, GetTickCount() - l);
-	//while (true) {
-	//	Sleep(1000);
-	//}
-
-	//std::vector<uint8_t> bitarr(10);
-	//Bitmap bitmap;
-	//bitmap.arr.objArr = bitarr.data();
-	//bitmap.arr.count = 10;
-	//bitmap.arr.objSize = 1;
-	//BitmapAlloc(&bitmap, 5);
-	//BitmapAlloc(&bitmap, 3);
-	//BitmapFree(&bitmap, 2, 3);
-	//BitmapAlloc(&bitmap, 4);
-	//BitmapAlloc(&bitmap, 3);
-
-
-
-
-
-	struct QVQ {
-		IntRbEntry entry;
-		int64_t key;
-		//AvlEntry entry;
-		//int height;
-		//LruEntry lru_entry;
-	};
-
-
-	//for (int i = 0; i < count; i++) {
-	//	std::swap(arr2[i], arr2[randInt() % count]);
-	//}
-
-
-	const char* data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()<>?:{}";
-
-
-qqqqqq:
-
-	l = GetTickCount();
-	int seed = GetTickCount() + rand();
-	seed = 89782837;
-	printf("seed：%d\n", seed);
-	srand(seed);
-
-	//std::set<std::string> arrarr;
-	//for (int64_t i = 0; i < count; i++) {
-	//	int size = 8;// rand() % 4 + 1;
-	//	std::string qqqq;
-	//	qqqq.resize(size);
-	//	for (int j = 0; j < size; j++) {
-	//		qqqq[j] = rand() % 255 + 1 /* + ('a' - 1)*/; // data[rand() % 77];// +'a';
-	//	}
-	//	arrarr.insert(qqqq);
-	//}
-
-	std::vector<QVQ*> arr2;
-	for (int64_t i = 0; i < count; i++) {
-		QVQ* qvq = ObjectCreate(QVQ);
-		qvq->key = i;// i;
-		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
-		arr2.push_back(qvq);
-	}
-
-	for (int64_t i = 0; i < count; i++) {
-		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
-	}
-
-
-	size_t len = 0;
-
+void TestArt() {
 	printf("\n自适应基数树：\n");
 	ArTree artree;
 	ArTreeInit(&artree);
@@ -556,7 +467,7 @@ qqqqqq:
 		ele.buf = (uint8_t*)&it->key;
 		ele.size = sizeof(it->key);
 #else
-	    ele = it->key;
+		ele = it->key;
 #endif
 		//if (ii == 27) {
 		//	printf("??");
@@ -636,11 +547,11 @@ qqqqqq:
 	}
 	printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	
+
 
 	//goto qqqqqq;
 
-	
+
 
 	int qqc = 1;
 
@@ -684,11 +595,11 @@ qqqqqq:
 
 
 		//PrintRB(&gRb, gRb.root, 0);
-	   //for (int i = 10000000; i >= 1; i--) {
-	   //	int key = i;
-	   //	RBDeleteEntryByKey(&gRb, &key);
-	   //	// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
-	   //}
+		 //for (int i = 10000000; i >= 1; i--) {
+		 //	int key = i;
+		 //	RBDeleteEntryByKey(&gRb, &key);
+		 //	// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
+		 //}
 
 		for (int i = 0; i < count / qqc; i++) {
 			element_type ele;
@@ -706,63 +617,193 @@ qqqqqq:
 
 	}
 	printf("总耗时：%dms  \n", GetTickCount() - l);
+}
 
-	
-	
+void TestRb() {
 	printf("\n红黑树：\n");
 	IntRbTree tree;
-	
+
 	l = GetTickCount();
-	void** buf = (void**)malloc((count / qqc) * sizeof(void*));
+	//void** buf = (void**)malloc((count / section) * sizeof(void*));
+#ifdef NP
 	IntRbBsStackVector stack;
 	IntRbEntry* stack_arr[64];
 	IntRbBsStackVectorInit(&stack, 64, stack_arr);
-	for (int j = 0; j < qqc; j++) {
-		
+#endif
+	for (int j = 0; j < section; j++) {
+
 		IntRbTreeInit(&tree);
-		for (int i = 0; i < count / qqc; i++) {
+		l = GetTickCount();
+		for (int i = 0; i < count / section; i++) {
 			//if (!IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry)) {
 			//	//printf("失败%d", i);
 			//}
-			buf[i] = malloc(16);
-			stack.count = 0;
+			//buf[i] = malloc(16);
+#ifndef NP
+			IntRbTreeInsert(&tree, /*&stack,*/ (IntRbEntry*)&arr2[i]->entry);
+#else
 			IntRbTreeInsert(&tree, &stack, (IntRbEntry*)&arr2[i]->entry);
+#endif
 			if (count < 20) {
+
 				//PrintRB(&tree, tree.root, 0);
-				printf("\n\n\n\n");
+				//printf("\n\n\n\n");
 			}
 		}
 
-		//printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
-		//l = GetTickCount();
 
-		for (int i = 0; i < count / qqc; i++) {
-			stack.count = 0;
+
+		//PrintRB(&tree, tree.root, 0);
+		//printf("\n\n\n\n");
+		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
+		printf("count:%d\n", IntRbTreeGetCount(&tree, &stack));
+
+
+		if (!IntRbTreeVerify(&tree)) {
+			printf("不正确的红黑树");
+		}
+
+		l = GetTickCount();
+
+		for (int i = 0; i < count / section; i++) {
+#ifndef NP
+			if (!IntRbTreeFind(&tree, /*&stack,*/ &arr2[i]->key)) {
+				printf("找不到");
+			}
+#else
 			if (!IntRbTreeFind(&tree, &stack, &arr2[i]->key)) {
 				printf("找不到");
 			}
+#endif
 		}
 
-		//printf("查找耗时：%dms\n", GetTickCount() - l);
+		printf("查找耗时：%dms\n", GetTickCount() - l);
+		l = GetTickCount();
 
-		for (int i = 0; i < count / qqc; i++) {
-			free(buf[i]);
-			stack.count = 0;
+		for (int i = 0; i < count / section; i++) {
+			//free(buf[i]);
+#ifndef NP
+			IntRbEntry* entry = IntRbTreeFind(&tree, /*&stack,*/ &arr2[i]->key);
+			if (!IntRbTreeDelete(&tree, /*&stack,*/ entry)) {
+				printf("无法删除");
+			}
+#else
 			IntRbEntry* entry = IntRbTreeFind(&tree, &stack, &arr2[i]->key);
 			if (!IntRbTreeDelete(&tree, &stack, entry)) {
 				printf("无法删除");
 			}
+#endif
+
 			if (count < 20) {
-				//PrintRB(&gRb, gRb.root, 0);
-				//printf("\n\n\n\n");
+				PrintRB(&tree, tree.root, 0);
+				printf("\n\n\n\n");
 			}
+			//if (!IntRbTreeVerify(&tree)) {
+			//	printf("不正确的红黑树");
+			//}
 			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
 		}
-		//printf("删除耗时：%dms  \n", GetTickCount() - l);
+		printf("删除耗时：%dms  \n", GetTickCount() - l);
 
 	}
-	printf("总耗时：%dms  \n", GetTickCount() - l);
 	
+
+
+	printf("总耗时：%dms  \n", GetTickCount() - l);
+
+}
+
+
+int main() {
+
+
+
+	//IntLruList lru_list;
+	//IntLru_Entry lru_entry;
+	//IntLruListInit(&lru_list, 5);
+	//IntLruListPut(&lru_list, &lru_entry.lru_entry);
+
+	//InitializeCriticalSection(&cs);
+	//
+
+	//SpinLockInit(&lock);
+	//SleepLockInit(&slock);
+	//
+	//HANDLE hand[10];		//
+	//for (int i = 0; i < sizeof(hand)/sizeof(HANDLE); i++) {
+	//	hand[i] = CreateThread(NULL, NULL, testfunc, (LPVOID)i, NULL, NULL);
+	//};
+	//
+	//l = GetTickCount();
+	//
+	//DWORD pp = WaitForMultipleObjects(sizeof(hand) / sizeof(HANDLE), hand, TRUE, -1);
+	//printf("%d   i:%d, %dms\n\n", GetLastError(), k, GetTickCount() - l);
+	//while (true) {
+	//	Sleep(1000);
+	//}
+
+	//std::vector<uint8_t> bitarr(10);
+	//Bitmap bitmap;
+	//bitmap.arr.objArr = bitarr.data();
+	//bitmap.arr.count = 10;
+	//bitmap.arr.objSize = 1;
+	//BitmapAlloc(&bitmap, 5);
+	//BitmapAlloc(&bitmap, 3);
+	//BitmapFree(&bitmap, 2, 3);
+	//BitmapAlloc(&bitmap, 4);
+	//BitmapAlloc(&bitmap, 3);
+
+
+
+
+
+
+
+	//for (int i = 0; i < count; i++) {
+	//	std::swap(arr2[i], arr2[randInt() % count]);
+	//}
+
+
+	const char* data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()<>?:{}";
+
+
+
+
+	l = GetTickCount();
+	int seed = GetTickCount() + rand();
+	seed = 595121384;
+	printf("seed：%d\n", seed);
+	srand(seed);
+
+	//std::set<std::string> arrarr;
+	//for (int64_t i = 0; i < count; i++) {
+	//	int size = 8;// rand() % 4 + 1;
+	//	std::string qqqq;
+	//	qqqq.resize(size);
+	//	for (int j = 0; j < size; j++) {
+	//		qqqq[j] = rand() % 255 + 1 /* + ('a' - 1)*/; // data[rand() % 77];// +'a';
+	//	}
+	//	arrarr.insert(qqqq);
+	//}
+
+
+	for (int64_t i = 0; i < count; i++) {
+		QVQ* qvq = ObjectCreate(QVQ);
+		qvq->key = i;// i;
+		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		arr2.push_back(qvq);
+	}
+
+	for (int64_t i = 0; i < count; i++) {
+		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+	}
+
+
+	size_t len = 0;
+
+	
+
+	TestRb();
 
 
 	

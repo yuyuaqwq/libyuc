@@ -6,7 +6,7 @@
 #define LIBYUC_CONTAINER_RB_TREE_H_
 
 #include <libyuc/object.h>
-#include <libyuc/container/bs_tree.h>
+#include <libyuc/container/experimental/bs_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -117,9 +117,9 @@ typedef enum {
       } \
       else { \
         /* 没有兄弟节点或兄弟节点是黑色，说明是3节点的插入，可以并入，但需要利用旋转将其变为4节点
-         *    10b         5b  
+         *    10b              5b  
          *   5r   20b  ->   !2r   10r  
-         * !2r               20b
+         * !2r                       20b
         */ \
           assert(sibling_id == referencer##_InvalidId || accessor##_GetColor(tree, sibling) == kRbBlack); \
         id_type new_sub_root_id; \
@@ -382,6 +382,9 @@ typedef enum {
     referencer##_Dereference(tree, entry); \
     return correct; \
   } \
+  size_t rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
+    return rb_tree_type_name##RbBsTreeGetCount((rb_tree_type_name##RbBsTree*)tree); \
+  } \
   /*
   * 迭代器相关
   */ \
@@ -409,10 +412,12 @@ typedef struct _DefalutRb {
   int key;
 } DefalutRb;
 #define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetKey(TREE, ENTRY) (((DefalutRb*)ENTRY)->key)
-#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY) ((DefalutRbEntry*)(((uintptr_t)(((DefalutRbEntry*)ENTRY)->parent_color) & (~((uintptr_t)0x1)))))
-#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((DefalutRbEntry*)ENTRY)->parent_color) & 0x1))
-#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetParent(TREE, ENTRY, NEW_PARENT_ID) ((DefalutRbEntry*)((DefalutRbEntry*)ENTRY)->parent_color = (DefalutRbEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY))));
-#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetColor(TREE, ENTRY, COLOR) (((DefalutRbEntry*)ENTRY)->parent_color = (((uintptr_t)LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetParent(TREE, ENTRY)) | ((uintptr_t)COLOR)))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetLeft(TREE, ENTRY) ((DefalutRbEntry*)(((uintptr_t)(((DefalutRbEntry*)ENTRY)->left) & (~((uintptr_t)0x1)))))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY) ((RbColor)(((uintptr_t)((DefalutRbEntry*)ENTRY)->left) & 0x1))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetLeft(TREE, ENTRY, NEW_ID) ((DefalutRbEntry*)((DefalutRbEntry*)ENTRY)->left = (DefalutRbEntry*)(((uintptr_t)NEW_ID) | ((uintptr_t)LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetColor(TREE, ENTRY))))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetColor(TREE, ENTRY, COLOR) (((DefalutRbEntry*)ENTRY)->parent_color = (((uintptr_t)LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetLeft(TREE, ENTRY)) | ((uintptr_t)COLOR)))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_GetRight(TREE, ENTRY) ((DefalutRbEntry*)((uintptr_t)((DefalutRbEntry*)ENTRY)->right))
+#define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT_SetRight(TREE, ENTRY, NEW_ID) ((DefalutRbEntry*)((uintptr_t)((DefalutRbEntry*)ENTRY)->right = NEW_ID))
 #define LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT LIBYUC_CONTINUE_RB_TREE_ACCESSOR_DEFALUT
 
 #ifdef __cplusplus
