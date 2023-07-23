@@ -620,7 +620,11 @@ void TestArt() {
 }
 
 void TestRb() {
+#ifndef NP
 	printf("\n红黑树：\n");
+#else
+	printf("\n无父结点红黑树：\n");
+#endif
 	IntRbTree tree;
 
 	l = GetTickCount();
@@ -656,8 +660,15 @@ void TestRb() {
 		//PrintRB(&tree, tree.root, 0);
 		//printf("\n\n\n\n");
 		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
-		printf("count:%d\n", IntRbTreeGetCount(&tree, &stack));
 
+
+#ifndef NP
+		l = GetTickCount();
+		printf("统计count:%d    %dms\n", IntRbTreeGetCount(&tree), GetTickCount() - l);
+#else
+		l = GetTickCount();
+		printf("统计count:%d    %dms\n", IntRbTreeGetCount(&tree, &stack), GetTickCount() - l);
+#endif
 
 		if (!IntRbTreeVerify(&tree)) {
 			printf("不正确的红黑树");
@@ -802,7 +813,7 @@ int main() {
 	size_t len = 0;
 
 	
-
+	TestArt();
 	TestRb();
 
 
@@ -1073,90 +1084,26 @@ int main() {
 	//printf("删除耗时：%dms %d\n", GetTickCount() - l, 0/*BSTreeGetEntryCount(&avl.bst)*/);
 
 
-	//printf("\n红黑树：\n");
-	//IntRbTree tree;
-	//IntRbTreeInit(&tree);
 
-	//void* buf[1000];
+	printf("\nSTL rb:\n");
+	l = GetTickCount();
+	std::map<int, int> mapaaaa;
+	for (int i = 0; i < count; i++) {
+		mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	//l = GetTickCount();
-	//for (int j = 0; j < qqc; j++) {
-	//	for (int i = 0; i < count; i++) {
-	//		//if (!IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry)) {
-	//		//	//printf("失败%d", i);
-	//		//}
-	//		buf[i] = malloc(32);
-	//		IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry);
-	//		if (count < 20) {
-	//			//PrintRB(&tree, tree.root, 0);
-	//			printf("\n\n\n\n");
-	//		}
-	//	}
-	//	//}
-	//	//printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
-	//	//l = GetTickCount();
-	//	//for (int j = 0; j < qqc; j++) {
-	//	//for (int j = 0; j < 100000; j++) {
-	//	for (int i = 0; i < count; i++) {
-	//		if (!IntRbTreeFind(&tree, &arr2[i]->key)) {
-	//			printf("找不到");
-	//		}
-	//	}
-	//	//}
-	//	//}
-	//	//printf("查找耗时：%dms\n", GetTickCount() - l);
-	//	//l = GetTickCount();
-	//	//PrintRB(&gRb, gRb.root, 0);
-	//   //for (int i = 10000000; i >= 1; i--) {
-	//   //	int key = i;
-	//   //	RBDeleteEntryByKey(&gRb, &key);
-	//   //	// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
-	//   //}
-	//   //for (int j = 0; j < qqc; j++) {
-	//	for (int i = 0; i < count; i++) {
-	//		free(buf[i]);
-	//		if (!IntRbTreeDelete(&tree, IntRbTreeFind(&tree, &arr2[i]->key))) {
-	//			printf("无法删除");
-	//		}
-	//		if (count < 20) {
-	//			//PrintRB(&gRb, gRb.root, 0);
-	//			printf("\n\n\n\n");
-	//		}
-	//		// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
-	//	}
-	//}
-	//printf("删除耗时：%dms  \n", GetTickCount() - l);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (IntRbTreeFind(&tree, &arr2[i]->key)) {
-	//		printf("找到了");
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (mapaaaa.find(arr2[i]->key) == mapaaaa.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
 
-
-	//printf("\nSTL rb:\n");
-	//l = GetTickCount();
-	//std::map<int, int> mapaaaa;
-	//for (int i = 0; i < count; i++) {
-	//	mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
-	//}
-	//printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (mapaaaa.find(arr2[i]->key) == mapaaaa.end()) {
-	//		printf("找不到");
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
-
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	mapaaaa.erase(arr2[i]->key);
-	//}
-	//printf("删除耗时：%dms\n", GetTickCount() - l);
-
-
-
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		mapaaaa.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
 }

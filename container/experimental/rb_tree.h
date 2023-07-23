@@ -46,6 +46,7 @@ typedef enum {
   id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
   bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
   bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree); \
+  size_t rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree); \
   id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
   id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
   id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
