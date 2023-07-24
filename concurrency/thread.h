@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+typedef uint32_t ThreadId
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
 /*
@@ -57,6 +59,16 @@ static forceinline void ThreadCreate(ThreadEntry entry, void* context) {
   if (thread != NULL) {
     CloseHandle(thread);
   }
+}
+
+static forceinline ThreadId ThreadGetId() {
+  return (ThreadId)GetCurrentThreadId();
+}
+
+#elif defined(linux)
+
+static forceinline ThreadId ThreadGetId() {
+  return (ThreadId)pthread_self();
 }
 
 #endif
