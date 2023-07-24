@@ -17,7 +17,7 @@ extern "C" {
 
 typedef uint32_t TlsId;
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 #include <Windows.h>
 
 /*

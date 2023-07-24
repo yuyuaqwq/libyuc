@@ -13,7 +13,7 @@ extern "C" {
 
 typedef uint32_t ThreadId
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 #include <Windows.h>
 /*
 * 空转，使CPU得

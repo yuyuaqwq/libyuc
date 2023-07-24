@@ -38,9 +38,8 @@ extern "C" {
   } \
   void singly_list_type_name##SinglyListPutFirst(singly_list_type_name##SinglyListHead* head, id_type entry_id) { \
     singly_list_type_name##SinglyListEntry* entry = referencer##_Reference(head, entry_id); \
-    id_type old_first_id = head->first; \
+    entry->next = head->first; \
     head->first = entry_id; \
-    entry->next = old_first_id; \
     referencer##_Dereference(head, entry); \
   } \
   id_type singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head) { \

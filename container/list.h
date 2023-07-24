@@ -56,39 +56,36 @@ extern "C" {
   } \
   void list_type_name##ListPutFirst(list_type_name##ListHead* head, id_type entry_id) { \
     list_type_name##ListEntry* entry = referencer##_Reference(head, entry_id); \
-    id_type old_first_id = head->first; \
-    head->first = entry_id; \
-    if (old_first_id == referencer##_InvalidId){ \
+    if (head->first == referencer##_InvalidId){ \
         assert(head->last == referencer##_InvalidId); \
       entry->prev = entry_id; \
       entry->next = entry_id; \
       head->last = entry_id; \
     } \
     else { \
-      list_type_name##ListEntry* old_first = referencer##_Reference(head, old_first_id); \
+      list_type_name##ListEntry* old_first = referencer##_Reference(head, head->first); \
       entry->prev = old_first->prev; \
-      entry->next = old_first_id; \
+      entry->next = head->first; \
       list_type_name##ListEntry* last = referencer##_Reference(head, old_first->prev); \
       old_first->prev = entry_id; \
       last->next = entry_id; \
       referencer##_Dereference(head, last); \
       referencer##_Dereference(head, old_first); \
     } \
+    head->first = entry_id; \
     referencer##_Dereference(head, entry); \
   } \
   void list_type_name##ListPutLast(list_type_name##ListHead* head, id_type entry_id) { \
     list_type_name##ListEntry* entry = referencer##_Reference(head, entry_id); \
-    id_type old_last_id = head->last; \
-    head->last = entry_id; \
-    if (old_last_id == referencer##_InvalidId){ \
+    if (head->last == referencer##_InvalidId){ \
         assert(head->first == referencer##_InvalidId); \
       entry->prev = entry_id; \
       entry->next = entry_id; \
       head->first = entry_id; \
     } \
     else { \
-      list_type_name##ListEntry* old_last = referencer##_Reference(head, old_last_id); \
-      entry->prev = old_last_id; \
+      list_type_name##ListEntry* old_last = referencer##_Reference(head, head->last); \
+      entry->prev = head->last; \
       entry->next = old_last->next; \
       list_type_name##ListEntry* first = referencer##_Reference(head, old_last->next); \
       old_last->next = entry_id; \
@@ -96,6 +93,7 @@ extern "C" {
       referencer##_Dereference(head, first); \
       referencer##_Dereference(head, old_last); \
     } \
+    head->last = entry_id; \
     referencer##_Dereference(head, entry); \
   } \
   id_type list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id) { \

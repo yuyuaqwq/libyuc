@@ -7,7 +7,7 @@
 
 #include <libyuc/object.h>
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 #include <Windows.h>
 
 /*
@@ -17,31 +17,67 @@
 /*
 * 原子自增
 */
-static inline int32_t AtomicIncrement32(volatile int32_t* target) {
-  return InterlockedIncrement(target);
+static forceinline int32_t AtomicIncrement32(volatile int32_t* target) {
+  return (int32_t)InterlockedIncrement((volatile LONG*)target);
 }
+
+static forceinline int64_t AtomicIncrement64(volatile int64_t* target) {
+  return (int64_t)InterlockedIncrement64((volatile LONG64*)target);
+}
+
 /*
 * 原子自减
 */
-static inline int32_t AtomicDecrement32(volatile int32_t* target) {
-  return InterlockedDecrement(target);
+static forceinline int32_t AtomicDecrement32(volatile int32_t* target) {
+  return (int32_t)InterlockedDecrement((volatile LONG*)target);
+}
+
+static forceinline int64_t AtomicDecrement64(volatile int64_t* target) {
+  return (int64_t)InterlockedDecrement64((volatile LONG64*)target);
 }
 /*
 * 原子交换
 * 修改target为value
 * 返回target旧值
 */
-static inline int32_t AtomicExchange32(volatile int32_t* target, int32_t value) {
-  return InterlockedExchange(target, value);
+static forceinline int32_t AtomicExchange32(volatile int32_t* target, int32_t value) {
+  return (int32_t)InterlockedExchange((volatile LONG*)target, (LONG)value);
 }
+
+static forceinline int64_t AtomicExchange64(volatile int64_t* target, int64_t value) {
+  return (int64_t)InterlockedExchange64((volatile LONG64*)target, (LONG64)value);
+}
+
+static forceinline void* AtomicExchangePtr(volatile void* target, void* value) {
+#if defined(_WIN64)
+  return (void*)AtomicExchange64((volatile int64_t*)target, (int64_t)value);
+#else
+  return (void*)AtomicExchange32((volatile int32_t*)target, (int32_t)value);
+#endif
+}
+
 /*
 * 原子比较并交换
 * 若target == comparand，则修改target为exchange
 * 返回target旧值
 */
-static inline int32_t AtomicCompareExchange32(volatile int32_t* target, int32_t exchange, int32_t comparand) {
-  return InterlockedCompareExchange(target, exchange, comparand);
+static forceinline int32_t AtomicCompareExchange32(volatile int32_t* target, int32_t exchange, int32_t comparand) {
+  return (int32_t)InterlockedCompareExchange((volatile LONG*)target, (LONG)exchange, (LONG)comparand);
 }
+
+static forceinline int64_t AtomicCompareExchange64(volatile int64_t* target, int64_t exchange, int64_t comparand) {
+  return (int64_t)InterlockedCompareExchange64((volatile LONG64*)target, (LONG64)exchange, (LONG64)comparand);
+}
+
+static forceinline void* AtomicCompareExchangePtr(volatile void* target, void* exchange, void* comparand) {
+#if defined(_WIN64)
+  return (void*)AtomicCompareExchange64((volatile int64_t*)target, (int64_t)exchange, (int64_t)comparand);
+#else
+  return (void*)AtomicCompareExchange32((volatile int32_t*)target, (int32_t)exchange, (int32_t)comparand);
+#endif
+}
+
+
 #endif
 
 
