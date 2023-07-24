@@ -7,6 +7,9 @@
 
 #include <libyuc/object.h>
 
+#include <libyuc/concurrency/thread.h>
+#include <libyuc/concurrency/atomic.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,9 +21,17 @@ typedef struct _SpinLock {
   volatile bool state;
 } SpinLock;
 
-void SpinLockInit(SpinLock* lock);
-void SpinLockAcquire(SpinLock* lock);
-void SpinLockRelease(SpinLock* lock);
+static forceinline void SpinLockInit(SpinLock* lock) {
+  lock->state = false;
+}
+
+static forceinline void SpinLockAcquire(SpinLock* lock) {
+  while (AtomicExchange32(&lock->state, true) == true) { ThreadPause(); continue; }
+}
+
+static forceinline void SpinLockRelease(SpinLock* lock) {
+  lock->state = false;    // AtomicExchange32(&lock->state, false);
+}
 
 #ifdef __cplusplus
 }

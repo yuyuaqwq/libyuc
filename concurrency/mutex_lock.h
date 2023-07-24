@@ -7,6 +7,9 @@
 
 #include <libyuc/object.h>
 
+#include <libyuc/concurrency/thread.h>
+#include <libyuc/concurrency/atomic.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,9 +21,16 @@ typedef struct _MutexLock {
   volatile bool state;
 } MutexLock;
 
-void MutexLockInit(MutexLock* lock);
-void MutexLockAcquire(MutexLock* lock);
-void MutexLockRelease(MutexLock* lock);
+static forceinline void MutexLockInit(MutexLock* lock) {
+  lock->state = false;
+}
+static forceinline void MutexLockAcquire(MutexLock* lock) {
+  while (AtomicExchange32(&lock->state, true) == true) { ThreadSwitch(0); continue; }
+}
+
+static forceinline void MutexLockRelease(MutexLock* lock) {
+  lock->state = false;
+}
 
 #ifdef __cplusplus
 }
