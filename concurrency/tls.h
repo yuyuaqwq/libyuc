@@ -15,6 +15,13 @@
 extern "C" {
 #endif
 
+#if defined(_MSC_VER)
+#define thread_local __declspec(thread)
+#elif defined(__GNUC__)
+#define thread_local __thread
+#elif defined(__clang__)
+#endif
+
 typedef uint32_t TlsId;
 
 #if defined(_WIN32)
