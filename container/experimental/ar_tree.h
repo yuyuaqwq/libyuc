@@ -441,9 +441,9 @@ static ArNode** ArNode48Insert(ArTree* tree, ArNode48** node_ptr, uint8_t key_by
   uint8_t child_index = node->keys[key_byte];
   if (child_index == 0xff) {
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-    if (ArGetFullCount((ArNode*)node) >= 47) {
+    if (node->head.child_count >= 47) {
 #else
-    if (ArGetFullCount((ArNode*)node) >= 48) {
+    if (node->head.child_count >= 48) {
 #endif
       ArNode256* new_node256 = ArNode256Create(tree);
       ArNodeHeadCopy((ArNode*)new_node256, (ArNode*)node);
