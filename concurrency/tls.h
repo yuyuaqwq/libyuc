@@ -20,23 +20,28 @@ typedef uint32_t TlsId;
 #if defined(_WIN32)
 #include <Windows.h>
 
-/*
-static forceinline TlsId TlsAlloc() {
+
+static forceinline TlsId TlsAlloc_() {
   return (TlsId)TlsAlloc();
 }
 
-static forceinline void TlsFree(TlsId id) {
+static forceinline void TlsFree_(TlsId id) {
   return TlsFree((DWORD)id);
 }
 
-static forceinline void TlsSetValue(TlsId id, const void* value) {
+static forceinline void TlsSetValue_(TlsId id, const void* value) {
   TlsSetValue((DWORD)id, value);
 }
 
-static forceinline void* TlsGetValue(TlsId id) {
+static forceinline void* TlsGetValue_(TlsId id) {
   TlsGetValue((DWORD)id);
 }
-*/
+
+#define TlsAlloc TlsAlloc_
+#define TlsFree TlsFree_
+#define TlsSetValue TlsSetValue_
+#define TlsGetValue TlsGetValue_
+
 
 #elif defined(linux)
 
