@@ -1073,30 +1073,23 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
         }
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
         ArNode** eof_chile = (ArNode**)ArGetEofChild(*parent_ptr);
+        // 先删除节点
         if (cur_ptr != eof_chile) {
 #endif
           ArNodeDelete(tree, parent_ptr, parent_byte);
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
         }
+        else {
+          cur->head.eof = 0;
+        }
 #endif
-
-        if ((*parent_ptr)->head.node_type == kArNode4
-          &&
-#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-          (
-            (*parent_ptr)->head.child_count == 1 && cur_ptr == eof_chile
-            || (*parent_ptr)->head.child_count == 1 && eof_chile == NULL
-            || (*parent_ptr)->head.child_count == 0
-          )
-#else
-          (*parent_ptr)->head.child_count == 1
-#endif
-          ) {
-          // Node4路径压缩的合并处理，使指向父节点的 祖父节点的child_arr元素 指向父节点剩下的一个孩子节点
+        if ((*parent_ptr)->head.node_type == kArNode4 && ArGetFullCount(*parent_ptr) == 1) {
+          // 只剩下一个子节点，Node4路径压缩的合并处理，使指向父节点的 祖父节点的child_arr元素 指向父节点剩下的一个孩子节点
           ArNode* parent = *parent_ptr;
           ArNode* child;
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
           if ((*parent_ptr)->head.child_count == 0) {
+            // 如果剩下了一个eof
             child = *eof_chile;
              assert(child->head.node_type == kArLeaf);
           }
@@ -1114,11 +1107,6 @@ element_type* ArTreeDelete(ArTree* tree, key_type* key) {
           // 释放父节点
           ArNode4Release(tree, &parent->node4);
         }
-#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-        if (cur_ptr == eof_chile) {
-          cur->head.eof = 0;
-        }
-#endif
          assert((*parent_ptr)->head.child_count > 0);
       } while (false);
       ArLeafRelease(tree, &cur->leaf);
