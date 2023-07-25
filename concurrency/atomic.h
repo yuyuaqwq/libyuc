@@ -10,6 +10,10 @@
 #if defined(_WIN32)
 #include <Windows.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 * 原子操作
 */

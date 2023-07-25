@@ -725,11 +725,11 @@ void TestRb() {
 
 }
 
-void TestTsSinglyList() {
-	TsSinglyListHead head;
-	TsSinglyListInit(head);
-	TsSinglyListPutFirst(&head, );
-}
+//void TestTsSinglyList() {
+//	TsSinglyListHead head;
+//	TsSinglyListInit(head);
+//	TsSinglyListPutFirst(&head, );
+//}
 
 int main() {
 
@@ -788,7 +788,7 @@ int main() {
 
 	l = GetTickCount();
 	int seed = GetTickCount() + rand();
-	seed = 595121384;
+	//seed = 595121384;
 	printf("seed：%d\n", seed);
 	srand(seed);
 
