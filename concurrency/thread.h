@@ -19,6 +19,7 @@ typedef uint32_t ThreadId
 * 空转，使CPU得
 以稍加休息
 */
+
 static forceinline void ThreadPause() {
   YieldProcessor();
 }
@@ -44,7 +45,7 @@ typedef struct _ThreadContext {
 } ThreadContext;
 
 static DWORD WINAPI ThreadForward(LPVOID lpThreadParameter) {
-  ThreadContext* thread_context_ptr = lpThreadParameter;
+  ThreadContext* thread_context_ptr = (ThreadContext*)lpThreadParameter;
   ThreadContext thread_context = *thread_context_ptr;
   ObjectRelease(thread_context_ptr);
   thread_context.entry(thread_context.context);

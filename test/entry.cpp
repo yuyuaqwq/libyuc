@@ -242,7 +242,8 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 }
 
 #include <libyuc/container/hash_list.h>
-#include <libyuc/container/thread_safe/ts_singly_list.h>
+#include <libyuc/container/thread_safe/ts_sort_singly_list.h>
+#include <thread>
 
 //
 //void PrintArt(ArTree* tree, ArNode* node, int Level) {
@@ -358,8 +359,11 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 100;
 std::vector<QVQ*> arr2;
+// int seed = GetTickCount() + rand();
+int seed = 377884212;
+
 
 int section = 1;
 
@@ -725,6 +729,30 @@ void TestRb() {
 
 }
 
+void TestTsSortSinglyListThread(TsSortSinglyListHead* head, int j) {
+	for (int i = 0; i < count; i++) {
+		printf("j:%d i:%d\t", j, i);
+		TsSortSinglyListInsert((TsSortSinglyListEntry*)head, head->first, (TsSortSinglyListEntry*)&arr2[i]->entry.right);
+	}
+}
+
+void TestTsSortSinglyList() {
+	TsSortSinglyListHead head;
+	TsSortSinglyListEntry entry;
+	entry.next = NULL;
+	entry.key = 10;
+	head.first = &entry;
+
+	std::vector<std::thread> t;
+	for (int i = 0; i < 10; i++) {
+		t.push_back(std::thread(TestTsSortSinglyListThread, &head, i));
+	}
+
+	for (auto& thread : t) {
+		thread.join();
+	}
+}
+
 //void TestTsSinglyList() {
 //	TsSinglyListHead head;
 //	TsSinglyListInit(head);
@@ -732,9 +760,6 @@ void TestRb() {
 //}
 
 int main() {
-
-
-
 	//IntLruList lru_list;
 	//IntLru_Entry lru_entry;
 	//IntLruListInit(&lru_list, 5);
@@ -773,7 +798,8 @@ int main() {
 
 
 
-
+	printf("seed：%d\n", seed);
+	srand(seed);
 
 
 	//for (int i = 0; i < count; i++) {
@@ -786,11 +812,7 @@ int main() {
 
 
 
-	l = GetTickCount();
-	int seed = GetTickCount() + rand();
-	//seed = 595121384;
-	printf("seed：%d\n", seed);
-	srand(seed);
+	
 
 	//std::set<std::string> arrarr;
 	//for (int64_t i = 0; i < count; i++) {
@@ -818,7 +840,7 @@ int main() {
 
 	size_t len = 0;
 
-	
+	TestTsSortSinglyList();
 	TestArt();
 	TestRb();
 
