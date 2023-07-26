@@ -33,7 +33,7 @@ void TsSortSinglyListHeadInit(TsSortSinglyListHead* head) {
 #define MARK(p) ((void*)((uintptr_t)(p) | 0x01))
 #define CLEAR_MARK(p) ((uintptr_t)(p) & ~0x01)
 
-int TsSortSinglyListLocate(TsSortSinglyListEntry** cur_ptr, TsSortSinglyListEntry** prev_ptr, int key) {
+int TsSortSinglyListLocate(TsSortSinglyListEntry** prev_ptr, TsSortSinglyListEntry** cur_ptr, int key) {
   TsSortSinglyListEntry* cur = *cur_ptr;
   TsSortSinglyListEntry* prev = *prev_ptr;
   do {
@@ -53,7 +53,7 @@ int TsSortSinglyListLocate(TsSortSinglyListEntry** cur_ptr, TsSortSinglyListEntr
 
 bool TsSortSinglyListInsert(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, TsSortSinglyListEntry* entry) {
   do {
-    TsSortSinglyListLocate(&cur, &prev, entry->key);
+    TsSortSinglyListLocate(&prev, &cur, entry->key);
     entry->next = cur;
     // 需要避免prev是即将删除节点的场景，否则插入后prev即刻被删除(prev->next = cur->next)会导致节点丢失
     // 解决方法是DeleteCAS前将prev->next进行标记(末尾置为1)，此时当前的插入的CAS就会触发失败重试(prev->next拿到的指针的最低位为1，!= cur)
@@ -70,7 +70,7 @@ bool TsSortSinglyListInsert(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* 
 
 bool TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, int key) {
   do {
-    if (TsSortSinglyListLocate(&cur, &prev, key) != 0) {
+    if (TsSortSinglyListLocate(&prev, &cur, key) != 0) {
       return false;
     }
     TsSortSinglyListEntry* next = cur->next;

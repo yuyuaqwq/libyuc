@@ -359,13 +359,15 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 100;
+int count = 100000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
 
 
 int section = 1;
+
+int thread_count = 12;
 
 void TestArt() {
 	printf("\n自适应基数树：\n");
@@ -730,9 +732,8 @@ void TestRb() {
 }
 
 void TestTsSortSinglyListThread(TsSortSinglyListHead* head, int j) {
-	for (int i = 0; i < count; i++) {
-		printf("j:%d i:%d\t", j, i);
-		TsSortSinglyListInsert((TsSortSinglyListEntry*)head, head->first, (TsSortSinglyListEntry*)&arr2[i]->entry.right);
+	for (int i = 0; i < count / thread_count; i++) {
+		TsSortSinglyListInsert((TsSortSinglyListEntry*)head, head->first, (TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right);
 	}
 }
 
@@ -744,13 +745,28 @@ void TestTsSortSinglyList() {
 	head.first = &entry;
 
 	std::vector<std::thread> t;
-	for (int i = 0; i < 10; i++) {
+	t.reserve(thread_count);
+	l = GetTickCount();
+
+	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSortSinglyListThread, &head, i));
 	}
 
 	for (auto& thread : t) {
 		thread.join();
 	}
+
+	printf("%d个线程，插入总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+
+
+	for (int i = 0; i < count; i++) {
+		TsSortSinglyListEntry* prev = (TsSortSinglyListEntry*)&head;
+		TsSortSinglyListEntry* cur = head.first;
+		if (TsSortSinglyListLocate(&prev, &cur, arr2[i]->key) != 0) {
+			printf("error:%d\t", arr2[i]->key);
+		}
+	}
+
 }
 
 //void TestTsSinglyList() {
