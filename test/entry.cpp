@@ -359,7 +359,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 100000;
+int count = 200000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -367,7 +367,7 @@ int seed = 377884212;
 
 int section = 1;
 
-int thread_count = 12;
+int thread_count = 10;
 
 void TestArt() {
 	printf("\n自适应基数树：\n");
@@ -731,25 +731,29 @@ void TestRb() {
 
 }
 
-void TestTsSortSinglyListThread(TsSortSinglyListHead* head, int j) {
+void TestTsSortSinglyListInsertThread(TsSortSinglyListHead* head, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
 		TsSortSinglyListInsert((TsSortSinglyListEntry*)head, head->first, (TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right);
 	}
 }
 
+void TestTsSortSinglyListDeleteThread(TsSortSinglyListHead* head, int j) {
+	for (int i = 0; i < count / thread_count; i++) {
+		TsSortSinglyListDelete((TsSortSinglyListEntry*)head, head->first, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+	}
+}
+
 void TestTsSortSinglyList() {
 	TsSortSinglyListHead head;
-	TsSortSinglyListEntry entry;
-	entry.next = NULL;
-	entry.key = 10;
-	head.first = &entry;
+	head.first = NULL;
 
 	std::vector<std::thread> t;
 	t.reserve(thread_count);
 	l = GetTickCount();
 
 	for (int i = 0; i < thread_count; i++) {
-		t.push_back(std::thread(TestTsSortSinglyListThread, &head, i));
+		t.push_back(std::thread(TestTsSortSinglyListInsertThread, &head, i));
+		t.push_back(std::thread(TestTsSortSinglyListDeleteThread, &head, i));
 	}
 
 	for (auto& thread : t) {
@@ -759,14 +763,48 @@ void TestTsSortSinglyList() {
 	printf("%d个线程，插入总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
 
 
-	for (int i = 0; i < count; i++) {
-		TsSortSinglyListEntry* prev = (TsSortSinglyListEntry*)&head;
-		TsSortSinglyListEntry* cur = head.first;
-		if (TsSortSinglyListLocate(&prev, &cur, arr2[i]->key) != 0) {
-			printf("error:%d\t", arr2[i]->key);
+	TsSortSinglyListEntry* prev = NULL;
+	int i = 0;
+	TsSortSinglyListEntry* cur = TsSortSinglyListIteratorFirst(&head);
+	while (cur) {
+		if (prev != NULL) {
+			if (prev->key > cur->key) {
+				printf("error");
+			}
 		}
+		i++;
+		prev = cur;
+		cur = TsSortSinglyListIteratorNext(cur);
 	}
 
+	printf("%d\n", i);
+
+	t.clear();
+	t.reserve(thread_count);
+	l = GetTickCount();
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread(TestTsSortSinglyListDeleteThread, &head, i));
+	}
+
+	for (auto& thread : t) {
+		thread.join();
+	}
+	printf("%d个线程，删除总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+
+	prev = NULL;
+	i = 0;
+	cur = TsSortSinglyListIteratorFirst(&head);
+	while (cur) {
+		if (prev != NULL) {
+			if (prev->key > cur->key) {
+				printf("error");
+			}
+		}
+		i++;
+		prev = cur;
+		cur = TsSortSinglyListIteratorNext(cur);
+	}
+	printf("%d\n", i);
 }
 
 //void TestTsSinglyList() {

@@ -30,21 +30,32 @@ void TsSortSinglyListHeadInit(TsSortSinglyListHead* head) {
 }
 
 #define IS_MARK(p) ((uintptr_t)(p) & 0x01)
-#define MARK(p) ((void*)((uintptr_t)(p) | 0x01))
-#define CLEAR_MARK(p) ((uintptr_t)(p) & ~0x01)
+#define MARK(p) ((TsSortSinglyListEntry*)((uintptr_t)(p) | 0x01))
+#define CLEAR_MARK(p) ((TsSortSinglyListEntry*)((uintptr_t)(p) & ~0x01))
+
+// 节点被逻辑删除了也能继续使用，因为没有被回收也就不会出现ABA问题
 
 int TsSortSinglyListLocate(TsSortSinglyListEntry** prev_ptr, TsSortSinglyListEntry** cur_ptr, int key) {
   TsSortSinglyListEntry* cur = *cur_ptr;
   TsSortSinglyListEntry* prev = *prev_ptr;
-  do {
-    if (cur->key >= key) {
-      *cur_ptr = cur;
-      *prev_ptr = prev;
-      return cur->key == key ? 0 : 1;
-    }
-    prev = cur;
-    cur = cur->next;
-  } while (cur);
+  if (cur != NULL) {
+    do {
+      if (IS_MARK(cur)) {
+        // 当前节点已经标记了删除，通过MARK标记的prev重试
+         release_assert(CLEAR_MARK(cur)->key <= prev->key);
+        prev = CLEAR_MARK(cur);
+        cur = prev->next;
+        continue;
+      }
+      if (cur->key >= key) {
+        *cur_ptr = cur;
+        *prev_ptr = prev;
+        return cur->key == key ? 0 : 1;
+      }
+      prev = cur;
+      cur = cur->next;
+    } while (cur);
+  }
   // 插入到末尾
   *prev_ptr = prev;
   *cur_ptr = NULL;
@@ -55,15 +66,20 @@ bool TsSortSinglyListInsert(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* 
   do {
     TsSortSinglyListLocate(&prev, &cur, entry->key);
     entry->next = cur;
-    // 需要避免prev是即将删除节点的场景，否则插入后prev即刻被删除(prev->next = cur->next)会导致节点丢失
-    // 解决方法是DeleteCAS前将prev->next进行标记(末尾置为1)，此时当前的插入的CAS就会触发失败重试(prev->next拿到的指针的最低位为1，!= cur)
+    // 需要避免prev是即将删除节点的场景，否则插入后prev即刻被删除(删除上下文中cur)会导致新插入节点丢失
+    // 解决方法是DeleteCAS前将cur->next进行标记(末尾置为1)，此时当前的插入的CAS就会触发失败重试(prev->next被修改 != cur)
     if (AtomicCompareExchangePtr(&prev->next, entry, cur)) {
       break;
     }
     // 更新失败的场景，即prev->next不再是cur
-    // 场景1：cur被删除
-    // 场景2：prev和cur之间插入了新节点
-    cur = prev;   // 由此开始重试，基于ebr，即便prev被逻辑删除了也能继续使用，因为没有被回收也就不会出现ABA问题
+    // 1.prev被删除
+    TsSortSinglyListEntry* next = prev->next;
+    if (IS_MARK(next)) {
+      prev = CLEAR_MARK(next);
+      next = prev->next;
+    }
+    // 2.prev和cur之间插入了新节点
+    cur = next;
   } while (true);
   return true;
 }
@@ -73,18 +89,51 @@ bool TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* 
     if (TsSortSinglyListLocate(&prev, &cur, key) != 0) {
       return false;
     }
+     release_assert(!IS_MARK(prev));
+     release_assert(!IS_MARK(cur));
     TsSortSinglyListEntry* next = cur->next;
-    // cur即将被删除，先进行标记
-    if (AtomicCompareExchangePtr(&prev->next, MARK(cur), cur)) {
-      // 成功标记
+    // cur即将被删除，先进行标记，标记时将其置为prev使得TsSortSinglyListLocate可以往回找
+    if (AtomicCompareExchangePtr(&cur->next, MARK(prev), CLEAR_MARK(next))) {
+       release_assert(!next || next->key >= cur->key);
+      // 只有一个删除线程能成功标记这个节点
+
       if (AtomicCompareExchangePtr(&prev->next, next, cur)) {
-        break;
+        return true;
       }
+      // 删除失败的场景，即prev->next不再是cur
+      // 1.prev将要被删除/已被删除，被打上标记
+      if (IS_MARK(prev->next)) {
+        cur->next = next;   // 此时cur是通过新的prev访问的(其他的删除线程将要/已经进行了prev的prev指向cur的原子操作)，先取消标记
+        prev = CLEAR_MARK(prev->next);    // 由此重试
+        cur = prev->next;
+        continue;
+      }
+      // 2.prev和cur之间插入了新节点
+      else {
+        cur->next = next;
+        prev = prev->next;
+        continue;
+      }
+       release_assert(0);
     }
-    cur = prev;
+    // 标记失败的场景，即cur->next不再是next
+    // 1.cur被其他删除线程标记
+    else if (IS_MARK(cur->next)) {
+      prev = CLEAR_MARK(cur->next);
+    }
+    // 2.cur->next已被其他线程删除
+    cur = prev->next;
   } while (true);
+  return false;
 }
 
+TsSortSinglyListEntry* TsSortSinglyListIteratorFirst(TsSortSinglyListHead* head) {
+  return head->first;
+}
+
+TsSortSinglyListEntry* TsSortSinglyListIteratorNext(TsSortSinglyListEntry* cur) {
+  return cur->next;
+}
 
 #ifdef __cplusplus
 }

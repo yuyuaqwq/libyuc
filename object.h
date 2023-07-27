@@ -18,6 +18,8 @@
 #define assert(expression) { if(!(expression)){ *(int*)0 = 0; } }
 #endif
 
+#define release_assert(expression) { if(!(expression)){ *(int*)0 = 0; } }
+
 #ifdef __cplusplus
 extern "C" {
 #endif
