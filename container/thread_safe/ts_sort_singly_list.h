@@ -120,6 +120,7 @@ bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr, TsSor
 
      release_assert(!next || *TsSortSinglyListEntryGetKey(next) >= *TsSortSinglyListEntryGetKey(entry), "");
     if (AtomicCompareExchangePtr(TsSortSinglyListEntryGetNextPtr(prev), next, entry)) {
+      *entry_ptr = entry;
       return true;
     }
     // 删除失败的场景，即prev->next不再是cur
@@ -149,16 +150,16 @@ bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr, TsSor
   return false;
 }
 
-bool TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, int key) {
+TsSortSinglyListEntry* TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, int key) {
   do {
     if (TsSortSinglyListLocate(&prev, &cur, key) != 0) {
       return false;
     }
     if (TsSortSinglyListDeleteEntryInternal(&prev, &cur)) {
-      return true;
+      return cur;
     }
   } while (true);
-  return false;
+  return NULL;
 }
 
 void TsSortSinglyListDeleteEntry(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* entry) {
