@@ -18,7 +18,7 @@
 #define assert(expression) { if(!(expression)){ *(int*)0 = 0; } }
 #endif
 
-#define release_assert(expression) { if(!(expression)){ *(int*)0 = 0; } }
+#define release_assert(expression, ...) { if(!(expression)){ printf(__VA_ARGS__); *(int*)0 = 0; } }
 
 #ifdef __cplusplus
 extern "C" {

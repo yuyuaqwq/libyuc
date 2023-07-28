@@ -12,6 +12,9 @@ extern "C" {
 #endif
 
 
+#define LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL 32
+const int LIBYUC_CONTAINER_SKIP_LIST_SKIPLIST_P = (RAND_MAX / 2);
+
 /*
 * 跳表索引节点
 */
@@ -23,120 +26,103 @@ typedef struct _SkipListLevel {
 * 跳表节点，每个节点有随机的索引层数，所以用柔性数组动态分配
 */
 typedef struct _SkipListEntry {
-  void* obj;    // 修改为存储obj
+  int key;
+  //int level_count;
   SkipListLevel upper[];    // 节点的上层，是索引节点
 } SkipListEntry;
 
 typedef struct _SkipList {
-  SkipListEntry* head;
+  SkipListLevel head[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];
   int level;
-  int keyFieldOffset;
-  int keyFieldSize;
-  CmpFunc cmpFunc;
 } SkipList;
 
 
-void SkipListInit(SkipList* list, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc);
-#define SkipListInitByField(list, objName, keyFieldName) SkipListInit((list), ObjectGetFieldOffset(objName, keyFieldName), ObjectGetFieldSize(objName, keyFieldName), NULL)
-void SkipListRelease(SkipList* list, bool deleteObj);
-void* SkipListFind(SkipList* list, void* key);
-bool SkipListInsert(SkipList* list, void* obj);
-void* SkipListDelete(SkipList* list, void* key);
+void SkipListInit(SkipList* list);
+void SkipListRelease(SkipList* list);
+bool SkipListFind(SkipList* list, int key);
+bool SkipListInsert(SkipList* list, int key);
+bool SkipListDelete(SkipList* list, int key);
 SkipListEntry* SkipListFirst(SkipList* list);
 SkipListEntry* SkipListNext(SkipList* list, SkipListEntry* cur);
 
-const int SKIPLIST_P = (RAND_MAX / 2);
-#define SKIPLIST_MAX_LEVEL 64
+
 
 static int RandomLevel() {
   int level = 1;
 
-  while (SKIPLIST_P <= rand() && level < SKIPLIST_MAX_LEVEL)
+  while (LIBYUC_CONTAINER_SKIP_LIST_SKIPLIST_P <= rand() && level < LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL)
     level++;
 
   return level;
 }
 
-static SkipListEntry* SkipListCreateEntry(int level, void* obj) {
+static SkipListEntry* SkipListCreateEntry(int level, int key) {
   SkipListEntry* entry = (SkipListEntry*)MemoryAlloc(sizeof(SkipListEntry) + level * sizeof(SkipListLevel));
-  entry->obj = obj;
+  entry->key = key;
+  //entry->level_count = level;
   return entry;
 }
 
-static forceinline SkipListEntry* SkipListFindEntry(SkipList* list, void* key, int* cmpRes, SkipListEntry** update) {
-  SkipListEntry* cur = list->head;
+static forceinline SkipListEntry* SkipListLocate(SkipList* list, int key, int* cmp, SkipListLevel** update) {
+  *cmp = 0;
+  SkipListLevel* cur = list->head;
   // 从最顶层开始遍历，每趟循环都相当于下降一层索引
   for (int i = list->level - 1; i >= 0; i--) {
-    // 当前索引层的查找
-    while (cur->upper[i].next) {
-      void* nextKey = ObjectGetFieldByOffset(cur->upper[i].next->obj, list->keyFieldOffset, void);
-      *cmpRes = list->cmpFunc(nextKey, key, list->keyFieldSize);
-      if (*cmpRes >= 0) {
+    // 当前索引层的链表查找
+    SkipListEntry* next = cur[i].next;
+    while (next) {
+      *cmp = next->key - key;
+      if (*cmp >= 0) {
         break;
       }
-      cur = cur->upper[i].next;
+      cur = next->upper;   // 转到当前层的下一链表节点
+      next = cur[i].next;
     }
-    
     if (update) {
       update[i] = cur;    // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
     }
-
     // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
   }
-  return cur;
+  return ObjectGetFromField(cur, SkipListEntry, upper);
 }
 
-void SkipListInit(SkipList* list, int keyFieldOffset, int keyFieldSize, CmpFunc cmpFunc) {
+void SkipListInit(SkipList* list) {
   list->level = 1;
-  list->head = SkipListCreateEntry(SKIPLIST_MAX_LEVEL, 0);
-  for (int i = 0; i < SKIPLIST_MAX_LEVEL; i++) {
-    list->head->upper[i].next = NULL;
+  for (int i = 0; i < LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL; i++) {
+    list->head[i].next = NULL;
   }
-
-  list->keyFieldOffset = keyFieldOffset;
-  list->keyFieldSize = keyFieldSize;
-
-  if (cmpFunc == NULL) {
-    cmpFunc = MemoryCmpR;
-  }
-  list->cmpFunc = cmpFunc;
 }
 
-void SkipListRelease(SkipList* list, bool deleteObj) {
+void SkipListRelease(SkipList* list) {
   SkipListEntry* cur = SkipListFirst(list);
   while (cur) {
-    if (deleteObj) {
-      ObjectDelete(cur->obj);
-    }
     SkipListEntry* next = SkipListNext(list, cur);
-    ObjectDelete(cur);
+    ObjectRelease(cur);
     cur = next;
   }
 }
 
-void* SkipListFind(SkipList* list, void* key) {
-  int cmpRes = 0;
-  SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, NULL);
+bool SkipListFind(SkipList* list, int key) {
+  int cmp;
+  SkipListEntry* cur = SkipListLocate(list, key, &cmp, NULL);
 
   cur = cur->upper[0].next;    // 刚出循环时cur还未更新
   // 查找出来，要么是所有索引层都找不到，要么是cur的key>=查找的key
 
-  if (cur && cmpRes == 0) {
-    return cur->obj;
+  if (cur && cmp == 0) {
+    return true;
   }
-  return NULL;
+  return false;
 }
 
-bool SkipListInsert(SkipList* list, void* obj) {
-  SkipListEntry* update[SKIPLIST_MAX_LEVEL];    // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
+bool SkipListInsert(SkipList* list, int key) {
+  SkipListLevel* update[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];    // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
 
-  void* key = ObjectGetFieldByOffset(obj, list->keyFieldOffset, void);
-
-  int cmpRes = 0;
-  SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, update, NULL);
+  int cmp;
+  SkipListEntry* cur = SkipListLocate(list, key, &cmp, update);
 
   // cur此时的next要么指向NULL，要么>=key
-  if (cur->upper[0].next && cmpRes == 0) {
+  if (cur->upper[0].next && cmp == 0) {
     // key相等则不插入
     return false;
   }
@@ -152,49 +138,48 @@ bool SkipListInsert(SkipList* list, void* obj) {
   }
 
   // 创建节点
-  SkipListEntry* newEntry = SkipListCreateEntry(level, obj);
+  SkipListEntry* new_entry = SkipListCreateEntry(level, key);
   for (int i = 0; i < level; i++) {
     // 连接到同层索引链表中
-    newEntry->upper[i].next = update[i]->upper[i].next;
-    update[i]->upper[i].next = newEntry;
+    new_entry->upper[i].next = update[i][i].next;
+    update[i][i].next = new_entry;
   }
 
   return true;
 }
 
-void* SkipListDelete(SkipList* list, void* key) {
-  SkipListEntry* update[SKIPLIST_MAX_LEVEL];    // 对应每一层需要更新索引的节点，因为新节点可能会删除索引
+bool SkipListDelete(SkipList* list, int key) {
+  SkipListLevel* update[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];    // 对应每一层需要更新索引的节点，因为新节点可能会删除索引
 
-  int cmpRes = 0;
-  SkipListEntry* cur = SkipListFindEntry(list, key, &cmpRes, update);
+  int cmp;
+  SkipListEntry* cur = SkipListLocate(list, key, &cmp, update);
   cur = cur->upper[0].next;
 
-  if (!cur || cmpRes) {
+  if (!cur || cmp) {
     // 找不到该节点
-    return NULL;
+    return false;
   }
 
   // 最底层索引开始向上更新
   for (int i = 0; i < list->level; i++) {
-    if (update[i]->upper[i].next != cur) {    // 该层的索引不指向被删除的节点，停止更新
+    if (update[i][i].next != cur) {    // 该层的索引不指向被删除的节点，停止更新
       break;
     }
-    update[i]->upper[i].next = cur->upper[i].next;    // 删除索引，即指向被删除索引的下一索引
+    update[i][i].next = cur->upper[i].next;    // 删除索引，即指向被删除索引的下一索引
   }
 
   // 被删除的索引层可能是最高索引层，需要调整
-  while (list->level > 1 && list->head->upper[list->level - 1].next == NULL) {
+  while (list->level > 1 && list->head[list->level - 1].next == NULL) {
     list->level--;
   }
 
-  void* obj = cur->obj;
-  ObjectDelete(cur);
-  return obj;
+  ObjectRelease(cur);
+  return true;
 }
 
 
 SkipListEntry* SkipListFirst(SkipList* list) {
-  return list->head->upper[0].next;
+  return list->head[0].next;
 }
 
 SkipListEntry* SkipListNext(SkipList* list, SkipListEntry* cur) {

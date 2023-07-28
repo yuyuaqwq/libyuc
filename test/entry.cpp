@@ -1,4 +1,6 @@
-﻿#include <stdio.h>
+﻿#define _CRT_RAND_S 
+
+#include <stdio.h>
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -9,7 +11,8 @@
 #include <thread>
 
 #include <libyuc/container/experimental/ar_tree.h>
-
+#include <libyuc/container/experimental/skip_list.h>
+#include <libyuc/container/thread_safe/ts_skip_list.h>
 
 #include <regex>
 #include "test.h"
@@ -144,17 +147,22 @@ int randInt() {
 //	free(empty);
 //}
 //
-//void PrintSkipList(SkipList* list) {
-//	auto cur = list->head;
-//	while (cur){
-//		/*for (int j = 0; j < cur->levelCount; j++) {
-//			printf("key:%d\t\t", *(int*)cur->obj);
-//		}*/
-//		printf("\n\n");
-//		cur = cur->upper[0].next;
-//	}
-//}
-//
+
+void PrintSkipList(TsSkipList* list) {
+	auto cur = list->head;
+	
+	while (cur) {
+		auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
+		if (cur != list->head) {
+			for (int j = 0; j < entry->level_count; j++) {
+				printf("key:%d\t\t", entry->key);
+			}
+			printf("\n\n");
+		}
+		cur = entry->upper[0].next;
+	}
+}
+
 
 
 //struct QVQ2 {
@@ -242,7 +250,7 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 }
 
 #include <libyuc/container/hash_list.h>
-#include <libyuc/container/thread_safe/ts_sort_singly_list.h>
+
 #include <thread>
 
 //
@@ -359,7 +367,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 200000;
+int count = 100000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -367,7 +375,7 @@ int seed = 377884212;
 
 int section = 1;
 
-int thread_count = 10;
+int thread_count = 1;
 
 void TestArt() {
 	printf("\n自适应基数树：\n");
@@ -731,6 +739,43 @@ void TestRb() {
 
 }
 
+void TestSkipList() {
+	printf("\n跳表：\n");
+	SkipList list;
+	SkipListInit(&list);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		SkipListInsert(&list, (arr2[i]->key));
+		if (count < 20) {
+			//PrintSkipList(&list);
+			//printf("\n\n\n\n");
+		}
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+	
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (!SkipListFind(&list, (arr2[i]->key))) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (!SkipListDelete(&list, (arr2[i]->key))) {
+			printf("找不到");
+		}
+		if (count < 20) {
+			//PrintSkipList(&list);
+			//printf("\n\n\n\n");
+		}
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+}
+
+
+
 void TestTsSortSinglyListInsertThread(TsSortSinglyListHead* head, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
 		TsSortSinglyListInsert((TsSortSinglyListEntry*)head, head->first, (TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right);
@@ -739,7 +784,7 @@ void TestTsSortSinglyListInsertThread(TsSortSinglyListHead* head, int j) {
 
 void TestTsSortSinglyListDeleteThread(TsSortSinglyListHead* head, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		TsSortSinglyListDelete((TsSortSinglyListEntry*)head, head->first, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		TsSortSinglyListDelete((TsSortSinglyListEntry*)head, head->first, ((TsSortSinglyListEntryInt*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
 	}
 }
 
@@ -768,7 +813,7 @@ void TestTsSortSinglyList() {
 	TsSortSinglyListEntry* cur = TsSortSinglyListIteratorFirst(&head);
 	while (cur) {
 		if (prev != NULL) {
-			if (prev->key > cur->key) {
+			if (((TsSortSinglyListEntryInt*)prev)->key > ((TsSortSinglyListEntryInt*)cur)->key) {
 				printf("error");
 			}
 		}
@@ -796,7 +841,7 @@ void TestTsSortSinglyList() {
 	cur = TsSortSinglyListIteratorFirst(&head);
 	while (cur) {
 		if (prev != NULL) {
-			if (prev->key > cur->key) {
+			if (((TsSortSinglyListEntryInt*)prev)->key > ((TsSortSinglyListEntryInt*)cur)->key) {
 				printf("error");
 			}
 		}
@@ -806,6 +851,35 @@ void TestTsSortSinglyList() {
 	}
 	printf("%d\n", i);
 }
+
+void TestTsSkipListInsertThread(TsSkipList* list, int j) {
+	for (int i = 0; i < count / thread_count; i++) {
+		TsSkipListInsert(list, ((TsSortSinglyListEntryInt*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		PrintSkipList(list);
+		printf("\n\n\n\n");
+	}
+}
+
+void TestTsSkipList() {
+	TsSkipList list;
+	TsSkipListInit(&list);
+
+	std::vector<std::thread> t;
+	t.reserve(thread_count);
+	l = GetTickCount();
+
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
+	}
+
+	for (auto& thread : t) {
+		thread.join();
+	}
+
+	printf("%d个线程，插入总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+
+}
+
 
 //void TestTsSinglyList() {
 //	TsSinglyListHead head;
@@ -894,9 +968,12 @@ int main() {
 
 	size_t len = 0;
 
-	TestTsSortSinglyList();
+	TestTsSkipList();
+	TestSkipList();
+	
 	TestArt();
 	TestRb();
+	TestTsSortSinglyList();
 
 
 	
@@ -1099,38 +1176,7 @@ int main() {
 	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
-	//printf("\n跳表：\n");
-	//SkipList list;
-	//SkipListInitByField(&list, QVQ, key);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	SkipListInsert(&list, &(arr2[i]->key));
-	//	if (count < 20) {
-	//		PrintSkipList(&list);
-	//		printf("\n\n\n\n");
-	//	}
-	//}
-	//printf("插入耗时：%dms\n", GetTickCount() - l);
-	//
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (!SkipListFind(&list, &(arr2[i]->key))) {
-	//		printf("找不到");
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (!SkipListDelete(&list, &(arr2[i]->key))) {
-	//		printf("找不到");
-	//	}
-	//	if (count < 20) {
-	//		PrintSkipList(&list);
-	//		printf("\n\n\n\n");
-	//	}
-	//}
-	//printf("删除耗时：%dms\n", GetTickCount() - l);
-
+	
 
 	//printf("\nBF-AVL树：\n");
 	//IntAvlTree avl;
