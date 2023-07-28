@@ -13,6 +13,7 @@
 #include <libyuc/container/experimental/ar_tree.h>
 #include <libyuc/container/experimental/skip_list.h>
 #include <libyuc/container/thread_safe/ts_skip_list.h>
+#include <libyuc/container/thread_safe/ts_sort_singly_list.h>
 
 #include <regex>
 #include "test.h"
@@ -150,7 +151,6 @@ int randInt() {
 
 void PrintSkipList(TsSkipList* list) {
 	auto cur = list->head;
-	
 	while (cur) {
 		auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
 		if (cur != list->head) {
@@ -159,7 +159,12 @@ void PrintSkipList(TsSkipList* list) {
 			}
 			printf("\n\n");
 		}
-		cur = entry->upper[0].next;
+		if (cur[0].next) {
+			cur = cur[0].next->upper;
+		}
+		else {
+			cur = NULL;
+		}
 	}
 }
 
@@ -367,7 +372,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 100000;
+int count = 10000000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -375,7 +380,7 @@ int seed = 377884212;
 
 int section = 1;
 
-int thread_count = 1;
+int thread_count = 10;
 
 void TestArt() {
 	printf("\n自适应基数树：\n");
@@ -855,8 +860,8 @@ void TestTsSortSinglyList() {
 void TestTsSkipListInsertThread(TsSkipList* list, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
 		TsSkipListInsert(list, ((TsSortSinglyListEntryInt*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
-		PrintSkipList(list);
-		printf("\n\n\n\n");
+		// PrintSkipList(list);
+		// printf("\n\n\n\n");
 	}
 }
 
@@ -877,6 +882,15 @@ void TestTsSkipList() {
 	}
 
 	printf("%d个线程，插入总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (!TsSkipListFind(&list, (arr2[i]->key))) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
 
 }
 
@@ -968,9 +982,12 @@ int main() {
 
 	size_t len = 0;
 
-	TestTsSkipList();
-	TestSkipList();
 	
+	TestTsSkipList();
+	
+	TestSkipList();
+
+
 	TestArt();
 	TestRb();
 	TestTsSortSinglyList();

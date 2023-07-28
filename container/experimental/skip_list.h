@@ -15,11 +15,19 @@ extern "C" {
 #define LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL 32
 const int LIBYUC_CONTAINER_SKIP_LIST_SKIPLIST_P = (RAND_MAX / 2);
 
+
+/*
+* 2:  5  
+* 1:  5   8             30
+* 0:  5   8   11   14   30
+*/
+
+
 /*
 * 跳表索引节点
 */
 typedef struct _SkipListLevel {
-  struct _SkipListEntry* next;    // 同索引层的下一节点
+  struct _SkipListEntry* next;    // 指向的同索引层的下一个SkipListEntry(不是直接指向逻辑上的同层链表)
 } SkipListLevel;
 
 /*
@@ -104,12 +112,10 @@ void SkipListRelease(SkipList* list) {
 
 bool SkipListFind(SkipList* list, int key) {
   int cmp;
-  SkipListEntry* cur = SkipListLocate(list, key, &cmp, NULL);
+  SkipListEntry* prev = SkipListLocate(list, key, &cmp, NULL);
 
-  cur = cur->upper[0].next;    // 刚出循环时cur还未更新
   // 查找出来，要么是所有索引层都找不到，要么是cur的key>=查找的key
-
-  if (cur && cmp == 0) {
+  if (prev->upper[0].next && cmp == 0) {
     return true;
   }
   return false;
@@ -119,10 +125,10 @@ bool SkipListInsert(SkipList* list, int key) {
   SkipListLevel* update[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];    // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
 
   int cmp;
-  SkipListEntry* cur = SkipListLocate(list, key, &cmp, update);
+  SkipListEntry* prev = SkipListLocate(list, key, &cmp, update);
 
   // cur此时的next要么指向NULL，要么>=key
-  if (cur->upper[0].next && cmp == 0) {
+  if (prev->upper[0].next && cmp == 0) {
     // key相等则不插入
     return false;
   }
@@ -132,7 +138,7 @@ bool SkipListInsert(SkipList* list, int key) {
   if (level > list->level) {
     // 新节点的索引层比以往的节点都高，高出来的部分由头节点索引层连接
     for (int i = list->level; i < level; i++) {
-      update[i] = list->head;    // 头节点该层的索引需要指向新节点同层索引
+      update[i] = list->head;    // 更新的是头节点的Level
     }
     list->level = level;
   }
@@ -140,9 +146,9 @@ bool SkipListInsert(SkipList* list, int key) {
   // 创建节点
   SkipListEntry* new_entry = SkipListCreateEntry(level, key);
   for (int i = 0; i < level; i++) {
-    // 连接到同层索引链表中
+    // 更新各层的Level数组，即连接到同层索引链表中
     new_entry->upper[i].next = update[i][i].next;
-    update[i][i].next = new_entry;
+    update[i][i].next = new_entry;    // 直接指向新节点，而不是各层相互连接
   }
 
   return true;
@@ -152,8 +158,8 @@ bool SkipListDelete(SkipList* list, int key) {
   SkipListLevel* update[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];    // 对应每一层需要更新索引的节点，因为新节点可能会删除索引
 
   int cmp;
-  SkipListEntry* cur = SkipListLocate(list, key, &cmp, update);
-  cur = cur->upper[0].next;
+  SkipListEntry* prev = SkipListLocate(list, key, &cmp, update);
+  SkipListEntry* cur = prev->upper[0].next;
 
   if (!cur || cmp) {
     // 找不到该节点
