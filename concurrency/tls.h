@@ -32,12 +32,12 @@ static forceinline TlsId TlsAlloc_() {
   return (TlsId)TlsAlloc();
 }
 
-static forceinline void TlsFree_(TlsId id) {
+static forceinline bool TlsFree_(TlsId id) {
   return TlsFree((DWORD)id);
 }
 
-static forceinline void TlsSetValue_(TlsId id, const void* value) {
-  TlsSetValue((DWORD)id, value);
+static forceinline bool TlsSetValue_(TlsId id, const void* value) {
+  return TlsSetValue((DWORD)id, value);
 }
 
 static forceinline void* TlsGetValue_(TlsId id) {
@@ -52,21 +52,6 @@ static forceinline void* TlsGetValue_(TlsId id) {
 
 #elif defined(linux)
 
-static forceinline TlsId TlsAlloc() {
-  return (TlsId)pthread_key_create();
-}
-
-static forceinline void TlsFree(TlsId id) {
-  return pthread_key_delete((pthread_key_t)id);
-}
-
-static forceinline void TlsSetValue(TlsId id, const void* value) {
-  TlsSetValue((pthread_key_t)id, value);
-}
-
-static forceinline void* TlsGetValue(TlsId id) {
-  TlsGetValue((pthread_key_t)id);
-}
 
 #endif
 
