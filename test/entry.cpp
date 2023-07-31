@@ -638,7 +638,7 @@ void TestArt() {
 	}
 	printf("总耗时：%dms  \n", GetTickCount() - l);
 }
-
+ 
 void TestRb() {
 #ifndef NP
 	printf("\n红黑树：\n");
@@ -990,7 +990,7 @@ int main() {
 
 	TestArt();
 	TestRb();
-	TestTsSortSinglyList();
+	//TestTsSortSinglyList();
 
 
 	
