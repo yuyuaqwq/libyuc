@@ -30,7 +30,7 @@ static forceinline void SpinLockAcquire(SpinLock* lock) {
 }
 
 static forceinline void SpinLockRelease(SpinLock* lock) {
-  lock->state = false;    // AtomicExchange32(&lock->state, false);
+  lock->state = false;    // 无需通过原子指令，只需要保证state是volatile就不会被编译器优化影响，最终会在某一时刻写回内存，原子性交给CPU
 }
 
 #ifdef __cplusplus

@@ -81,6 +81,13 @@ static forceinline bool AtomicCompareExchangePtr(volatile void* target, void* ex
 #endif
 }
 
+static forceinline uint32_t AtomicLoad32(volatile void* target) {
+  return *(volatile uint32_t*)target;
+}
+
+static forceinline void AtomicStore32(volatile void* target, uint32_t value) {
+  *(volatile uint32_t*)target = (volatile uint32_t)value;
+}
 
 #endif
 
