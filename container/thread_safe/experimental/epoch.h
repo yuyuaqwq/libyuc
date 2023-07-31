@@ -36,6 +36,10 @@ typedef uint32_t EpochThreadBlockId;
 * 如果静态链表分配失败说明工作线程过多，选择阻塞策略
 */
 
+bool EpochTryGc(Epoch* epoch) {
+
+}
+
 void EpochEntry(Epoch* epoch) {
   static thread_local EpochThreadBlockId thread_block_id = -1;
   if (thread_block_id == -1) {
