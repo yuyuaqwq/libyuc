@@ -33,11 +33,11 @@ typedef enum {
 */
 
 
-#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name, entry_id_type) LIBYUC_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name, entry_id_type, entry_offset_type) LIBYUC_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type, entry_offset_type)
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListHead leaf_list;
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListEntry list_entry;     /* 连接所有叶子节点 */
 
-#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_1(bp_tree_type_name, entry_id_type, entry_offset_type, entry_referencer) \
   forceinline bp_tree_type_name##BPlusLeafListEntry* bp_tree_type_name##BPlusLeafEntryReferencer_Reference(bp_tree_type_name##BPlusLeafListHead* head, entry_id_type entry_id) { \
     bp_tree_type_name##BPlusTree* tree = ObjectGetFromField(head,  bp_tree_type_name##BPlusTree, leaf_list); \
     bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
@@ -48,7 +48,7 @@ typedef enum {
     bp_tree_type_name##BPlusLeafEntry* entry = ObjectGetFromField(list_entry,  bp_tree_type_name##BPlusLeafEntry, list_entry); \
     entry_referencer##_Dereference(tree, (bp_tree_type_name##BPlusEntry*)entry); \
   } \
-  LIBYUC_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
+  LIBYUC_CONTAINER_LIST_DEFINE(bp_tree_type_name##BPlusLeaf, entry_id_type, entry_offset_type, bp_tree_type_name##BPlusLeafEntryReferencer) \
 
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_2(bp_tree_type_name) bp_tree_type_name##BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id);
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DEFINE_3(bp_tree_type_name) bp_tree_type_name##BPlusLeafListDeleteEntry(&tree->leaf_list, right_id);
@@ -56,7 +56,7 @@ typedef enum {
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL
 
 
-#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name, entry_id_type)
+#define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_1(bp_tree_type_name, entry_id_type, entry_offset_type)
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_2(bp_tree_type_name)
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DECLARATION_3(bp_tree_type_name)
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK_DEFINE_1(bp_tree_type_name)
@@ -66,7 +66,7 @@ typedef enum {
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK
 
 
-#define LIBYUC_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, default_stack_size) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_DECLARATION(bp_tree_type_name, leaf_link_mode, entry_id_type, entry_offset_type, element_id_type, element_offset_type, key_type, value_type, default_stack_size) \
   /*
   * B+树游标
   */ \
@@ -74,7 +74,7 @@ typedef enum {
     entry_id_type entry_id; \
     element_id_type element_id; \
   } bp_tree_type_name##BPlusElementPos; \
-  LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos) \
+  LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusCursorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
   typedef struct _##bp_tree_type_name##BPlusCursor { \
     bp_tree_type_name##BPlusCursorStackVector stack; \
     bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
@@ -85,7 +85,7 @@ typedef enum {
   /*
   * 页内红黑树
   */\
-  LIBYUC_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, element_id_type, key_type) \
+  LIBYUC_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, element_id_type, element_offset_type, key_type) \
   leaf_link_mode##_DECLARATION_1(bp_tree_type_name, entry_id_type) \
   typedef struct _##bp_tree_type_name##BPlusTree { \
     entry_id_type root_id; \
@@ -205,13 +205,13 @@ kv分离是外层处理的，b+树操作的只有element
 
 
 */
-#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, element_id_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer, default_stack_size) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, entry_offset_type, element_id_type, element_offset_type, key_type, value_type, cursor_allocator, entry_allocator, entry_referencer, entry_accessor, element_accessor, element_referencer, element_allocator, rb_accessor, rb_comparer, default_stack_size) \
   /*
   * B+树游标
   */\
   static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
   leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
-  LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, bp_tree_type_name##BPlusElementPos, cursor_allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+  LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos, cursor_allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
   \
   /*
   * 页内红黑树
@@ -246,7 +246,7 @@ kv分离是外层处理的，b+树操作的只有element
   forceinline void rb_accessor##_SetColor(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry, RbColor new_color) { \
     return ((bp_tree_type_name##BPlusEntryRbParentColor*)&(((bp_tree_type_name##BPlusEntryRbEntry*)bs_entry)->parent_color))->color = new_color; \
   } \
-  LIBYUC_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, element_id_type, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
+  LIBYUC_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, element_id_type, element_offset_type, key_type, bp_tree_type_name##BPlusEntryRbReferencer, rb_accessor, rb_comparer) \
   \
   /*
   * B+树
@@ -438,7 +438,7 @@ kv分离是外层处理的，b+树操作的只有element
   /*
   * 有序链表建树，参考https://leetcode.cn/problems/convert-sorted-list-to-binary-search-tree/solution/you-xu-lian-biao-zhuan-huan-er-cha-sou-suo-shu-1-3/
   */ \
-  static element_id_type bp_tree_type_name##BuildRbTree(bp_tree_type_name##BPlusEntry* src_entry, element_id_type* src_entry_rb_iter, bp_tree_type_name##BPlusEntry* dst_entry, int32_t left, int32_t right, element_id_type parent_id, int32_t max_level, int32_t level) { \
+  static element_id_type bp_tree_type_name##BuildRbTree(bp_tree_type_name##BPlusEntry* src_entry, element_id_type* src_entry_rb_iter, bp_tree_type_name##BPlusEntry* dst_entry, element_offset_type left, element_offset_type right, element_id_type parent_id, element_offset_type max_level, element_offset_type level) { \
     if (left > right) return element_referencer##_InvalidId; \
     element_id_type mid = (left + right + 1) / 2; \
     element_id_type new_element_id = bp_tree_type_name##BPlusElementCreate(dst_entry); \
@@ -475,12 +475,12 @@ kv分离是外层处理的，b+树操作的只有element
     } \
     element_id_type left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
     bool insert_right = false; \
-    int32_t fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(right, *src_entry, insert_element)) / 2; \
+    element_offset_type fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(right, *src_entry, insert_element)) / 2; \
     /*
     * 计算出右侧两侧各自的节点数量
     */ \
     element_id_type right_count = 1, left_count = 0; \
-    int32_t left_fill_rate = entry_accessor##_GetFillRate(tree, left); \
+    element_offset_type left_fill_rate = entry_accessor##_GetFillRate(tree, left); \
     while (true) { \
       if (!insert_right && left_element_id == insert_id) { \
         insert_right = true; \
@@ -496,7 +496,7 @@ kv分离是外层处理的，b+树操作的只有element
       assert(right_count > 0); \
     /* 先构建右侧节点的rb树 */ \
     element_id_type temp_left_element_id = left_element_id; \
-    int32_t logn = right_count == 1 ? -1 : 0; for (int32_t i = right_count; i > 0; i /= 2) ++logn; \
+    element_offset_type logn = right_count == 1 ? -1 : 0; for (element_offset_type i = right_count; i > 0; i /= 2) ++logn; \
     right->rb_tree.root = bp_tree_type_name##BuildRbTree(left, &temp_left_element_id, right, 0, right_count-1, element_referencer##_InvalidId, logn, 0); \
     /* 拷贝到临时节点，在原节点中重构rb树 */ \
     bp_tree_type_name##BPlusEntry* temp_entry = entry_accessor##_GetTempCopyEntry(tree, left); \
@@ -507,7 +507,7 @@ kv分离是外层处理的，b+树操作的只有element
     } while (left_element_id != element_referencer##_InvalidId); \
     --left_count; \
     left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree); \
-    logn = left_count == 1 ? -1 : 0; for (int32_t i = left_count; i > 0; i /= 2) ++logn; \
+    logn = left_count == 1 ? -1 : 0; for (element_offset_type i = left_count; i > 0; i /= 2) ++logn; \
     left->rb_tree.root = bp_tree_type_name##BuildRbTree(temp_entry, &left_element_id, left, 0, left_count-1, element_referencer##_InvalidId, logn, 0); \
     \
     /* 最终插入节点 */ \
@@ -577,7 +577,7 @@ kv分离是外层处理的，b+树操作的只有element
   */ \
   static void bp_tree_type_name##BPlusEntryMerge(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* right, entry_id_type right_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_index) { \
     element_id_type right_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&right->rb_tree); \
-    for (int32_t i = 0; i < right->element_count; i++) { \
+    for (element_offset_type i = 0; i < right->element_count; i++) { \
         assert(right_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
       bp_tree_type_name##BPlusElement* right_element = element_referencer##_Reference(right, right_element_id); \
       bp_tree_type_name##BPlusEntryInsertElement(left, NULL, right_element, entry_referencer##_InvalidId); \

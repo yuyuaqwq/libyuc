@@ -21,8 +21,8 @@ typedef enum {
   kRbRed,
 } RbColor;
 
-#define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, key_type) \
-  LIBYUC_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name##Rb, id_type, key_type) \
+#define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, offset_type, key_type) \
+  LIBYUC_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name##Rb, id_type, offset_type, key_type) \
   typedef struct _##rb_tree_type_name##RbEntry { \
     union { \
       struct { \
@@ -46,7 +46,7 @@ typedef enum {
   id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
   bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, id_type del_entry_id); \
   bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree); \
-  size_t rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree); \
+  offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree); \
   id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
   id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
   id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
@@ -54,8 +54,8 @@ typedef enum {
   id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, id_type cur_id); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetColor方法
-#define LIBYUC_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
-  LIBYUC_CONTAINER_BS_TREE_DEFINE(rb_tree_type_name##Rb, id_type, key_type, referencer, accessor, comparer) \
+#define LIBYUC_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
+  LIBYUC_CONTAINER_BS_TREE_DEFINE(rb_tree_type_name##Rb, id_type, offset_type, key_type, referencer, accessor, comparer) \
   /*
   * 取兄弟节点
   */ \
@@ -383,7 +383,7 @@ typedef enum {
     referencer##_Dereference(tree, entry); \
     return correct; \
   } \
-  size_t rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
+  offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
     return rb_tree_type_name##RbBsTreeGetCount((rb_tree_type_name##RbBsTree*)tree); \
   } \
   /*

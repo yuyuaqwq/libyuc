@@ -13,7 +13,7 @@ extern "C" {
 
 
 
-#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, key_type) \
+#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, offset_type, key_type) \
   typedef struct _##bs_tree_type_name##BsEntry { \
     id_type parent; \
     id_type left; \
@@ -28,7 +28,7 @@ extern "C" {
   id_type bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, id_type entry_id); \
   bool bs_tree_type_name##BsTreeInsert(bs_tree_type_name##BsTree* tree, id_type entry_id); \
   id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, id_type entry_id); \
-  size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
+  offset_type bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
   id_type bs_tree_type_name##BsTreeIteratorLocate(bs_tree_type_name##BsTree* tree, key_type* key, int8_t* cmp_status); \
   id_type bs_tree_type_name##BsTreeIteratorFirst(bs_tree_type_name##BsTree* tree); \
   id_type bs_tree_type_name##BsTreeIteratorLast(bs_tree_type_name##BsTree* tree); \
@@ -39,7 +39,7 @@ extern "C" {
 /*
 * 访问器需要提供_GetKey和_GetParent、_SetParent方法
 */
-#define LIBYUC_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
+#define LIBYUC_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
   /*
   * new_entry代替entry挂接到其父节点下
   * new_entry的左右子节点不变
@@ -381,7 +381,7 @@ extern "C" {
   /*
   * 获取树的节点数量
   */ \
-  size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree) { \
+  offset_type bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree) { \
     size_t count = 0; \
     id_type cur_id = bs_tree_type_name##BsTreeIteratorFirst(tree); \
     while (cur_id != referencer##_InvalidId) { \

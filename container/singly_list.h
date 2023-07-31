@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(singly_list_type_name, id_type) \
+#define LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(singly_list_type_name, id_type, offset_type) \
   typedef struct _##singly_list_type_name##SinglyListEntry { \
     id_type next; \
   } singly_list_type_name##SinglyListEntry; \
@@ -25,7 +25,7 @@ extern "C" {
   void singly_list_type_name##SinglyListPutFirst(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
   id_type singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head); \
   id_type singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id); \
-  size_t singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head); \
+  offset_type singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head); \
   id_type singly_list_type_name##SinglyListIteratorFirst(singly_list_type_name##SinglyListHead* head); \
   id_type singly_list_type_name##SinglyListIteratorNext(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
 
@@ -65,8 +65,8 @@ extern "C" {
     referencer##_Dereference(head, del_entry); \
     return del_entry_id; \
   } \
-  size_t singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head) { \
-    size_t count = 0; \
+  offset_type singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head) { \
+    offset_type count = 0; \
     id_type cur_id = head->first; \
     while (cur_id != referencer##_InvalidId) { \
       count++; \
@@ -85,10 +85,6 @@ extern "C" {
     referencer##_Dereference(head, entry); \
     return next_id; \
   } \
-
-
-LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(, struct _SinglyListEntry*)
-
 
 
 #ifdef __cplusplus

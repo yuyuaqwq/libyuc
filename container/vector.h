@@ -12,22 +12,22 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_CONTAINER_VECTOR_DECLARATION(vector_type_name, element_type) \
+#define LIBYUC_CONTAINER_VECTOR_DECLARATION(vector_type_name, offset_type, element_type) \
   typedef struct _##vector_type_name##Vector { \
-    size_t count; \
-    size_t capacity; \
+    offset_type count; \
+    offset_type capacity; \
     bool is_vector_alloc; \
     element_type* obj_arr; \
   } vector_type_name##Vector; \
-  void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t capacity, element_type* external_arr); \
+  void vector_type_name##VectorInit(vector_type_name##Vector* arr, offset_type capacity, element_type* external_arr); \
   void vector_type_name##VectorRelease(vector_type_name##Vector* arr); \
-  ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, size_t count); \
+  ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, offset_type count); \
   ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj); \
   element_type* vector_type_name##VectorGetTail(vector_type_name##Vector* arr); \
   element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
 
-#define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, element_type, allocator, callbacker) \
-  void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, size_t capacity) { \
+#define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, offset_type, element_type, allocator, callbacker) \
+  void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, offset_type capacity) { \
     element_type* new_buf = allocator##_CreateMultiple(arr, element_type, capacity); \
     if (arr->obj_arr) { \
       MemoryCopy(new_buf, arr->obj_arr, sizeof(element_type) * arr->count); \
@@ -39,10 +39,10 @@ extern "C" {
     arr->obj_arr = new_buf; \
     arr->capacity = capacity; \
   } \
-  void vector_type_name##VectorExpand(vector_type_name##Vector* arr, size_t add_count) { \
-    size_t old_capacity = arr->capacity; \
-    size_t cur_capacity = old_capacity; \
-    size_t target_count = cur_capacity + add_count; \
+  void vector_type_name##VectorExpand(vector_type_name##Vector* arr, offset_type add_count) { \
+    offset_type old_capacity = arr->capacity; \
+    offset_type cur_capacity = old_capacity; \
+    offset_type target_count = cur_capacity + add_count; \
     if (cur_capacity == 0) { \
       cur_capacity = 1; \
     } \
@@ -52,7 +52,7 @@ extern "C" {
     vector_type_name##VectorResetCapacity(arr, cur_capacity); \
     callbacker##_Expand(arr, old_capacity, cur_capacity); \
   } \
-  void vector_type_name##VectorInit(vector_type_name##Vector* arr, size_t capacity, element_type* external_arr) { \
+  void vector_type_name##VectorInit(vector_type_name##Vector* arr, offset_type capacity, element_type* external_arr) { \
     arr->obj_arr = NULL; \
     arr->is_vector_alloc = !external_arr; \
     if (capacity != 0 && !external_arr) { \
@@ -79,7 +79,7 @@ extern "C" {
     MemoryCopy(&arr->obj_arr[arr->count++], obj, sizeof(element_type)); \
     return arr->count - 1; \
   } \
-  ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, size_t count) { \
+  ptrdiff_t vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* arr, const element_type* obj, offset_type count) { \
     if (arr->capacity <= arr->count + count) { \
       vector_type_name##VectorExpand(arr, count); \
     } \

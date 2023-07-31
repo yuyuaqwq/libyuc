@@ -16,8 +16,8 @@ extern "C" {
 /*
 * 嵌入平衡因子的Avl树
 */
-#define LIBYUC_CONTAINER_AVL_TREE_DECLARATION(avl_tree_type_name, id_type, key_type) \
-  LIBYUC_CONTAINER_BS_TREE_DECLARATION(avl_tree_type_name##Avl, id_type, key_type) \
+#define LIBYUC_CONTAINER_AVL_TREE_DECLARATION(avl_tree_type_name, id_type, offset_type, key_type) \
+  LIBYUC_CONTAINER_BS_TREE_DECLARATION(avl_tree_type_name##Avl, id_type, offset_type, key_type) \
   typedef struct _##avl_tree_type_name##AvlEntry { \
     union { \
       struct { \
@@ -41,8 +41,8 @@ extern "C" {
   bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, id_type del_entry_id); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetBalanceFactor方法
-#define LIBYUC_CONTAINER_AVL_TREE_DEFINE(avl_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
-  LIBYUC_CONTAINER_BS_TREE_DEFINE(avl_tree_type_name##Avl, id_type, key_type, referencer, accessor, comparer) \
+#define LIBYUC_CONTAINER_AVL_TREE_DEFINE(avl_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
+  LIBYUC_CONTAINER_BS_TREE_DEFINE(avl_tree_type_name##Avl, id_type, offset_type, key_type, referencer, accessor, comparer) \
   /*
   * 旋转平衡因子调整(右旋为例)：
   * 单旋情况：

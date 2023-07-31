@@ -56,7 +56,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
 /*
-* 对象处理器
+* 对象适配器
 
 * 设计原则：
 * 对象传递统一使用指针
@@ -67,7 +67,13 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 */
 
 /*
-* id类型通常可以直接传值
+* id_type
+* 表示引用的id，通常可以直接传值
+*/
+
+/*
+* offset_type
+* 表示在对象集中对对象引用的表示，可能是count，可能是index
 */
 
 
@@ -107,7 +113,6 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define LIBYUC_OBJECT_INDEXER_DEFALUT_Set(MAIN_OBJ, OBJ_ARR, INDEX, NEW_VALUE) ((*(OBJ_ARR))[INDEX] = NEW_VALUE)
 #define LIBYUC_OBJECT_INDEXER_DEFALUT_GetPtr(MAIN_OBJ, OBJ_ARR, INDEX) (&(*(OBJ_ARR))[INDEX])
 #define LIBYUC_OBJECT_INDEXER_DEFALUT LIBYUC_OBJECT_INDEXER_DEFALUT
-
 
 /*
 * 默认引用器

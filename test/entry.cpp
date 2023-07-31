@@ -12,8 +12,8 @@
 
 #include <libyuc/container/experimental/ar_tree.h>
 #include <libyuc/container/experimental/skip_list.h>
-#include <libyuc/container/thread_safe/ts_skip_list.h>
-#include <libyuc/container/thread_safe/ts_sort_singly_list.h>
+#include <libyuc/container/thread_safe/experimental/ts_skip_list.h>
+#include <libyuc/container/thread_safe/experimental/ts_sort_singly_list.h>
 
 #include <regex>
 #include "test.h"

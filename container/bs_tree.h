@@ -13,8 +13,8 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, key_type) \
-  LIBYUC_CONTAINER_VECTOR_DECLARATION(bs_tree_type_name##BsStack, id_type) \
+#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, offset_type, key_type) \
+  LIBYUC_CONTAINER_VECTOR_DECLARATION(bs_tree_type_name##BsStack, offset_type, id_type) \
   typedef struct _##bs_tree_type_name##BsEntry { \
     id_type left; \
     id_type right; \
@@ -28,7 +28,7 @@ extern "C" {
   id_type bs_tree_type_name##BsTreePut(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type entry_id); \
   bool bs_tree_type_name##BsTreeInsert(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type entry_id); \
   id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type entry_id); \
-  size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
+  offset_type bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree); \
   id_type bs_tree_type_name##BsTreeIteratorLocate(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, key_type* key, int8_t* cmp_status); \
   id_type bs_tree_type_name##BsTreeIteratorFirst(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack); \
   id_type bs_tree_type_name##BsTreeIteratorLast(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack); \
@@ -39,8 +39,8 @@ extern "C" {
 /*
 * 访问器需要提供_GetKey和_GetRight、_SetRight、_GetLeft、_SetLeft方法
 */
-#define LIBYUC_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, key_type, referencer, accessor, comparer) \
-  LIBYUC_CONTAINER_VECTOR_DEFINE(bs_tree_type_name##BsStack, id_type, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+#define LIBYUC_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
+  LIBYUC_CONTAINER_VECTOR_DEFINE(bs_tree_type_name##BsStack, offset_type, id_type, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
   static void bs_tree_type_name##BsTreeSetNewChild(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsEntry* entry_parent, id_type entry_id, id_type new_entry_id) { \
       if (accessor##_GetLeft(tree, entry_parent) == entry_id) { \
         accessor##_SetLeft(tree, entry_parent, new_entry_id); \
@@ -334,7 +334,7 @@ extern "C" {
   /*
   * 获取树的节点数量
   */ \
-  size_t bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack) { \
+  offset_type bs_tree_type_name##BsTreeGetCount(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack) { \
     size_t count = 0; \
     stack->count = 0; \
     id_type cur_id = bs_tree_type_name##BsTreeIteratorFirst(tree, stack); \

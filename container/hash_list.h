@@ -43,7 +43,7 @@ extern "C" {
   forceinline void hash_list_type_name##HashListHashEntryAccessor_SetKey(hash_list_type_name##HashListHashTable* table, hash_list_type_name##HashListHashEntry* hash_entry, const key_type* key) { \
     accessor##_SetKey(ObjectGetFromField(table, hash_list_type_name##HashList, hash_table), hash_entry->hash_list_entry, key); \
   } \
-  LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_OBJECT_MOVER_DEFALUT, hasher, comparer) \
+  LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, uint32_t, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_OBJECT_MOVER_DEFALUT, hasher, comparer) \
   \
   void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count, const key_type* empty_key) { \
     list->empty_key = *empty_key; \

@@ -22,7 +22,7 @@ extern "C" {
 LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(, int32_t)
 
 
-LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(Int, int64_t, int64_t)
+LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(Int, uint32_t, int64_t, int64_t)
 #define INT_HASHTABLE_ACCESSOR_GetKey(table, obj) (obj)
 #define INT_HASHTABLE_ACCESSOR INT_HASHTABLE_ACCESSOR
 
@@ -55,7 +55,7 @@ static forceinline uint64_t HashCode_murmur3_fmix64inline(uint64_t k) {
 //#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
 
 
-	LIBYUC_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, int64_t)
+	LIBYUC_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, uint32_t, int64_t)
 		typedef struct _IntEntry_Rb {
 		IntRbEntry entry;
 		int64_t key;

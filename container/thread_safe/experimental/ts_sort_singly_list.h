@@ -2,8 +2,8 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef LIBYUC_CONTAINER_THREAD_SAFE_SORT_SINGLY_LIST_H_
-#define LIBYUC_CONTAINER_THREAD_SAFE_SORT_SINGLY_LIST_H_
+#ifndef LIBYUC_CONTAINER_THREAD_SAFE_TS_SORT_SINGLY_LIST_H_
+#define LIBYUC_CONTAINER_THREAD_SAFE_TS_SORT_SINGLY_LIST_H_
 
 /*
 * Lock-Free SortSinglyList - 无锁有序单向链表
@@ -17,9 +17,13 @@
 extern "C" {
 #endif
 
+#define LIBYUC_CONTAINER_THREAD_SAFE_TS_SORT_SINGLY_LIST_DECLARATION(ts_sort_singly_list_type_name, id_type) \
+  typedef struct _##ts_sort_singly_list_type_name##TsSortSinglyListEntryInt{ \
+    id_type next; \
+  } Ts##ts_sort_singly_list_type_name##SortSinglyListEntryInt; \
 
 typedef struct _TsSortSinglyListEntryInt{
-  struct _TsSortSinglyListEntry* next;
+  id_type next;
   int key;
 } TsSortSinglyListEntryInt;
 
@@ -150,16 +154,16 @@ bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr, TsSor
   return false;
 }
 
-TsSortSinglyListEntry* TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, int key) {
+bool TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, int key) {
   do {
     if (TsSortSinglyListLocate(&prev, &cur, key) != 0) {
       return false;
     }
     if (TsSortSinglyListDeleteEntryInternal(&prev, &cur)) {
-      return cur;
+      return true;
     }
   } while (true);
-  return NULL;
+  return false;
 }
 
 void TsSortSinglyListDeleteEntry(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* entry) {
@@ -181,4 +185,4 @@ TsSortSinglyListEntry* TsSortSinglyListIteratorNext(TsSortSinglyListEntry* cur) 
 }
 #endif
 
-#endif // LIBYUC_CONTAINER_THREAD_SAFE_SORT_SINGLY_LIST_H_
+#endif // LIBYUC_CONTAINER_THREAD_SAFE_TS_SORT_SINGLY_LIST_H_
