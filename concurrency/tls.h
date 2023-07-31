@@ -3,7 +3,7 @@
 */
 
 #ifndef LIBYUC_CONCURRENCY_TLS_H_
-#ifndef LIBYUC_CONCURRENCY_TLS_H_
+#define LIBYUC_CONCURRENCY_TLS_H_
 
 /*
 * Thread Local Storage - 线程局部存储
@@ -37,7 +37,7 @@ static forceinline bool TlsFree_(TlsId id) {
 }
 
 static forceinline bool TlsSetValue_(TlsId id, const void* value) {
-  return TlsSetValue((DWORD)id, value);
+  return TlsSetValue((DWORD)id, (LPVOID)value);
 }
 
 static forceinline void* TlsGetValue_(TlsId id) {
@@ -59,4 +59,4 @@ static forceinline void* TlsGetValue_(TlsId id) {
 }
 #endif
 
-#ifndef LIBYUC_CONCURRENCY_TLS_H_
+#endif //LIBYUC_CONCURRENCY_TLS_H_

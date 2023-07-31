@@ -11,15 +11,15 @@
 extern "C" {
 #endif
 
-typedef uint32_t ThreadId
+typedef uint32_t ThreadId;
 
 #if defined(_WIN32)
 #include <Windows.h>
+
 /*
 * 空转，使CPU得
 以稍加休息
 */
-
 static forceinline void ThreadPause() {
   YieldProcessor();
 }
@@ -73,6 +73,7 @@ static forceinline ThreadId ThreadGetId() {
 }
 
 #endif
+
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,7 @@
 
 #include <libyuc/container/experimental/ar_tree.h>
 #include <libyuc/container/experimental/skip_list.h>
+#include <libyuc/container/thread_safe/experimental/epoch.h>
 #include <libyuc/container/thread_safe/experimental/ts_skip_list.h>
 #include <libyuc/container/thread_safe/experimental/ts_sort_singly_list.h>
 
@@ -894,6 +895,25 @@ void TestTsSkipList() {
 
 }
 
+void TestEpoch() {
+	Epoch epoch;
+	std::vector<std::thread> t;
+	t.reserve(thread_count);
+	l = GetTickCount();
+
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread([&]() {
+			EpochEntry(&epoch);
+			EpochEntry(&epoch);
+			}
+		));
+	}
+	for (auto& thread : t) {
+		thread.join();
+	}
+	
+}
+
 
 //void TestTsSinglyList() {
 //	TsSinglyListHead head;
@@ -982,7 +1002,7 @@ int main() {
 
 	size_t len = 0;
 
-	
+	TestEpoch();
 	TestTsSkipList();
 	
 	TestSkipList();
