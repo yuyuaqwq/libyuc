@@ -32,25 +32,7 @@ int randInt() {
 //	AvlEntry entry;
 //};
 //
-//void PrintAVL(IntAvlTree* head, IntAvlEntry* entry, IntAvlEntry* parent, int Level) {
-//	if (!entry) return;
-//	PrintAVL(head, entry->right, entry, Level + 1);
-//
-//	const char* str = "Not";
-//	if (parent) {
-//		str = (parent->right == entry ? "Right" : "Left");
-//	}
-//	char* empty = (char*)malloc(Level * 8 + 1);
-//	memset(empty, ' ', Level * 8);
-//	empty[Level * 8] = 0;
-//
-//
-//	printf("%skey:%d\n%sLevel:%d\n%sBalance factor:%d\n%sParent.%s:%d\n\n", empty, INT_AVL_TREE_ACCESSOR_GetKey(head, entry), empty, Level, empty, INT_AVL_TREE_ACCESSOR_GetBalanceFactor(head, entry), empty, str, INT_AVL_TREE_ACCESSOR_GetKey(head, parent));
-//
-//	free(empty);
-//
-//	PrintAVL(head, entry->left, entry, Level + 1);
-//}
+
 
 
 //forceinline BPlusEntryRbEntry* LIBYUC_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(BPlusEntryRbTree* tree, int16_t id) {
@@ -169,7 +151,25 @@ void PrintSkipList(TsSkipList* list) {
 	}
 }
 
+void PrintAvl(IntAvlTree* head, IntAvlEntry* entry, IntAvlEntry* parent, int Level) {
+	if (!entry) return;
+	PrintAvl(head, INT_AVL_TREE_ACCESSOR_GetRight(tree, entry), entry, Level + 1);
 
+	const char* str = "Not";
+	if (parent) {
+		str = (INT_AVL_TREE_ACCESSOR_GetRight(tree, parent) == entry ? "Right" : "Left");
+	}
+	char* empty = (char*)malloc(Level * 8 + 1);
+	memset(empty, ' ', Level * 8);
+	empty[Level * 8] = 0;
+
+
+	printf("%skey:%lld\n%sLevel:%d\n%sBalance factor:%d\n%sParent.%s:%lld\n\n", empty, *INT_AVL_TREE_ACCESSOR_GetKey(head, entry), empty, Level, empty, INT_AVL_TREE_ACCESSOR_GetBalanceFactor(head, entry), empty, str, parent ? *INT_AVL_TREE_ACCESSOR_GetKey(head, parent) : NULL);
+
+	free(empty);
+
+	PrintAvl(head, INT_AVL_TREE_ACCESSOR_GetLeft(tree, entry), entry, Level + 1);
+}
 
 //struct QVQ2 {
 //	int key;
@@ -640,6 +640,75 @@ void TestArt() {
 	printf("总耗时：%dms  \n", GetTickCount() - l);
 }
  
+void TestAvl() {
+	printf("\n无父结点Avl树：\n");
+	IntAvlTree tree;
+
+	l = GetTickCount();
+	//void** buf = (void**)malloc((count / section) * sizeof(void*));
+
+	IntAvlBsStackVector stack;
+	IntAvlEntry* stack_arr[48];
+	IntAvlBsStackVectorInit(&stack, 64, stack_arr);
+
+	for (int j = 0; j < section; j++) {
+
+		IntAvlTreeInit(&tree);
+		l = GetTickCount();
+		for (int i = 0; i < count / section; i++) {
+			//if (!IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry)) {
+			//	//printf("失败%d", i);
+			//}
+			//buf[i] = malloc(16);
+
+			IntAvlTreePut(&tree, &stack, (IntAvlEntry*)&arr2[i]->entry);
+
+			if (count <= 20) {
+
+				PrintAvl(&tree, tree.root, NULL, 0);
+				printf("\n\n\n\n");
+			}
+		}
+
+
+
+		//PrintAvl(&tree, tree.root, NULL, 0);
+		//printf("\n\n\n\n");
+		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
+
+		if (!IntAvlTreeVerify(&tree, &stack)) {
+			printf("不是正确的avl");
+		}
+
+		l = GetTickCount();
+
+		for (int i = 0; i < count / section; i++) {
+			if (!IntAvlTreeFind(&tree, &stack, &arr2[i]->key)) {
+				printf("找不到");
+			}
+		}
+
+		printf("查找耗时：%dms\n", GetTickCount() - l);
+		l = GetTickCount();
+
+		for (int i = 0; i < count / section; i++) {
+			IntAvlEntry* entry = IntAvlTreeFind(&tree, &stack, &arr2[i]->key);
+			if (!IntAvlTreeDelete(&tree, &stack, entry)) {
+				printf("无法删除");
+			}
+
+		}
+		printf("删除耗时：%dms  \n", GetTickCount() - l);
+
+	}
+
+
+
+	printf("总耗时：%dms  \n", GetTickCount() - l);
+
+}
+
+
 void TestRb() {
 #ifndef NP
 	printf("\n红黑树：\n");
@@ -1002,12 +1071,12 @@ int main() {
 
 	size_t len = 0;
 
-	TestEpoch();
-	TestTsSkipList();
-	
-	TestSkipList();
+	// TestEpoch();
+	// TestTsSkipList();
+	//
+	//TestSkipList();
 
-
+	TestAvl();
 	TestArt();
 	TestRb();
 	//TestTsSortSinglyList();
@@ -1211,44 +1280,6 @@ int main() {
 
 	//}
 	//printf("删除耗时：%dms\n", GetTickCount() - l);
-
-
-	
-
-	//printf("\nBF-AVL树：\n");
-	//IntAvlTree avl;
-	//IntAvlTreeInit(&avl);
-	//l = GetTickCount();
-	//
-	//for (int i = 0; i < count; i++) {
-	//	IntAvlTreePut(&avl, (IntAvlEntry*)&arr2[i]->entry);
-	//	
-	//	if (count < 20) {
-	//		printf("\n\n\n\n");
-	//		PrintAVL(&avl, avl.root, NULL, 0);
-	//	}
-	//}
-	//printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0/*BSTreeGetEntryCount(&avl.bst)*/);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (!IntAvlTreeFind(&avl, &arr2[i]->key)) {
-	//		printf("找不到, %d", i);
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (!IntAvlTreeDelete(&avl, IntAvlTreeFind(&avl, &arr2[i]->key))) {
-	//		printf("删除失败, %d", i);
-	//	}
-	//	if (count < 20) {
-	//		printf("\n\n\n\n");
-	//		PrintAVL(&avl, avl.root, NULL, 0);
-	//	}
-	//}
-	//printf("删除耗时：%dms %d\n", GetTickCount() - l, 0/*BSTreeGetEntryCount(&avl.bst)*/);
-
-
 
 	printf("\nSTL rb:\n");
 	l = GetTickCount();

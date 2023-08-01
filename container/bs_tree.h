@@ -252,7 +252,7 @@ extern "C" {
     bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
     id_type* parent_id = bs_tree_type_name##BsStackVectorGetTail(stack); \
     bs_tree_type_name##BsEntry* parent = NULL; \
-    if (parent_id != NULL) { \
+    if (parent_id != referencer##_InvalidId) { \
         parent = referencer##_Reference(tree, *parent_id); \
     } \
     if (accessor##_GetLeft(tree, entry) != referencer##_InvalidId && accessor##_GetRight(tree, entry) != referencer##_InvalidId) { \
@@ -326,7 +326,7 @@ extern "C" {
         bs_tree_type_name##BsTreeHitchEntry(tree, parent, entry_id, referencer##_InvalidId); \
       } \
     } \
-    if (parent_id != NULL) { \
+    if (parent) { \
       referencer##_Dereference(tree, parent); \
     } \
     return entry_id; \

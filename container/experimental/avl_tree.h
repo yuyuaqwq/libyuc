@@ -6,7 +6,7 @@
 #define LIBYUC_CONTAINER_AVL_TREE_H_
 
 #include <libyuc/object.h>
-#include <libyuc/container/experimental/bs_tree.h>
+#include <libyuc/container/bs_tree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +21,6 @@ extern "C" {
   typedef struct _##avl_tree_type_name##AvlEntry { \
     union { \
       struct { \
-        id_type parent_bf; /* balance factor */ \
         id_type left; \
         id_type right; \
       }; \
@@ -36,16 +35,17 @@ extern "C" {
   } avl_tree_type_name##AvlTree; \
   \
   void avl_tree_type_name##AvlTreeInit(avl_tree_type_name##AvlTree* tree); \
-  id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key); \
-  id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id); \
-  bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, id_type del_entry_id); \
+  id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, key_type* key); \
+  id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type put_entry_id); \
+  bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type del_entry_id); \
+  bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetBalanceFactor方法
 #define LIBYUC_CONTAINER_AVL_TREE_DEFINE(avl_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
   LIBYUC_CONTAINER_BS_TREE_DEFINE(avl_tree_type_name##Avl, id_type, offset_type, key_type, referencer, accessor, comparer) \
   /*
   * 旋转平衡因子调整(右旋为例)：
-  * 单旋情况：
+  * 单旋场景：
   *
   * 原根节点的平衡因子是2，新根节点的平衡因子是1
   * 说明原根节点的右子树深度是小于左子树2的
@@ -73,7 +73,7 @@ extern "C" {
   *
   *
   *
-  * 双旋情况：
+  * 双旋场景：
   *
   * 原根节点的平衡因子是2，新根节点的平衡因子是-1
   * 直接旋转：
@@ -110,31 +110,32 @@ extern "C" {
   * 并负责更新平衡因子
   * 子树高度变化返回true，高度未变化返回false
   */ \
-  static bool avl_tree_type_name##RotateByBalanceFactor(avl_tree_type_name##AvlTree* tree, id_type* sub_root_id_io, avl_tree_type_name##AvlEntry** sub_root_io, id_type deep_child_id, avl_tree_type_name##AvlEntry* deep_child, int8_t cur_bf) { \
+  static bool avl_tree_type_name##RotateByBalanceFactor(avl_tree_type_name##AvlTree* tree, id_type parent_id, id_type* sub_root_id_io, avl_tree_type_name##AvlEntry** sub_root_io, id_type deep_child_id, avl_tree_type_name##AvlEntry* deep_child, int8_t cur_bf) { \
     bool rotate = false; \
     bool height_update = true; \
     avl_tree_type_name##AvlEntry* new_sub_root_id = NULL; \
     avl_tree_type_name##AvlEntry* sub_root = *sub_root_io; \
+    avl_tree_type_name##AvlEntry* parent = parent_id != referncer##_InvalidId ? referencer##_Reference(tree, parent_id) : NULL; \
     id_type sub_root_id = *sub_root_id_io; \
       assert(cur_bf >= -2 || cur_bf <= 2); \
     if (cur_bf == 2) { \
       /* 是失衡节点(最小失衡子树的根节点)，左子树高度高于右子树高度 */ \
-      /* avl_tree_type_name##AvlEntry* deep_child = sub_root->left; */ \
+      /* avl_tree_type_name##AvlEntry* deep_child = accessor##_GetLeft(tree, sub_root); */ \
       int8_t deep_child_bf = accessor##_GetBalanceFactor(tree, deep_child); \
       /* 判断需要单旋还是双旋 */ \
       if (deep_child_bf == -1) { \
          /* 失衡节点的左子树的右子树更深，先对失衡节点的左子树左旋，再对失衡节点右旋
             o
           o
-          o
+           o
          需要先左旋转 */ \
-        avl_tree_type_name##AvlEntry* deep_child_right = referencer##_Reference(tree, deep_child->right); \
+        avl_tree_type_name##AvlEntry* deep_child_right = referencer##_Reference(tree, accessor##_GetRight(tree, deep_child)); \
           assert(deep_child_right); \
         int8_t right_bf = accessor##_GetBalanceFactor(tree, deep_child_right); \
         accessor##_SetBalanceFactor(tree, deep_child_right, 0); \
         referencer##_Dereference(tree, tree, deep_child_right); \
-        avl_tree_type_name##AvlRotateLeft(tree, deep_child_id, deep_child); \
-        new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, sub_root_id, sub_root); \
+        avl_tree_type_name##AvlRotateLeft(tree, sub_root, deep_child_id, deep_child); \
+        new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, parent, sub_root_id, sub_root); \
         \
         if (right_bf == -1) { \
           accessor##_SetBalanceFactor(tree, deep_child, 1); \
@@ -158,14 +159,14 @@ extern "C" {
              o4, 2
          o3, 0     o2(1) */ \
         height_update = false;     /* 这种情况的旋转不会改变该子树的高度 */ \
-        new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, sub_root_id, sub_root); \
+        new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, parent, sub_root_id, sub_root); \
         accessor##_SetBalanceFactor(tree, deep_child, -1); \
         accessor##_SetBalanceFactor(tree, sub_root, 1); \
       } \
       else { \
         /* 此时失衡节点的左子树的左子树更深，右旋即可
          可能失衡节点与左节点交换位置，需要保存结果，如果是失衡节点是根节点再返回新的根节点 */ \
-        new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, sub_root_id, sub_root); \
+        new_sub_root_id = avl_tree_type_name##AvlRotateRight(tree, parent, sub_root_id, sub_root); \
         accessor##_SetBalanceFactor(tree, deep_child , 0); \
         accessor##_SetBalanceFactor(tree, sub_root, 0); \
       } \
@@ -173,7 +174,7 @@ extern "C" {
     } \
     else if (cur_bf == -2) { \
       /* 是失衡节点，右子树高度高于左子树高度 */ \
-      /* avl_tree_type_name##AvlEntry* deep_child = sub_root->right */; \
+      /* avl_tree_type_name##AvlEntry* deep_child = accessor##_GetRight(tree, sub_root) */; \
       int8_t deep_child_bf = accessor##_GetBalanceFactor(tree, deep_child); \
       /* 判断需要单旋还是双旋 */ \
       if (deep_child_bf == 1) { \
@@ -182,13 +183,13 @@ extern "C" {
             o
             o
          需要先右旋转 */ \
-        avl_tree_type_name##AvlEntry* deep_child_left = referencer##_Reference(tree, deep_child->left); \
+        avl_tree_type_name##AvlEntry* deep_child_left = referencer##_Reference(tree, accessor##_GetLeft(tree, deep_child)); \
           assert(deep_child_left); \
         int8_t left_bf = accessor##_GetBalanceFactor(tree, deep_child_left); \
         accessor##_SetBalanceFactor(tree, deep_child_left, 0); \
         referencer##_Dereference(tree, deep_child_left); \
-        avl_tree_type_name##AvlRotateRight(tree, deep_child_id, deep_child); \
-        new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, sub_root_id, sub_root); \
+        avl_tree_type_name##AvlRotateRight(tree, sub_root, deep_child_id, deep_child); \
+        new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, parent, sub_root_id, sub_root); \
         \
         if (left_bf == 1) { \
           accessor##_SetBalanceFactor(tree, deep_child, -1); \
@@ -212,13 +213,13 @@ extern "C" {
              o4, -2
          o2(1)     o3, 0 */ \
         height_update = false;     /* 这种情况的旋转不会改变该子树的高度 */ \
-        new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, sub_root_id, sub_root); \
+        new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, parent, sub_root_id, sub_root); \
         accessor##_SetBalanceFactor(tree, deep_child, 1); \
         accessor##_SetBalanceFactor(tree, sub_root, -1); \
       } \
       else {    /* child_bf == -1 */ \
         /* 此时失衡节点的右子树的右子树更深，左旋即可 */ \
-        new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, sub_root_id, sub_root); \
+        new_sub_root_id = avl_tree_type_name##AvlRotateLeft(tree, parent, sub_root_id, sub_root); \
         accessor##_SetBalanceFactor(tree, deep_child, 0); \
         accessor##_SetBalanceFactor(tree, sub_root, 0); \
       } \
@@ -236,24 +237,31 @@ extern "C" {
       referencer##_Dereference(tree, sub_root); \
       *sub_root_io = referencer##_Reference(tree, new_sub_root_id); \
     } \
+    if (parent) referencer##_Dereference(tree, parent); \
     return height_update; \
   } \
   /*
   * 向树中插入节点的平衡操作
   */ \
-  static void avl_tree_type_name##AvlTreeInsertFixup(avl_tree_type_name##AvlTree* tree, id_type ins_entry_id) { \
-    id_type cur_id = accessor##_GetParent(tree, ins_entry_id); \
+  static void avl_tree_type_name##AvlTreeInsertFixup(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type ins_entry_id) { \
+    id_type* cur_id_ptr = avl_tree_type_name##AvlBsStackVectorPopTail(stack); \
+    id_type cur_id = referencer##_InvalidId; \
+    if (cur_id_ptr) cur_id = *cur_id_ptr; \
     id_type child_id = ins_entry_id; \
     avl_tree_type_name##AvlEntry* child = NULL, * cur = NULL; \
+    cur = referencer##_Reference(tree, cur_id); \
+    accessor##_SetBalanceFactor(tree, cur, 0); \
     /* 插入节点后平衡因子可能发生变化，回溯维护平衡因子 */ \
-    while (cur_id != referencer##_InvalidId) { \
-      cur = referencer##_Reference(tree, cur_id); \
+    while (cur) { \
       child = referencer##_Reference(tree, child_id); \
       int8_t cur_bf = accessor##_GetBalanceFactor(tree, cur); \
-      if (child_id == cur->left) cur_bf++;    /* 新节点插入到当前节点的左子树 */ \
+      if (child_id == accessor##_GetLeft(tree, cur)) cur_bf++;    /* 新节点插入到当前节点的左子树 */ \
       else cur_bf--;     /* 新节点插入到当前节点的右子树 */ \
       \
-      if (avl_tree_type_name##RotateByBalanceFactor(tree, &cur_id, &cur, child_id, child, cur_bf) || cur_bf == 0) { \
+      id_type* parent_id_ptr = avl_tree_type_name##AvlBsStackVectorPopTail(stack) ; \
+      id_type parent_id = referencer##_InvalidId; \
+      if (parent_id_ptr) parent_id = *parent_id_ptr; \
+      if (avl_tree_type_name##RotateByBalanceFactor(tree, parent_id, &cur_id, &cur, child_id, child, cur_bf) || cur_bf == 0) { \
         /* 旋转后当前节点高度不变，或原先高度就不变，停止回溯 */ \
         break; \
       } \
@@ -261,17 +269,19 @@ extern "C" {
       child_id = cur_id; \
       child = cur; \
       cur = NULL; \
-      cur_id = accessor##_GetParent(tree, child); \
+      cur_id = parent_id; \
     } \
-    referencer##_Dereference(tree, cur); \
-    referencer##_Dereference(tree, child); \
+    if (cur) referencer##_Dereference(tree, cur); \
+    if (child) referencer##_Dereference(tree, child); \
   } \
   /*
   * 从树中删除节点的平衡操作
   */ \
-  static void avl_tree_type_name##AvlTreeDeleteFixup(avl_tree_type_name##AvlTree* tree, id_type del_entry_id, bool is_parent_left) { \
+  static void avl_tree_type_name##AvlTreeDeleteFixup(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type del_entry_id, bool is_parent_left) { \
     /* 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子 */ \
-    id_type cur_id = accessor##_GetParent(tree, del_entry_id); \
+    id_type* cur_id_ptr = avl_tree_type_name##AvlBsStackVectorPopTail(stack); \
+    id_type cur_id = referencer##_InvalidId; \
+    if (cur_id_ptr) cur_id = *cur_id_ptr; \
     id_type child_id = del_entry_id; \
     avl_tree_type_name##AvlEntry* cur = NULL; \
     while (cur_id != referencer##_InvalidId) { \
@@ -279,10 +289,13 @@ extern "C" {
       int8_t cur_bf = accessor##_GetBalanceFactor(tree, cur); \
       if (is_parent_left) { cur_bf--; } \
       else { cur_bf++; } \
+      id_type* parent_id_ptr = avl_tree_type_name##AvlBsStackVectorPopTail(stack) ; \
+      id_type parent_id = referencer##_InvalidId; \
+      if (parent_id_ptr) parent_id = *parent_id_ptr; \
       if (cur_bf != 0) { \
-        id_type deep_child_id = is_parent_left ? cur->right : cur->left; \
+        id_type deep_child_id = is_parent_left ? accessor##_GetRight(tree, cur) : accessor##_GetLeft(tree, cur); \
         avl_tree_type_name##AvlEntry* deep_child = referencer##_Reference(tree, deep_child_id); \
-        if (avl_tree_type_name##RotateByBalanceFactor(tree, &cur_id, &cur, deep_child_id, deep_child, cur_bf) == false) { \
+        if (avl_tree_type_name##RotateByBalanceFactor(tree, parent_id, &cur_id, &cur, deep_child_id, deep_child, cur_bf) == false) { \
           /* 另一侧高度相等或更深且无需旋转，则当前节点高度不变 */ \
           referencer##_Dereference(tree, deep_child); \
           break; \
@@ -293,11 +306,11 @@ extern "C" {
         accessor##_SetBalanceFactor(tree, cur, cur_bf); \
       } \
       child_id = cur_id; \
-      cur_id = accessor##_GetParent(tree, cur); \
+      cur_id = parent_id; \
       referencer##_Dereference(tree, cur); \
       cur = referencer##_Reference(tree, cur_id); \
       if (cur) { \
-        is_parent_left = cur->left == child_id; \
+        is_parent_left = accessor##_GetLeft(tree, cur) == child_id; \
       } \
     } \
     referencer##_Dereference(tree, cur); \
@@ -312,24 +325,24 @@ extern "C" {
   * 从树中查找节点
   * 存在返回查找到的节点对应的对象，不存在返回NULL
   */ \
-  id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, key_type* key) { \
-    return avl_tree_type_name##AvlBsTreeFind(&tree->bs_tree, key); \
+  id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, key_type* key) { \
+    return avl_tree_type_name##AvlBsTreeFind(&tree->bs_tree, stack, key); \
   } \
   /*
   * 向树中插入节点
   * 覆盖重复key
   */ \
-  id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, id_type put_entry_id) { \
-    id_type old_id = avl_tree_type_name##AvlBsTreePut(&tree->bs_tree, put_entry_id); \
-    if (old_id == referencer##_InvalidId) avl_tree_type_name##AvlTreeInsertFixup(tree, put_entry_id); \
+  id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type put_entry_id) { \
+    id_type old_id = avl_tree_type_name##AvlBsTreePut(&tree->bs_tree, stack, put_entry_id); \
+    if (old_id == referencer##_InvalidId) avl_tree_type_name##AvlTreeInsertFixup(tree, stack, put_entry_id); \
     return old_id; \
   } \
   /*
   * 删除树中指定节点
   */ \
-  bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, id_type del_entry_id) { \
+  bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type del_entry_id) { \
     bool is_parent_left; \
-    id_type del_min_entry_id = avl_tree_type_name##AvlBsTreeDelete(&tree->bs_tree, del_entry_id, &is_parent_left); \
+    id_type del_min_entry_id = avl_tree_type_name##AvlBsTreeDelete(&tree->bs_tree, stack, del_entry_id, &is_parent_left); \
     if(del_min_entry_id == referencer##_InvalidId) { \
       return false; \
     } \
@@ -341,28 +354,40 @@ extern "C" {
       accessor##_SetBalanceFactor(tree, del_min_entry, accessor##_GetBalanceFactor(tree, del_entry)); \
       accessor##_SetBalanceFactor(tree, del_entry, old_bf); \
     } \
-    avl_tree_type_name##AvlTreeDeleteFixup(tree, del_entry_id, is_parent_left); \
+    avl_tree_type_name##AvlTreeDeleteFixup(tree, stack, del_entry_id, is_parent_left); \
     return true; \
   } \
+  /*
+  * 验证avl树性质
+  */ \
+  static bool avl_tree_type_name##AvlTreeCheckPath(avl_tree_type_name##AvlTree* tree, id_type entry_id, offset_type* cur_height) { \
+    if (entry_id == referencer##_InvalidId) { \
+      return true; \
+    } \
+    bool correct = false; \
+    avl_tree_type_name##AvlEntry* entry = NULL; \
+    avl_tree_type_name##AvlEntry* parent = NULL; \
+    do { \
+      entry = referencer##_Reference(tree, entry_id); \
+      ++*cur_height; \
+      offset_type left_height = *cur_height, right_height = *cur_height; \
+      correct = avl_tree_type_name##AvlTreeCheckPath(tree, accessor##_GetLeft(tree, entry), &left_height) && avl_tree_type_name##AvlTreeCheckPath(tree, accessor##_GetRight(tree, entry), &right_height); \
+      correct = correct && (left_height - right_height == accessor##_GetBalanceFactor(tree, entry)); \
+      *cur_height = max(left_height, right_height); \
+    } while (false); \
+    if (entry) referencer##_Dereference(tree, entry); \
+    if (parent) referencer##_Dereference(tree, parent); \
+    return correct; \
+  } \
+  bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack) { \
+    avl_tree_type_name##AvlEntry* entry = referencer##_Reference(tree, tree->root); \
+    if (!entry) return true; \
+    offset_type cur_height = 0; \
+    bool correct = avl_tree_type_name##AvlTreeCheckPath(tree, tree->root, &cur_height); \
+    referencer##_Dereference(tree, entry); \
+    return correct; \
+  } \
 
-
-//LIBYUC_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
-//typedef struct _IntEntry_Avl {
-//  IntAvlEntry entry;
-//  int key;
-//} IntEntry_Avl;
-//#define INT_AVL_TREE_ACCESSOR_GetKey(TREE, ENTRY) (((IntEntry_Avl*)ENTRY)->key)
-//#define INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)ENTRY)->parent_bf) & (~((uintptr_t)0x3)))))
-//#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3))
-//#define INT_AVL_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntAvlEntry*)ENTRY)->parent_bf = (IntAvlEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) & 0x3)));
-//#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(TREE, ENTRY, BF) (ENTRY->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)BF & 0x3)))
-//#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
-//#define INT_AVL_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntAvlBsEntry*)OBJ_ID)
-//#define INT_AVL_TREE_REFERENCER_Dereference(TREE, OBJ)
-//#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
-//#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
-
-//LIBYUC_CONTAINER_AVL_TREE_DEFINE(Int, IntAvlEntry*, int, INT_AVL_TREE_REFERENCER, INT_AVL_TREE_ACCESSOR, LIBYUC_OBJECT_COMPARER_DEFALUT)
 
 #ifdef __cplusplus
 }

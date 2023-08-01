@@ -25,9 +25,10 @@ extern "C" {
 * 定长key优化思路：
 * key直接比较(不通过memcmp)
 * 共同前缀保持与key长度一致，通过位移存放/更新，以及直接比较，不需要乐观策略
+* 当前定长key最大支持8字节
 */
 
-//#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 
 
 typedef struct _ArNode* id_type;

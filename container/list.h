@@ -25,9 +25,9 @@ extern "C" {
   void list_type_name##ListPutEntryNext(list_type_name##ListHead* head, id_type prev_id, id_type entry_id); \
   void list_type_name##ListPutFirst(list_type_name##ListHead* head, id_type entry_id); \
   void list_type_name##ListPutLast(list_type_name##ListHead* head, id_type entry_id); \
-  id_type list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id); \
-  id_type list_type_name##ListDeleteFirst(list_type_name##ListHead* head); \
-  id_type list_type_name##ListDeleteLast(list_type_name##ListHead* head); \
+  void list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id); \
+  void list_type_name##ListDeleteFirst(list_type_name##ListHead* head); \
+  void list_type_name##ListDeleteLast(list_type_name##ListHead* head); \
   void list_type_name##ListReplaceEntry(list_type_name##ListHead* head, id_type entry_id, id_type new_entry_id); \
   offset_type list_type_name##ListGetCount(list_type_name##ListHead* head); \
   id_type list_type_name##ListFirst(list_type_name##ListHead* head); \
@@ -96,7 +96,7 @@ extern "C" {
     head->last = entry_id; \
     referencer##_Dereference(head, entry); \
   } \
-  id_type list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id) { \
+  void list_type_name##ListDeleteEntry(list_type_name##ListHead* head, id_type entry_id) { \
     if (head->first == head->last) { \
       if (head->first == referencer##_InvalidId) return referencer##_InvalidId; \
       entry_id = head->first; \
@@ -120,13 +120,12 @@ extern "C" {
       head->last = prev_id; \
     } \
     referencer##_Dereference(head, entry); \
-    return entry_id; \
   } \
-  id_type list_type_name##ListDeleteFirst(list_type_name##ListHead* head) { \
-    return list_type_name##ListDeleteEntry(head, head->first); \
+  void list_type_name##ListDeleteFirst(list_type_name##ListHead* head) { \
+    list_type_name##ListDeleteEntry(head, head->first); \
   } \
-  id_type list_type_name##ListDeleteLast(list_type_name##ListHead* head) { \
-    return list_type_name##ListDeleteEntry(head, head->last); \
+  void list_type_name##ListDeleteLast(list_type_name##ListHead* head) { \
+    list_type_name##ListDeleteEntry(head, head->last); \
   } \
   void list_type_name##ListReplaceEntry(list_type_name##ListHead* head, id_type entry_id, id_type new_entry_id) { \
     list_type_name##ListEntry* entry = referencer##_Reference(head, entry_id); \

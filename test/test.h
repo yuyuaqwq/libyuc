@@ -3,6 +3,7 @@
 #include <libyuc/container/vector.h>
 #include <libyuc/container/hash_table.h>
 #include <libyuc/container/list.h>
+#include <libyuc/container/experimental/avl_tree.h>
 #define NP
 #ifdef NP
 #include <libyuc/container/rb_tree.h>
@@ -43,16 +44,27 @@ static forceinline uint64_t HashCode_murmur3_fmix64inline(uint64_t k) {
 //		IntAvlEntry entry;
 //		int key;
 //	} IntEntry_Avl;
-//#define INT_AVL_TREE_ACCESSOR_GetKey(TREE, ENTRY) (&((IntEntry_Avl*)ENTRY)->key)
-//#define INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntAvlEntry*)(((uintptr_t)(((IntAvlEntry*)ENTRY)->parent_bf) & (~((uintptr_t)0x3)))))
-//#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->parent_bf) & 0x3))
-//#define INT_AVL_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((IntAvlEntry*)ENTRY)->parent_bf = (IntAvlEntry*)(((uintptr_t)NEW_PARENT_ID) | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) & 0x3)));
-//#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(TREE, ENTRY, BF) (ENTRY->parent_bf = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetParent(TREE, ENTRY)) | ((uintptr_t)BF & 0x3)))
-//#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
-//#define INT_AVL_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntAvlBsEntry*)OBJ_ID)
-//#define INT_AVL_TREE_REFERENCER_Dereference(TREE, OBJ)
-//#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
-//#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
+
+
+LIBYUC_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, uint32_t, int64_t)
+typedef struct _IntEntry_Avl {
+	IntAvlEntry entry;
+	int64_t key;
+} IntEntry_Avl;
+#define INT_AVL_TREE_ACCESSOR_GetKey(TREE, ENTRY) (&((IntEntry_Avl*)ENTRY)->key)
+#define INT_AVL_TREE_ACCESSOR_GetLeft(TREE, ENTRY) ((IntAvlEntry*)((uintptr_t)(ENTRY)->left & ~3))
+#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->left) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->left) & 0x3))
+#define INT_AVL_TREE_ACCESSOR_SetLeft(TREE, ENTRY, NEW_ID) ((ENTRY)->left = (uintptr_t)NEW_ID | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY)) & 0x3);
+#define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(TREE, ENTRY, BF) (ENTRY->left = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetLeft(TREE, ENTRY)) | ((uintptr_t)BF & 0x3)))
+#define INT_AVL_TREE_ACCESSOR_GetRight(TREE, ENTRY) ((ENTRY)->right)
+#define INT_AVL_TREE_ACCESSOR_SetRight(TREE, ENTRY, NEW_ID) ((ENTRY)->right = NEW_ID);
+#define INT_AVL_TREE_ACCESSOR INT_AVL_TREE_ACCESSOR
+
+#define INT_AVL_TREE_REFERENCER_Reference(TREE, OBJ_ID) ((IntAvlBsEntry*)OBJ_ID)
+#define INT_AVL_TREE_REFERENCER_Dereference(TREE, OBJ)
+#define INT_AVL_TREE_REFERENCER_InvalidId (NULL)
+#define INT_AVL_TREE_REFERENCER INT_AVL_TREE_REFERENCER
+
 
 
 	LIBYUC_CONTAINER_RB_TREE_DECLARATION(Int, struct _IntRbEntry*, uint32_t, int64_t)
@@ -63,7 +75,7 @@ static forceinline uint64_t HashCode_murmur3_fmix64inline(uint64_t k) {
 #define INT_RB_TREE_ACCESSOR_GetKey(TREE, ENTRY) (&((IntEntry_Rb*)ENTRY)->key)
 
 #ifdef NP
-#define INT_RB_TREE_ACCESSOR_GetLeft(TREE, ENTRY) ((IntRbEntry*)((uintptr_t)(ENTRY)->left & -2))
+#define INT_RB_TREE_ACCESSOR_GetLeft(TREE, ENTRY) ((IntRbEntry*)((uintptr_t)(ENTRY)->left & ~1))
 #define INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) ((RbColor)((uintptr_t)(ENTRY)->left & 1))
 #define INT_RB_TREE_ACCESSOR_SetLeft(TREE, ENTRY, NEW_ID) ((ENTRY)->left = (uintptr_t)NEW_ID | (uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY));
 #define INT_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, NEW_COLOR) ((ENTRY)->left = (uintptr_t)INT_RB_TREE_ACCESSOR_GetLeft(TREE, ENTRY) | (uintptr_t)NEW_COLOR);
@@ -73,7 +85,7 @@ static forceinline uint64_t HashCode_murmur3_fmix64inline(uint64_t k) {
 #define INT_RB_TREE_ACCESSOR_GetKey(TREE, ENTRY) (&((IntEntry_Rb*)ENTRY)->key)
 #define INT_RB_TREE_ACCESSOR_GetLeft(TREE, ENTRY) (((IntRbEntry*)(ENTRY))->left)
 #define INT_RB_TREE_ACCESSOR_SetLeft(TREE, ENTRY, NEW_ID) (((IntRbEntry*)(ENTRY))->left = NEW_ID);
-#define INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntRbEntry*)((uintptr_t)((IntRbEntry*)ENTRY)->parent_color & -2))
+#define INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) ((IntRbEntry*)((uintptr_t)((IntRbEntry*)ENTRY)->parent_color & ~1))
 #define INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) ((RbColor)((uintptr_t)((IntRbEntry*)ENTRY)->parent_color & 1))
 #define INT_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_ID) (((IntRbEntry*)ENTRY)->parent_color = (uintptr_t)NEW_ID | (uintptr_t)INT_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY));
 #define INT_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, NEW_COLOR) (((IntRbEntry*)ENTRY)->parent_color = (uintptr_t)INT_RB_TREE_ACCESSOR_GetParent(TREE, ENTRY) | (uintptr_t)NEW_COLOR);

@@ -37,14 +37,14 @@ typedef uint32_t EpochThreadBlockId;
 */
 
 bool EpochTryGc(Epoch* epoch) {
-
+  return true;
 }
 
 void EpochEntry(Epoch* epoch) {
-  static thread_local EpochThreadBlockId thread_block_id = -1;
-  if (thread_block_id == -1) {
+  static thread_local EpochThreadBlock* thread_block = NULL;
+  if (thread_block == NULL) {
     // 线程第一次调用Entry，注册
-    thread_block_id = 0;
+    thread_block = ObjectCreate(EpochThreadBlock);
     // 线程死亡，如何回收注册的ThreadBlock？退出临界区的同时也将EpochThreadBlock挂到全局epoch中，
   }
 }

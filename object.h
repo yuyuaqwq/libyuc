@@ -117,6 +117,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 /*
 * 默认引用器
 * 负责引用对象，将id转换成对象，通常是映射关系，默认id即对象的指针
+* Reference和Dereference不需要检查id/obj是否有效(通过断言避免意外问题)
 */
 #define LIBYUC_OBJECT_REFERENCER_DEFALUT_Reference(MAIN_OBJ, OLD_ID) (OLD_ID)
 #define LIBYUC_OBJECT_REFERENCER_DEFALUT_Dereference(MAIN_OBJ, OBJ)

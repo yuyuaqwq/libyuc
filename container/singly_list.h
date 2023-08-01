@@ -23,8 +23,8 @@ extern "C" {
   void singly_list_type_name##SinglyListHeadInit(singly_list_type_name##SinglyListHead* head); \
   bool singly_list_type_name##SinglyListIsEmpty(singly_list_type_name##SinglyListHead* head); \
   void singly_list_type_name##SinglyListPutFirst(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
-  id_type singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head); \
-  id_type singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id); \
+  void singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head); \
+  void singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id); \
   offset_type singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head); \
   id_type singly_list_type_name##SinglyListIteratorFirst(singly_list_type_name##SinglyListHead* head); \
   id_type singly_list_type_name##SinglyListIteratorNext(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
@@ -42,14 +42,12 @@ extern "C" {
     head->first = entry_id; \
     referencer##_Dereference(head, entry); \
   } \
-  id_type singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head) { \
-    id_type old_first_id = head->first; \
-    singly_list_type_name##SinglyListEntry* old_first = referencer##_Reference(head, old_first_id); \
+  void singly_list_type_name##SinglyListDeleteFirst(singly_list_type_name##SinglyListHead* head) { \
+    singly_list_type_name##SinglyListEntry* old_first = referencer##_Reference(head, head->first); \
     head->first = old_first->next; \
-    referencer##_Dereference(head, old_first_id); \
-    return old_first_id; \
+    referencer##_Dereference(head, old_first); \
   } \
-  id_type singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id) { \
+  void singly_list_type_name##SinglyListDeleteEntry(singly_list_type_name##SinglyListHead* head, id_type prev_id, id_type del_entry_id) { \
     singly_list_type_name##SinglyListEntry* prev; \
     if (prev_id != referencer##_InvalidId) { \
       prev = referencer##_Reference(head, prev_id); \
@@ -63,7 +61,6 @@ extern "C" {
       referencer##_Dereference(head, prev); \
     } \
     referencer##_Dereference(head, del_entry); \
-    return del_entry_id; \
   } \
   offset_type singly_list_type_name##SinglyListGetCount(singly_list_type_name##SinglyListHead* head) { \
     offset_type count = 0; \
