@@ -35,7 +35,7 @@ extern "C" {
   id_type ts_singly_list_type_name##TsSinglyListIteratorFirst(ts_singly_list_type_name##TsSinglyListHead* head); \
   id_type ts_singly_list_type_name##TsSinglyListIteratorNext(ts_singly_list_type_name##TsSinglyListHead* head, id_type entry_id); \
 
-#define LIBYUC_CONTAINER_THREAD_SAFE_TS_SINGLY_LIST_DEFINE(ts_singly_list_type_name, id_type, id_atomic_type, referencer) \
+#define LIBYUC_CONTAINER_THREAD_SAFE_TS_SINGLY_LIST_DEFINE(ts_singly_list_type_name, id_type, offset_type, id_atomic_type, referencer) \
   void ts_singly_list_type_name##TsSinglyListHeadInit(ts_singly_list_type_name##TsSinglyListHead* head) { \
     head->first = referencer##_InvalidId; \
   } \
