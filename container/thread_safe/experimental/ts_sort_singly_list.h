@@ -17,10 +17,6 @@
 extern "C" {
 #endif
 
-#define LIBYUC_CONTAINER_THREAD_SAFE_TS_SORT_SINGLY_LIST_DECLARATION(ts_sort_singly_list_type_name, id_type) \
-  typedef struct _##ts_sort_singly_list_type_name##TsSortSinglyListEntryInt{ \
-    id_type next; \
-  } Ts##ts_sort_singly_list_type_name##SortSinglyListEntryInt; \
 
 typedef struct _TsSortSinglyListEntryInt{
   id_type next;
@@ -96,7 +92,7 @@ bool TsSortSinglyListInsert(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* 
     TsSortSinglyListEntrySetNext(entry, cur);
     // 需要避免prev是即将删除节点的场景，否则插入后prev即刻被删除(删除上下文中cur)会导致新插入节点丢失
     // 解决方法是DeleteCAS前将cur->next进行标记(末尾置为1)，此时当前的插入的CAS就会触发失败重试(prev->next被修改 != cur)
-    if (AtomicCompareExchangePtr(TsSortSinglyListEntryGetNextPtr(prev), entry, cur)) {
+    if (AtomicPtrCompareExchange(TsSortSinglyListEntryGetNextPtr(prev), entry, cur)) {
       break;
     }
     // 更新失败的场景，即prev->next不再是cur
@@ -119,11 +115,11 @@ bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr, TsSor
    release_assert(!IS_MARK(entry), "");
   TsSortSinglyListEntry* next = TsSortSinglyListEntryGetNext(entry);
   // cur即将被删除，先进行标记，标记时将其置为prev使得TsSortSinglyListLocate可以往回找
-  if (AtomicCompareExchangePtr(TsSortSinglyListEntryGetNextPtr(entry), MARK(prev), CLEAR_MARK(next))) {
+  if (AtomicPtrCompareExchange(TsSortSinglyListEntryGetNextPtr(entry), MARK(prev), CLEAR_MARK(next))) {
     // 只有一个删除线程能成功标记这个节点
 
      release_assert(!next || *TsSortSinglyListEntryGetKey(next) >= *TsSortSinglyListEntryGetKey(entry), "");
-    if (AtomicCompareExchangePtr(TsSortSinglyListEntryGetNextPtr(prev), next, entry)) {
+    if (AtomicPtrCompareExchange(TsSortSinglyListEntryGetNextPtr(prev), next, entry)) {
       *entry_ptr = entry;
       return true;
     }

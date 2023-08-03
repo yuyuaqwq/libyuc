@@ -22,25 +22,39 @@ extern "C" {
 #endif
 
 
-LIBYUC_CONTAINER_THREAD_SAFE_TS_SINGLY_LIST_DECLARATION(, struct _TsSinglyListEntry*, size_t)
-LIBYUC_CONTAINER_THREAD_SAFE_TS_SINGLY_LIST_DEFINE(, struct _TsSinglyListEntry* , size_t, Ptr, LIBYUC_OBJECT_REFERENCER_DEFALUT)
 
+#define SLOT_COUNT 64
 
-typedef struct _EpochThreadBlock {
+typedef struct _EpochSlot {
   uint32_t epoch_num;
   bool active;    // 是否处于活动状态
-} EpochThreadBlock;
+  volatile int32_t used;
+  ThreadId thread_id;
+} EpochSlot;
+
+bool EpochSlotAcquire(EpochSlot* slot) {
+  if (AtomicInt32CompareExchange(&slot->used, 1, 0)) {
+    return true;
+  }
+  return false;
+}
+
+void EpochSlotRelease(EpochSlot* slot) {
+   release_assert(slot->used == 1, "");
+  slot->used = 0;
+}
+
 
 typedef struct _Epoch {
   volatile uint32_t global_epoch_num;   // 0、1、2
   uint32_t entry_count;   // 计数，一定次数后在触发回收
 
-  EpochThreadBlock block[64];
+  EpochSlot slot[SLOT_COUNT];
 } Epoch;
 
 
 
-typedef uint32_t EpochThreadBlockId;
+typedef uint32_t EpochSlotId;
 
 /*
 * 基于lock - free静态链表进行EpochThreadBlock的分配，有新线程就注册
@@ -49,9 +63,10 @@ typedef uint32_t EpochThreadBlockId;
 
 void EpochInit(Epoch* epoch) {
   epoch->global_epoch_num = 0;
-  for (size_t i = 0; i < sizeof(epoch->block) / sizeof(EpochThreadBlock); i++) {
-    epoch->block[i].active = false;
-    epoch->block[i].epoch_num = 0;
+  for (EpochSlotId i = 0; i < SLOT_COUNT; i++) {
+    epoch->slot[i].active = false;
+    epoch->slot[i].used = 0;
+    epoch->slot[i].epoch_num = 0;
   }
 }
 
@@ -61,17 +76,26 @@ bool EpochTryGc(Epoch* epoch) {
 }
 
 
-static EpochThreadBlockId EpochRegisterThread(Epoch* epoch) {
-  // 分配一个block
+static void EpochRegisterThread(Epoch* epoch, EpochSlotId* slot_id) {
+  // 分配slot
+  for (EpochSlotId i = 0; i < SLOT_COUNT; i++) {
+    if (EpochSlotAcquire(&epoch->slot[i])) {
+      *slot_id = i;
+      return;
+    }
+  }
+  Painc("epoch slot full.");
+}
+
+static void EpochUnregisterThread(Epoch* epoch, EpochSlotId* slot_id) {
+  EpochSlotRelease(&epoch->slot[*slot_id]);
 }
 
 void EpochEntry(Epoch* epoch) {
-  static thread_local EpochThreadBlockId thread_block_id = -1;
+  static thread_local EpochSlotId thread_block_id = -1;
   if (thread_block_id == -1) {
     // 线程第一次调用Entry，注册
-
-
-    
+    EpochRegisterThread(epoch, &thread_block_id);
   }
 }
 

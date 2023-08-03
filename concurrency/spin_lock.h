@@ -18,7 +18,7 @@ extern "C" {
 * 自旋锁
 */
 typedef struct _SpinLock {
-  volatile bool state;
+  AtomicInt32 state;
 } SpinLock;
 
 static forceinline void SpinLockInit(SpinLock* lock) {
@@ -26,11 +26,11 @@ static forceinline void SpinLockInit(SpinLock* lock) {
 }
 
 static forceinline void SpinLockAcquire(SpinLock* lock) {
-  while (AtomicExchange32(&lock->state, true) == true) { ThreadPause(); continue; }
+  while (AtomicBoolExchange(&lock->state, true) == true) { ThreadPause(); continue; }
 }
 
 static forceinline void SpinLockRelease(SpinLock* lock) {
-  lock->state = false;    // 无需通过原子指令，只需要保证state是volatile就不会被编译器优化影响，最终会在某一时刻写回内存，原子性交给CPU
+  AtomicBoolStore(&lock->state, false);
 }
 
 #ifdef __cplusplus

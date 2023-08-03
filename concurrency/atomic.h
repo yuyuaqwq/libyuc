@@ -18,25 +18,53 @@ extern "C" {
 * 原子操作
 */
 
+typedef volatile bool AtomicBool;
+typedef volatile int32_t AtomicInt32;
+typedef volatile uint32_t AtomicUint32;
+typedef volatile int64_t AtomicInt64;
+typedef volatile uint64_t AtomicUint64;
+#define AtomicPtr(type) volatile type*
+
+/*
+* 原子读写
+*/
+
+static forceinline bool AtomicBoolLoad(AtomicBool* target) {
+  return *(volatile bool*)target;
+}
+
+static forceinline bool AtomicBoolStore(AtomicBool* target, bool val) {
+  *target = (AtomicBool)val;
+}
+
+static forceinline int32_t AtomicInt32Load(AtomicInt32* target) {
+  return *(volatile int32_t*)target;
+}
+
+static forceinline void AtomicInt32Store(AtomicInt32* target, int32_t val) {
+  *target = (AtomicInt32)val;    // 无需通过原子指令，只需要保证state是volatile就不会被编译器优化影响，最终会在某一时刻写回内存，原子性交给CPU
+}
+
+
 /*
 * 原子自增
 */
-static forceinline int32_t AtomicIncrement32(volatile int32_t* target) {
+static forceinline int32_t AtomicInt32Increment(AtomicInt32* target) {
   return (int32_t)InterlockedIncrement((volatile LONG*)target);
 }
 
-static forceinline int64_t AtomicIncrement64(volatile int64_t* target) {
+static forceinline int64_t AtomicInt32Increment(AtomicInt64* target) {
   return (int64_t)InterlockedIncrement64((volatile LONG64*)target);
 }
 
 /*
 * 原子自减
 */
-static forceinline int32_t AtomicDecrement32(volatile int32_t* target) {
+static forceinline int32_t AtomicInt32Decrement(AtomicInt32* target) {
   return (int32_t)InterlockedDecrement((volatile LONG*)target);
 }
 
-static forceinline int64_t AtomicDecrement64(volatile int64_t* target) {
+static forceinline int64_t AtomicInt64Decrement(AtomicInt64* target) {
   return (int64_t)InterlockedDecrement64((volatile LONG64*)target);
 }
 /*
@@ -44,19 +72,24 @@ static forceinline int64_t AtomicDecrement64(volatile int64_t* target) {
 * 修改target为value
 * 返回target旧值
 */
-static forceinline int32_t AtomicExchange32(volatile int32_t* target, int32_t value) {
+
+static forceinline bool AtomicBoolExchange(AtomicBool* target, bool value) {
+  return InterlockedExchange((volatile LONG*)target, (LONG)value) ? true : false;
+}
+
+static forceinline int32_t AtomicInt32Exchange(AtomicInt32* target, int32_t value) {
   return (int32_t)InterlockedExchange((volatile LONG*)target, (LONG)value);
 }
 
-static forceinline int64_t AtomicExchange64(volatile int64_t* target, int64_t value) {
+static forceinline int64_t AtomicInt64Exchange(AtomicInt64* target, int64_t value) {
   return (int64_t)InterlockedExchange64((volatile LONG64*)target, (LONG64)value);
 }
 
-static forceinline void* AtomicExchangePtr(volatile void* target, void* value) {
+static forceinline void* AtomicPtrExchange(volatile void* target, void* value) {
 #if defined(_WIN64)
-  return (void*)AtomicExchange64((volatile int64_t*)target, (int64_t)value);
+  return (void*)AtomicInt64Exchange((AtomicInt64*)target, (int64_t)value);
 #else
-  return (void*)AtomicExchange32((volatile int32_t*)target, (int32_t)value);
+  return (void*)AtomicInt32Exchange((AtomicInt32*)target, (int32_t)value);
 #endif
 }
 
@@ -65,29 +98,22 @@ static forceinline void* AtomicExchangePtr(volatile void* target, void* value) {
 * 若target == comparand，则修改target为exchange，否则不做处理
 * 返回修改是否成功
 */
-static forceinline bool AtomicCompareExchange32(volatile int32_t* target, int32_t exchange, int32_t comparand) {
+static forceinline bool AtomicInt32CompareExchange(AtomicInt32* target, int32_t exchange, int32_t comparand) {
   return InterlockedCompareExchange((volatile LONG*)target, (LONG)exchange, (LONG)comparand) == (LONG)comparand;
 }
 
-static forceinline bool AtomicCompareExchange64(volatile int64_t* target, int64_t exchange, int64_t comparand) {
+static forceinline bool AtomicInt64CompareExchange(AtomicInt64* target, int64_t exchange, int64_t comparand) {
   return InterlockedCompareExchange64((volatile LONG64*)target, (LONG64)exchange, (LONG64)comparand) == (LONG64)comparand;
 }
 
-static forceinline bool AtomicCompareExchangePtr(volatile void* target, void* exchange, void* comparand) {
+static forceinline bool AtomicPtrCompareExchange(volatile void* target, void* exchange, void* comparand) {
 #if defined(_WIN64)
-  return AtomicCompareExchange64((volatile int64_t*)target, (int64_t)exchange, (int64_t)comparand);
+  return AtomicInt64CompareExchange((AtomicInt64*)target, (int64_t)exchange, (int64_t)comparand);
 #else
-  return AtomicCompareExchange32((volatile int32_t*)target, (int32_t)exchange, (int32_t)comparand);
+  return AtomicInt32CompareExchange((AtomicInt32*)target, (int32_t)exchange, (int32_t)comparand);
 #endif
 }
 
-static forceinline uint32_t AtomicLoad32(volatile void* target) {
-  return *(volatile uint32_t*)target;
-}
-
-static forceinline void AtomicStore32(volatile void* target, uint32_t value) {
-  *(volatile uint32_t*)target = (volatile uint32_t)value;
-}
 
 #endif
 

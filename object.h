@@ -11,18 +11,27 @@
 #include <string.h>
 #include <assert.h>
 
+#ifndef Painc
+#define Painc(...) { printf(__VA_ARGS__); *(int*)0 = 0; }
+#endif
+
 #ifdef NDEBUG
 #define assert(expression) ((void)0)
 #else
 #undef assert
-#define assert(expression) { if(!(expression)){ *(int*)0 = 0; } }
+#define assert(expression) { if(!(expression)){ Painc("") } }
 #endif
 
-#define release_assert(expression, ...) { if(!(expression)){ printf(__VA_ARGS__); *(int*)0 = 0; } }
+#define release_assert(expression, ...) { if(!(expression)){ Painc(__VA_ARGS__); } }
+
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
 
 void* MemoryAlloc(size_t size);
 void MemoryFree(void* ptr);

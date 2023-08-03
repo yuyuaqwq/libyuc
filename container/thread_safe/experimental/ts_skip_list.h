@@ -120,7 +120,7 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
     for (int i = level; i < new_level; i++) {
       update[i] = list->head;    // 头节点该层的索引需要指向新节点同层索引
     }
-    while (!AtomicCompareExchange32(&list->level, new_level, level)) {
+    while (!AtomicInt32CompareExchange(&list->level, new_level, level)) {
       if (new_level <= list->level) break;
       level = list->level;
     }
@@ -132,7 +132,7 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
     cur = update_next[i];
     do {
       new_entry->upper[i].next = cur;
-      if (AtomicCompareExchangePtr(&prev->upper[i].next, new_entry, cur)) {
+      if (AtomicPtrCompareExchange(&prev->upper[i].next, new_entry, cur)) {
         break;
       }
       // 更新失败的场景
