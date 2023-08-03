@@ -26,24 +26,6 @@ enum MemoryOrder {
   kMemoryOrderSeqCst,
 };
 
-forceinline void MemoryOrderGuard(MemoryOrder order) {
-  switch (order) {
-  case kMemoryOrderRelease:
-    MemoryBarrierStoreStore();
-    break;
-  case kMemoryOrderAcquire:
-    MemoryBarrierLoadLoad();
-    break;
-  case kMemoryOrderAcqRel:
-    MemoryBarrierLoadStore();
-    break;
-  case kMemoryOrderSeqCst:
-    MemoryBarrierStoreLoad();
-    break;
-  }
-}
-
-
 
 #ifdef __cplusplus
 }

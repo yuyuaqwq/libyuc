@@ -35,7 +35,6 @@ static forceinline bool AtomicBoolLoad(AtomicBool* target) {
 }
 
 static forceinline bool AtomicBoolLoadByMemoryOrder(AtomicBool* target, MemoryOrder order) {
-
   return *(volatile bool*)target;
 }
 
