@@ -6,6 +6,7 @@
 #define LIBYUC_CONCURRENCY_ATOMIC_H_
 
 #include <libyuc/object.h>
+#include <libyuc/concurrency/memory_order.h>
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -33,7 +34,16 @@ static forceinline bool AtomicBoolLoad(AtomicBool* target) {
   return *(volatile bool*)target;
 }
 
+static forceinline bool AtomicBoolLoadByMemoryOrder(AtomicBool* target, MemoryOrder order) {
+
+  return *(volatile bool*)target;
+}
+
 static forceinline bool AtomicBoolStore(AtomicBool* target, bool val) {
+  *target = (AtomicBool)val;
+}
+
+static forceinline bool AtomicBoolStoreByMemoryOrder(AtomicBool* target, bool val, MemoryOrder order) {
   *target = (AtomicBool)val;
 }
 

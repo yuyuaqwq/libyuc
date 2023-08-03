@@ -17,17 +17,14 @@
 extern "C" {
 #endif
 
-
-typedef struct _TsSortSinglyListEntryInt{
-  id_type next;
-  int key;
-} TsSortSinglyListEntryInt;
+#define id_type AtomicPtr(struct _TsSortSinglyListEntry)
 
 typedef struct _TsSortSinglyListEntry {
-  struct _TsSortSinglyListEntry* next;
+  id_type next;
+  int key;
 } TsSortSinglyListEntry;
 typedef struct _TsSortSinglyListHead {
-  TsSortSinglyListEntry* first;
+  id_type first;
 } TsSortSinglyListHead;
 
 void TsSortSinglyListHeadInit(TsSortSinglyListHead* head) {
@@ -39,7 +36,7 @@ void TsSortSinglyListHeadInit(TsSortSinglyListHead* head) {
 #define CLEAR_MARK(p) ((TsSortSinglyListEntry*)((uintptr_t)(p) & ~0x01))
 
 #ifndef TsSortSinglyListEntryGetKey
-#define TsSortSinglyListEntryGetKey(ENTRY) (&((TsSortSinglyListEntryInt*)ENTRY)->key)
+#define TsSortSinglyListEntryGetKey(ENTRY) (&((TsSortSinglyListEntry*)ENTRY)->key)
 #endif
 
 #ifndef TsSortSinglyListEntryGetNext
