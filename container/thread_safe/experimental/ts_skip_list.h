@@ -19,11 +19,14 @@ extern "C" {
 
 #define LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL 32
 const int LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_SKIPLIST_P = (RAND_MAX / 2);
+
+#define id_type AtomicPtr(struct _TsSkipListEntry)
+
 /*
 * 跳表索引节点
 */
 typedef struct _TsSkipListLevel {
-  struct _TsSkipListEntry* next;    // 指向的同索引层的下一个SkipListEntry(不是直接指向逻辑上的同层链表)
+  id_type next;    // 指向的同索引层的下一个SkipListEntry(不是直接指向逻辑上的同层链表)
 } TsSkipListLevel;
 
 /*
@@ -75,14 +78,14 @@ static forceinline TsSkipListEntry* TsSkipListLocate(TsSkipList* list, int level
   // 从最顶层开始遍历，每趟循环都相当于下降一层索引
   for (int i = level - 1; i >= 0; i--) {
     // 当前索引层的链表查找
-    TsSkipListEntry* next = cur[i].next;
+    TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&cur[i].next);
     while (next) {
       *cmp = next->key - key;
       if (*cmp >= 0) {
         break;
       }
       cur = next->upper;   // 转到当前层的下一链表节点
-      next = cur[i].next;
+      next = (TsSkipListEntry*)AtomicPtrLoad(&cur[i].next);
     }
     if (update) {
       update[i] = cur;    // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
@@ -111,7 +114,7 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
   TsSkipListEntry* prev = TsSkipListLocate(list, level, key, &cmp, update, update_next);
 
   // cur此时的next要么指向NULL，要么>=key
-  TsSkipListEntry* cur = prev->upper[0].next;
+  TsSkipListEntry* cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[0].next);
 
   // 准备创建随机高度索引层的节点
   int new_level = TsRandomLevel();
@@ -137,10 +140,10 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
       }
       // 更新失败的场景
       // 1.update和update_next之间插入了新节点，重新定位合适的插入点
-      cur = prev->upper[i].next;
+      cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
       while (cur && cur->key < key) {
         prev = cur;
-        cur = cur->upper[i].next;
+        cur = (TsSkipListEntry*)AtomicPtrLoad(&cur->upper[i].next);
       }
     } while (true);
   }

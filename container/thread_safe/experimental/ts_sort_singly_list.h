@@ -40,7 +40,7 @@ void TsSortSinglyListHeadInit(TsSortSinglyListHead* head) {
 #endif
 
 #ifndef TsSortSinglyListEntryGetNext
-#define TsSortSinglyListEntryGetNext(ENTRY) ((ENTRY)->next)
+#define TsSortSinglyListEntryGetNext(ENTRY) ((TsSortSinglyListEntry*)AtomicPtrLoad(&(ENTRY)->next))
 #endif
 
 #ifndef TsSortSinglyListEntryGetNextPtr
@@ -48,7 +48,7 @@ void TsSortSinglyListHeadInit(TsSortSinglyListHead* head) {
 #endif
 
 #ifndef TsSortSinglyListEntrySetNext
-#define TsSortSinglyListEntrySetNext(ENTRY, NEXT) (ENTRY)->next = (NEXT)
+#define TsSortSinglyListEntrySetNext(ENTRY, NEXT) (AtomicPtrStore(&(ENTRY)->next, (NEXT)))
 #endif
 
 
@@ -83,7 +83,7 @@ int TsSortSinglyListLocate(TsSortSinglyListEntry** prev_ptr, TsSortSinglyListEnt
   return -1;
 }
 
-bool TsSortSinglyListInsert(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, TsSortSinglyListEntry* entry) {
+static bool TsSortSinglyListInsertInternal(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* cur, TsSortSinglyListEntry* entry) {
   do {
     TsSortSinglyListLocate(&prev, &cur, *TsSortSinglyListEntryGetKey(entry));
     TsSortSinglyListEntrySetNext(entry, cur);
@@ -105,7 +105,11 @@ bool TsSortSinglyListInsert(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* 
   return true;
 }
 
-bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr, TsSortSinglyListEntry** entry_ptr) {
+bool TsSortSinglyListInsert(TsSortSinglyListHead* head, TsSortSinglyListEntry* entry) {
+  return TsSortSinglyListInsertInternal((TsSortSinglyListEntry*)head, (TsSortSinglyListEntry*)AtomicPtrLoad(&head->first), entry);
+}
+
+static bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr, TsSortSinglyListEntry** entry_ptr) {
   TsSortSinglyListEntry* prev = *prev_ptr;
   TsSortSinglyListEntry* entry = *entry_ptr;
    release_assert(!IS_MARK(prev), "");
@@ -164,7 +168,7 @@ void TsSortSinglyListDeleteEntry(TsSortSinglyListEntry* prev, TsSortSinglyListEn
 }
 
 TsSortSinglyListEntry* TsSortSinglyListIteratorFirst(TsSortSinglyListHead* head) {
-  return head->first;
+  return (TsSortSinglyListEntry*)AtomicPtrLoad(&head->first);
 }
 
 TsSortSinglyListEntry* TsSortSinglyListIteratorNext(TsSortSinglyListEntry* cur) {

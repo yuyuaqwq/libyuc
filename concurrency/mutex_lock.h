@@ -18,14 +18,14 @@ extern "C" {
 * 互斥锁(基于线程切换)
 */
 typedef struct _MutexLock {
-  AtomicIntBool state;
+  AtomicBool state;
 } MutexLock;
 
 static forceinline void MutexLockInit(MutexLock* lock) {
   lock->state = false;
 }
 static forceinline void MutexLockAcquire(MutexLock* lock) {
-  while (AtomicBoolExchange(&lock->state, true) == true) { ThreadSwitch(0); continue; }
+  while (AtomicBoolExchange(&lock->state, true) == true) { ThreadSwitch(); continue; }
 }
 
 static forceinline void MutexLockRelease(MutexLock* lock) {

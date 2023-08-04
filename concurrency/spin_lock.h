@@ -18,7 +18,7 @@ extern "C" {
 * 自旋锁
 */
 typedef struct _SpinLock {
-  AtomicInt32 state;
+  AtomicBool state;
 } SpinLock;
 
 static forceinline void SpinLockInit(SpinLock* lock) {

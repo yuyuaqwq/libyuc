@@ -143,7 +143,7 @@ void PrintSkipList(TsSkipList* list) {
 			printf("\n\n");
 		}
 		if (cur[0].next) {
-			cur = cur[0].next->upper;
+			cur = (TsSkipListLevel*)cur[0].next->upper;
 		}
 		else {
 			cur = NULL;
@@ -853,13 +853,13 @@ void TestSkipList() {
 
 void TestTsSortSinglyListInsertThread(TsSortSinglyListHead* head, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		TsSortSinglyListInsert((TsSortSinglyListEntry*)head, head->first, (TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right);
+		TsSortSinglyListInsert(head, (TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right);
 	}
 }
 
 void TestTsSortSinglyListDeleteThread(TsSortSinglyListHead* head, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		TsSortSinglyListDelete((TsSortSinglyListEntry*)head, head->first, ((TsSortSinglyListEntryInt*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		TsSortSinglyListDelete((TsSortSinglyListEntry*)head, TsSortSinglyListIteratorFirst(head), ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
 	}
 }
 
@@ -888,7 +888,7 @@ void TestTsSortSinglyList() {
 	TsSortSinglyListEntry* cur = TsSortSinglyListIteratorFirst(&head);
 	while (cur) {
 		if (prev != NULL) {
-			if (((TsSortSinglyListEntryInt*)prev)->key > ((TsSortSinglyListEntryInt*)cur)->key) {
+			if (((TsSortSinglyListEntry*)prev)->key > ((TsSortSinglyListEntry*)cur)->key) {
 				printf("error");
 			}
 		}
@@ -916,7 +916,7 @@ void TestTsSortSinglyList() {
 	cur = TsSortSinglyListIteratorFirst(&head);
 	while (cur) {
 		if (prev != NULL) {
-			if (((TsSortSinglyListEntryInt*)prev)->key > ((TsSortSinglyListEntryInt*)cur)->key) {
+			if (((TsSortSinglyListEntry*)prev)->key > ((TsSortSinglyListEntry*)cur)->key) {
 				printf("error");
 			}
 		}
@@ -929,7 +929,7 @@ void TestTsSortSinglyList() {
 
 void TestTsSkipListInsertThread(TsSkipList* list, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		TsSkipListInsert(list, ((TsSortSinglyListEntryInt*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		TsSkipListInsert(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
 		// PrintSkipList(list);
 		// printf("\n\n\n\n");
 	}

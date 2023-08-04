@@ -115,7 +115,7 @@ extern "C" {
     bool height_update = true; \
     avl_tree_type_name##AvlEntry* new_sub_root_id = NULL; \
     avl_tree_type_name##AvlEntry* sub_root = *sub_root_io; \
-    avl_tree_type_name##AvlEntry* parent = parent_id != referncer##_InvalidId ? referencer##_Reference(tree, parent_id) : NULL; \
+    avl_tree_type_name##AvlEntry* parent = parent_id != referencer##_InvalidId ? referencer##_Reference(tree, parent_id) : NULL; \
     id_type sub_root_id = *sub_root_id_io; \
       assert(cur_bf >= -2 || cur_bf <= 2); \
     if (cur_bf == 2) { \
@@ -248,11 +248,12 @@ extern "C" {
     id_type cur_id = referencer##_InvalidId; \
     if (cur_id_ptr) cur_id = *cur_id_ptr; \
     id_type child_id = ins_entry_id; \
-    avl_tree_type_name##AvlEntry* child = NULL, * cur = NULL; \
-    cur = referencer##_Reference(tree, cur_id); \
-    accessor##_SetBalanceFactor(tree, cur, 0); \
+    avl_tree_type_name##AvlEntry* cur = NULL; \
+    avl_tree_type_name##AvlEntry* child = referencer##_Reference(tree, child_id); \
+    accessor##_SetBalanceFactor(tree, child, 0); \
     /* 插入节点后平衡因子可能发生变化，回溯维护平衡因子 */ \
-    while (cur) { \
+    while (cur_id != referencer##_InvalidId) { \
+      cur = referencer##_Reference(tree, cur_id); \
       child = referencer##_Reference(tree, child_id); \
       int8_t cur_bf = accessor##_GetBalanceFactor(tree, cur); \
       if (child_id == accessor##_GetLeft(tree, cur)) cur_bf++;    /* 新节点插入到当前节点的左子树 */ \
@@ -343,7 +344,7 @@ extern "C" {
   bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type del_entry_id) { \
     bool is_parent_left; \
     id_type del_min_entry_id = avl_tree_type_name##AvlBsTreeDelete(&tree->bs_tree, stack, del_entry_id, &is_parent_left); \
-    if(del_min_entry_id == referencer##_InvalidId) { \
+    if (del_min_entry_id == referencer##_InvalidId) { \
       return false; \
     } \
     if (del_min_entry_id != del_entry_id) { \
@@ -362,6 +363,7 @@ extern "C" {
   */ \
   static bool avl_tree_type_name##AvlTreeCheckPath(avl_tree_type_name##AvlTree* tree, id_type entry_id, offset_type* cur_height) { \
     if (entry_id == referencer##_InvalidId) { \
+      ++*cur_height; \
       return true; \
     } \
     bool correct = false; \

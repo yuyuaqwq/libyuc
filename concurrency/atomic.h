@@ -54,6 +54,15 @@ static forceinline void AtomicInt32Store(AtomicInt32* target, int32_t val) {
   *target = (AtomicInt32)val;    // 无需通过原子指令，只需要保证state是volatile就不会被编译器优化影响，最终会在某一时刻写回内存，原子性交给CPU
 }
 
+static forceinline void* AtomicPtrLoad(volatile void* target) {
+  return *(void**)target;
+}
+
+static forceinline void AtomicPtrStore(volatile void* target, void* val) {
+  *(volatile void**)target = (void*)val;
+}
+
+
 
 /*
 * 原子自增
@@ -62,7 +71,7 @@ static forceinline int32_t AtomicInt32Increment(AtomicInt32* target) {
   return (int32_t)InterlockedIncrement((volatile LONG*)target);
 }
 
-static forceinline int64_t AtomicInt32Increment(AtomicInt64* target) {
+static forceinline int64_t AtomicInt64Increment(AtomicInt64* target) {
   return (int64_t)InterlockedIncrement64((volatile LONG64*)target);
 }
 

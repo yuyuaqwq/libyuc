@@ -19,7 +19,7 @@ extern "C" {
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75  //%
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT 8  // (table->bucket.capacity - 1)
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT 12  // (table->bucket.capacity - 1)
 
 
 #ifdef LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS
@@ -100,7 +100,7 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey、_SetKey方法
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, max_detection_count, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer) \
   /*
   * 动态数组
   */ \
@@ -168,7 +168,7 @@ extern "C" {
   forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
     iter->cur_index = hash_table_type_name##HashGetIndex(table, key); \
     offset_type empty_index = -1; \
-    for (int32_t i = 0; i < LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT; i++) { \
+    for (int32_t i = 0; i < max_detection_count; i++) { \
       hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[iter->cur_index]; \
       key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
       if (comparer##_Equal(table, entry_key, key)) { \
@@ -177,7 +177,7 @@ extern "C" {
       if (empty_index == -1 && comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
         empty_index = iter->cur_index; \
       } \
-      if (i + 1 != LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT) \
+      if (i + 1 != max_detection_count) \
         iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
     } \
     if (empty_index != -1) iter->cur_index = empty_index; \
@@ -198,7 +198,7 @@ extern "C" {
         iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
         entry = &table->bucket.obj_arr[iter->cur_index]; \
         int32_t i = 0; \
-        for (; i < LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT; i++) { \
+        for (; i < max_detection_count; i++) { \
           key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
           if (comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
             element_mover##_Copy(table, &entry->obj, obj); \
@@ -207,7 +207,7 @@ extern "C" {
           iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
           entry = &table->bucket.obj_arr[iter->cur_index]; \
         } \
-        if (i < LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT) { \
+        if (i < max_detection_count) { \
           break; \
         } \
       } while (true); \
