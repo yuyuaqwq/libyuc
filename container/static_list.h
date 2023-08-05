@@ -38,7 +38,7 @@ extern "C" {
 /*
 * 访问器需要提供_GetNext、_SetNext方法
 */
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFINE(static_list_type_name, id_offset_type, element_type, referencer, accessor, list_count) \
+#define LIBYUC_CONTAINER_STATIC_LIST_DEFINE(static_list_type_name, id_offset_type, element_type, accessor, referencer, list_count) \
   void static_list_type_name##StaticListInit(static_list_type_name##StaticList* list, id_offset_type count) { \
     list->list_first[0] = 0; \
     id_offset_type i = 0; \

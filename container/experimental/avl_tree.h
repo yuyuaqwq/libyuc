@@ -38,7 +38,8 @@ extern "C" {
   id_type avl_tree_type_name##AvlTreeFind(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, key_type* key); \
   id_type avl_tree_type_name##AvlTreePut(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type put_entry_id); \
   bool avl_tree_type_name##AvlTreeDelete(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack, id_type del_entry_id); \
-  bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack); \
+  \
+  bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetBalanceFactor方法
 #define LIBYUC_CONTAINER_AVL_TREE_DEFINE(avl_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
@@ -381,7 +382,7 @@ extern "C" {
     if (parent) referencer##_Dereference(tree, parent); \
     return correct; \
   } \
-  bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree, avl_tree_type_name##AvlBsStackVector* stack) { \
+  bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree) { \
     avl_tree_type_name##AvlEntry* entry = referencer##_Reference(tree, tree->root); \
     if (!entry) return true; \
     offset_type cur_height = 0; \

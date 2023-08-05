@@ -248,6 +248,7 @@ extern "C" {
   * 返回被删除的节点(或被替换到当前位置的右子树最小节点)，构造所有回溯条件
   */ \
   id_type bs_tree_type_name##BsTreeDelete(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type entry_id, bool* is_parent_left) { \
+     assert(entry_id != referencer##_InvalidId); \
     id_type backtrack_id; \
     bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
     id_type* parent_id = bs_tree_type_name##BsStackVectorGetTail(stack); \

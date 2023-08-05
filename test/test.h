@@ -14,6 +14,8 @@
 #include <libyuc/container/hash_list.h>
 #include <libyuc/space_manager/buddy.h>
 
+#include <libyuc/container/bplus_tree.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,6 +100,10 @@ typedef struct _IntEntry_Avl {
 #define INT_RB_TREE_REFERENCER_Dereference(TREE, OBJ)
 #define INT_RB_TREE_REFERENCER_InvalidId (NULL)
 #define INT_RB_TREE_REFERENCER INT_RB_TREE_REFERENCER
+
+
+
+LIBYUC_CONTAINER_BPLUS_TREE_DECLARATION(Int, LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK, struct _IntBPlusEntry*, size_t, int16_t, int16_t, int64_t, int64_t, 32)
 
 
 //	LIBYUC_CONTAINER_HASH_LIST_DECLARATION(Int, int)

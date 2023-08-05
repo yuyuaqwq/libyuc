@@ -676,7 +676,7 @@ void TestAvl() {
 		//printf("\n\n\n\n");
 		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
 
-		if (!IntAvlTreeVerify(&tree, &stack)) {
+		if (!IntAvlTreeVerify(&tree)) {
 			printf("不是正确的avl");
 		}
 
@@ -719,11 +719,7 @@ void TestRb() {
 
 	l = GetTickCount();
 	//void** buf = (void**)malloc((count / section) * sizeof(void*));
-#ifdef NP
-	IntRbBsStackVector stack;
-	IntRbEntry* stack_arr[64];
-	IntRbBsStackVectorInit(&stack, 64, stack_arr);
-#endif
+
 	for (int j = 0; j < section; j++) {
 
 		IntRbTreeInit(&tree);
@@ -733,11 +729,7 @@ void TestRb() {
 			//	//printf("失败%d", i);
 			//}
 			//buf[i] = malloc(16);
-#ifndef NP
-			IntRbTreeInsert(&tree, /*&stack,*/ (IntRbEntry*)&arr2[i]->entry);
-#else
-			IntRbTreeInsert(&tree, &stack, (IntRbEntry*)&arr2[i]->entry);
-#endif
+			IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry);
 			if (count < 20) {
 
 				//PrintRB(&tree, tree.root, 0);
@@ -752,13 +744,8 @@ void TestRb() {
 		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
 
 
-#ifndef NP
 		l = GetTickCount();
 		printf("统计count:%d    %dms\n", IntRbTreeGetCount(&tree), GetTickCount() - l);
-#else
-		l = GetTickCount();
-		printf("统计count:%d    %dms\n", IntRbTreeGetCount(&tree, &stack), GetTickCount() - l);
-#endif
 
 		if (!IntRbTreeVerify(&tree)) {
 			printf("不正确的红黑树");
@@ -767,33 +754,19 @@ void TestRb() {
 		l = GetTickCount();
 
 		for (int i = 0; i < count / section; i++) {
-#ifndef NP
-			if (!IntRbTreeFind(&tree, /*&stack,*/ &arr2[i]->key)) {
+			if (!IntRbTreeFind(&tree, &arr2[i]->key)) {
 				printf("找不到");
 			}
-#else
-			if (!IntRbTreeFind(&tree, &stack, &arr2[i]->key)) {
-				printf("找不到");
-			}
-#endif
 		}
 
 		printf("查找耗时：%dms\n", GetTickCount() - l);
+
 		l = GetTickCount();
 
 		for (int i = 0; i < count / section; i++) {
-			//free(buf[i]);
-#ifndef NP
-			IntRbEntry* entry = IntRbTreeFind(&tree, /*&stack,*/ &arr2[i]->key);
-			if (!IntRbTreeDelete(&tree, /*&stack,*/ entry)) {
+			if (!IntRbTreeDelete(&tree, &arr2[i]->key)) {
 				printf("无法删除");
 			}
-#else
-			IntRbEntry* entry = IntRbTreeFind(&tree, &stack, &arr2[i]->key);
-			if (!IntRbTreeDelete(&tree, &stack, entry)) {
-				printf("无法删除");
-			}
-#endif
 
 			if (count < 20) {
 				PrintRB(&tree, tree.root, 0);
@@ -807,9 +780,6 @@ void TestRb() {
 		printf("删除耗时：%dms  \n", GetTickCount() - l);
 
 	}
-	
-
-
 	printf("总耗时：%dms  \n", GetTickCount() - l);
 
 }
@@ -1076,8 +1046,8 @@ int main() {
 	//
 	//TestSkipList();
 
-	TestAvl();
-	TestArt();
+	//TestAvl();
+	//TestArt();
 	TestRb();
 	//TestTsSortSinglyList();
 

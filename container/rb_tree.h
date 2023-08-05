@@ -21,6 +21,11 @@ typedef enum {
   kRbRed,
 } RbColor;
 
+#define LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack_name, id_type, offset_type) \
+    rb_tree_type_name##RbBsStackVector stack_name; \
+    id_type stack_name##_buf[sizeof(offset_type) * 8 * 2]; \
+    rb_tree_type_name##RbBsStackVectorInit(&stack_name, sizeof(stack_name##_buf) / sizeof(id_type), stack_name##_buf); \
+
 #define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, offset_type, key_type) \
   LIBYUC_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name##Rb, id_type, offset_type, key_type) \
   typedef struct _##rb_tree_type_name##RbEntry { \
@@ -38,19 +43,28 @@ typedef enum {
       id_type root; \
     }; \
   } rb_tree_type_name##RbTree; \
+  typedef struct _##rb_tree_type_name##RbTreeIterator { \
+    id_type cur_id; \
+    rb_tree_type_name##RbBsStackVector stack; \
+    id_type stack_buf[sizeof(offset_type) * 8 * 2]; \
+  } rb_tree_type_name##RbTreeIterator; \
   \
   void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree); \
-  id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* treee, rb_tree_type_name##RbBsStackVector* stack, key_type* key); \
-  bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* treee, rb_tree_type_name##RbBsStackVector* stack, id_type insert_entry_id); \
-  id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* treee, rb_tree_type_name##RbBsStackVector* stack, id_type put_entry_id); \
-  bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* treee, rb_tree_type_name##RbBsStackVector* stack, id_type del_entry_id); \
+  id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key); \
+  bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id); \
+  id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
+  bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, key_type* key); \
+  bool rb_tree_type_name##RbTreeDeleteByIterator(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
+  offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree); \
+  \
+  id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator, key_type* key, int8_t* cmp_status); \
+  id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
+  id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
+  id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
+  id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
+  \
   bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree); \
-  offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack); \
-  id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, key_type* key, int8_t* cmp_status); \
-  id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree); \
-  id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree); \
-  id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, id_type cur_id); \
-  id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, id_type cur_id); \
+
 
 // 访问器需要提供_GetKey、_Get/SetRight、_Get/SetLeft、_Set/GetColor方法
 #define LIBYUC_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
@@ -308,34 +322,41 @@ typedef enum {
   * 从树中查找节点
   * 存在返回查找到的节点对应的对象，不存在返回NULL/最后一次查找的节点
   */ \
-  id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, key_type* key) { \
+  static id_type rb_tree_type_name##RbTreeFindInternal(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, key_type* key) { \
     return rb_tree_type_name##RbBsTreeFind(&tree->bs_tree, stack, key); \
+  } \
+  id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key) { \
+    LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+    return rb_tree_type_name##RbTreeFindInternal(&tree->bs_tree, &stack, key); \
   } \
   /*
   * 向树中插入节点
   * 允许重复key，但插入同一个节点时返回false
   */ \
-  bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type insert_entry_id) { \
-    if(!rb_tree_type_name##RbBsTreeInsert(&tree->bs_tree, stack, insert_entry_id)) return false; \
-    rb_tree_type_name##RbTreeInsertFixup(tree, stack, insert_entry_id); \
+  bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id) { \
+    LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+    if(!rb_tree_type_name##RbBsTreeInsert(&tree->bs_tree, &stack, insert_entry_id)) return false; \
+    rb_tree_type_name##RbTreeInsertFixup(tree, &stack, insert_entry_id); \
     return true; \
   } \
   /*
   * 向树中推入节点
   * 允许覆盖重复key，返回被覆盖的原entry，否则InvalidId，如果put_entry_id已经被插入过了，也会被返回(返回值 == put_entry_id)
   */ \
-  id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type put_entry_id) { \
-    id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, stack, put_entry_id); \
-    if (old_id == referencer##_InvalidId) rb_tree_type_name##RbTreeInsertFixup(tree, stack, put_entry_id); \
+  id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
+    LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+    id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, &stack, put_entry_id); \
+    if (old_id == referencer##_InvalidId) rb_tree_type_name##RbTreeInsertFixup(tree, &stack, put_entry_id); \
     return old_id; \
   } \
   /*
   * 删除树中指定节点
   */ \
-  bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type del_entry_id) { \
+  static bool rb_tree_type_name##RbTreeDeleteInternal(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type del_entry_id) { \
+     assert(del_entry_id != referencer##_InvalidId); \
     bool is_parent_left; \
     id_type del_min_entry_id = rb_tree_type_name##RbBsTreeDelete(&tree->bs_tree, stack, del_entry_id, &is_parent_left); \
-    if(del_min_entry_id == referencer##_InvalidId) { \
+    if (del_min_entry_id == referencer##_InvalidId) { \
       return false; \
     } \
     if (del_min_entry_id != del_entry_id) { \
@@ -350,6 +371,41 @@ typedef enum {
     } \
     rb_tree_type_name##RbTreeDeleteFixup(tree, stack, del_entry_id, is_parent_left); \
     return true; \
+  } \
+  bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, key_type* key) { \
+    LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+    id_type del_entry_id = rb_tree_type_name##RbTreeFindInternal(&tree->bs_tree, &stack, key); \
+    if (del_entry_id == referencer##_InvalidId) return false; \
+    return rb_tree_type_name##RbTreeDeleteInternal(tree, &stack, del_entry_id); \
+  } \
+  bool rb_tree_type_name##RbTreeDeleteByIterator(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+    if (iterator->cur_id == referencer##_InvalidId) return false; \
+    return rb_tree_type_name##RbTreeDeleteInternal(tree, &iterator->stack, iterator->cur_id); \
+  } \
+  offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
+    LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+    return rb_tree_type_name##RbBsTreeGetCount((rb_tree_type_name##RbBsTree*)tree, &stack); \
+  } \
+  /*
+  * 迭代器相关
+  */ \
+  id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator, key_type* key, int8_t* cmp_status) { \
+    rb_tree_type_name##RbBsStackVectorInit(&iterator->stack, sizeof(iterator->stack_buf) / sizeof(id_type), iterator->stack_buf); \
+    return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, key, cmp_status); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+    rb_tree_type_name##RbBsStackVectorInit(&iterator->stack, sizeof(iterator->stack_buf) / sizeof(id_type), iterator->stack_buf); \
+    return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+    rb_tree_type_name##RbBsStackVectorInit(&iterator->stack, sizeof(iterator->stack_buf) / sizeof(id_type), iterator->stack_buf); \
+    return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+    return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
+  } \
+  id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+    return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
   } \
   /*
   * 验证红黑树性质
@@ -376,7 +432,7 @@ typedef enum {
     if (parent) referencer##_Dereference(tree, parent); \
     return correct; \
   } \
-  bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
+  bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree) { \
     rb_tree_type_name##RbEntry* entry = referencer##_Reference(tree, tree->root); \
     if (!entry) return true; \
     bool correct = false; \
@@ -397,28 +453,7 @@ typedef enum {
     referencer##_Dereference(tree, entry); \
     return correct; \
   } \
-  offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
-    return rb_tree_type_name##RbBsTreeGetCount((rb_tree_type_name##RbBsTree*)tree, stack); \
-  } \
-  /*
-  * 迭代器相关
-  */ \
-  id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, key_type* key, int8_t* cmp_status) { \
-    return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, stack, key, cmp_status); \
-  } \
-  id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
-    return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree, stack); \
-  } \
-  id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack) { \
-    return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, stack); \
-  } \
-  id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type cur_id) { \
-    return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, stack, cur_id); \
-  } \
-  id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbBsStackVector* stack, id_type cur_id) { \
-    return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, stack, cur_id); \
-  } \
-
+  
 
 
 //LIBYUC_CONTAINER_RB_TREE_DECLARATION(Defalut, struct _DefalutRbEntry*, size_t, int)

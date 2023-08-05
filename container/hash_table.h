@@ -100,7 +100,7 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey、_SetKey方法
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, max_detection_count, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer, max_detection_count) \
   /*
   * 动态数组
   */ \
