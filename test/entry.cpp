@@ -1026,7 +1026,7 @@ int main() {
 	//	arrarr.insert(qqqq);
 	//}
 
-
+	arr2.reserve(count);
 	for (int64_t i = 0; i < count; i++) {
 		QVQ* qvq = ObjectCreate(QVQ);
 		qvq->key = i;// i;
