@@ -21,11 +21,11 @@ typedef enum _BPlusEntryType {
   kBPlusEntryLeaf = 1,
 } BPlusEntryType;
 typedef enum {
-  kBPlusCursorNe,
-  kBPlusCursorEq,
-  kBPlusCursorNext,
-  kBPlusCursorEnd,
-} BPlusCursorStatus;
+  kBPlusIteratorNe,
+  kBPlusIteratorEq,
+  kBPlusIteratorDown,
+  kBPlusIteratorEnd,
+} BPlusIteratorStatus;
 
 
 /*
@@ -78,13 +78,13 @@ typedef enum {
     entry_id_type entry_id; \
     bp_tree_type_name##BPlusEntryRbTreeIterator rb_iterator; \
   } bp_tree_type_name##BPlusElementPos; \
-  LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusCursorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
-  typedef struct _##bp_tree_type_name##BPlusCursor { \
-    bp_tree_type_name##BPlusCursorStackVector stack; \
+  LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
+  typedef struct _##bp_tree_type_name##BPlusIterator { \
+    bp_tree_type_name##BPlusIteratorStackVector stack; \
     bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
     element_id_type level; \
-    BPlusCursorStatus leaf_status; \
-  } bp_tree_type_name##BPlusCursor; \
+    BPlusIteratorStatus leaf_status; \
+  } bp_tree_type_name##BPlusIterator; \
   \
   leaf_link_mode##_DECLARATION_1(bp_tree_type_name, entry_id_type) \
   typedef struct _##bp_tree_type_name##BPlusTree { \
@@ -129,12 +129,11 @@ typedef enum {
   } bp_tree_type_name##BPlusEntry; \
   \
   \
-  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-  BPlusCursorStatus bp_tree_type_name##BPlusCursorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
-  void bp_tree_type_name##BPlusCursorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor); \
-  BPlusCursorStatus bp_tree_type_name##BPlusCursorNext(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key); \
+  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusIteratorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator); \
+  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusIteratorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator); \
+  BPlusIteratorStatus bp_tree_type_name##BPlusIteratorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key); \
+  void bp_tree_type_name##BPlusIteratorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator); \
+  BPlusIteratorStatus bp_tree_type_name##BPlusIteratorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key); \
   \
   void bp_tree_type_name##BPlusTreeInit(bp_tree_type_name##BPlusTree* tree); \
   bool bp_tree_type_name##BPlusTreeFind(bp_tree_type_name##BPlusTree* tree, key_type* key); \
@@ -292,13 +291,13 @@ kv分离是外层处理的，b+树操作的只有element
 
 
 
-#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, entry_offset_type, element_id_type, element_offset_type, key_type, value_type, cursor_allocator, entry_accessor, entry_allocator, entry_referencer, element_accessor, element_allocator, element_referencer, rb_comparer, default_stack_size) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, entry_offset_type, element_id_type, element_offset_type, key_type, value_type, iterator_allocator, entry_accessor, entry_allocator, entry_referencer, element_accessor, element_allocator, element_referencer, rb_comparer, default_stack_size) \
   /*
-  * B+树游标
+  * B+树迭代器
   */\
   static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
   leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
-  LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusCursorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos, cursor_allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+  LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos, iterator_allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
   \
   /*
   * 页内红黑树
@@ -402,41 +401,35 @@ kv分离是外层处理的，b+树操作的只有element
   } \
   \
   \
-  /* B+树游标 */ \
-  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
-    if (cursor->level < 0) { \
+  /* B+树迭代器 */ \
+  BPlusIteratorStatus bp_tree_type_name##BPlusIteratorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key) { \
+    bp_tree_type_name##BPlusIteratorStackVectorInit(&iterator->stack, default_stack_size, iterator->default_stack); \
+    iterator->stack.count = 0; \
+    iterator->level = -1; \
+    return bp_tree_type_name##BPlusIteratorDown(tree, iterator, key); \
+  } \
+  void bp_tree_type_name##BPlusIteratorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator) { \
+    bp_tree_type_name##BPlusIteratorStackVectorRelease(&iterator->stack); \
+  } \
+  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusIteratorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator) { \
+    if (iterator->level < 0) { \
       return NULL; \
     } \
-    return &cursor->stack.obj_arr[cursor->level];\
+    return &iterator->stack.obj_arr[iterator->level];\
   } \
-  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
-    if (cursor->level <= 0) { \
+  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusIteratorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator) { \
+    if (iterator->level <= 0) { \
       return NULL; \
     } \
-    return &cursor->stack.obj_arr[--cursor->level]; \
+    return &iterator->stack.obj_arr[--iterator->level]; \
   } \
-  bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusCursorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
-    if (cursor->level + 1 >= cursor->stack.count) { \
-      return NULL; \
-    } \
-    return &cursor->stack.obj_arr[++cursor->level]; \
-  } \
-  BPlusCursorStatus bp_tree_type_name##BPlusCursorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key) { \
-    bp_tree_type_name##BPlusCursorStackVectorInit(&cursor->stack, default_stack_size, cursor->default_stack); \
-    cursor->stack.count = 0; \
-    cursor->level = -1; \
-    return bp_tree_type_name##BPlusCursorNext(tree, cursor, key); \
-  } \
-  void bp_tree_type_name##BPlusCursorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
-    bp_tree_type_name##BPlusCursorStackVectorRelease(&cursor->stack); \
-  } \
-  BPlusCursorStatus bp_tree_type_name##BPlusCursorNext(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, key_type* key) { \
+  BPlusIteratorStatus bp_tree_type_name##BPlusIteratorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key) { \
     bp_tree_type_name##BPlusElementPos cur; \
-    bp_tree_type_name##BPlusElementPos* parent = bp_tree_type_name##BPlusCursorCur(tree, cursor); \
+    bp_tree_type_name##BPlusElementPos* parent = bp_tree_type_name##BPlusIteratorCur(tree, iterator); \
     if (parent) { \
       bp_tree_type_name##BPlusEntry* parent_entry = entry_referencer##_Reference(tree, parent->entry_id); \
       if (parent_entry->type == kBPlusEntryLeaf) { \
-        return kBPlusCursorEnd; \
+        return kBPlusIteratorEnd; \
       } \
       cur.entry_id = bp_tree_type_name##BPlusElementGetChildId(parent_entry, parent->rb_iterator.cur_id); \
       entry_referencer##_Dereference(tree, parent_entry); \
@@ -458,18 +451,18 @@ kv分离是外层处理的，b+树操作的只有element
     else { \
       cur.rb_iterator.cur_id = bp_tree_type_name##BPlusEntryRbReferencer_InvalidId; \
     } \
-    bp_tree_type_name##BPlusCursorStackVectorPushTail(&cursor->stack, &cur); \
-    BPlusCursorStatus status = kBPlusCursorNext; \
+    bp_tree_type_name##BPlusIteratorStackVectorPushTail(&iterator->stack, &cur); \
+    BPlusIteratorStatus status = kBPlusIteratorDown; \
     if (cur_entry->type == kBPlusEntryLeaf) { \
       if (cmp_status != 0) { \
-        status = kBPlusCursorNe; \
+        status = kBPlusIteratorNe; \
       } \
       else { \
-        status = kBPlusCursorEq; \
+        status = kBPlusIteratorEq; \
       } \
-      cursor->leaf_status = status; \
+      iterator->leaf_status = status; \
     } \
-    ++cursor->level; \
+    ++iterator->level; \
     entry_referencer##_Dereference(tree, cur_entry); \
     return status; \
   } \
@@ -488,7 +481,7 @@ kv分离是外层处理的，b+树操作的只有element
   */ \
   static element_id_type bp_tree_type_name##BPlusEntryInsertElement(bp_tree_type_name##BPlusEntry* dst_entry, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element, entry_id_type element_child_id) { \
     element_id_type element_id = bp_tree_type_name##BPlusElementCreate(dst_entry); \
-      assert(element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+     assert(element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
     bp_tree_type_name##BPlusElementSet(dst_entry, element_id, src_entry, insert_element, element_child_id); \
     element_id_type old_element_id = bp_tree_type_name##BPlusEntryRbTreePut(&dst_entry->rb_tree, element_id); \
     if (old_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId && old_element_id != element_id) bp_tree_type_name##BPlusElementRelease(dst_entry, old_element_id); \
@@ -702,9 +695,9 @@ kv分离是外层处理的，b+树操作的只有element
   * 向树插入元素
   * 会抢夺src_entry的所有权
   */ \
-  static bool bp_tree_type_name##BPlusTreeInsertElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_element_id, entry_id_type insert_element_child_id) { \
-    bp_tree_type_name##BPlusElementPos* cur_pos = bp_tree_type_name##BPlusCursorCur(tree, cursor); \
-    bp_tree_type_name##BPlusElementPos* parent_pos = bp_tree_type_name##BPlusCursorUp(tree, cursor); \
+  static bool bp_tree_type_name##BPlusTreeInsertElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_element_id, entry_id_type insert_element_child_id) { \
+    bp_tree_type_name##BPlusElementPos* cur_pos = bp_tree_type_name##BPlusIteratorCur(tree, iterator); \
+    bp_tree_type_name##BPlusElementPos* parent_pos = bp_tree_type_name##BPlusIteratorUp(tree, iterator); \
     entry_id_type right_id; \
     bp_tree_type_name##BPlusEntry* cur = entry_referencer##_Reference(tree, cur_pos->entry_id); \
     bool success = true, insert_up = false; \
@@ -712,7 +705,7 @@ kv分离是外层处理的，b+树操作的只有element
     do { \
       element_id_type free_rate = entry_accessor##_GetFreeRate(tree, cur); \
       element_id_type need_rate = element_accessor##_GetNeedRate(cur, src_entry, insert_element); \
-      if (cursor->leaf_status == kBPlusCursorEq) { \
+      if (iterator->leaf_status == kBPlusIteratorEq) { \
         bp_tree_type_name##BPlusElement* raw = element_referencer##_Reference(cur, cur_pos->rb_iterator.cur_id); \
         element_id_type raw_rate = element_accessor##_GetNeedRate(cur, cur, raw); \
         element_referencer##_Dereference(cur, raw); \
@@ -723,7 +716,7 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         else { \
           /* 空间不足将会触发分裂，先将其删除 */ \
-          cursor->leaf_status = kBPlusCursorNe; \
+          iterator->leaf_status = kBPlusIteratorNe; \
           bp_tree_type_name##BPlusEntryDeleteElement(cur, &cur_pos->rb_iterator); \
           /* 删除后迭代器失效，重新定位 */ \
           bp_tree_type_name##BPlusEntryRbTreeIteratorLocate(&cur->rb_tree, &cur_pos->rb_iterator, , NULL); \
@@ -765,7 +758,7 @@ kv分离是外层处理的，b+树操作的只有element
     entry_referencer##_Dereference(tree, cur); \
     if (insert_up) { \
       bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(src_entry, up_element_id); \
-      return bp_tree_type_name##BPlusTreeInsertElement(tree, cursor, src_entry, up_element, up_element_id, cur_pos->entry_id); \
+      return bp_tree_type_name##BPlusTreeInsertElement(tree, iterator, src_entry, up_element, up_element_id, cur_pos->entry_id); \
     } \
     if (src_entry) { \
       element_referencer##_Dereference(src_entry, insert_element); \
@@ -778,9 +771,9 @@ kv分离是外层处理的，b+树操作的只有element
   /*
   * 删除树中的指定元素
   */ \
-  static bool bp_tree_type_name##BPlusTreeDeleteElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusCursor* cursor) { \
-    bp_tree_type_name##BPlusElementPos* cur_pos = bp_tree_type_name##BPlusCursorCur(tree, cursor); \
-    bp_tree_type_name##BPlusElementPos* parent_pos = bp_tree_type_name##BPlusCursorUp(tree, cursor); \
+  static bool bp_tree_type_name##BPlusTreeDeleteElement(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator) { \
+    bp_tree_type_name##BPlusElementPos* cur_pos = bp_tree_type_name##BPlusIteratorCur(tree, iterator); \
+    bp_tree_type_name##BPlusElementPos* parent_pos = bp_tree_type_name##BPlusIteratorUp(tree, iterator); \
     bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, cur_pos->entry_id); \
     entry_id_type sibling_entry_id = 0; \
     bp_tree_type_name##BPlusEntry* sibling = NULL; \
@@ -923,7 +916,7 @@ kv分离是外层处理的，b+树操作的只有element
     if (entry) { entry_referencer##_Dereference(tree, entry); } \
     \
     if (delete_up) { \
-      return bp_tree_type_name##BPlusTreeDeleteElement(tree, cursor);   /* 尾递归 */ \
+      return bp_tree_type_name##BPlusTreeDeleteElement(tree, iterator);   /* 尾递归 */ \
     } \
     return success; \
   } \
@@ -941,39 +934,39 @@ kv分离是外层处理的，b+树操作的只有element
   * 从B+树中查找指定key
   */ \
   bool bp_tree_type_name##BPlusTreeFind(bp_tree_type_name##BPlusTree* tree, key_type* key) { \
-    bp_tree_type_name##BPlusCursor cursor; \
-    BPlusCursorStatus status = bp_tree_type_name##BPlusCursorFirst(tree, &cursor, key); \
-    while (status == kBPlusCursorNext) { \
-      status = bp_tree_type_name##BPlusCursorNext(tree, &cursor, key); \
+    bp_tree_type_name##BPlusIterator iterator; \
+    BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorFirst(tree, &iterator, key); \
+    while (status == kBPlusIteratorDown) { \
+      status = bp_tree_type_name##BPlusIteratorDown(tree, &iterator, key); \
     } \
-    return status == kBPlusCursorEq; \
+    return status == kBPlusIteratorEq; \
   } \
   /*
   * 从B+树中插入指定key
   */ \
   bool bp_tree_type_name##BPlusTreeInsert(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusLeafElement* element) { \
-    bp_tree_type_name##BPlusCursor cursor; \
-    BPlusCursorStatus status = bp_tree_type_name##BPlusCursorFirst(tree, &cursor, &element->key); \
-    while (status == kBPlusCursorNext) { \
-      status = bp_tree_type_name##BPlusCursorNext(tree, &cursor, &element->key); \
+    bp_tree_type_name##BPlusIterator iterator; \
+    BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorFirst(tree, &iterator, &element->key); \
+    while (status == kBPlusIteratorDown) { \
+      status = bp_tree_type_name##BPlusIteratorDown(tree, &iterator, &element->key); \
     } \
-    bool success = bp_tree_type_name##BPlusTreeInsertElement(tree, &cursor, NULL, (bp_tree_type_name##BPlusElement*)element, element_referencer##_InvalidId, entry_referencer##_InvalidId); \
-    bp_tree_type_name##BPlusCursorRelease(tree, &cursor); \
+    bool success = bp_tree_type_name##BPlusTreeInsertElement(tree, &iterator, NULL, (bp_tree_type_name##BPlusElement*)element, element_referencer##_InvalidId, entry_referencer##_InvalidId); \
+    bp_tree_type_name##BPlusIteratorRelease(tree, &iterator); \
     return success; \
   } \
   /*
   * 从B+树中删除指定key
   */ \
   bool bp_tree_type_name##BPlusTreeDelete(bp_tree_type_name##BPlusTree* tree, key_type* key) { \
-    bp_tree_type_name##BPlusCursor cursor; \
-    BPlusCursorStatus status = bp_tree_type_name##BPlusCursorFirst(tree, &cursor, key); \
-    while (status == kBPlusCursorNext) { \
-      status = bp_tree_type_name##BPlusCursorNext(tree, &cursor, key); \
+    bp_tree_type_name##BPlusIterator iterator; \
+    BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorFirst(tree, &iterator, key); \
+    while (status == kBPlusIteratorDown) { \
+      status = bp_tree_type_name##BPlusIteratorDown(tree, &iterator, key); \
     } \
-    if (status == kBPlusCursorNe) { \
+    if (status == kBPlusIteratorNe) { \
       return false; \
     } \
-    bool success = bp_tree_type_name##BPlusTreeDeleteElement(tree, &cursor); \
+    bool success = bp_tree_type_name##BPlusTreeDeleteElement(tree, &iterator); \
     return success; \
   } \
 
