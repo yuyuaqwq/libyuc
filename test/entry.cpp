@@ -953,12 +953,84 @@ void TestEpoch() {
 	
 }
 
+void TestHashTable() {
+	printf("\n哈希表：\n");
+
+	l = GetTickCount();
+	IntHashTable table;
+	int64_t empty = -1;
+	IntHashTableInit(&table, 67108864, 0, &empty);
+	for (int i = 0; i < count; i++) {
+		IntHashTablePut(&table, &arr2[i]->key);
+		//printf("666");
+
+		//HashTableIterator iter;
+		//int* obj = (int*)HashTableFirst(&table, &iter);
+		//while (obj) {
+		//	printf("%d\n", *obj);
+		//	obj = (int*)HashTableNext(&iter);
+		//}
+		//printf("\n\n\n");
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	//HashTableIterator iter;
+	//int* obj = (int*)HashTableFirst(&table, &iter);
+	//while (obj) {
+	//	printf("%d\n", *obj);
+	//	obj = (int*)HashTableNext(&iter);
+	//}
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		//if (Hashmap_murmurhash(&i, 4) % 100000000 == 0) {
+		//	//printf("找不到");
+		//	j += 1;
+		//}
+		if (!IntHashTableFind(&table, &arr2[i]->key)) {
+			printf("找不到%llx", *&arr2[i]->key);
+		}
+	}
+	l = GetTickCount() - l;
+	printf("查找耗时：%dms\n", l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (!IntHashTableDelete(&table, &arr2[i]->key)) {
+			//printf("删除找不到");
+		}
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		//if (Hashmap_murmurhash(&i, 4) % 100000000 == 0) {
+		//	//printf("找不到");
+		//	j += 1;
+		//}
+		if (IntHashTableFind(&table, &arr2[i]->key)) {
+			printf("找到了");
+		}
+	}
+	l = GetTickCount() - l;
+	printf("查找耗时：%dms\n", l);
+
+}
 
 //void TestTsSinglyList() {
 //	TsSinglyListHead head;
 //	TsSinglyListInit(head);
 //	TsSinglyListPutFirst(&head, );
 //}
+
+void ReverseOrder(void* buf, size_t size) {
+	uint8_t* buf_ = (uint8_t*)buf;
+	for (size_t i = 0; i < size / 2; i++) {
+		uint8_t temp = buf_[i];
+		buf_[i] = buf_[size - 1 - i];
+		buf_[size - 1 - i] = temp;
+	}
+}
 
 int main() {
 	//IntLruList lru_list;
@@ -968,34 +1040,6 @@ int main() {
 
 	//InitializeCriticalSection(&cs);
 	//
-
-	//SpinLockInit(&lock);
-	//SleepLockInit(&slock);
-	//
-	//HANDLE hand[10];		//
-	//for (int i = 0; i < sizeof(hand)/sizeof(HANDLE); i++) {
-	//	hand[i] = CreateThread(NULL, NULL, testfunc, (LPVOID)i, NULL, NULL);
-	//};
-	//
-	//l = GetTickCount();
-	//
-	//DWORD pp = WaitForMultipleObjects(sizeof(hand) / sizeof(HANDLE), hand, TRUE, -1);
-	//printf("%d   i:%d, %dms\n\n", GetLastError(), k, GetTickCount() - l);
-	//while (true) {
-	//	Sleep(1000);
-	//}
-
-	//std::vector<uint8_t> bitarr(10);
-	//Bitmap bitmap;
-	//bitmap.arr.objArr = bitarr.data();
-	//bitmap.arr.count = 10;
-	//bitmap.arr.objSize = 1;
-	//BitmapAlloc(&bitmap, 5);
-	//BitmapAlloc(&bitmap, 3);
-	//BitmapFree(&bitmap, 2, 3);
-	//BitmapAlloc(&bitmap, 4);
-	//BitmapAlloc(&bitmap, 3);
-
 
 
 
@@ -1030,12 +1074,13 @@ int main() {
 	for (int64_t i = 0; i < count; i++) {
 		QVQ* qvq = ObjectCreate(QVQ);
 		qvq->key = i;// i;
+		//ReverseOrder(&qvq->key, 8);
 		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
 	for (int64_t i = 0; i < count; i++) {
-		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+		//std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
 
 
@@ -1048,9 +1093,9 @@ int main() {
 
 	//TestAvl();
 	//TestArt();
-	TestRb();
+	//TestRb();
 	//TestTsSortSinglyList();
-
+	TestHashTable();
 
 	
 	//goto qqqqqq;
@@ -1114,95 +1159,35 @@ int main() {
 
 
 
-	printf("\n哈希表：\n");
+	//
 
-	l = GetTickCount();
-	IntHashTable table;
-	int64_t empty = -1;
-	IntHashTableInit(&table, 8, 0, &empty);
-	for (int i = 0; i < count; i++) {
-		IntHashTablePut(&table, &arr2[i]->key);
-		//printf("666");
+	//struct hashfunc {
+	//	size_t operator()(int64_t i) const {
+	//		return HashCode_murmur3_fmix64inline(i);
+	//	}
+	//};
 
-		//HashTableIterator iter;
-		//int* obj = (int*)HashTableFirst(&table, &iter);
-		//while (obj) {
-		//	printf("%d\n", *obj);
-		//	obj = (int*)HashTableNext(&iter);
-		//}
-		//printf("\n\n\n");
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	//HashTableIterator iter;
-	//int* obj = (int*)HashTableFirst(&table, &iter);
-	//while (obj) {
-	//	printf("%d\n", *obj);
-	//	obj = (int*)HashTableNext(&iter);
+	//printf("\nSTL ht:\n");
+	//l = GetTickCount();
+	//std::unordered_set<int64_t, hashfunc> mapaa;
+	//for (int i = 0; i < count; i++) {
+	//	mapaa.insert(arr2[i]->key);
+	//	//mapaa.insert(std::make_pair(arr2[i]->key, 0));
 	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		//if (Hashmap_murmurhash(&i, 4) % 100000000 == 0) {
-		//	//printf("找不到");
-		//	j += 1;
-		//}
-		if (!IntHashTableFind(&table, &arr2[i]->key)) {
-			printf("找不到%llx", *&arr2[i]->key);
-		}
-	}
-	l = GetTickCount() - l;
-	printf("查找耗时：%dms\n", l);
-
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (!IntHashTableDelete(&table, &arr2[i]->key)) {
-			//printf("删除找不到");
-		}
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
-
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		//if (Hashmap_murmurhash(&i, 4) % 100000000 == 0) {
-		//	//printf("找不到");
-		//	j += 1;
-		//}
-		if (IntHashTableFind(&table, &arr2[i]->key)) {
-			printf("找到了");
-		}
-	}
-	l = GetTickCount() - l;
-	printf("查找耗时：%dms\n", l);
-
-
-	struct hashfunc {
-		size_t operator()(int64_t i) const {
-			return HashCode_murmur3_fmix64inline(i);
-		}
-	};
-
-	printf("\nSTL ht:\n");
-	l = GetTickCount();
-	std::unordered_set<int64_t, hashfunc> mapaa;
-	for (int i = 0; i < count; i++) {
-		mapaa.insert(arr2[i]->key);
-		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (mapaa.find(arr2[i]->key) == mapaa.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		mapaa.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (mapaa.find(arr2[i]->key) == mapaa.end()) {
+	//		printf("找不到");
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	mapaa.erase(arr2[i]->key);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
 
@@ -1251,25 +1236,25 @@ int main() {
 	//}
 	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	printf("\nSTL rb:\n");
-	l = GetTickCount();
-	std::map<int, int> mapaaaa;
-	for (int i = 0; i < count; i++) {
-		mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
+	//printf("\nSTL rb:\n");
+	//l = GetTickCount();
+	//std::map<int, int> mapaaaa;
+	//for (int i = 0; i < count; i++) {
+	//	mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
+	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (mapaaaa.find(arr2[i]->key) == mapaaaa.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (mapaaaa.find(arr2[i]->key) == mapaaaa.end()) {
+	//		printf("找不到");
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		mapaaaa.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	mapaaaa.erase(arr2[i]->key);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
 }
