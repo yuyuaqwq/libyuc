@@ -3,7 +3,7 @@
 #ifndef LIBYUC_CONTAINER_DETERMIN_SKIP_LIST_H_
 #define LIBYUC_CONTAINER_DETERMIN_SKIP_LIST_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/static_list.h>
 #include <libyuc/container/list.h>
 

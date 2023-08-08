@@ -8,7 +8,7 @@
 /*
 * Lock-Free SkipList - 无锁跳表
 */
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #include <libyuc/concurrency/atomic.h>
 

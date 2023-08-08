@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONCURRENCY_MEMORY_BARRIER_H_
 #define LIBYUC_CONCURRENCY_MEMORY_BARRIER_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 /*
 * 内存屏障

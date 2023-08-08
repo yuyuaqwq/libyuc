@@ -9,7 +9,7 @@
 * Lock-Free SortSinglyList - 无锁有序单向链表
 */
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #include <libyuc/concurrency/atomic.h>
 

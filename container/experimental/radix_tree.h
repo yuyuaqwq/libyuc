@@ -6,7 +6,7 @@
 #ifndef LIBYUC_CONTAINER_RADIX_TREE_H_
 #define LIBYUC_CONTAINER_RADIX_TREE_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_SKIP_LIST_H_
 #define LIBYUC_CONTAINER_SKIP_LIST_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #ifdef __cplusplus
 extern "C" {

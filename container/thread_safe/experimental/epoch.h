@@ -9,7 +9,7 @@
 * Epoch-based reclame - 基于世代的垃圾回收算法
 */
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #include <libyuc/concurrency/atomic.h>
 #include <libyuc/concurrency/tls.h>

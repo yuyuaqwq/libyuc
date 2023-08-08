@@ -5,7 +5,7 @@
 #ifndef LIBYUC_ALGORITHM_SUNDAY_MATCH_H_
 #define LIBYUC_ALGORITHM_SUNDAY_MATCH_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #ifdef __cplusplus
 extern "C" {

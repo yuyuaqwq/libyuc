@@ -9,7 +9,7 @@
 * Thread Local Storage - 线程局部存储
 */
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #ifdef __cplusplus
 extern "C" {

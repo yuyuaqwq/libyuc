@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONCURRENCY_MEMORY_ORDER_H_
 #define LIBYUC_CONCURRENCY_MEMORY_ORDER_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/concurrency/memory_barrier.h>
 
 #ifdef __cplusplus

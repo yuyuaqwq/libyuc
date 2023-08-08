@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_VECTOR_H_
 #define LIBYUC_CONTAINER_VECTOR_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -9,7 +9,7 @@
 * Lock-Free TsSinglyList - 无锁单向链表
 */
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #include <libyuc/concurrency/atomic.h>
 

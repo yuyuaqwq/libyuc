@@ -5,7 +5,7 @@
 #ifndef LIBYUC_ALGORITHM_ARRAY_H_
 #define LIBYUC_ALGORITHM_ARRAY_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 
 #ifdef __cplusplus

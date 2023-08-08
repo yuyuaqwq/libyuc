@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONCURRENCY_MUTEX_LOCK_H_
 #define LIBYUC_CONCURRENCY_MUTEX_LOCK_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #include <libyuc/concurrency/thread.h>
 #include <libyuc/concurrency/atomic.h>

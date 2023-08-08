@@ -7,7 +7,7 @@
 #ifndef LIBYUC_CONTAINER_AR_TREE_H_
 #define LIBYUC_CONTAINER_AR_TREE_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/algorithm/binary_search.h>
 #include <libyuc/algorithm/array.h>
 #include <libyuc/container/static_list.h>
@@ -227,13 +227,13 @@ void ArSetEofChild(ArNode* node, ArLeaf* leaf) {
 uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
   return element;
 }
-LIBYUC_ALGORITHM_BINARY_SEARCH_DEFINE(ArNodeKey, uint8_t, uint8_t, int32_t, ArBsAccessor, LIBYUC_OBJECT_INDEXER_DEFALUT, LIBYUC_OBJECT_COMPARER_DEFALUT)
+LIBYUC_ALGORITHM_BINARY_SEARCH_DEFINE(ArNodeKey, uint8_t, uint8_t, int32_t, ArBsAccessor, LIBYUC_BASIC_INDEXER_DEFALUT, LIBYUC_BASIC_COMPARER_DEFALUT)
 LIBYUC_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, 1)
 
 #define AR_TREE_ARRAY_REFERENCER_InvalidId (-1)
 #define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
-LIBYUC_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, ptrdiff_t, AR_TREE_ARRAY_REFERENCER, LIBYUC_OBJECT_COMPARER_DEFALUT)
-LIBYUC_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, ptrdiff_t, AR_TREE_ARRAY_REFERENCER, LIBYUC_OBJECT_COMPARER_DEFALUT)
+LIBYUC_ALGORITHM_ARRAY_DEFINE(ArNodeKey, uint8_t, ptrdiff_t, AR_TREE_ARRAY_REFERENCER, LIBYUC_BASIC_COMPARER_DEFALUT)
+LIBYUC_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ArNode*, ptrdiff_t, AR_TREE_ARRAY_REFERENCER, LIBYUC_BASIC_COMPARER_DEFALUT)
 
 static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
   head->child_count = 0;

@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_AVL_TREE_H_
 #define LIBYUC_CONTAINER_AVL_TREE_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/bs_tree.h>
 
 #ifdef __cplusplus

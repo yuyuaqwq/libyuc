@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONCURRENCY_ATOMIC_H_
 #define LIBYUC_CONCURRENCY_ATOMIC_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/concurrency/memory_order.h>
 
 #if defined(_WIN32)

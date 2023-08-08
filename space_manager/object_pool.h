@@ -5,7 +5,7 @@
 #ifndef LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/hash_table.h>
 
 #ifdef __cplusplus
@@ -33,7 +33,7 @@ extern "C" {
   void object_pool_name##ObjectPoolFree(object_pool_name##ObjectPool* pool, object_pool_name##ObjectPoolBucketEntry* free_entry); \
 
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFINE(object_pool_name, obj_type, bucket_id_type, index_id_type, bucket_accessor, bucket_allocator, bucket_referencer, indexer) \
-  LIBYUC_CONTAINER_HASH_TABLE_DEFINE(object_pool_name##ObjectPoolBucket, bucket_id_type, bucket_id_type, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR, LIBYUC_OBJECT_MOVER_DEFALUT, LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_HASHER, LIBYUC_OBJECT_COMPARER_DEFALUT) \
+  LIBYUC_CONTAINER_HASH_TABLE_DEFINE(object_pool_name##ObjectPoolBucket, bucket_id_type, bucket_id_type, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR, LIBYUC_BASIC_MOVER_DEFALUT, LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_HASHER, LIBYUC_BASIC_COMPARER_DEFALUT) \
   void object_pool_name##ObjectPoolBucketEntryInit(object_pool_name##ObjectPoolBucketEntry* entry) { \
     entry->bucket_id = bucket_referencer##_InvalidId; \
     entry->index = 0; \
@@ -113,7 +113,7 @@ extern "C" {
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR
 
 //LIBYUC_SPACE_MANAGER_OBJECT_POOL_DECLARATION(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t)
-//LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFINE(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t, LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_OBJECT_REFERENCER_DEFALUT)
+//LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFINE(Int, int64_t, struct _IntObjectPoolBucketEntry*, int16_t, LIBYUC_SPACE_MANAGER_OBJECT_POOL_DEFAULT_ACCESSOR, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_BASIC_REFERENCER_DEFALUT)
 
 #ifdef __cplusplus
 }

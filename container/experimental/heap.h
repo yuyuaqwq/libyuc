@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_HEAP_H_
 #define LIBYUC_CONTAINER_HEAP_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/vector.h>
 
 #ifdef __cplusplus

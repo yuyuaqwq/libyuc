@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_BPLUS_TREE_H_
 #define LIBYUC_CONTAINER_BPLUS_TREE_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/list.h>
 #include <libyuc/container/vector.h>
 #include <libyuc/container/static_list.h>
@@ -354,7 +354,7 @@ kv分离是外层处理的，b+树操作的只有element
       /* 如果是插入到index_entry，可能是来自leaf的element */ \
       if (src_entry->type == kBPlusEntryLeaf) { \
         element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key); \
-          assert(element_child_id != entry_referencer##_InvalidId); \
+         assert(element_child_id != entry_referencer##_InvalidId); \
         dst_element->index.child_id = element_child_id; \
       } else { \
         element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->index.key); \
@@ -393,7 +393,7 @@ kv分离是外层处理的，b+树操作的只有element
     return element_id; \
   } \
   static bp_tree_type_name##BPlusElement* bp_tree_type_name##BPlusElementRelease(bp_tree_type_name##BPlusEntry* entry, element_id_type element_id) { \
-      assert(element_id >= 0); \
+     assert(element_id >= 0); \
     bp_tree_type_name##BPlusElement* element = element_referencer##_Reference(entry, element_id); \
     element_referencer##_Dereference(entry, element); \
     element_allocator##_Release(entry, element_id); \
@@ -715,14 +715,8 @@ kv分离是外层处理的，b+树操作的只有element
           break; \
         } \
         else { \
-          /* 空间不足将会触发分裂，先将其删除 */ \
-          iterator->leaf_status = kBPlusIteratorNe; \
-          bp_tree_type_name##BPlusEntryDeleteElement(cur, &cur_pos->rb_iterator); \
-          /* 删除后迭代器失效，重新定位 */ \
-          bp_tree_type_name##BPlusEntryRbTreeIteratorLocate(&cur->rb_tree, &cur_pos->rb_iterator, , NULL); \
-          if (cur_pos->rb_iterator.cur_id != element_referencer##_InvalidId) { \
-            bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&cur->rb_tree, &cur_pos->rb_iterator); \
-          } \
+          /* 空间不足将会触发分裂，这里什么都不做，在分裂时重新SetValue */ \
+           assert(0); \
         } \
       } \
       else if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, src_entry, insert_element)) { \
@@ -730,11 +724,13 @@ kv分离是外层处理的，b+树操作的只有element
         bp_tree_type_name##BPlusEntryInsertElement(cur, src_entry, insert_element, insert_element_child_id); \
         break; \
       } \
-      /* 没有多余位置，需要分裂向上插入，插入的位置需要是第一个小于key的元素，element_id指向第一个大于key的元素 */ \
-      if (cur_pos->rb_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的元素，直接拿末尾元素 */ \
-        bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&cur->rb_tree, &cur_pos->rb_iterator); \
-      } else { \
-        bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&cur->rb_tree, cur_pos->rb_iterator); \
+      else { \
+        /* 没有多余位置，需要分裂向上插入，插入的位置需要是第一个小于key的元素，element_id指向第一个大于key的元素 */ \
+        if (cur_pos->rb_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的元素，直接拿末尾元素 */ \
+          bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&cur->rb_tree, &cur_pos->rb_iterator); \
+        } else { \
+          bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&cur->rb_tree, &cur_pos->rb_iterator); \
+        } \
       } \
       if (!parent_pos) { \
         /* 没有父节点，创建 */ \

@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_HASH_LIST_H_
 #define LIBYUC_CONTAINER_HASH_LIST_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/list.h>
 #include <libyuc/container/hash_table.h>
 
@@ -37,7 +37,7 @@ extern "C" {
   forceinline key_type* hash_list_type_name##HashListHashEntryAccessor_GetKey(hash_list_type_name##HashListHashTable* table, hash_list_type_name##HashListHashEntry* hash_entry) { \
     return accessor##_GetKey((hash_list_type_name##HashList*)table, hash_entry->hash_list_entry); \
   } \
-  LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_OBJECT_MOVER_DEFALUT, hasher, comparer) \
+  LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_list_type_name##HashList, hash_list_type_name##HashListHashEntry, key_type, allocater, hash_list_type_name##HashListHashEntryAccessor, LIBYUC_BASIC_MOVER_DEFALUT, hasher, comparer) \
   \
   void hash_list_type_name##HashListInit(hash_list_type_name##HashList* list, size_t max_count) { \
     hash_list_type_name##HashListHashTableInit(&list->hash_table, max_count, 0); \
@@ -95,7 +95,7 @@ extern "C" {
 //#define IntHashListEntryAccessor_GetKey(LRU_LIST, LRU_LIST_ENTRY) (((IntLru_Entry*)(LRU_LIST_ENTRY))->key)
 //#define IntHashListEntryAccessor IntHashListEntryAccessor
 
-//LIBYUC_CONTAINER_LRU_LIST_DEFINE(Int, int, IntHashListEntryAccessor, LIBYUC_OBJECT_ALLOCATOR_DEFALUT, LIBYUC_OBJECT_HASHER_DEFALUT, LIBYUC_OBJECT_COMPARER_DEFALUT)
+//LIBYUC_CONTAINER_LRU_LIST_DEFINE(Int, int, IntHashListEntryAccessor, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_BASIC_HASHER_DEFALUT, LIBYUC_BASIC_COMPARER_DEFALUT)
 
 
 #ifdef __cplusplus

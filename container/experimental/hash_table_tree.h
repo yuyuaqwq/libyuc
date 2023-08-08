@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONTAINER_HASH_TABLE_H_
 #define LIBYUC_CONTAINER_HASH_TABLE_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/algorithm/hash_code.h>
 #include <libyuc/container/vector.h>
 #include <libyuc/container/static_list.h>

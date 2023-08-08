@@ -5,7 +5,7 @@
 #ifndef LIBYUC_SPACE_MANAGER_LIST_BUDDY_H_
 #define LIBYUC_SPACE_MANAGER_LIST_BUDDY_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/container/experimental/cb_tree.h>
 #include <libyuc/container/singly_list.h>
 #include <libyuc/container/bitmap.h>

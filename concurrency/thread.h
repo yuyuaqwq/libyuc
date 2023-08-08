@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONCURRENCY_THREAD_H_
 #define LIBYUC_CONCURRENCY_THREAD_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 #ifdef __cplusplus
 extern "C" {

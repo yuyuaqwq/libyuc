@@ -5,7 +5,7 @@ https://blog.csdn.net/gongmin856/article/details/77101397
 #ifndef LIBYUC_ALGORITHM_KMP_MATCH_H_
 #define LIBYUC_ALGORITHM_KMP_MATCH_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 
 
 #ifdef __cplusplus

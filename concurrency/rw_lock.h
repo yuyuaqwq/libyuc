@@ -5,7 +5,7 @@
 #ifndef LIBYUC_CONCURRENCY_RW_LOCK_H_
 #define LIBYUC_CONCURRENCY_RW_LOCK_H_
 
-#include <libyuc/object.h>
+#include <libyuc/basic.h>
 #include <libyuc/concurrency/mutex_lock.h>
 
 #ifdef __cplusplus
