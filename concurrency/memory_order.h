@@ -18,12 +18,12 @@ extern "C" {
 */
 
 enum MemoryOrder {
-  kMemoryOrderRelaxed,
-  kMemoryOrderConsume,
-  kMemoryOrderAcquire,
-  kMemoryOrderRelease,
-  kMemoryOrderAcqRel,
-  kMemoryOrderSeqCst,
+    kMemoryOrderRelaxed,
+    kMemoryOrderConsume,
+    kMemoryOrderAcquire,
+    kMemoryOrderRelease,
+    kMemoryOrderAcqRel,
+    kMemoryOrderSeqCst,
 };
 
 

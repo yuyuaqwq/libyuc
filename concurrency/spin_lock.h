@@ -18,19 +18,19 @@ extern "C" {
 * 自旋锁
 */
 typedef struct _SpinLock {
-  AtomicBool state;
+    AtomicBool state;
 } SpinLock;
 
 static forceinline void SpinLockInit(SpinLock* lock) {
-  lock->state = false;
+    lock->state = false;
 }
 
 static forceinline void SpinLockAcquire(SpinLock* lock) {
-  while (AtomicBoolExchange(&lock->state, true) == true) { ThreadPause(); continue; }
+    while (AtomicBoolExchange(&lock->state, true) == true) { ThreadPause(); continue; }
 }
 
 static forceinline void SpinLockRelease(SpinLock* lock) {
-  AtomicBoolStore(&lock->state, false);
+    AtomicBoolStore(&lock->state, false);
 }
 
 #ifdef __cplusplus

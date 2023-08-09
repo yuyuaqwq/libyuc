@@ -29,19 +29,19 @@ typedef uint32_t TlsId;
 
 
 static forceinline TlsId TlsAlloc_() {
-  return (TlsId)TlsAlloc();
+    return (TlsId)TlsAlloc();
 }
 
 static forceinline bool TlsFree_(TlsId id) {
-  return TlsFree((DWORD)id);
+    return TlsFree((DWORD)id);
 }
 
 static forceinline bool TlsSetValue_(TlsId id, const void* value) {
-  return TlsSetValue((DWORD)id, (LPVOID)value);
+    return TlsSetValue((DWORD)id, (LPVOID)value);
 }
 
 static forceinline void* TlsGetValue_(TlsId id) {
-  TlsGetValue((DWORD)id);
+    TlsGetValue((DWORD)id);
 }
 
 #define TlsAlloc TlsAlloc_

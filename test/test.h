@@ -39,7 +39,7 @@ static forceinline uint64_t HashCode_murmur3_fmix64inline(uint64_t k) {
 	return k;
 }
 
-#define INT_HASHTABLE_HASHER_KEY(table, key)  HashCode_murmur3_fmix64inline(*(key)) // XXH32_int(key)
+#define INT_HASHTABLE_HASHER_KEY(table, key)    HashCode_murmur3_fmix64inline(*(key)) // XXH32_int(key)
 
 //		LIBYUC_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
 //		typedef struct _IntEntry_Avl {
@@ -55,7 +55,7 @@ typedef struct _IntEntry_Avl {
 } IntEntry_Avl;
 #define INT_AVL_TREE_ACCESSOR_GetKey(TREE, ENTRY) (&((IntEntry_Avl*)ENTRY)->key)
 #define INT_AVL_TREE_ACCESSOR_GetLeft(TREE, ENTRY) ((IntAvlEntry*)((uintptr_t)(ENTRY)->left & ~3))
-#define  INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->left) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->left) & 0x3))
+#define    INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY) ((int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->left) & 0x3) == 3 ? -1 : (int8_t)(((uintptr_t)((IntAvlEntry*)ENTRY)->left) & 0x3))
 #define INT_AVL_TREE_ACCESSOR_SetLeft(TREE, ENTRY, NEW_ID) ((ENTRY)->left = (uintptr_t)NEW_ID | ((uintptr_t)INT_AVL_TREE_ACCESSOR_GetBalanceFactor(TREE, ENTRY)) & 0x3);
 #define INT_AVL_TREE_ACCESSOR_SetBalanceFactor(TREE, ENTRY, BF) (ENTRY->left = (IntAvlEntry*)(((uintptr_t)INT_AVL_TREE_ACCESSOR_GetLeft(TREE, ENTRY)) | ((uintptr_t)BF & 0x3)))
 #define INT_AVL_TREE_ACCESSOR_GetRight(TREE, ENTRY) ((ENTRY)->right)

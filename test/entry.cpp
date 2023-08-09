@@ -105,7 +105,7 @@ int randInt() {
 //	char* empty = (char*)malloc(Level * 8 + 1);
 //	memset(empty, ' ', Level * 8);
 //	empty[Level * 8] = 0;
-//	//  assert(entry->element_count >= 1);
+//	//    assert(entry->element_count >= 1);
 //	if (entry->type == 1) {
 //		int16_t id = IntBPlusEntryRbTreeIteratorLast(&entry->rb_tree);
 //		//PrintRB(&entry->rb_tree, entry->rb_tree.root, 0, true);
@@ -280,13 +280,13 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 //				memcpy(prefix, node->head.prefix, node->head.prefix_len);
 //				prefix[node->head.prefix_len] = 0;
 //			}
-//			printf("%snode4:\n%s    prefix:%d[%d] \"%s%s\"\n", empty, empty, node->head.prefix_len, node->head.prefix_len, prefix, abc);
+//			printf("%snode4:\n%s        prefix:%d[%d] \"%s%s\"\n", empty, empty, node->head.prefix_len, node->head.prefix_len, prefix, abc);
 //			if (node->head.eof_child) {
-//				printf("%s    eof:\n", empty);
+//				printf("%s        eof:\n", empty);
 //				PrintArt(tree, (ArNode*)node->head.eof_child, Level + 1);
 //			}
 //			for (int i = 0; i < node->head.child_count; i++) {
-//				printf("%s    [%c]:\n", empty, node->node4.keys[i]);
+//				printf("%s        [%c]:\n", empty, node->node4.keys[i]);
 //				PrintArt(tree, node->node4.child_arr[i], Level + 1);
 //			}
 //		}
@@ -301,13 +301,13 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 //				memcpy(prefix, node->head.prefix, node->head.prefix_len);
 //				prefix[node->head.prefix_len] = 0;
 //			}
-//			printf("%snode16:\n%s    prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
+//			printf("%snode16:\n%s        prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
 //			if (node->head.eof_child) {
-//				printf("%s    eof:\n", empty);
+//				printf("%s        eof:\n", empty);
 //				PrintArt(tree, (ArNode*)node->head.eof_child, Level + 1);
 //			}
 //			for (int i = 0; i < node->head.child_count; i++) {
-//				printf("%s    [%c]:\n", empty, node->node16.keys[i]);
+//				printf("%s        [%c]:\n", empty, node->node16.keys[i]);
 //				PrintArt(tree, node->node16.child_arr[i], Level + 1);
 //			}
 //		}
@@ -322,14 +322,14 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 //				memcpy(prefix, node->head.prefix, node->head.prefix_len);
 //				prefix[node->head.prefix_len] = 0;
 //			}
-//			printf("%snode48:\n%s    prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
+//			printf("%snode48:\n%s        prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
 //			if (node->head.eof_child) {
-//				printf("%s    eof:\n", empty);
+//				printf("%s        eof:\n", empty);
 //				PrintArt(tree, (ArNode*)node->head.eof_child, Level + 1);
 //			}
 //			for (int i = 0; i < 255; i++) {
 //				if (node->node48.keys[i] != 0xff) {
-//					printf("%s    [%c]:\n", empty, i);
+//					printf("%s        [%c]:\n", empty, i);
 //					PrintArt(tree, node->node48.child_arr.obj_arr[node->node48.keys[i]].child, Level + 1);
 //				}
 //			}
@@ -345,14 +345,14 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 //				memcpy(prefix, node->head.prefix, node->head.prefix_len);
 //				prefix[node->head.prefix_len] = 0;
 //			}
-//			printf("%snode256:\n%s    prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
+//			printf("%snode256:\n%s        prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
 //			if (node->head.eof_child) {
-//				printf("%s    eof:\n", empty);
+//				printf("%s        eof:\n", empty);
 //				PrintArt(tree, (ArNode*)node->head.eof_child, Level + 1);
 //			}
 //			for (int i = 0; i < 255; i++) {
 //				if (node->node256.child_arr[i] != NULL) {
-//					printf("%s    [%c]:\n", empty, i);
+//					printf("%s        [%c]:\n", empty, i);
 //					PrintArt(tree, node->node256.child_arr[i], Level + 1);
 //				}
 //			}
@@ -578,7 +578,7 @@ void TestArt() {
 
 	l = GetTickCount();
 
-	//printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
+	//printf("插入耗时：%dms    %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
 	for (int j = 0; j < qqc; j++) {
 		ArTreeInit(&artree);
 		for (int i = 0; i < count / qqc; i++) {
@@ -634,10 +634,10 @@ void TestArt() {
 
 			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
 		}
-		//printf("删除耗时：%dms  \n", GetTickCount() - l);
+		//printf("删除耗时：%dms    \n", GetTickCount() - l);
 
 	}
-	printf("总耗时：%dms  \n", GetTickCount() - l);
+	printf("总耗时：%dms    \n", GetTickCount() - l);
 }
  
 void TestAvl() {
@@ -674,7 +674,7 @@ void TestAvl() {
 
 		//PrintAvl(&tree, tree.root, NULL, 0);
 		//printf("\n\n\n\n");
-		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
+		printf("插入耗时：%dms    %d\n", GetTickCount() - l, 0, 0/**/);
 
 		if (!IntAvlTreeVerify(&tree)) {
 			printf("不是正确的avl");
@@ -698,13 +698,13 @@ void TestAvl() {
 			}
 
 		}
-		printf("删除耗时：%dms  \n", GetTickCount() - l);
+		printf("删除耗时：%dms    \n", GetTickCount() - l);
 
 	}
 
 
 
-	printf("总耗时：%dms  \n", GetTickCount() - l);
+	printf("总耗时：%dms    \n", GetTickCount() - l);
 
 }
 
@@ -737,11 +737,11 @@ void TestRb() {
 
 		//PrintRB(&tree, tree.root, 0);
 		//printf("\n\n\n\n");
-		printf("插入耗时：%dms  %d\n", GetTickCount() - l, 0, 0/**/);
+		printf("插入耗时：%dms    %d\n", GetTickCount() - l, 0, 0/**/);
 
 
 		l = GetTickCount();
-		printf("统计count:%d    %dms\n", IntRbTreeGetCount(&tree), GetTickCount() - l);
+		printf("统计count:%d        %dms\n", IntRbTreeGetCount(&tree), GetTickCount() - l);
 
 		if (!IntRbTreeVerify(&tree)) {
 			printf("不正确的红黑树");
@@ -773,10 +773,10 @@ void TestRb() {
 			//}
 			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
 		}
-		printf("删除耗时：%dms  \n", GetTickCount() - l);
+		printf("删除耗时：%dms    \n", GetTickCount() - l);
 
 	}
-	printf("总耗时：%dms  \n", GetTickCount() - l);
+	printf("总耗时：%dms    \n", GetTickCount() - l);
 
 }
 
@@ -846,7 +846,7 @@ void TestTsSortSinglyList() {
 		thread.join();
 	}
 
-	printf("%d个线程，插入总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+	printf("%d个线程，插入总耗时：%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
 
 
 	TsSortSinglyListEntry* prev = NULL;
@@ -875,7 +875,7 @@ void TestTsSortSinglyList() {
 	for (auto& thread : t) {
 		thread.join();
 	}
-	printf("%d个线程，删除总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+	printf("%d个线程，删除总耗时：%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
 
 	prev = NULL;
 	i = 0;
@@ -917,7 +917,7 @@ void TestTsSkipList() {
 		thread.join();
 	}
 
-	printf("%d个线程，插入总耗时：%dms  %d\n", thread_count, GetTickCount() - l, 0, 0);
+	printf("%d个线程，插入总耗时：%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
 
 
 	l = GetTickCount();
@@ -1077,7 +1077,7 @@ int main() {
 	}
 
 	for (int64_t i = 0; i < count; i++) {
-		//std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
 
 
@@ -1089,8 +1089,8 @@ int main() {
 	//TestSkipList();
 
 	//TestAvl();
-	//TestArt();
-	//TestRb();
+	TestArt();
+	TestRb();
 	//TestTsSortSinglyList();
 	TestHashTable();
 

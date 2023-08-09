@@ -94,7 +94,7 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 #define LIBYUC_BASIC_ALLOCATOR_DEFALUT_CreateBySize(MAIN_OBJ, OBJ_SIZE) ObjectCreateMultipleBySize(OBJ_SIZE, 1)
 #define LIBYUC_BASIC_ALLOCATOR_DEFALUT_CreateMultiple(MAIN_OBJ, OBJ_TYPE, COUNT) ObjectCreateMultiple(OBJ_TYPE, COUNT) 
 #define LIBYUC_BASIC_ALLOCATOR_DEFALUT_Release(MAIN_OBJ, OBJ) ObjectRelease(OBJ) 
-#define LIBYUC_BASIC_ALLOCATOR_DEFALUT LIBYUC_BASIC_ALLOCATOR_DEFALUT    // 同名以支持嵌套
+#define LIBYUC_BASIC_ALLOCATOR_DEFALUT LIBYUC_BASIC_ALLOCATOR_DEFALUT        // 同名以支持嵌套
 
 /*
 * 默认比较器

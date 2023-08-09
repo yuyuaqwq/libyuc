@@ -26,30 +26,30 @@ extern "C" {
 #define SLOT_COUNT 64
 
 typedef struct _EpochSlot {
-  uint32_t epoch_num;
-  bool active;    // 是否处于活动状态
-  volatile int32_t used;
-  ThreadId thread_id;
+    uint32_t epoch_num;
+    bool active;        // 是否处于活动状态
+    volatile int32_t used;
+    ThreadId thread_id;
 } EpochSlot;
 
 bool EpochSlotAcquire(EpochSlot* slot) {
-  if (AtomicInt32CompareExchange(&slot->used, 1, 0)) {
-    return true;
-  }
-  return false;
+    if (AtomicInt32CompareExchange(&slot->used, 1, 0)) {
+        return true;
+    }
+    return false;
 }
 
 void EpochSlotRelease(EpochSlot* slot) {
-   release_assert(slot->used == 1, "");
-  slot->used = 0;
+     release_assert(slot->used == 1, "");
+    slot->used = 0;
 }
 
 
 typedef struct _Epoch {
-  volatile uint32_t global_epoch_num;   // 0、1、2
-  uint32_t entry_count;   // 计数，一定次数后在触发回收
+    volatile uint32_t global_epoch_num;     // 0、1、2
+    uint32_t entry_count;     // 计数，一定次数后在触发回收
 
-  EpochSlot slot[SLOT_COUNT];
+    EpochSlot slot[SLOT_COUNT];
 } Epoch;
 
 
@@ -62,45 +62,45 @@ typedef uint32_t EpochSlotId;
 */
 
 void EpochInit(Epoch* epoch) {
-  epoch->global_epoch_num = 0;
-  for (EpochSlotId i = 0; i < SLOT_COUNT; i++) {
-    epoch->slot[i].active = false;
-    epoch->slot[i].used = 0;
-    epoch->slot[i].epoch_num = 0;
-  }
+    epoch->global_epoch_num = 0;
+    for (EpochSlotId i = 0; i < SLOT_COUNT; i++) {
+        epoch->slot[i].active = false;
+        epoch->slot[i].used = 0;
+        epoch->slot[i].epoch_num = 0;
+    }
 }
 
 bool EpochTryGc(Epoch* epoch) {
-  // 遍历block，如果没有epoch_num < global_epoch_num的block处于活动状态，则global_epoch_num++，将epoch_num < global_epoch_num的block中的垃圾队列的垃圾回收
-  return true;
+    // 遍历block，如果没有epoch_num < global_epoch_num的block处于活动状态，则global_epoch_num++，将epoch_num < global_epoch_num的block中的垃圾队列的垃圾回收
+    return true;
 }
 
 
 static void EpochRegisterThread(Epoch* epoch, EpochSlotId* slot_id) {
-  // 分配slot
-  for (EpochSlotId i = 0; i < SLOT_COUNT; i++) {
-    if (EpochSlotAcquire(&epoch->slot[i])) {
-      *slot_id = i;
-      return;
+    // 分配slot
+    for (EpochSlotId i = 0; i < SLOT_COUNT; i++) {
+        if (EpochSlotAcquire(&epoch->slot[i])) {
+            *slot_id = i;
+            return;
+        }
     }
-  }
-  Painc("epoch slot full.");
+    Painc("epoch slot full.");
 }
 
 static void EpochUnregisterThread(Epoch* epoch, EpochSlotId* slot_id) {
-  EpochSlotRelease(&epoch->slot[*slot_id]);
+    EpochSlotRelease(&epoch->slot[*slot_id]);
 }
 
 void EpochEntry(Epoch* epoch) {
-  static thread_local EpochSlotId thread_block_id = -1;
-  if (thread_block_id == -1) {
-    // 线程第一次调用Entry，注册
-    EpochRegisterThread(epoch, &thread_block_id);
-  }
+    static thread_local EpochSlotId thread_block_id = -1;
+    if (thread_block_id == -1) {
+        // 线程第一次调用Entry，注册
+        EpochRegisterThread(epoch, &thread_block_id);
+    }
 }
 
 void EpochLeave(Epoch* epoch) {
-  // 取消注册
+    // 取消注册
 }
 
 #ifdef __cplusplus
