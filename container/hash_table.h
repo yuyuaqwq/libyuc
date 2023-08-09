@@ -75,7 +75,7 @@ extern "C" {
   \
   element_type* hash_table_type_name##HashTableIteratorFirst(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
   element_type* hash_table_type_name##HashTableIteratorNext(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
-  element_type* hash_table_type_name##HashTableIteratorLocate(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key); \
+  element_type* hash_table_type_name##HashTableIteratorLocate(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key, bool locate_tombstone); \
   void hash_table_type_name##HashTableIteratorPut(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const element_type* obj); \
   bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
   \
@@ -86,11 +86,13 @@ extern "C" {
   } hash_table_type_name##HashTableEntry; \
   typedef struct _##hash_table_type_name##HashTable { \
     hash_table_type_name##HashBucketVector bucket; \
+    uint8_t max_detection_count; \
     offset_type load_fator; \
     element_type empty_obj; \
+    element_type tombstone_obj; \
   } ##hash_table_type_name##HashTable; \
   \
-  void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator, const element_type* empty_obj); \
+  bool hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator, const element_type* empty_obj, const element_type* tombstone_obj); \
   void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table); \
   offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
   element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
@@ -100,7 +102,7 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey、_SetKey方法
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer, max_detection_count) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer) \
   /*
   * 动态数组
   */ \
@@ -119,7 +121,7 @@ extern "C" {
   /* 重映射 */ \
   static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, offset_type new_capacity) {  \
     hash_table_type_name##HashTable temp_table; \
-    hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator, &table->empty_obj); \
+    hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator, &table->empty_obj, &table->tombstone_obj); \
     hash_table_type_name##HashTableIterator iter; \
     element_type* obj = hash_table_type_name##HashTableIteratorFirst(table, &iter); \
     while (obj) { \
@@ -130,13 +132,15 @@ extern "C" {
     hash_table_type_name##HashTableRelease(table); \
     MemoryCopy(table, &temp_table, sizeof(temp_table)); \
   } \
-  void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator, const element_type* empty_obj) { \
-    if (capacity == 0) { \
+  bool hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator, const element_type* empty_obj, const element_type* tombstone_obj) { \
+    if (capacity < 2) { \
       capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
     } \
+    if (comparer##_Equal(table, accessor##_GetKey(table, &empty_obj), accessor##_GetKey(table, &tombstone_obj))) return false; \
     hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, NULL); \
     table->bucket.count = 0; \
     element_mover##_Copy(table, &table->empty_obj, empty_obj); \
+    element_mover##_Copy(table, &table->tombstone_obj, tombstone_obj); \
     \
     for (int i = 0; i < table->bucket.capacity; i++) { \
       element_mover##_Copy(table, &table->bucket.obj_arr[i].obj, empty_obj); \
@@ -145,42 +149,46 @@ extern "C" {
       load_fator = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
     } \
     table->load_fator = load_fator; \
+    table->max_detection_count = 0; \
+    while(capacity /= 2) ++table->max_detection_count; \
+    return true; \
   } \
   void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table) { \
     hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
   } \
   element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
     hash_table_type_name##HashTableIterator iter; \
-    return hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
+    return hash_table_type_name##HashTableIteratorLocate(table, &iter, key, false); \
   } \
   void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
     key_type* key = accessor##_GetKey(table, obj); \
     hash_table_type_name##HashTableIterator iter; \
-    hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
+    hash_table_type_name##HashTableIteratorLocate(table, &iter, key, true); \
     hash_table_type_name##HashTableIteratorPut(table, &iter, obj); \
   } \
   bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
     hash_table_type_name##HashTableIterator iter; \
-    hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
+    hash_table_type_name##HashTableIteratorLocate(table, &iter, key, false); \
     return hash_table_type_name##HashTableIteratorDelete(table, &iter); \
   } \
   \
-  forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
+  forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key, bool locate_tombstone) { \
     iter->cur_index = hash_table_type_name##HashGetIndex(table, key); \
-    offset_type empty_index = -1; \
-    for (int32_t i = 0; i < max_detection_count; i++) { \
+    for (int32_t i = 0; i < table->max_detection_count; i++) { \
       hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[iter->cur_index]; \
       key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
       if (comparer##_Equal(table, entry_key, key)) { \
         return &entry->obj; \
       } \
-      if (empty_index == -1 && comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
-        empty_index = iter->cur_index; \
+      if (locate_tombstone && comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->tombstone_obj))) { \
+        return &entry->obj; \
       } \
-      if (i + 1 != max_detection_count) \
+      if (comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
+        return locate_tombstone ? &entry->obj : NULL; \
+      } \
+      if (i + 1 != table->max_detection_count) \
         iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
     } \
-    if (empty_index != -1) iter->cur_index = empty_index; \
     return NULL; \
   } \
   void hash_table_type_name##HashTableIteratorPut(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const element_type* obj) { \
@@ -198,7 +206,7 @@ extern "C" {
         iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
         entry = &table->bucket.obj_arr[iter->cur_index]; \
         int32_t i = 0; \
-        for (; i < max_detection_count; i++) { \
+        for (; i < table->max_detection_count; i++) { \
           key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
           if (comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
             element_mover##_Copy(table, &entry->obj, obj); \
@@ -207,7 +215,7 @@ extern "C" {
           iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
           entry = &table->bucket.obj_arr[iter->cur_index]; \
         } \
-        if (i < max_detection_count) { \
+        if (i < table->max_detection_count) { \
           break; \
         } \
       } while (true); \
@@ -223,8 +231,12 @@ extern "C" {
     if (comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), accessor##_GetKey(table, &table->empty_obj))) { \
       return false; \
     } \
-    element_mover##_Copy(table, &entry->obj, &table->empty_obj); \
+    element_mover##_Copy(table, &entry->obj, &table->tombstone_obj); \
     table->bucket.count--; \
+    /* 由于max_detection_count的存在，不能进行缩容 */ \
+    /*if (hash_table_type_name##HashGetCurrentLoadFator(table) <= 100 - table->load_fator) { \
+      hash_table_type_name##HashRehash(table, table->bucket.capacity / LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
+    }*/ \
     return true; \
   } \
   element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \

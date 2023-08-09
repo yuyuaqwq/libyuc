@@ -959,7 +959,8 @@ void TestHashTable() {
 	l = GetTickCount();
 	IntHashTable table;
 	int64_t empty = -1;
-	IntHashTableInit(&table, 67108864, 0, &empty);
+	int64_t tombstone = -2;
+	IntHashTableInit(&table, 32*1024*1024, 0, &empty, &tombstone);
 	for (int i = 0; i < count; i++) {
 		IntHashTablePut(&table, &arr2[i]->key);
 		//printf("666");
@@ -1161,33 +1162,33 @@ int main() {
 
 	//
 
-	//struct hashfunc {
-	//	size_t operator()(int64_t i) const {
-	//		return HashCode_murmur3_fmix64inline(i);
-	//	}
-	//};
+	struct hashfunc {
+		size_t operator()(int64_t i) const {
+			return HashCode_murmur3_fmix64inline(i);
+		}
+	};
 
-	//printf("\nSTL ht:\n");
-	//l = GetTickCount();
-	//std::unordered_set<int64_t, hashfunc> mapaa;
-	//for (int i = 0; i < count; i++) {
-	//	mapaa.insert(arr2[i]->key);
-	//	//mapaa.insert(std::make_pair(arr2[i]->key, 0));
-	//}
-	//printf("插入耗时：%dms\n", GetTickCount() - l);
+	printf("\nSTL ht:\n");
+	l = GetTickCount();
+	std::unordered_set<int64_t, hashfunc> mapaa;
+	for (int i = 0; i < count; i++) {
+		mapaa.insert(arr2[i]->key);
+		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (mapaa.find(arr2[i]->key) == mapaa.end()) {
-	//		printf("找不到");
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	mapaa.erase(arr2[i]->key);
-	//}
-	//printf("删除耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (mapaa.find(arr2[i]->key) == mapaa.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		mapaa.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
 
