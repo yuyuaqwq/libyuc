@@ -77,7 +77,7 @@ typedef struct _ArNodeHead {
   uint16_t : 2;  // 无效
   uint16_t eof: 1;
 #else
-  uint16_t prefix_len : 3;    // 0~7，对于8字节定长key足够
+  uint16_t prefix_len : 3;    // 0~7，对于8字节定长key足够(也可以通过4/8字节对齐使其最高支持32/64字节)
 #endif
   uint16_t child_count : 9;    // 需要注意这里是8位的话不够表示node256的最大数量
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED

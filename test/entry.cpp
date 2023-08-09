@@ -373,7 +373,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 1000000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -710,11 +710,7 @@ void TestAvl() {
 
 
 void TestRb() {
-#ifndef NP
-	printf("\n红黑树：\n");
-#else
 	printf("\n无父结点红黑树：\n");
-#endif
 	IntRbTree tree;
 
 	l = GetTickCount();
@@ -960,7 +956,7 @@ void TestHashTable() {
 	IntHashTable table;
 	int64_t empty = -1;
 	int64_t tombstone = -2;
-	IntHashTableInit(&table, 32*1024*1024, 0, &empty, &tombstone);
+	IntHashTableInit(&table, 8, 0, &empty, &tombstone);
 	for (int i = 0; i < count; i++) {
 		IntHashTablePut(&table, &arr2[i]->key);
 		//printf("666");
