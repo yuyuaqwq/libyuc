@@ -6,7 +6,9 @@
 #define LIBYUC_CONTAINER_BITMAP_H_
 
 #include <libyuc/basic.h>
+#include <libyuc/algorithm/bit.h>
 #include <libyuc/container/vector.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,19 +34,7 @@ extern "C" {
             bitmap->byte_arr[i] = 0; \
         } \
     } \
-    bool bit_map_type_name##BitmapGet(bit_map_type_name##Bitmap* bitmap, offset_type bit_idx) { \
-        uint8_t offset = bit_idx % 8; \
-        return bitmap->byte_arr[bit_idx / 8] & ((uint8_t)0x80 >> offset); \
-    } \
-    void bit_map_type_name##BitmapSet(bit_map_type_name##Bitmap* bitmap, offset_type bit_idx, bool value) { \
-        uint8_t offset = bit_idx % 8; \
-        if (value) { \
-            bitmap->byte_arr[bit_idx / 8] |= (uint8_t)0x80 >> offset; \
-        } else { \
-            bitmap->byte_arr[bit_idx / 8] &= ~((uint8_t)0x80 >> offset); \
-        } \
-    } \
-    void bit_map_type_name##BitmapSetMultiple(bit_map_type_name##Bitmap* bitmap, offset_type bit_idx, offset_type bit_count, bool val) { \
+    void BitSetMultiple(bit_map_type_name##Bitmap* bitmap, offset_type bit_idx, offset_type bit_count, bool val) { \
         offset_type byte_idx = bit_idx / 8; \
         bit_idx += (bit_count / 8) * 8; \
         while (bit_count > 8 && byte_idx < bitmap->count) { \
@@ -53,7 +43,7 @@ extern "C" {
             byte_idx++; \
         } \
         while (bit_count > 0 && bit_idx < (bitmap->count * 8)) { \
-            bit_map_type_name##BitmapSet(bitmap, bit_idx, val); \
+            BitSet(bitmap->byte_array, bit_idx, val); \
             bit_count--; \
             bit_idx++; \
         } \
@@ -71,7 +61,7 @@ extern "C" {
         } \
         /* 先单独比较前面的位 */ \
         while (bit_start < bit_end) { \
-            if (bit_map_type_name##BitmapGet(bitmap, bit_start) == val) { \
+            if (BitGet(bitmap->byte_array, bit_start) == val) { \
                 return bit_start; \
             } \
             bit_start++; \
@@ -103,7 +93,7 @@ extern "C" {
             return -1; \
         } \
         if (bit_count == 1) { \
-            bit_map_type_name##BitmapSet(bitmap, bit_start, true); \
+            BitSet(bitmap->byte_array, bit_start, true); \
             return bit_start; \
         } \
         offset_type bit_end = (bitmap->count * 8) - bit_start;        /* 剩余可检查位数 */ \
@@ -111,21 +101,21 @@ extern "C" {
         offset_type free_count = 1; \
         /* 简化实现的算法，逐位比较，性能较低 */ \
         while (bit_end-- > 0) { \
-            if (bit_map_type_name##BitmapGet(bitmap, ++bit_cur) == false) { \
+            if (BitGet(bitmap->byte_array, ++bit_cur) == false) { \
                 free_count++; \
             } else { \
                 free_count = 0;        /* 被有效位阻断，重新开始记录 */ \
             } \
             if (bit_count == free_count) { \
                 bit_start = bit_cur - bit_count + 1; \
-                bit_map_type_name##BitmapSetMultiple(bitmap, bit_start, bit_count, true); \
+                BitSetMultiple(bitmap, bit_start, bit_count, true); \
                 return bit_start; \
             } \
         } \
         return -1; \
     } \
     void bit_map_type_name##BitmapFree(bit_map_type_name##Bitmap* bitmap, offset_type bit_idx, offset_type bit_count) { \
-        bit_map_type_name##BitmapSetMultiple(bitmap, bit_idx, bit_count, false); \
+        BitSetMultiple(bitmap, bit_idx, bit_count, false); \
     } \
     offset_type bit_map_type_name##BitmapGetMaxFreeCount(bit_map_type_name##Bitmap* bitmap) { \
         offset_type bit_start = 0; \
@@ -139,7 +129,7 @@ extern "C" {
         offset_type max_free_count = 1; \
         /* 简化实现的算法，逐位比较，性能较低 */ \
         while (bit_end-- > 0) { \
-            if (bit_map_type_name##BitmapGet(bitmap, ++bit_cur) == false) { \
+            if (BitGet(bitmap->byte_array, ++bit_cur) == false) { \
                 free_count++; \
             } \
             else { \
