@@ -269,7 +269,7 @@ void PrintArt(ArTree* tree, ArNode* node, int Level) {
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 		printf("%sleaf:%s\n", empty, ArLeafGetElement(ArNodeGetLeaf(node))->buf);
 #else
-		printf("%sleaf:%llx\n", empty, *ArLeafGetElement(ArNodeGetLeaf(node)));
+		printf("%sleaf:%llx\n", empty, ArLeafGetElement(ArNodeGetLeaf(node)));
 #endif
 	}
 	else {
@@ -502,14 +502,17 @@ void TestArt() {
 		element_type* ele = ObjectCreate(element_type);
 		ele->buf = (uint8_t*)&it->key;
 		ele->size = sizeof(it->key);
+		ArTreePut(&artree, ele);
 #else
-		element_type* ele = (element_type*)&it->key;
+
+		ArTreePut(&artree, (element_type*)&it->key);
+		//ArTreePut(&artree, (element_type*)it->key << 1);
 #endif
 		//if (ii == 27) {
 		//	printf("??");
 		//}
 
-		ArTreePut(&artree, ele);
+		
 
 		//printf("插入:%s\n", ele->buf);
 		//ele.buf = (uint8_t*)"aacdeedb";
@@ -536,15 +539,22 @@ void TestArt() {
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 		ele.buf = (uint8_t*)&it->key;
 		ele.size = sizeof(it->key);
-#else
-		ele = it->key;
-#endif
 		if (!ArTreeFind(&artree, &ele)) {
 			printf("找不到");
 		}
+#else
+		ele = it->key;
+		if (!ArTreeFind(&artree, &ele)) {
+			printf("找不到");
+		}
+		/*if (!ArTreeFind(&artree, (key_type*)(it->key << 1))) {
+			printf("找不到");
+		}*/
+#endif
+		
 	}
 	//PrintArt(&artree, artree.root, 0);
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	printf("查找耗时：%dms %d\n", GetTickCount() - l, ii);
 	l = GetTickCount();
 	ii = 0;
 	for (auto& it : arr2) {
@@ -553,17 +563,25 @@ void TestArt() {
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 		ele.buf = (uint8_t*)&it->key;
 		ele.size = sizeof(it->key);
+		if (!ArTreeDelete(&artree, &ele)) {
+			printf("找不到");
+			//PrintArt(&artree, artree.root, 0);
+		}
 #else
 		ele = it->key;
+		if (!ArTreeDelete(&artree, &ele)) {
+			printf("找不到");
+			//PrintArt(&artree, artree.root, 0);
+		}
+		/*if (!ArTreeDelete(&artree, (key_type*)(it->key << 1))) {
+			printf("找不到");
+		}*/
 #endif
 		//if (ii == 0x4390) {
 		//	printf("??");
 		//}
 
-		if (!ArTreeDelete(&artree, &ele)) {
-			printf("找不到");
-			//PrintArt(&artree, artree.root, 0);
-		}
+		
 
 		//printf("删除:%s\n", ele.buf);
 		//uint8_t buf[] = {05, 05, 05, 05, 05, 05, 05, 01};
