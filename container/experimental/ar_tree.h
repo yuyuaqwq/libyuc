@@ -58,11 +58,7 @@ typedef key_type element_type;
 * 通过传参传递
 */
 
-#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 typedef element_type ArLeaf;
-#else
-typedef element_type ArLeaf;
-#endif
 
 
 typedef enum {

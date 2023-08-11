@@ -99,38 +99,41 @@ int randInt() {
 //
 //
 
-//extern "C" IntBPlusElement * TEST_ELEMENT_REFERENCER_Reference(IntBPlusEntry * entry, int16_t element_id);
-//void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
-//	if (!entry) return;
-//	char* empty = (char*)malloc(Level * 8 + 1);
-//	memset(empty, ' ', Level * 8);
-//	empty[Level * 8] = 0;
-//	//    assert(entry->element_count >= 1);
-//	if (entry->type == 1) {
-//		int16_t id = IntBPlusEntryRbTreeIteratorLast(&entry->rb_tree);
-//		//PrintRB(&entry->rb_tree, entry->rb_tree.root, 0, true);
-//		for (int i = entry->element_count - 1; i >= 0; i--) {
-//			printf("%sleaf:::key:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, TEST_ELEMENT_REFERENCER_Reference(entry, id)->leaf.key, empty, Level, empty/*, pos ? ((BPlusEntry*)PageGet(tree, entry->, 1))->indexElement[pos].key : 0*/);
-//			id = IntBPlusEntryRbTreeIteratorPrev(&entry->rb_tree, id);
-//		}
-//		free(empty);
-//		return;
-//	}
-//
-//	//PrintRB(&entry->rb_tree, entry->rb_tree.root, 0, false);
-//	int16_t id = IntBPlusEntryRbTreeIteratorLast(&entry->rb_tree);
-//	for (int i = entry->element_count; i >= 0; i--) {
-//		if (i == entry->element_count) {
-//			PrintBPlus(tree, entry->index.tail_child_id, Level + 1, i - 1);
-//			continue;
-//		}
-//		printf("%sindex:::key:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, TEST_ELEMENT_REFERENCER_Reference(entry, id)->index.key, empty, Level, empty/*, entry->parentId != kPageInvalidId ? ((BPlusEntry*)PageGet(tree, entry->parentId))->indexElement[pos].key: 0*/);
-//		PrintBPlus(tree, TEST_ELEMENT_REFERENCER_Reference(entry, id)->index.child_id, Level + 1, i);
-//		id = IntBPlusEntryRbTreeIteratorPrev(&entry->rb_tree, id);
-//	}
-//	free(empty);
-//}
-//
+extern "C" IntBPlusElement * TEST_BPLUS_ELEMENT_REFERENCER_Reference(IntBPlusEntry * ENTRY, int16_t ELEMENT_ID);
+void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
+	if (!entry) return;
+	char* empty = (char*)malloc(Level * 8 + 1);
+	memset(empty, ' ', Level * 8);
+	empty[Level * 8] = 0;
+	//    assert(entry->element_count >= 1);
+	if (entry->type == 1) {
+		IntBPlusEntryRbTreeIterator iter;
+		int16_t id = IntBPlusEntryRbTreeIteratorLast(&entry->rb_tree, &iter);
+		//PrintRB(&entry->rb_tree, entry->rb_tree.root, 0, true);
+		for (int i = entry->element_count - 1; i >= 0; i--) {
+			printf("%sleaf:::key:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->leaf.key, empty, Level, empty/*, pos ? ((BPlusEntry*)PageGet(tree, entry->, 1))->indexElement[pos].key : 0*/);
+			id = IntBPlusEntryRbTreeIteratorPrev(&entry->rb_tree, &iter);
+		}
+		free(empty);
+		return;
+	}
+
+	//PrintRB(&entry->rb_tree, entry->rb_tree.root, 0, false);
+	IntBPlusEntryRbTreeIterator iter;
+	int16_t id = IntBPlusEntryRbTreeIteratorLast(&entry->rb_tree, &iter);
+
+	for (int i = entry->element_count; i >= 0; i--) {
+		if (i == entry->element_count) {
+			PrintBPlus(tree, entry->index.tail_child_id, Level + 1, i - 1);
+			continue;
+		}
+		printf("%sindex:::key:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->index.key, empty, Level, empty/*, entry->parentId != kPageInvalidId ? ((BPlusEntry*)PageGet(tree, entry->parentId))->indexElement[pos].key: 0*/);
+		PrintBPlus(tree, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->index.child_id, Level + 1, i);
+		id = IntBPlusEntryRbTreeIteratorPrev(&entry->rb_tree, &iter);
+	}
+	free(empty);
+}
+
 
 void PrintSkipList(TsSkipList* list) {
 	auto cur = list->head;
@@ -1057,6 +1060,73 @@ void TestHashTable() {
 //	TsSinglyListPutFirst(&head, );
 //}
 
+
+void TestBPlusTree() {
+
+	printf("\nB+树：\n");
+	IntBPlusTree bpTree;
+	IntBPlusTreeInit(&bpTree);
+	l = GetTickCount();
+	IntBPlusLeafElement element;
+	for (int i = 0; i < count; i++) {
+		// int* qvq = CreateObject(int);
+		element.key = arr2[i]->key;
+		IntBPlusTreeInsert(&bpTree, &element);
+		if (count < 31) {
+			PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+			printf("\n\n\n\n");
+		}
+	}
+	// PrintBPlus(&bpTree, bpTree.root, 0, 0);
+	int key;
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		// int* qvq = CreateObject(int);
+		if (!IntBPlusTreeFind(&bpTree, &arr2[i]->key)) {
+			printf("找不到, %d", arr2[i]->key);
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		// int* qvq = CreateObject(int);
+		// printf("%d", i);
+		if (!IntBPlusTreeDelete(&bpTree, &arr2[i]->key)) {
+			printf("找不到, %d", &arr2[i]->key);
+		}
+		if (count < 31) {
+			printf("删除%d\n", arr2[i]->key);
+			PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+			printf("\n\n\n\n");
+		}
+
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+	printf("\nSTL rb:\n");
+	l = GetTickCount();
+	std::map<int, int> mapaaaa;
+	for (int i = 0; i < count; i++) {
+		mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (mapaaaa.find(arr2[i]->key) == mapaaaa.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		mapaaaa.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+}
+
 void ReverseOrder(void* buf, size_t size) {
 	uint8_t* buf_ = (uint8_t*)buf;
 	for (size_t i = 0; i < size / 2; i++) {
@@ -1074,6 +1144,8 @@ int main() {
 
 	//InitializeCriticalSection(&cs);
 	//
+
+
 
 
 
@@ -1123,7 +1195,11 @@ int main() {
 	}
 
 
+
+
 	size_t len = 0;
+
+	//TestBPlusTree();
 
 	// TestEpoch();
 	// TestTsSkipList();
@@ -1231,69 +1307,4 @@ int main() {
 
 
 
-
-	//printf("\nB+树：\n");
-	//IntBPlusTree bpTree;
-	//IntBPlusTreeInit(&bpTree);
-	//l = GetTickCount();
-	//IntBPlusLeafElement element;
-	//for (int i = 0; i < count; i++) {
-	//	// int* qvq = CreateObject(int);
-	//	element.key = arr2[i]->key;
-	//	IntBPlusTreeInsert(&bpTree, &element);
-	//	if (count < 31) {
-	//		PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
-	//		printf("\n\n\n\n");
-	//	}
-	//}
-	//// PrintBPlus(&bpTree, bpTree.root, 0, 0);
-	//int key;
-	//printf("插入耗时：%dms\n", GetTickCount() - l);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	// int* qvq = CreateObject(int);
-	//	key = arr2[i]->key;
-	//	if (!IntBPlusTreeFind(&bpTree, &key)) {
-	//		printf("找不到, %d", arr2[i]->key);
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	// int* qvq = CreateObject(int);
-	//	// printf("%d", i);
-	//	key = arr2[i]->key;
-	//	if (!IntBPlusTreeDelete(&bpTree, &key)) {
-	//		printf("找不到, %d", &arr2[i]->key);
-	//	}
-	//	if (count < 31) {
-	//		printf("删除%d\n", arr2[i]->key);
-	//		PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
-	//		printf("\n\n\n\n");
-	//	}
-
-	//}
-	//printf("删除耗时：%dms\n", GetTickCount() - l);
-
-	//printf("\nSTL rb:\n");
-	//l = GetTickCount();
-	//std::map<int, int> mapaaaa;
-	//for (int i = 0; i < count; i++) {
-	//	mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
-	//}
-	//printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (mapaaaa.find(arr2[i]->key) == mapaaaa.end()) {
-	//		printf("找不到");
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
-
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	mapaaaa.erase(arr2[i]->key);
-	//}
-	//printf("删除耗时：%dms\n", GetTickCount() - l);
 }

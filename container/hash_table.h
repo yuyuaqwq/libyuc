@@ -6,6 +6,7 @@
 #define LIBYUC_CONTAINER_HASH_TABLE_H_
 
 #include <libyuc/basic.h>
+#include <libyuc/algorithm/two.h>
 #include <libyuc/algorithm/hash_code.h>
 #include <libyuc/container/vector.h>
 
@@ -87,6 +88,7 @@ extern "C" {
     typedef struct _##hash_table_type_name##HashTable { \
         hash_table_type_name##HashBucketVector bucket; \
         uint8_t max_detection_count; \
+        offset_type mask; \
         offset_type load_fator; \
         element_type empty_obj; \
         element_type tombstone_obj; \
@@ -112,7 +114,7 @@ extern "C" {
     * 哈希表
     */ \
     static forceinline offset_type hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
-        return hasher(table, key) % table->bucket.capacity; \
+        return hasher(table, key) & table->mask/* % table->bucket.capacity */; \
     } \
     static forceinline offset_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
@@ -136,6 +138,9 @@ extern "C" {
         if (capacity < 2) { \
             capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
+        if (!LIBYUC_ALGORITHM_TWO_IS_POWER_OF_2(capacity)) { \
+            capacity = LIBYUC_ALGORITHM_TWO_ALIGN_TO_POWER_OF_2(capacity); \
+        } \
         if (comparer##_Equal(table, accessor##_GetKey(table, &empty_obj), accessor##_GetKey(table, &tombstone_obj))) return false; \
         hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, NULL); \
         table->bucket.count = 0; \
@@ -150,7 +155,11 @@ extern "C" {
         } \
         table->load_fator = load_fator; \
         table->max_detection_count = 0; \
-        while(capacity /= 2) ++table->max_detection_count; \
+        table->mask = 0; \
+        while(capacity /= 2) {; \
+            table->mask = (table->mask << 1) | 1; \
+            ++table->max_detection_count; \
+        }; \
         return true; \
     } \
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table) { \

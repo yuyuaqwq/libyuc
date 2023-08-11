@@ -33,6 +33,11 @@ LIBYUC_CONTAINER_HASH_TABLE_DEFINE(Int, uint32_t, int64_t, int64_t, LIBYUC_BASIC
 LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(Element, int16_t)
 LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(Element, int16_t, LIBYUC_SPACE_MANAGER_BUDDY_4BIT_INDEXER, LIBYUC_BASIC_ALLOCATOR_DEFALUT)
 
+
+
+
+
+
 #define element_max_count 100
 
 typedef struct _Int_BPlusElement {
@@ -55,6 +60,16 @@ typedef struct _Int_BPlusEntryExtend {
 
 #define TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY) ((Int_BPlusEntryExtend*)((ENTRY)->type == kBPlusEntryLeaf ? (uintptr_t)(ENTRY)+sizeof(IntBPlusLeafEntry) : (uintptr_t)(ENTRY)+sizeof(IntBPlusIndexEntry)))
 
+
+
+struct {
+	Int_BPlusEntryExtend extend;
+	IntBPlusEntry entry;
+} temp_bplus_entry;
+
+
+
+#define TEST_BPLUS_ENTRY_ACCESSOR_GetTempCopyEntry(TREE, ENTRY) (memcpy(&temp_bplus_entry, (ENTRY), sizeof(Int_BPlusEntryExtend) + ((ENTRY)->type == kBPlusEntryLeaf ? sizeof(IntBPlusLeafEntry):  sizeof(IntBPlusIndexEntry))), &temp_bplus_entry.entry)
 #define TEST_BPLUS_ENTRY_ACCESSOR_GetMergeThresholdRate(TREE, ENTRY) (element_max_count * 40 / 100)
 #define TEST_BPLUS_ENTRY_ACCESSOR_GetFreeRate(TREE, ENTRY) (element_max_count - TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count)
 #define TEST_BPLUS_ENTRY_ACCESSOR_GetFillRate(TREE, ENTRY) (TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count)
@@ -62,22 +77,31 @@ typedef struct _Int_BPlusEntryExtend {
 #define TEST_BPLUS_ENTRY_ACCESSOR TEST_BPLUS_ENTRY_ACCESSOR
 
 forceinline IntBPlusEntry* TEST_BPLUS_ENTRY_ALLOCATOR_CreateBySize(IntBPlusTree* tree, size_t SIZE) {
-	void* entry = MemoryAlloc(SIZE + sizeof(Int_BPlusEntryExtend));
-	return (IntBPlusEntry*)entry;
+	void* entry = MemoryAlloc(sizeof(Int_BPlusEntryExtend) + SIZE);
+	return (IntBPlusEntry*)((uintptr_t)entry + sizeof(Int_BPlusEntryExtend));
 }
 #define TEST_BPLUS_ENTRY_ALLOCATOR TEST_BPLUS_ENTRY_ALLOCATOR
 
 
 
+
+
+#define TEST_BPLUS_ELEMENT_ACCESSOR_SetKey(ENTRY, ELEMENT)
+#define TEST_BPLUS_ELEMENT_ACCESSOR_SetValue(ENTRY, ELEMENT)
 #define TEST_BPLUS_ELEMENT_ACCESSOR_GetNeedRate(ENTRY, ELEMENT) 1
 #define TEST_BPLUS_ELEMENT_ACCESSOR TEST_BPLUS_ELEMENT_ACCESSOR
 
-#define TEST_BPLUS_ELEMENT_ALLOCATOR_CreateBySize(ENTRY, SIZE) 
+#define TEST_BPLUS_ELEMENT_ALLOCATOR_CreateBySize(ENTRY, SIZE) (IntBPlusStaticListPop(&((Int_BPlusEntryExtend*)((uintptr_t)ENTRY - sizeof(Int_BPlusEntryExtend)))->static_list, 0))
+#define TEST_BPLUS_ELEMENT_ALLOCATOR_Release(ENTRY, ELEMENT) (IntBPlusStaticListPush(&((Int_BPlusEntryExtend*)((uintptr_t)ENTRY - sizeof(Int_BPlusEntryExtend)))->static_list, 0, ELEMENT))
 #define TEST_BPLUS_ELEMENT_ALLOCATOR TEST_BPLUS_ELEMENT_ALLOCATOR
 
 
+
+
 #define TEST_BPLUS_ELEMENT_REFERENCER_Dereference(ENTRY, ELEMENT) 
-#define TEST_BPLUS_ELEMENT_REFERENCER_Reference(ENTRY, ELEMENT_ID) (&TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->static_list.obj_arr[ELEMENT_ID].element)
+IntBPlusElement* TEST_BPLUS_ELEMENT_REFERENCER_Reference(IntBPlusEntry* ENTRY, int16_t ELEMENT_ID) {
+	return &TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->static_list.obj_arr[ELEMENT_ID].element;
+}
 #define TEST_BPLUS_ELEMENT_REFERENCER_InvalidId (-1)
 #define TEST_BPLUS_ELEMENT_REFERENCER TEST_BPLUS_ELEMENT_REFERENCER
-//LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(Int, LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK, struct _IntBPlusEntry*, size_t, int16_t, int16_t, int64_t, int64_t, LIBYUC_BASIC_ALLOCATOR_DEFALUT, TEST_BPLUS_ENTRY_ACCESSOR, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_BASIC_REFERENCER_DEFALUT, TEST_BPLUS_ELEMENT_ACCESSOR, TEST_BPLUS_ELEMENT_ALLOCATOR, TEST_BPLUS_ELEMENT_REFERENCER, LIBYUC_BASIC_COMPARER_DEFALUT, 32)
+LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(Int, LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NOT_LINK, struct _IntBPlusEntry*, size_t, int16_t, int16_t, int64_t, int64_t, LIBYUC_BASIC_ALLOCATOR_DEFALUT, TEST_BPLUS_ENTRY_ACCESSOR, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_BASIC_REFERENCER_DEFALUT, TEST_BPLUS_ELEMENT_ACCESSOR, TEST_BPLUS_ELEMENT_ALLOCATOR, TEST_BPLUS_ELEMENT_REFERENCER, LIBYUC_BASIC_COMPARER_DEFALUT, 32)
