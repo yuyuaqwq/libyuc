@@ -109,7 +109,7 @@ extern "C" {
             load_fator = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
         } \
         table->load_fator = load_fator; \
-        /* table->max_detection_count = capacity 选择这个可以节省空间/支持缩容，但性能会差一些 */; \
+        /* table->max_detection_count = capacity - 1 选择这个可以节省空间/支持缩容，但性能会差一些 */; \
         table->max_detection_count = 0; \
         table->mask = 0; \
         while(capacity /= 2) {; \
@@ -166,7 +166,7 @@ extern "C" {
         } \
         else { \
             do { \
-                /* 如果需要支持缩容，需要判断是否正处于Rehash，是则不触发Rehash */ \
+                /* 如果需要支持缩容，首先table->max_detection_count需要等于capacity-1，其次，需要判断是否正处于Rehash，是则不触发Rehash */ \
                 hash_table_type_name##HashRehash(table, table->bucket.capacity * LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
                 iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
                 entry = &table->bucket.obj_arr[iter->cur_index]; \
