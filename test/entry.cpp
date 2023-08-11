@@ -529,7 +529,9 @@ void TestArt() {
 		//}
 
 	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount() - l;
+	printf("插入耗时：%dms\n", l);
 	//PrintArt(&artree, artree.root, 0);
 	l = GetTickCount();
 	ii = 0;
@@ -554,7 +556,8 @@ void TestArt() {
 		
 	}
 	//PrintArt(&artree, artree.root, 0);
-	printf("查找耗时：%dms %d\n", GetTickCount() - l, ii);
+	l = GetTickCount() - l;
+	printf("查找耗时：%dms\n", l);
 	l = GetTickCount();
 	ii = 0;
 	for (auto& it : arr2) {
