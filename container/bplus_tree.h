@@ -76,7 +76,7 @@ typedef enum {
     */ \
     typedef struct { \
         entry_id_type entry_id; \
-        bp_tree_type_name##BPlusEntryRbTreeIterator rb_iterator; \
+        bp_tree_type_name##BPlusEntryRbTreeIterator element_iterator; \
     } bp_tree_type_name##BPlusElementPos; \
     LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
     typedef struct _##bp_tree_type_name##BPlusIterator { \
@@ -101,14 +101,17 @@ typedef enum {
     } bp_tree_type_name##BPlusLeafElement; \
     typedef struct _##bp_tree_type_name##BPlusIndexElement { \
         bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
-        entry_id_type child_id; \
         key_type key; \
+        entry_id_type child_id; \
     } bp_tree_type_name##BPlusIndexElement; \
     typedef struct _##bp_tree_type_name##BPlusElement { \
         union { \
             bp_tree_type_name##BPlusIndexElement index; \
             bp_tree_type_name##BPlusLeafElement leaf; \
-            bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
+            struct { \
+                bp_tree_type_name##BPlusEntryRbEntry rb_entry; \
+                key_type key;       /* 保证leaf和index定位到key都是相同的偏移 */ \
+            }; \
         }; \
     } bp_tree_type_name##BPlusElement; \
     typedef struct _##bp_tree_type_name##BPlusIndexEntry { \
@@ -155,6 +158,8 @@ entry：
         GetFreeRate(获取空闲n分比，可分配的最大空闲)
         GetFillRate(获取已填充n分比)
         GetMaxRate(获取n)
+        GetTempCopyEntry(获取临时Entry，避免分配释放用)
+        TempEntryInit
 
 element:
     基本element定长，附属kv可能不定长
@@ -291,7 +296,7 @@ kv分离是外层处理的，b+树操作的只有element
 
 
 
-#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, entry_offset_type, element_id_type, element_offset_type, key_type, value_type, iterator_allocator, entry_accessor, entry_allocator, entry_referencer, element_accessor, element_allocator, element_referencer, rb_comparer, default_stack_size) \
+#define LIBYUC_CONTAINER_BPLUS_TREE_DEFINE(bp_tree_type_name, leaf_link_mode, entry_id_type, entry_offset_type, element_id_type, element_offset_type, key_type, value_type, iterator_allocator, entry_accessor, entry_allocator, entry_referencer, element_accessor, element_allocator, element_referencer, element_key_comparer, default_stack_size) \
     /*
     * B+树迭代器
     */\
@@ -336,9 +341,13 @@ kv分离是外层处理的，b+树操作的只有element
         return bs_entry->right; \
     } \
     forceinline void bp_tree_type_name##BPlusEntryRbAccessor_SetRight(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry, element_id_type new_id) { \
-            bs_entry->right = new_id; \
+        bs_entry->right = new_id; \
     } \
-    LIBYUC_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, element_id_type, element_offset_type, key_type, bp_tree_type_name##BPlusEntryRbReferencer, bp_tree_type_name##BPlusEntryRbAccessor, rb_comparer) \
+    forceinline key_type* bp_tree_type_name##BPlusEntryRbAccessor_GetKey(bp_tree_type_name##BPlusEntryRbTree* tree, bp_tree_type_name##BPlusEntryRbBsEntry* bs_entry) { \
+        bp_tree_type_name##BPlusElement* element = ObjectGetFromField(bs_entry, bp_tree_type_name##BPlusElement, rb_entry); \
+        return &element->key; \
+    } \
+    LIBYUC_CONTAINER_RB_TREE_DEFINE(bp_tree_type_name##BPlusEntry, element_id_type, element_offset_type, key_type, bp_tree_type_name##BPlusEntryRbReferencer, bp_tree_type_name##BPlusEntryRbAccessor, element_key_comparer) \
     \
     /*
     * B+树
@@ -431,7 +440,7 @@ kv分离是外层处理的，b+树操作的只有element
             if (parent_entry->type == kBPlusEntryLeaf) { \
                 return kBPlusIteratorEnd; \
             } \
-            cur.entry_id = bp_tree_type_name##BPlusElementGetChildId(parent_entry, parent->rb_iterator.cur_id); \
+            cur.entry_id = bp_tree_type_name##BPlusElementGetChildId(parent_entry, parent->element_iterator.cur_id); \
             entry_referencer##_Dereference(tree, parent_entry); \
         } \
         else { \
@@ -440,16 +449,16 @@ kv分离是外层处理的，b+树操作的只有element
         bp_tree_type_name##BPlusEntry* cur_entry = entry_referencer##_Reference(tree, cur.entry_id); \
         int8_t cmp_status = -1; \
         if (cur_entry->element_count > 0) { \
-            bp_tree_type_name##BPlusEntryRbTreeIteratorLocate(&cur_entry->rb_tree, &cur.rb_iterator, key, &cmp_status); \
+            bp_tree_type_name##BPlusEntryRbTreeIteratorLocate(&cur_entry->rb_tree, &cur.element_iterator, key, &cmp_status); \
             if (cmp_status == -1) { /* key小于当前定位元素 */ } \
             else { /* key大于等于当前定位元素 */ \
                 if (cur_entry->type == kBPlusEntryIndex || cmp_status == 1) { \
-                    bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&cur_entry->rb_tree, &cur.rb_iterator); \
+                    bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&cur_entry->rb_tree, &cur.element_iterator); \
                 } \
             } \
         } \
         else { \
-            cur.rb_iterator.cur_id = bp_tree_type_name##BPlusEntryRbReferencer_InvalidId; \
+            cur.element_iterator.cur_id = bp_tree_type_name##BPlusEntryRbReferencer_InvalidId; \
         } \
         bp_tree_type_name##BPlusIteratorStackVectorPushTail(&iterator->stack, &cur); \
         BPlusIteratorStatus status = kBPlusIteratorDown; \
@@ -493,13 +502,18 @@ kv分离是外层处理的，b+树操作的只有element
     * 不支持处理末尾子节点
     * 返回被删除的元素
     */ \
-    static void bp_tree_type_name##BPlusEntryDeleteElement(bp_tree_type_name##BPlusEntry* entry, bp_tree_type_name##BPlusEntryRbTreeIterator* rb_iterator) { \
-         assert(element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-        bp_tree_type_name##BPlusEntryRbTreeDeleteByIterator(&entry->rb_tree, rb_iterator); \
+    static void bp_tree_type_name##BPlusEntryDeleteElement(bp_tree_type_name##BPlusEntry* entry, bp_tree_type_name##BPlusEntryRbTreeIterator* element_iterator) { \
+         assert(element_iterator->cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+        bp_tree_type_name##BPlusEntryRbTreeDeleteByIterator(&entry->rb_tree, element_iterator); \
         entry->element_count--; \
-        bp_tree_type_name##BPlusElementRelease(entry, element_id); \
+        bp_tree_type_name##BPlusElementRelease(entry, element_iterator->cur_id); \
     } \
     \
+    void bp_tree_type_name##BPlusEntryInit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* entry, BPlusEntryType type) { \
+        entry->type = type; \
+        entry->element_count = 0; \
+        bp_tree_type_name##BPlusEntryRbTreeInit(&entry->rb_tree); \
+    } \
     entry_id_type bp_tree_type_name##BPlusEntryCreate(bp_tree_type_name##BPlusTree* tree, BPlusEntryType type) { \
         size_t size; \
         entry_id_type entry_id; \
@@ -510,9 +524,7 @@ kv分离是外层处理的，b+树操作的只有element
             entry_id = entry_allocator##_CreateBySize(tree, sizeof(bp_tree_type_name##BPlusEntry) - sizeof(bp_tree_type_name##BPlusIndexEntry) + sizeof(bp_tree_type_name##BPlusLeafEntry)); \
         } \
         bp_tree_type_name##BPlusEntry* entry = entry_referencer##_Reference(tree, entry_id); \
-        entry->type = type; \
-        entry->element_count = 0; \
-        bp_tree_type_name##BPlusEntryRbTreeInit(&entry->rb_tree); \
+        bp_tree_type_name##BPlusEntryInit(tree, entry, type); \
         entry_referencer##_Dereference(tree, entry); \
         return entry_id; \
     } \
@@ -523,20 +535,20 @@ kv分离是外层处理的，b+树操作的只有element
     /*
     * 有序链表建树，参考https://leetcode.cn/problems/convert-sorted-list-to-binary-search-tree/solution/you-xu-lian-biao-zhuan-huan-er-cha-sou-suo-shu-1-3/
     */ \
-    static element_id_type bp_tree_type_name##BuildRbTree(bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusEntryRbTreeIterator* rb_iterator, bp_tree_type_name##BPlusEntry* dst_entry, element_offset_type left, element_offset_type right, element_id_type parent_id, element_offset_type max_level, element_offset_type level) { \
+    static element_id_type bp_tree_type_name##BuildRbTree(bp_tree_type_name##BPlusEntry* src_entry, bp_tree_type_name##BPlusEntryRbTreeIterator* element_iterator, bp_tree_type_name##BPlusEntry* dst_entry, element_offset_type left, element_offset_type right, element_id_type parent_id, element_offset_type max_level, element_offset_type level) { \
         if (left > right) return element_referencer##_InvalidId; \
         element_id_type mid = (left + right + 1) / 2; \
         element_id_type new_element_id = bp_tree_type_name##BPlusElementCreate(dst_entry); \
         bp_tree_type_name##BPlusElement* new_element = element_referencer##_Reference(dst_entry, new_element_id); \
         bp_tree_type_name##BPlusEntryRbEntry* rb_entry = &new_element->rb_entry; \
         bp_tree_type_name##BPlusEntryRbAccessor_SetColor(&dst_entry->rb_tree, rb_entry, level == max_level && max_level > 1 ? kRbRed : kRbBlack); \
-        bp_tree_type_name##BPlusEntryRbAccessor_SetLeft(&dst_entry->rb_tree, rb_entry, bp_tree_type_name##BuildRbTree(src_entry, rb_iterator, dst_entry, left, mid - 1, new_element_id, max_level, level + 1)); \
-         assert(rb_iterator->cur_id != element_referencer##_InvalidId); \
-        bp_tree_type_name##BPlusElement* src_element = element_referencer##_Reference(src_entry, rb_iterator->cur_id); \
+        bp_tree_type_name##BPlusEntryRbAccessor_SetLeft(&dst_entry->rb_tree, rb_entry, bp_tree_type_name##BuildRbTree(src_entry, element_iterator, dst_entry, left, mid - 1, new_element_id, max_level, level + 1)); \
+         assert(element_iterator->cur_id != element_referencer##_InvalidId); \
+        bp_tree_type_name##BPlusElement* src_element = element_referencer##_Reference(src_entry, element_iterator->cur_id); \
         bp_tree_type_name##BPlusElementSet(dst_entry, new_element_id, src_entry, src_element, entry_referencer##_InvalidId); \
         element_referencer##_Dereference(src_entry, src_element); \
-        bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&src_entry->rb_tree, rb_iterator); \
-        bp_tree_type_name##BPlusEntryRbAccessor_SetRight(&dst_entry->rb_tree, rb_entry, bp_tree_type_name##BuildRbTree(src_entry, rb_iterator, dst_entry, mid + 1, right, new_element_id, max_level, level+1)); \
+        bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&src_entry->rb_tree, element_iterator); \
+        bp_tree_type_name##BPlusEntryRbAccessor_SetRight(&dst_entry->rb_tree, rb_entry, bp_tree_type_name##BuildRbTree(src_entry, element_iterator, dst_entry, mid + 1, right, new_element_id, max_level, level+1)); \
         element_referencer##_Dereference(dst_entry, new_element); \
         return new_element_id; \
     } \
@@ -549,7 +561,7 @@ kv分离是外层处理的，b+树操作的只有element
     * 因为分裂后选择右节点的最左元素的key作为上升的key
     * 这个时候无论怎么插入元素都不会插入到该节点最左元素的左侧(比它小的会被分到左侧节点，因为父元素key等于该元素)，该节点再分裂也就不存在最左元素再次上升的可能了
     */ \
-    static element_id_type bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_element_id, bp_tree_type_name##BPlusEntry** src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_id, entry_id_type insert_element_child_id, bool dereference_src_entry, entry_id_type* out_right_id) { \
+    static element_id_type bp_tree_type_name##BPlusEntrySplit(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_element_id, bp_tree_type_name##BPlusEntry** src_entry, bp_tree_type_name##BPlusElement* insert_element, element_id_type insert_id, entry_id_type insert_element_child_id, bool dereference_src_entry, entry_id_type* out_right_id, bp_tree_type_name##BPlusEntryRbTreeIterator* up_element_iterator) { \
         /* assert(insert_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); */ \
         entry_id_type right_id = bp_tree_type_name##BPlusEntryCreate(tree, left->type); \
         bp_tree_type_name##BPlusEntry* right = entry_referencer##_Reference(tree, right_id); \
@@ -557,8 +569,8 @@ kv分离是外层处理的，b+树操作的只有element
         if (left->type == kBPlusEntryLeaf) { \
             leaf_link_mode##_DEFINE_2(bp_tree_type_name) \
         } \
-        bp_tree_type_name##BPlusEntryRbTreeIterator rb_iterator; \
-        element_id_type left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree, &rb_iterator); \
+        bp_tree_type_name##BPlusEntryRbTreeIterator left_element_iterator; \
+        bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree, &left_element_iterator); \
         bool insert_right = false; \
         element_offset_type fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(right, *src_entry, insert_element)) / 2; \
         /*
@@ -567,34 +579,34 @@ kv分离是外层处理的，b+树操作的只有element
         element_id_type right_count = 1, left_count = 0; \
         element_offset_type left_fill_rate = entry_accessor##_GetFillRate(tree, left); \
         while (true) { \
-            if (!insert_right && left_element_id == insert_id) { \
+            if (!insert_right && left_element_iterator.cur_id == insert_id) { \
                 insert_right = true; \
             } \
             if (left_fill_rate <= fill_rate || left->element_count <= 2) { \
                 break; \
             } \
             left_fill_rate -= element_accessor##_GetNeedRate(left, right, insert_element); \
-            left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, &rb_iterator); \
+            bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&left->rb_tree, &left_element_iterator); \
             ++right_count; \
         } \
-         assert(left_element_id != element_referencer##_InvalidId); \
+         assert(left_element_iterator.cur_id != element_referencer##_InvalidId); \
          assert(right_count > 0); \
         /* 先构建右侧节点的rb树 */ \
-        bp_tree_type_name##BPlusEntryRbTreeIterator mid_rb_iterator; \
-        memcpy(&mid_rb_iterator, &rb_iterator, sizeof(mid_rb_iterator)); \
+        bp_tree_type_name##BPlusEntryRbTreeIterator mid_element_iterator; \
+        bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&mid_element_iterator, &left_element_iterator); \
         element_offset_type logn = right_count == 1 ? -1 : 0; for (element_offset_type i = right_count; i > 0; i /= 2) ++logn; \
-        right->rb_tree.root = bp_tree_type_name##BuildRbTree(left, &rb_iterator, right, 0, right_count-1, element_referencer##_InvalidId, logn, 0); \
+        right->rb_tree.root = bp_tree_type_name##BuildRbTree(left, &left_element_iterator, right, 0, right_count-1, element_referencer##_InvalidId, logn, 0); \
         /* 拷贝到临时节点，在原节点中重构rb树 */ \
         bp_tree_type_name##BPlusEntry* temp_entry = entry_accessor##_GetTempCopyEntry(tree, left); \
-        entry_accessor##_Clean(tree, left); \
+        bp_tree_type_name##BPlusEntryInit(tree, left, right->type); \
         do { \
-            left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&temp_entry->rb_tree, &mid_rb_iterator); \
+            bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&temp_entry->rb_tree, &mid_element_iterator); \
             ++left_count; \
-        } while (left_element_id != element_referencer##_InvalidId); \
+        } while (mid_element_iterator.cur_id != element_referencer##_InvalidId); \
         --left_count; \
-        left_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree, &rb_iterator); \
+        bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree, &left_element_iterator); \
         logn = left_count == 1 ? -1 : 0; for (element_offset_type i = left_count; i > 0; i /= 2) ++logn; \
-        left->rb_tree.root = bp_tree_type_name##BuildRbTree(temp_entry, &rb_iterator, left, 0, left_count-1, element_referencer##_InvalidId, logn, 0); \
+        left->rb_tree.root = bp_tree_type_name##BuildRbTree(temp_entry, &left_element_iterator, left, 0, left_count-1, element_referencer##_InvalidId, logn, 0); \
         \
         /* 最终插入节点 */ \
         if (insert_right) { \
@@ -613,7 +625,7 @@ kv分离是外层处理的，b+树操作的只有element
             /* 从mid拿到上升元素，叶子元素转换为索引元素，上升元素的子节点指向左节点，叶子上升不需要被摘除 */ \
             *src_entry = right; \
             entry_referencer##_Reference(tree, right_id); \
-            up_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&right->rb_tree); \
+            up_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&right->rb_tree, up_element_iterator); \
             up_element = element_referencer##_Reference(*src_entry, up_element_id); \
         } \
         else { \
@@ -637,7 +649,7 @@ kv分离是外层处理的，b+树操作的只有element
             right->index.tail_child_id = left->index.tail_child_id; \
             \
             /* 最后从左节点末尾拿到上升元素，等待将其摘除 */ \
-            up_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree); \
+            up_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&left->rb_tree, up_element_iterator); \
             *src_entry = left; \
             entry_referencer##_Reference(tree, left_id); /* 累加一次计数 */ \
             up_element = element_referencer##_Reference(*src_entry, up_element_id); \
@@ -662,14 +674,14 @@ kv分离是外层处理的，b+树操作的只有element
     * 1     3
     */ \
     static void bp_tree_type_name##BPlusEntryMerge(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusEntry* left, entry_id_type left_id, bp_tree_type_name##BPlusEntry* right, entry_id_type right_id, bp_tree_type_name##BPlusEntry* parent, element_id_type parent_index) { \
-        bp_tree_type_name##BPlusEntryRbTreeIterator rb_iterator; \
-        element_id_type right_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&right->rb_tree, &rb_iterator); \
+        bp_tree_type_name##BPlusEntryRbTreeIterator element_iterator; \
+        element_id_type right_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&right->rb_tree, &element_iterator); \
         for (element_offset_type i = 0; i < right->element_count; i++) { \
              assert(right_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
             bp_tree_type_name##BPlusElement* right_element = element_referencer##_Reference(right, right_element_id); \
             bp_tree_type_name##BPlusEntryInsertElement(left, NULL, right_element, entry_referencer##_InvalidId); \
             element_referencer##_Dereference(right, right_element); \
-            right_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, &rb_iterator); \
+            right_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&right->rb_tree, &element_iterator); \
         } \
         if (left->type == kBPlusEntryLeaf) { \
             leaf_link_mode##_DEFINE_3(bp_tree_type_name) \
@@ -702,11 +714,12 @@ kv分离是外层处理的，b+树操作的只有element
         bp_tree_type_name##BPlusEntry* cur = entry_referencer##_Reference(tree, cur_pos->entry_id); \
         bool success = true, insert_up = false; \
         element_id_type up_element_id = element_referencer##_InvalidId; \
+        bp_tree_type_name##BPlusEntryRbTreeIterator up_element_iterator; \
         do { \
             element_id_type free_rate = entry_accessor##_GetFreeRate(tree, cur); \
             element_id_type need_rate = element_accessor##_GetNeedRate(cur, src_entry, insert_element); \
             if (iterator->leaf_status == kBPlusIteratorEq) { \
-                bp_tree_type_name##BPlusElement* raw = element_referencer##_Reference(cur, cur_pos->rb_iterator.cur_id); \
+                bp_tree_type_name##BPlusElement* raw = element_referencer##_Reference(cur, cur_pos->element_iterator.cur_id); \
                 element_id_type raw_rate = element_accessor##_GetNeedRate(cur, cur, raw); \
                 element_referencer##_Dereference(cur, raw); \
                 if (free_rate + need_rate >= raw_rate) { \
@@ -726,10 +739,10 @@ kv分离是外层处理的，b+树操作的只有element
             } \
             else { \
                 /* 没有多余位置，需要分裂向上插入，插入的位置需要是第一个小于key的元素，element_id指向第一个大于key的元素 */ \
-                if (cur_pos->rb_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的元素，直接拿末尾元素 */ \
-                    bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&cur->rb_tree, &cur_pos->rb_iterator); \
+                if (cur_pos->element_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的元素，直接拿末尾元素 */ \
+                    bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&cur->rb_tree, &cur_pos->element_iterator); \
                 } else { \
-                    bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&cur->rb_tree, &cur_pos->rb_iterator); \
+                    bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&cur->rb_tree, &cur_pos->element_iterator); \
                 } \
             } \
             if (!parent_pos) { \
@@ -737,7 +750,7 @@ kv分离是外层处理的，b+树操作的只有element
                 entry_id_type parent_id = bp_tree_type_name##BPlusEntryCreate(tree, kBPlusEntryIndex); \
                 bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_id); \
                 bp_tree_type_name##BPlusEntry* new_src_entry = src_entry; /* 下面还需要释放，不能直接修改 */ \
-                up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &new_src_entry, insert_element, cur_pos->element_id, insert_element_child_id, false, &right_id); \
+                up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &new_src_entry, insert_element, cur_pos->element_iterator.cur_id, insert_element_child_id, false, &right_id, &up_element_iterator); \
                 bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(new_src_entry, up_element_id); \
                 bp_tree_type_name##BPlusEntryInsertElement(parent, new_src_entry, up_element, cur_pos->entry_id); \
                 element_referencer##_Dereference(new_src_entry, up_element); \
@@ -747,7 +760,7 @@ kv分离是外层处理的，b+树操作的只有element
                 break; \
             } \
             bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_pos->entry_id); \
-            up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, parent_pos->element_id, &src_entry, insert_element, cur_pos->element_id, insert_element_child_id, true, &right_id); \
+            up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, parent_pos->element_iterator.cur_id, &src_entry, insert_element, cur_pos->element_iterator.cur_id, insert_element_child_id, true, &right_id, &up_element_iterator); \
             entry_referencer##_Dereference(tree, parent); \
             insert_up = true; \
         } while (false); \
@@ -775,7 +788,7 @@ kv分离是外层处理的，b+树操作的只有element
         bp_tree_type_name##BPlusEntry* sibling = NULL; \
         bp_tree_type_name##BPlusEntry* parent = NULL; \
         bool success = true, delete_up = false; \
-        bp_tree_type_name##BPlusEntryDeleteElement(entry, cur_pos->element_id);        /* 直接删除即可，叶子元素没有子节点，索引元素在合并时已经处理子节点了 */ \
+        bp_tree_type_name##BPlusEntryDeleteElement(entry, &cur_pos->element_iterator);        /* 直接删除即可，叶子元素没有子节点，索引元素在合并时已经处理子节点了 */ \
         do { \
             if (entry_accessor##_GetFillRate(tree, entry) >= entry_accessor##_GetMergeThresholdRate(tree, entry)) { \
                 break; \
@@ -795,64 +808,71 @@ kv分离是外层处理的，b+树操作的只有element
             } \
             parent = entry_referencer##_Reference(tree, parent_pos->entry_id); \
             bool left_sibling = true; \
-            element_id_type common_parent_element_id = parent_pos->element_id;     /* 始终是指向左侧元素 */ \
-            element_id_type sibling_element_id; \
-            if (common_parent_element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的父元素，当前节点是末尾节点，是左兄弟 */ \
-                sibling_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&parent->rb_tree); \
+            bp_tree_type_name##BPlusEntryRbTreeIterator common_parent_element_iterator; \
+            bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&common_parent_element_iterator, &parent_pos->element_iterator);     /* 始终是指向左侧元素 */ \
+            bp_tree_type_name##BPlusEntryRbTreeIterator sibling_element_iterator; \
+            if (common_parent_element_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 不存在大于key的父元素，当前节点是末尾节点，是左兄弟 */ \
+                bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&parent->rb_tree, &sibling_element_iterator); \
             } \
             else { \
-                sibling_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&parent->rb_tree, common_parent_element_id); \
-                if (sibling_element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) {     /* 当前元素已经是最小的元素 */ \
+                bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&sibling_element_iterator, &common_parent_element_iterator); \
+                bp_tree_type_name##BPlusEntryRbTreeIteratorPrev(&parent->rb_tree, &sibling_element_iterator); \
+                if (sibling_element_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) {     /* 当前元素已经是最小的元素 */ \
                     left_sibling = false; \
-                    sibling_element_id = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&parent->rb_tree, common_parent_element_id); \
-                    if (sibling_element_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 直接找既没有左兄弟也没有右兄弟，那就是末尾节点是右兄弟 */ \
+                    bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&sibling_element_iterator, &common_parent_element_iterator); \
+                    bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&parent->rb_tree, &sibling_element_iterator); \
+                    if (sibling_element_iterator.cur_id == bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { /* 直接找既没有左兄弟也没有右兄弟，那就是末尾节点是右兄弟 */ \
                         sibling_entry_id = parent->index.tail_child_id; \
                     } \
                 } \
             } \
-            if (sibling_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
-                bp_tree_type_name##BPlusElement* sibling_element = element_referencer##_Reference(parent, sibling_element_id); \
+            if (sibling_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId) { \
+                bp_tree_type_name##BPlusElement* sibling_element = element_referencer##_Reference(parent, sibling_element_iterator.cur_id); \
                 sibling_entry_id = sibling_element->index.child_id; \
                 element_referencer##_Dereference(parent, sibling_element); \
             } \
             if (left_sibling) { \
-                common_parent_element_id = sibling_element_id; \
-                parent_pos->element_id = sibling_element_id;     /* 更新一下，给父节点删除使用 */ \
+                bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&common_parent_element_iterator, &sibling_element_iterator); \
+                bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&parent_pos->element_iterator, &sibling_element_iterator);       /* 更新一下，给父节点删除使用 */ \
             } \
-                assert(common_parent_element_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-                assert(sibling_entry_id != entry_referencer##_InvalidId); \
+             assert(common_parent_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+             assert(sibling_element_iterator.cur_id != entry_referencer##_InvalidId); \
             sibling = entry_referencer##_Reference(tree, sibling_entry_id); \
             if (entry_accessor##_GetFillRate(tree, sibling) > entry_accessor##_GetMergeThresholdRate(tree, sibling)) { \
                 /* 向兄弟借节点 */ \
-                    assert(sibling->element_count >= 2); \
+                 assert(sibling->element_count >= 2); \
                 if (entry->type == kBPlusEntryLeaf) { \
                     /* 叶子节点处理较简单，可以直接移动 */ \
                     if (left_sibling) { \
                         /* 左兄弟节点的末尾的元素插入到当前节点的头部，更新父元素key为借来的key */ \
-                        element_id_type last = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree); \
-                            assert(last != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-                        bp_tree_type_name##BPlusElement* element = entry_referencer##_Reference(sibling, last); \
+                        bp_tree_type_name##BPlusEntryRbTreeIterator last_element_iterator; \
+                        bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree, &last_element_iterator); \
+                         assert(last_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+                        bp_tree_type_name##BPlusElement* element = entry_referencer##_Reference(sibling, last_element_iterator.cur_id); \
                         bp_tree_type_name##BPlusEntryInsertElement(entry, sibling, element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, element); \
-                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, last); \
+                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, &last_element_iterator); \
                         \
-                        bp_tree_type_name##BPlusElement* common_parent_element = element_referencer##_Reference(parent, common_parent_element_id); \
+                        bp_tree_type_name##BPlusElement* common_parent_element = element_referencer##_Reference(parent, common_parent_element_iterator.cur_id); \
                         common_parent_element->index.key = element->leaf.key;         /* 更新索引 */ \
                         element_referencer##_Dereference(parent, common_parent_element); \
                     } \
                     else { \
                         /* 右兄弟节点的头部的元素插入到当前节点的尾部，并新父元素key为右兄弟的新首元素 */ \
-                        element_id_type first = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree); \
-                        element_id_type new_first = bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&sibling->rb_tree, first); \
-                            assert(first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-                            assert(new_first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-                        bp_tree_type_name##BPlusElement* element = entry_referencer##_Reference(sibling, first); \
+                        bp_tree_type_name##BPlusEntryRbTreeIterator first_element_iterator; \
+                        bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree, &first_element_iterator); \
+                        bp_tree_type_name##BPlusEntryRbTreeIterator new_element_iterator; \
+                        bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&new_element_iterator, &first_element_iterator); \
+                        bp_tree_type_name##BPlusEntryRbTreeIteratorNext(&sibling->rb_tree, &new_element_iterator); \
+                         assert(first_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+                         assert(new_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+                        bp_tree_type_name##BPlusElement* element = entry_referencer##_Reference(sibling, first_element_iterator.cur_id); \
                         bp_tree_type_name##BPlusEntryInsertElement(entry, sibling, element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, element); \
-                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, first); \
+                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, &first_element_iterator); \
                         /* 右节点的头元素key可能正好和共同父节点相等(此时和索引相等的key跑到左边，就会导致找不到)，因此key更新为新的首元素是最好的 */ \
-                        bp_tree_type_name##BPlusElement* common_parent_element = element_referencer##_Reference(parent, common_parent_element_id); \
-                        bp_tree_type_name##BPlusElement* sibling_element = element_referencer##_Reference(sibling, new_first); \
+                        bp_tree_type_name##BPlusElement* common_parent_element = element_referencer##_Reference(parent, common_parent_element_iterator.cur_id); \
+                        bp_tree_type_name##BPlusElement* sibling_element = element_referencer##_Reference(sibling, new_element_iterator.cur_id); \
                         common_parent_element->index.key = sibling_element->leaf.key;         /* 更新索引 */ \
                         element_referencer##_Dereference(parent, common_parent_element); \
                         element_referencer##_Dereference(sibling, sibling_element); \
@@ -862,35 +882,37 @@ kv分离是外层处理的，b+树操作的只有element
                     /* 索引节点处理较复杂，需要下降父节点中当前节点和兄弟节点的共同父元素，上升兄弟的元素到共同父元素(即交换) */ \
                     if (left_sibling) { \
                         /* 左兄弟节点的末尾元素上升到父节点的头部，父节点的对应元素下降到当前节点的头部，上升元素其右子节点挂在下降的父节点元素的左侧 */ \
-                        element_id_type last = bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree); \
-                            assert(last != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-                        bp_tree_type_name##BPlusElement* left_element = entry_referencer##_Reference(sibling, last); \
+                        bp_tree_type_name##BPlusEntryRbTreeIterator last_element_iterator; \
+                        bp_tree_type_name##BPlusEntryRbTreeIteratorLast(&sibling->rb_tree, &last_element_iterator); \
+                         assert(last_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+                        bp_tree_type_name##BPlusElement* left_element = entry_referencer##_Reference(sibling, last_element_iterator.cur_id); \
                         ObjectSwap(entry_id_type, left_element->index.child_id, sibling->index.tail_child_id);        /* 要拿的是末尾的子节点，处理一下 */ \
-                        bp_tree_type_name##BPlusElement* par_element = entry_referencer##_Reference(parent, common_parent_element_id); \
+                        bp_tree_type_name##BPlusElement* par_element = entry_referencer##_Reference(parent, common_parent_element_iterator.cur_id); \
                         par_element->index.child_id = left_element->index.child_id; \
                         bp_tree_type_name##BPlusEntryInsertElement(entry, parent, par_element, entry_referencer##_InvalidId); \
                         left_element->index.child_id = sibling_entry_id; \
                         bp_tree_type_name##BPlusEntryInsertElement(parent, sibling, left_element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, left_element); \
-                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, last); \
+                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, &last_element_iterator); \
                         entry_referencer##_Dereference(parent, par_element); \
-                        bp_tree_type_name##BPlusEntryDeleteElement(parent, common_parent_element_id); \
+                        bp_tree_type_name##BPlusEntryDeleteElement(parent, &common_parent_element_iterator); \
                     } \
                     else { \
                         /* 右兄弟节点的头元素上升到父节点的头部，父节点的对应元素下降到当前节点的尾部，上升元素其左子节点挂在下降的父节点元素的右侧 */ \
-                        element_id_type first = bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree); \
-                            assert(first != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
-                        bp_tree_type_name##BPlusElement* right_element = entry_referencer##_Reference(sibling, first); \
-                        bp_tree_type_name##BPlusElement* par_element = entry_referencer##_Reference(parent, common_parent_element_id); \
+                        bp_tree_type_name##BPlusEntryRbTreeIterator first_element_iterator; \
+                        bp_tree_type_name##BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree, &first_element_iterator); \
+                         assert(first_element_iterator.cur_id != bp_tree_type_name##BPlusEntryRbReferencer_InvalidId); \
+                        bp_tree_type_name##BPlusElement* right_element = entry_referencer##_Reference(sibling, first_element_iterator.cur_id); \
+                        bp_tree_type_name##BPlusElement* par_element = entry_referencer##_Reference(parent, common_parent_element_iterator.cur_id); \
                         par_element->index.child_id = right_element->index.child_id; \
                         ObjectSwap(entry_id_type, par_element->index.child_id, entry->index.tail_child_id);        /* 要插入的是末尾的子节点，处理一下 */ \
                         bp_tree_type_name##BPlusEntryInsertElement(entry, parent, par_element, entry_referencer##_InvalidId); \
                         right_element->index.child_id = cur_pos->entry_id; \
                         bp_tree_type_name##BPlusEntryInsertElement(parent, sibling, right_element, entry_referencer##_InvalidId); \
                         entry_referencer##_Dereference(sibling, right_element); \
-                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, first); \
+                        bp_tree_type_name##BPlusEntryDeleteElement(sibling, &first_element_iterator); \
                         entry_referencer##_Dereference(parent, par_element); \
-                        bp_tree_type_name##BPlusEntryDeleteElement(parent, common_parent_element_id); \
+                        bp_tree_type_name##BPlusEntryDeleteElement(parent, &common_parent_element_iterator); \
                     } \
                 } \
                 break; \
@@ -898,11 +920,11 @@ kv分离是外层处理的，b+树操作的只有element
             \
             /* 兄弟节点不够借，需要合并(合并了也不会超过m-1，因为一边不足m-1的一半，一边是m-1的一半，是索引节点的合并也足够下降一个父元素) */ \
             if (left_sibling) { \
-                bp_tree_type_name##BPlusEntryMerge(tree, sibling, sibling_entry_id, entry, cur_pos->entry_id, parent, common_parent_element_id); \
+                bp_tree_type_name##BPlusEntryMerge(tree, sibling, sibling_entry_id, entry, cur_pos->entry_id, parent, common_parent_element_iterator.cur_id); \
                 entry = NULL; \
             } \
             else { \
-                bp_tree_type_name##BPlusEntryMerge(tree, entry, cur_pos->entry_id, sibling, sibling_entry_id, parent, common_parent_element_id); \
+                bp_tree_type_name##BPlusEntryMerge(tree, entry, cur_pos->entry_id, sibling, sibling_entry_id, parent, common_parent_element_iterator.cur_id); \
                 sibling = NULL; \
             } \
             delete_up = true; \

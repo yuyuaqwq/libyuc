@@ -62,6 +62,7 @@ typedef enum {
     id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
     id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
     id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
+    void rb_tree_type_name##RbTreeIteratorCopy(rb_tree_type_name##RbTreeIterator* dst_iterator, rb_tree_type_name##RbTreeIterator* src_iterator); \
     \
     bool rb_tree_type_name##RbTreeVerify(rb_tree_type_name##RbTree* tree); \
 
@@ -402,10 +403,21 @@ typedef enum {
         return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
     } \
     id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+        if (iterator->cur_id == referencer##_InvalidId) { \
+            rb_tree_type_name##RbTreeIteratorFirst(tree, iterator); \
+            return iterator->cur_id; \
+        } \
         return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
     } \
     id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
+        if (iterator->cur_id == referencer##_InvalidId) { \
+            rb_tree_type_name##RbTreeIteratorLast(tree, iterator); \
+            return iterator->cur_id; \
+        } \
         return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
+    } \
+    void rb_tree_type_name##RbTreeIteratorCopy(rb_tree_type_name##RbTreeIterator* dst_iterator, rb_tree_type_name##RbTreeIterator* src_iterator) { \
+        memcpy(dst_iterator, src_iterator, sizeof(*dst_iterator)); \
     } \
     /*
     * 验证红黑树性质

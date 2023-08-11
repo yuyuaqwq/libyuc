@@ -16,7 +16,6 @@ extern "C" {
 * 容器提供默认迭代器，通过宏参数指定
 */
 
-
 // 迭代器初始化
 // First - 指向第一个
 // Last - 指向最后一个
@@ -25,6 +24,7 @@ extern "C" {
 // 迭代器状态
 // Valid - 有效
 // Invalid - 无效
+    // - 此时Prev会转到Last，Next会转到First
 
 // 迭代器迭代
 // Next - 转到下一个
