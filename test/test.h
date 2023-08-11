@@ -39,7 +39,11 @@ static forceinline uint64_t HashCode_murmur3_fmix64inline(uint64_t k) {
 	return k;
 }
 
-#define INT_HASHTABLE_HASHER_KEY(table, key)    HashCode_murmur3_fmix64inline(*(key)) // XXH32_int(key)
+
+
+#include "C:\Users\GT1\Desktop\wyhash.h"
+
+#define INT_HASHTABLE_HASHER_KEY(table, key)    _wymix(*(key), UINT64_C(0x9E3779B97F4A7C15))// HashCode_murmur3_fmix64inline(*(key)) // XXH32_int(key)
 
 //		LIBYUC_CONTAINER_AVL_TREE_DECLARATION(Int, struct _IntAvlEntry*, int)
 //		typedef struct _IntEntry_Avl {

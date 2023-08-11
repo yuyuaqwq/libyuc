@@ -23,55 +23,10 @@ extern "C" {
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_MAX_DETECTION_COUNT 12    // (table->bucket.capacity - 1)
 
 
-#ifdef LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
-        offset_type obj_count; \
-        offset_type free_count; \
-        offset_type list_entry_count; \
-        offset_type list_head_count; \
-        offset_type max_list_count; \
-        offset_type cur_list_count; \
-
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
-        iter->obj_count = 0; \
-        iter->free_count = 0; \
-        iter->list_entry_count = 0; \
-        iter->list_head_count = 0; \
-        iter->max_list_count = 0; \
-        iter->cur_list_count = 0; \
-
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2 \
-        iter->cur_list_count++; \
-        if (iter->cur_list_count > iter->max_list_count) { \
-            \
-                iter->max_list_count = iter->cur_list_count; \
-        } \
-        iter->list_entry_count++; \
-
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3 \
-        iter->free_count++;
-
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4 \
-        iter->obj_count++; \
-
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5 \
-        iter->cur_list_count = 0; \
-        iter->list_head_count++; \
-
-#else
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION 
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4
-#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5
-#endif
-
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, offset_type, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
         offset_type cur_index; \
-        LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
     } hash_table_type_name##HashTableIterator; \
     \
     element_type* hash_table_type_name##HashTableIteratorFirst(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
@@ -195,8 +150,7 @@ extern "C" {
             if (comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
                 return locate_tombstone ? &entry->obj : NULL; \
             } \
-            if (i + 1 != table->max_detection_count) \
-                iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
+            iter->cur_index = (iter->cur_index + 1) & table->mask; \
         } \
         return NULL; \
     } \
@@ -221,7 +175,7 @@ extern "C" {
                         element_mover##_Copy(table, &entry->obj, obj); \
                         break; \
                     } \
-                    iter->cur_index = (++iter->cur_index) % table->bucket.capacity; \
+                    iter->cur_index = (iter->cur_index + 1) & table->mask; \
                     entry = &table->bucket.obj_arr[iter->cur_index]; \
                 } \
                 if (i < table->max_detection_count) { \
@@ -250,7 +204,6 @@ extern "C" {
     } \
     element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         iter->cur_index = 0; \
-        LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
         return hash_table_type_name##HashTableIteratorNext(table, iter); \
     } \
     element_type* hash_table_type_name##HashTableIteratorNext(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \

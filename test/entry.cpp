@@ -1136,6 +1136,10 @@ void ReverseOrder(void* buf, size_t size) {
 	}
 }
 
+
+#include "C:\Users\GT1\Desktop\unordered_dense.h"
+
+
 int main() {
 	//IntLruList lru_list;
 	//IntLru_Entry lru_entry;
@@ -1144,6 +1148,19 @@ int main() {
 
 	//InitializeCriticalSection(&cs);
 	//
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1197,6 +1214,44 @@ int main() {
 
 
 
+
+	struct hashfunc {
+		size_t operator()(int64_t i) const {
+			// return HashCode_murmur3_fmix64inline(i);
+			return ankerl::unordered_dense::hash<uint64_t>()(i);
+		}
+	};
+
+
+	ankerl::unordered_dense::set<uint64_t> aaa;
+
+	printf("\nankerl::unordered_dense:\n");
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		aaa.insert(arr2[i]->key);
+		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (aaa.find(arr2[i]->key) == aaa.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		aaa.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
+
+
+
+
+
 	size_t len = 0;
 
 	//TestBPlusTree();
@@ -1207,7 +1262,7 @@ int main() {
 	//TestSkipList();
 
 	//TestAvl();
-	TestArt();
+	//TestArt();
 	//TestRb();
 	//TestTsSortSinglyList();
 	TestHashTable();
@@ -1276,11 +1331,6 @@ int main() {
 
 	//
 
-	struct hashfunc {
-		size_t operator()(int64_t i) const {
-			return HashCode_murmur3_fmix64inline(i);
-		}
-	};
 
 	printf("\nSTL ht:\n");
 	l = GetTickCount();
