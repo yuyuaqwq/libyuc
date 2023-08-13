@@ -10,6 +10,11 @@
 #include <unordered_set>
 #include <thread>
 
+
+#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\yuyu\Desktop\hash_set8.hpp"
+#include "C:\Users\yuyu\Desktop\hash_set4.hpp"
+
 #include <libyuc/container/experimental/ar_tree.h>
 #include <libyuc/container/experimental/skip_list.h>
 #include <libyuc/container/thread_safe/experimental/epoch.h>
@@ -389,7 +394,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 100;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -397,7 +402,7 @@ int seed = 377884212;
 
 int section = 1;
 
-int thread_count = 10;
+int thread_count = 12;
 
 void TestArt() {
 	printf("\n自适应基数树：\n");
@@ -992,11 +997,11 @@ void TestEpoch() {
 void TestHashTable() {
 	printf("\n哈希表：\n");
 
-	l = GetTickCount();
 	IntHashTable table;
 	int64_t empty = -1;
 	int64_t tombstone = -2;
 	IntHashTableInit(&table, 8, 0, &empty, &tombstone);
+	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		IntHashTablePut(&table, &arr2[i]->key);
 		//printf("666");
@@ -1051,6 +1056,96 @@ void TestHashTable() {
 	}
 	l = GetTickCount() - l;
 	printf("查找耗时：%dms\n", l);
+
+
+	struct hashfunc {
+		size_t operator()(int64_t i) const {
+			// return HashCode_murmur3_fmix64inline(i);
+			return ankerl::unordered_dense::hash<uint64_t>()(i);
+		}
+	};
+
+
+
+
+
+	ankerl::unordered_dense::set<int64_t> aaa;
+
+	printf("\nankerl::unordered_dense::set:\n");
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		aaa.insert(arr2[i]->key);
+		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (aaa.find(arr2[i]->key) == aaa.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		aaa.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
+
+
+	emhash9::HashSet<int64_t, hashfunc> sett;
+
+	printf("\nemhash8::HashSet:\n");
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		sett.insert(arr2[i]->key);
+		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (sett.find(arr2[i]->key) == sett.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		sett.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
+
+
+
+
+	printf("\nstd::unordered_set:\n");
+	l = GetTickCount();
+	std::unordered_set<int64_t, hashfunc> mapaa;
+	for (int i = 0; i < count; i++) {
+		mapaa.insert(arr2[i]->key);
+		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (mapaa.find(arr2[i]->key) == mapaa.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		mapaa.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
 
 }
 
@@ -1137,8 +1232,6 @@ void ReverseOrder(void* buf, size_t size) {
 }
 
 
-#include "C:\Users\GT1\Desktop\unordered_dense.h"
-
 
 int main() {
 	//IntLruList lru_list;
@@ -1210,42 +1303,6 @@ int main() {
 	for (int64_t i = 0; i < count; i++) {
 		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
-
-
-
-
-
-	struct hashfunc {
-		size_t operator()(int64_t i) const {
-			// return HashCode_murmur3_fmix64inline(i);
-			return ankerl::unordered_dense::hash<uint64_t>()(i);
-		}
-	};
-
-
-	ankerl::unordered_dense::set<uint64_t> aaa;
-
-	printf("\nankerl::unordered_dense:\n");
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		aaa.insert(arr2[i]->key);
-		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (aaa.find(arr2[i]->key) == aaa.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		aaa.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
-
 
 
 
@@ -1330,29 +1387,6 @@ int main() {
 
 
 	//
-
-
-	printf("\nSTL ht:\n");
-	l = GetTickCount();
-	std::unordered_set<int64_t, hashfunc> mapaa;
-	for (int i = 0; i < count; i++) {
-		mapaa.insert(arr2[i]->key);
-		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (mapaa.find(arr2[i]->key) == mapaa.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		mapaa.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
 

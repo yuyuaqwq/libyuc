@@ -29,7 +29,7 @@ extern "C" {
     id_type singly_list_type_name##SinglyListIteratorFirst(singly_list_type_name##SinglyListHead* head); \
     id_type singly_list_type_name##SinglyListIteratorNext(singly_list_type_name##SinglyListHead* head, id_type entry_id); \
 
-#define LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(singly_list_type_name, id_type, referencer) \
+#define LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(singly_list_type_name, id_type, offset_type, referencer) \
     void singly_list_type_name##SinglyListHeadInit(singly_list_type_name##SinglyListHead* head) { \
         head->first = referencer##_InvalidId; \
     } \

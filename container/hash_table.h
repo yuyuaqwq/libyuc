@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 /*
-* 基于开放定址(线性探测)法的哈希表
+* 哈希表
 */
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75    //%
@@ -43,7 +43,7 @@ extern "C" {
     typedef struct _##hash_table_type_name##HashTable { \
         hash_table_type_name##HashBucketVector bucket; \
         offset_type max_detection_count; \
-        offset_type mask; \
+        offset_type shift; \
         offset_type load_fator; \
         element_type empty_obj; \
         element_type tombstone_obj; \
@@ -68,8 +68,11 @@ extern "C" {
     /*
     * 哈希表
     */ \
+    static forceinline offset_type hash_table_type_name##HashModIndex(hash_table_type_name##HashTable* table, offset_type index) { \
+        return index & table->max_detection_count/* % table->bucket.capacity */; \
+    } \
     static forceinline offset_type hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
-        return hasher(table, key) & table->mask/* % table->bucket.capacity */; \
+        return hash_table_type_name##HashModIndex(table, hasher(table, key)); \
     } \
     static forceinline offset_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
@@ -109,13 +112,7 @@ extern "C" {
             load_fator = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
         } \
         table->load_fator = load_fator; \
-        /* table->max_detection_count = capacity - 1 选择这个可以节省空间/支持缩容，但性能会差一些 */; \
-        table->max_detection_count = 0; \
-        table->mask = 0; \
-        while(capacity /= 2) {; \
-            table->mask = (table->mask << 1) | 1; \
-            ++table->max_detection_count; \
-        }; \
+        table->max_detection_count = capacity - 1; \
         return true; \
     } \
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table) { \
@@ -151,7 +148,7 @@ extern "C" {
             if (comparer##_Equal(table, entry_key, accessor##_GetKey(table, &table->empty_obj))) { \
                 return locate_tombstone ? &entry->obj : NULL; \
             } \
-            iter->cur_index = (iter->cur_index + 1) & table->mask; \
+            iter->cur_index = hash_table_type_name##HashModIndex(table, iter->cur_index + 1); \
         } \
         return NULL; \
     } \
@@ -161,12 +158,11 @@ extern "C" {
             element_mover##_Copy(table, &entry->obj, obj); \
             return; \
         } \
-        if (comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), accessor##_GetKey(table, &table->empty_obj))) { \
+        if (comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), accessor##_GetKey(table, &table->empty_obj)) || comparer##_Equal(table, accessor##_GetKey(table, &entry->obj), accessor##_GetKey(table, &table->tombstone_obj))) { \
             element_mover##_Copy(table, &entry->obj, obj); \
         } \
         else { \
             do { \
-                /* 如果需要支持缩容，首先table->max_detection_count需要等于capacity-1，其次，需要判断是否正处于Rehash，是则不触发Rehash */ \
                 hash_table_type_name##HashRehash(table, table->bucket.capacity * LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
                 iter->cur_index = hash_table_type_name##HashGetIndex(table, accessor##_GetKey(table, obj)); \
                 entry = &table->bucket.obj_arr[iter->cur_index]; \
@@ -177,7 +173,7 @@ extern "C" {
                         element_mover##_Copy(table, &entry->obj, obj); \
                         break; \
                     } \
-                    iter->cur_index = (iter->cur_index + 1) & table->mask; \
+                    iter->cur_index = hash_table_type_name##HashModIndex(table, iter->cur_index + 1); \
                     entry = &table->bucket.obj_arr[iter->cur_index]; \
                 } \
                 if (i < table->max_detection_count) { \
@@ -198,10 +194,9 @@ extern "C" {
         } \
         element_mover##_Copy(table, &entry->obj, &table->tombstone_obj); \
         table->bucket.count--; \
-        /* 由于max_detection_count的存在，不能进行缩容 */ \
-        /*if (hash_table_type_name##HashGetCurrentLoadFator(table) <= 100 - table->load_fator) { \
+        if (hash_table_type_name##HashGetCurrentLoadFator(table) <= 100 - table->load_fator) { \
             hash_table_type_name##HashRehash(table, table->bucket.capacity / LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
-        }*/ \
+        } \
         return true; \
     } \
     element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \

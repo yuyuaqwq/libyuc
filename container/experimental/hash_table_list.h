@@ -22,41 +22,40 @@ extern "C" {
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
 
-
+#define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS
 #ifdef LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
-        uint32_t obj_count; \
-        uint32_t free_count; \
-        uint32_t list_entry_count; \
-        uint32_t list_head_count; \
-        uint32_t max_list_count; \
-        uint32_t cur_list_count; \
+    uint32_t obj_count; \
+    uint32_t free_count; \
+    uint32_t list_entry_count; \
+    uint32_t list_head_count; \
+    uint32_t max_list_count; \
+    uint32_t cur_list_count; \
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_1 \
-        iter->obj_count = 0; \
-        iter->free_count = 0; \
-        iter->list_entry_count = 0; \
-        iter->list_head_count = 0; \
-        iter->max_list_count = 0; \
-        iter->cur_list_count = 0; \
+    iter->obj_count = 0; \
+    iter->free_count = 0; \
+    iter->list_entry_count = 0; \
+    iter->list_head_count = 0; \
+    iter->max_list_count = 0; \
+    iter->cur_list_count = 0; \
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_2 \
-        iter->cur_list_count++; \
-        if (iter->cur_list_count > iter->max_list_count) { \
-            \
-                iter->max_list_count = iter->cur_list_count; \
-        } \
-        iter->list_entry_count++; \
+    iter->cur_list_count++; \
+    if (iter->cur_list_count > iter->max_list_count) { \
+        iter->max_list_count = iter->cur_list_count; \
+    } \
+    iter->list_entry_count++; \
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_3 \
-        iter->free_count++;
+    iter->free_count++;
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_4 \
-        iter->obj_count++; \
+    iter->obj_count++; \
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DEFINE_5 \
-        iter->cur_list_count = 0; \
-        iter->list_head_count++; \
+    iter->cur_list_count = 0; \
+    iter->list_head_count++; \
 
 #else
 #define LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION 
@@ -68,11 +67,11 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, element_type, key_type) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, offset_type, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
-        uint32_t cur_index; \
-        int32_t entry_prev_id; \
-        int32_t entry_cur_id; \
+        offset_type cur_index; \
+        offset_type entry_prev_id; \
+        offset_type entry_cur_id; \
         LIBYUC_CONTAINER_HASH_TABLE_DATA_STATISTICS_DECLARATION \
     } hash_table_type_name##HashTableIterator; \
     \
@@ -83,10 +82,10 @@ extern "C" {
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
     \
-    LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t) \
+    LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(hash_table_type_name##HashLink, offset_type, offset_type) \
     typedef struct _##hash_table_type_name##HashLinkEntry { \
-        union    { \
-            int32_t next; \
+        union { \
+            offset_type next; \
             hash_table_type_name##HashLinkSinglyListEntry entry; \
         }; \
         element_type obj; \
@@ -96,10 +95,10 @@ extern "C" {
         struct _##hash_table_type_name##HashTable* table; \
     } hash_table_type_name##HashLinkMainObj; \
     \
-    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, 1) \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry) \
+    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(hash_table_type_name##HashLink, offset_type, hash_table_type_name##HashLinkEntry, 1) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashLink, offset_type, hash_table_type_name##HashLinkEntry) \
     \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, struct _##hash_table_type_name##HashTableEntry) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, offset_type, struct _##hash_table_type_name##HashTableEntry) \
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
         union { \
@@ -109,11 +108,13 @@ extern "C" {
     typedef struct _##hash_table_type_name##HashTable { \
         hash_table_type_name##HashBucketVector bucket; \
         hash_table_type_name##HashLinkVector link; \
-        uint32_t load_fator; \
+        offset_type load_fator; \
+        offset_type mask; \
     } ##hash_table_type_name##HashTable; \
     \
-    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator); \
-    size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
+    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator); \
+    void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table); \
+    offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
     void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj); \
     bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key); \
@@ -121,54 +122,57 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey方法
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, offset_type, element_type, key_type, allocator, accessor, obj_mover, hasher, comparer) \
     /*
     * 静态链表
     */ \
     static hash_table_type_name##HashLinkStaticList* hash_table_type_name##HashLinkGetStaticList(hash_table_type_name##HashLinkVector* link_vector) { \
         return (hash_table_type_name##HashLinkStaticList*)((uintptr_t)&link_vector->obj_arr[1] - sizeof(hash_table_type_name##HashLinkStaticList)); \
     } \
-    LIBYUC_CONTAINER_STATIC_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkEntry, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, 1) \
+    LIBYUC_CONTAINER_STATIC_LIST_DEFINE(hash_table_type_name##HashLink, offset_type, hash_table_type_name##HashLinkEntry, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, 1) \
     \
-    static const int32_t hash_table_type_name##HashLinkReferencer_InvalidId = (-1); \
-    forceinline hash_table_type_name##HashLinkSinglyListEntry* hash_table_type_name##HashLinkReferencer_Reference(hash_table_type_name##HashLinkSinglyListHead* head, int32_t entry_id) { \
+    static const offset_type hash_table_type_name##HashLinkReferencer_InvalidId = (-1); \
+    forceinline hash_table_type_name##HashLinkSinglyListEntry* hash_table_type_name##HashLinkReferencer_Reference(hash_table_type_name##HashLinkSinglyListHead* head, offset_type entry_id) { \
         if (entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return NULL; \
         hash_table_type_name##HashLinkMainObj* obj = (hash_table_type_name##HashLinkMainObj*)head; \
         return &obj->table->link.obj_arr[entry_id + 1].entry; \
     } \
     forceinline void hash_table_type_name##HashLinkReferencer_Dereference(hash_table_type_name##HashLinkSinglyListHead* head, hash_table_type_name##HashLinkSinglyListEntry* entry) {    } \
-    LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(hash_table_type_name##HashLink, int32_t, hash_table_type_name##HashLinkReferencer) \
+    LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(hash_table_type_name##HashLink, offset_type, offset_type, hash_table_type_name##HashLinkReferencer) \
     /*
     * 动态数组
     */ \
     forceinline void hash_table_type_name##HashLinkVectorCallbacker##_Expand(hash_table_type_name##HashLinkVector* arr, size_t old_capacity, size_t new_capacity) { \
         hash_table_type_name##HashLinkStaticListExpand(hash_table_type_name##HashLinkGetStaticList(arr), old_capacity, new_capacity); \
     } \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, offset_type, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, offset_type, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
     \
     /*
     * 哈希表
     */ \
-    static forceinline uint32_t hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
-        return hasher(table, key) % table->bucket.capacity; \
+    static forceinline offset_type hash_table_type_name##HashModIndex(hash_table_type_name##HashTable* table, offset_type index) { \
+        return index & table->mask; \
     } \
-    static forceinline uint32_t hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
+    static forceinline offset_type hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
+        return hash_table_type_name##HashModIndex(table, hasher(table, key)); \
+    } \
+    static forceinline offset_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
     } \
-    static int32_t hash_table_type_name##HashTableAllocLinkEntry(hash_table_type_name##HashTable* table) { \
+    static offset_type hash_table_type_name##HashTableAllocLinkEntry(hash_table_type_name##HashTable* table) { \
         hash_table_type_name##HashLinkStaticList* static_list = hash_table_type_name##HashLinkGetStaticList(&table->link); \
-        int32_t id = hash_table_type_name##HashLinkStaticListPop(static_list, 0); \
-            assert(id != LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId); \
+        offset_type id = hash_table_type_name##HashLinkStaticListPop(static_list, 0); \
+         assert(id != LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId); \
         return id; \
     } \
-    static void hash_table_type_name##HashTableFreeLinkEntry(hash_table_type_name##HashTable* table, int32_t id) { \
+    static void hash_table_type_name##HashTableFreeLinkEntry(hash_table_type_name##HashTable* table, offset_type id) { \
         hash_table_type_name##HashLinkStaticList* static_list = hash_table_type_name##HashLinkGetStaticList(&table->link); \
         hash_table_type_name##HashLinkStaticListPush(static_list, 0, id); \
     } \
-    size_t hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
+    offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
     /* 重映射 */ \
-    static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, size_t new_capacity) {    \
+    static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, offset_type new_capacity) {    \
         hash_table_type_name##HashTable temp_table; \
         hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator); \
         hash_table_type_name##HashTableIterator iter; \
@@ -181,20 +185,24 @@ extern "C" {
         hash_table_type_name##HashTableRelease(table); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     } \
-    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, size_t capacity, uint32_t load_fator) { \
-        if (capacity == 0) { \
+    void hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator) { \
+        if (capacity < 2) { \
             capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
-        hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, true); \
-        hash_table_type_name##HashLinkVectorInit(&table->link, capacity + 1, true); \
+        hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, NULL); \
+        hash_table_type_name##HashLinkVectorInit(&table->link, capacity + 1, NULL); \
         hash_table_type_name##HashLinkStaticListInit(hash_table_type_name##HashLinkGetStaticList(&table->link), capacity); \
         table->bucket.count = 0; \
         \
-        for (int i = 0; i < table->bucket.capacity; i++) { \
+        for (offset_type i = 0; i < table->bucket.capacity; i++) { \
             hash_table_type_name##HashLinkSinglyListHeadInit(&table->bucket.obj_arr[i].list_head); \
         } \
         if (load_fator == 0) { \
             load_fator = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
+        } \
+        table->mask = 0; \
+        while(capacity /= 2) {; \
+            table->mask = (table->mask << 1) | 1; \
         } \
         table->load_fator = load_fator; \
     } \
@@ -219,7 +227,7 @@ extern "C" {
     } \
     \
     forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
-        uint32_t index = hash_table_type_name##HashGetIndex(table, key); \
+        offset_type index = hash_table_type_name##HashGetIndex(table, key); \
         iter->cur_index = index; \
         hash_table_type_name##HashTableEntry* entry = &table->bucket.obj_arr[index]; \
         hash_table_type_name##HashLinkMainObj main_obj; \
@@ -250,7 +258,7 @@ extern "C" {
             } \
             hash_table_type_name##HashLinkReferencer_Dereference(&main_obj.head, link_entry); \
         } \
-        int32_t link_entry_id = hash_table_type_name##HashTableAllocLinkEntry(table); \
+        offset_type link_entry_id = hash_table_type_name##HashTableAllocLinkEntry(table); \
         obj_mover##_Copy(table, &table->link.obj_arr[link_entry_id + 1].obj, obj); \
         hash_table_type_name##HashLinkSinglyListPutFirst(&main_obj.head, link_entry_id); \
         table->bucket.count++; \
@@ -266,7 +274,7 @@ extern "C" {
         hash_table_type_name##HashLinkMainObj main_obj; \
         main_obj.head = entry->list_head; \
         main_obj.table = table; \
-        int32_t link_entry_id = iter->entry_cur_id; \
+        offset_type link_entry_id = iter->entry_cur_id; \
         if (link_entry_id == hash_table_type_name##HashLinkReferencer_InvalidId) return false; \
         hash_table_type_name##HashLinkSinglyListDeleteEntry(&main_obj.head, iter->entry_prev_id, link_entry_id); \
         element_type* old_element = &table->link.obj_arr[link_entry_id + 1].obj; \
