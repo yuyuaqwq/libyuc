@@ -35,7 +35,7 @@ extern "C" {
 
 void* MemoryAlloc(size_t size);
 void MemoryFree(void* ptr);
-#define MemoryCopy(DST, SRC, SIZE) memcpy((void*)(DST), (void*)(SRC), (SIZE))
+#define MemoryCopy(DST, SRC, SIZE) memcpy((void*)(DST), (const void*)(SRC), (SIZE))
 void MemoryCopyR(void* dst_, void* src_, size_t size);
 #define MemorySet(DST, VAL, SIZE) memset((void*)(DST), (VAL), (SIZE))
 ptrdiff_t MemoryCmp(const void* buf1_, const void* buf2_, size_t size);

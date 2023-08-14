@@ -14,7 +14,7 @@ extern "C" {
 
 
 #define LIBYUC_ALGORITHM_ARRAY_DEFINE(array_name, offset_type, id_type, element_type, accessor, comparer, referencer) \
-    id_type array_name##ArrayFind(element_type* array, offset_type count, element_type* element) { \
+    id_type array_name##ArrayFind(element_type* array, offset_type count, const element_type* element) { \
         for(offset_type i = 0; i < count; i++) { \
             if (comparer##_Equal(array, &array[i], element)) return (id_type)i; \
         } \

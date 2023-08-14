@@ -22,12 +22,12 @@ typedef enum {
 } RbColor;
 
 #define LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack_name, id_type, offset_type) \
-        rb_tree_type_name##RbBsStackVector stack_name; \
-        id_type stack_name##_buf[sizeof(offset_type) * 8 * 2]; \
-        rb_tree_type_name##RbBsStackVectorInit(&stack_name, sizeof(stack_name##_buf) / sizeof(id_type), stack_name##_buf); \
+    rb_tree_type_name##RbBsStackVector stack_name; \
+    id_type stack_name##_buf[sizeof(offset_type) * 8 * 2]; \
+    rb_tree_type_name##RbBsStackVectorInit(&stack_name, sizeof(stack_name##_buf) / sizeof(id_type), stack_name##_buf); \
 
 #define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, offset_type, key_type) \
-    LIBYUC_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name##Rb, id_type, offset_type, key_type) \
+    LIBYUC_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name##Rb, id_type, offset_type, key_type, sizeof(offset_type) * 8 * 2) \
     typedef struct _##rb_tree_type_name##RbEntry { \
         union { \
             struct { \
@@ -46,7 +46,6 @@ typedef enum {
     typedef struct _##rb_tree_type_name##RbTreeIterator { \
         id_type cur_id; \
         rb_tree_type_name##RbBsStackVector stack; \
-        id_type stack_buf[sizeof(offset_type) * 8 * 2]; \
     } rb_tree_type_name##RbTreeIterator; \
     \
     void rb_tree_type_name##RbTreeInit(rb_tree_type_name##RbTree* tree); \
@@ -391,15 +390,15 @@ typedef enum {
     * 迭代器相关
     */ \
     id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator, key_type* key, int8_t* cmp_status) { \
-        rb_tree_type_name##RbBsStackVectorInit(&iterator->stack, sizeof(iterator->stack_buf) / sizeof(id_type), iterator->stack_buf); \
+        rb_tree_type_name##RbBsStackVectorInit(&iterator->stack); \
         return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, key, cmp_status); \
     } \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
-        rb_tree_type_name##RbBsStackVectorInit(&iterator->stack, sizeof(iterator->stack_buf) / sizeof(id_type), iterator->stack_buf); \
+        rb_tree_type_name##RbBsStackVectorInit(&iterator->stack); \
         return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
     } \
     id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
-        rb_tree_type_name##RbBsStackVectorInit(&iterator->stack, sizeof(iterator->stack_buf) / sizeof(id_type), iterator->stack_buf); \
+        rb_tree_type_name##RbBsStackVectorInit(&iterator->stack); \
         return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
     } \
     id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \

@@ -13,8 +13,8 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, offset_type, key_type) \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(bs_tree_type_name##BsStack, offset_type, offset_type, id_type) \
+#define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, offset_type, key_type, stack_count) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(bs_tree_type_name##BsStack, offset_type, offset_type, id_type, stack_count) \
     typedef struct _##bs_tree_type_name##BsEntry { \
         id_type left; \
         id_type right; \
@@ -41,6 +41,7 @@ extern "C" {
 */
 #define LIBYUC_CONTAINER_BS_TREE_DEFINE(bs_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
     LIBYUC_CONTAINER_VECTOR_DEFINE(bs_tree_type_name##BsStack, \
+        LIBYUC_CONTAINER_VECTOR_MODE_STATIC, \
         offset_type, \
         offset_type, \
         id_type, \
@@ -48,15 +49,16 @@ extern "C" {
         LIBYUC_BASIC_ALLOCATOR_DEFALUT, \
         LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, \
         LIBYUC_CONTAINER_VECTOR_COMPARER_INVALID, \
-        LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT) \
+        LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT, \
+        ) \
     static void bs_tree_type_name##BsTreeSetNewChild(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsEntry* entry_parent, id_type entry_id, id_type new_entry_id) { \
-            if (accessor##_GetLeft(tree, entry_parent) == entry_id) { \
-                accessor##_SetLeft(tree, entry_parent, new_entry_id); \
-            } \
-            else { \
-                    assert(accessor##_GetRight(tree, entry_parent) == entry_id); \
-                accessor##_SetRight(tree, entry_parent, new_entry_id); \
-            } \
+        if (accessor##_GetLeft(tree, entry_parent) == entry_id) { \
+            accessor##_SetLeft(tree, entry_parent, new_entry_id); \
+        } \
+        else { \
+                assert(accessor##_GetRight(tree, entry_parent) == entry_id); \
+            accessor##_SetRight(tree, entry_parent, new_entry_id); \
+        } \
     } \
     /*
     * 栈指向entry的父亲

@@ -34,8 +34,18 @@ extern "C" {
     element_type* hash_table_type_name##HashTableIteratorLocate(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key); \
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashTableEntry, offset_type, offset_type, element_type) \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, offset_type, offset_type, struct _##hash_table_type_name##HashTableEntry) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION( \
+        hash_table_type_name##HashTableEntry, \
+        LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
+        offset_type, \
+        offset_type, \
+        element_type) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION( \
+        hash_table_type_name##HashBucket, \
+        LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
+        offset_type, \
+        offset_type,\
+        struct _##hash_table_type_name##HashTableEntry) \
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
         hash_table_type_name##HashTableEntryVector vector; \
@@ -63,6 +73,7 @@ extern "C" {
     */ \
     static const k##hash_table_type_name##HashTableInvalidDist = 0; \
     LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, \
+        LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
         offset_type, \
         offset_type, \
         hash_table_type_name##HashTableEntry, \

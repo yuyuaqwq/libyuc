@@ -118,7 +118,7 @@ extern "C" {
         avl_tree_type_name##AvlEntry* sub_root = *sub_root_io; \
         avl_tree_type_name##AvlEntry* parent = parent_id != referencer##_InvalidId ? referencer##_Reference(tree, parent_id) : NULL; \
         id_type sub_root_id = *sub_root_id_io; \
-            assert(cur_bf >= -2 || cur_bf <= 2); \
+         assert(cur_bf >= -2 || cur_bf <= 2); \
         if (cur_bf == 2) { \
             /* 是失衡节点(最小失衡子树的根节点)，左子树高度高于右子树高度 */ \
             /* avl_tree_type_name##AvlEntry* deep_child = accessor##_GetLeft(tree, sub_root); */ \

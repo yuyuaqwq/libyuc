@@ -78,7 +78,11 @@ typedef enum {
         entry_id_type entry_id; \
         bp_tree_type_name##BPlusEntryRbTreeIterator element_iterator; \
     } bp_tree_type_name##BPlusElementPos; \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, \
+        LIBYUC_CONTAINER_VECTOR_MODE_STATIC, \
+        entry_offset_type, \
+        entry_offset_type, \
+        bp_tree_type_name##BPlusElementPos) \
     typedef struct _##bp_tree_type_name##BPlusIterator { \
         bp_tree_type_name##BPlusIteratorStackVector stack; \
         bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
