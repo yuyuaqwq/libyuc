@@ -5,18 +5,18 @@
 
 # container - 容器
 ## 数组
-- [模板]vector
+- vector
     - 动态数组
 - bitmap
     - 位图
 ## 链表
-- [模板]list
+- list
     - 双向循环链表
-- [模板]SinglyList
+- SinglyList
     - 单向链表
-- [模板]StaticList
+- StaticList
     - 静态链表
-- [模板]DoublyStaticList
+- DoublyStaticList
     - 双向静态链表
 ## 队列
 - queue
@@ -24,16 +24,15 @@
 - Heap
     - 堆
 ## 索引
-- [模板]HashTable
-    - 基于开放定址法(线性探测)的哈希表
-- [模板]BsTree
-    - 二叉搜索树
-- [模板]AvlTree
-    - 嵌入平衡因子的平衡二叉树
-- [模板]RbTree
+- HashTable
+    - 基于于robin hood hashing的哈希表
+- RbTree
     - 以234树为原型，嵌入颜色的红黑树
-- [模板]BPlusTree
+- BPlusTree
     - 页内嵌入红黑树的B+树
+### 实验性
+- AvlTree
+    - 嵌入平衡因子的平衡二叉树
 - RadixTree
     - 映射定长key的基数树
 - ArTree

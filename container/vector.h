@@ -25,6 +25,7 @@ extern "C" {
     ptrdiff_t vector_type_name##VectorPushTail(vector_type_name##Vector* arr, const element_type* obj); \
     element_type* vector_type_name##VectorGetTail(vector_type_name##Vector* arr); \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* arr); \
+    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* arr, offset_type index); \
 
 #define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, offset_type, element_type, allocator, callbacker) \
     void vector_type_name##VectorResetCapacity(vector_type_name##Vector* arr, offset_type capacity) { \
@@ -98,6 +99,9 @@ extern "C" {
             return NULL; \
         } \
         return &arr->obj_arr[--arr->count]; \
+    } \
+    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* arr, offset_type index) { \
+        return &arr->obj_arr[index]; \
     } \
 
 #define LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER_Expand(ARR, OLD_CAPACITY, NEW_CAPACITY)

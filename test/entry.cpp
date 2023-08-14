@@ -11,9 +11,8 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
-#include "C:\Users\yuyu\Desktop\hash_set8.hpp"
-#include "C:\Users\yuyu\Desktop\hash_set4.hpp"
+#include "C:\Users\GT1\Desktop\unordered_dense.h"
+
 
 #include <libyuc/container/experimental/ar_tree.h>
 #include <libyuc/container/experimental/skip_list.h>
@@ -382,6 +381,16 @@ void PrintArt(ArTree* tree, ArNode* node, int Level) {
 	free(empty);
 }
 
+void PrintHashTable(IntHashTable* table) {
+	IntHashTableIterator iter;
+	for(uint32_t i = 0; i< table->bucket.capacity;i++){
+		if (table->bucket.obj_arr[i].dist != 0){
+			printf("[%d][%d]%llx\n", i, table->bucket.obj_arr[i].dist, table->bucket.obj_arr[i].obj);
+		}else{
+			printf("[%d]null\n", i);
+		}
+	}
+}
 
 
 
@@ -394,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 100;
+int count = 10000000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -998,9 +1007,7 @@ void TestHashTable() {
 	printf("\n哈希表：\n");
 
 	IntHashTable table;
-	int64_t empty = -1;
-	int64_t tombstone = -2;
-	IntHashTableInit(&table, 8, 0, &empty, &tombstone);
+	IntHashTableInit(&table, 8, 0);
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		IntHashTablePut(&table, &arr2[i]->key);
@@ -1022,7 +1029,10 @@ void TestHashTable() {
 	//	printf("%d\n", *obj);
 	//	obj = (int*)HashTableNext(&iter);
 	//}
-
+	if (count <= 20) {
+		PrintHashTable(&table);
+		printf("\n\n\n\n");
+	}
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		//if (Hashmap_murmurhash(&i, 4) % 100000000 == 0) {
@@ -1039,7 +1049,12 @@ void TestHashTable() {
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		if (!IntHashTableDelete(&table, &arr2[i]->key)) {
-			//printf("删除找不到");
+			printf("删除找不到");
+		}
+		if(count <= 20) {
+			printf("删除:%llx\n", arr2[i]->key);
+			PrintHashTable(&table);
+			printf("\n\n\n\n");
 		}
 	}
 	printf("删除耗时：%dms\n", GetTickCount() - l);
@@ -1066,6 +1081,13 @@ void TestHashTable() {
 	};
 
 
+	struct std_hash_func {
+		size_t operator()(int64_t i) const {
+			// return HashCode_murmur3_fmix64inline(i);
+			return std::hash<uint64_t>()(i);
+		}
+	};
+
 
 
 
@@ -1091,33 +1113,6 @@ void TestHashTable() {
 		aaa.erase(arr2[i]->key);
 	}
 	printf("删除耗时：%dms\n", GetTickCount() - l);
-
-
-
-
-	emhash9::HashSet<int64_t, hashfunc> sett;
-
-	printf("\nemhash8::HashSet:\n");
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		sett.insert(arr2[i]->key);
-		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
-
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (sett.find(arr2[i]->key) == sett.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		sett.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
-
 
 
 
@@ -1296,7 +1291,7 @@ int main() {
 		//}
 		qvq->key = i;// i;
 		//ReverseOrder(&qvq->key, 8);
-		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
