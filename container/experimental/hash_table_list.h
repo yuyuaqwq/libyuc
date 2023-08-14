@@ -190,7 +190,7 @@ extern "C" {
             capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
         hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, NULL); \
-        hash_table_type_name##HashLinkVectorInit(&table->link, capacity + 1, NULL); \
+        hash_table_type_name##HashLinkVectorInit(&table->link, capacity + 1/* 预留StaticListHead的位置 */, NULL); \
         hash_table_type_name##HashLinkStaticListInit(hash_table_type_name##HashLinkGetStaticList(&table->link), capacity); \
         table->bucket.count = 0; \
         \
@@ -209,21 +209,6 @@ extern "C" {
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table) { \
         hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
         hash_table_type_name##HashLinkVectorRelease(&table->link); \
-    } \
-    element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
-        hash_table_type_name##HashTableIterator iter; \
-        return hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
-    } \
-    void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
-        key_type* key = accessor##_GetKey(table, obj); \
-        hash_table_type_name##HashTableIterator iter; \
-        hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
-        hash_table_type_name##HashTableIteratorPut(table, &iter, obj); \
-    } \
-    bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
-        hash_table_type_name##HashTableIterator iter; \
-        hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
-        return hash_table_type_name##HashTableIteratorDelete(table, &iter); \
     } \
     \
     forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
@@ -281,6 +266,9 @@ extern "C" {
         table->bucket.count--; \
         entry->list_head = main_obj.head; \
         hash_table_type_name##HashTableFreeLinkEntry(table, link_entry_id); \
+        if (table->bucket.capacity > LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE && hash_table_type_name##HashGetCurrentLoadFator(table) <= 100 - table->load_fator) { \
+            hash_table_type_name##HashRehash(table, table->bucket.capacity / LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
+        } \
         return true; \
     } \
     element_type* hash_table_type_name##HashTableIteratorFirst(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
@@ -314,6 +302,23 @@ extern "C" {
         element_type* element = &table->link.obj_arr[iter->entry_cur_id + 1].obj; \
         return element; \
     } \
+    \
+    element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key) { \
+        hash_table_type_name##HashTableIterator iter; \
+        return hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
+    } \
+    void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
+        key_type* key = accessor##_GetKey(table, obj); \
+        hash_table_type_name##HashTableIterator iter; \
+        hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
+        hash_table_type_name##HashTableIteratorPut(table, &iter, obj); \
+    } \
+    bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \
+        hash_table_type_name##HashTableIterator iter; \
+        hash_table_type_name##HashTableIteratorLocate(table, &iter, key); \
+        return hash_table_type_name##HashTableIteratorDelete(table, &iter); \
+    } \
+    \
 
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_ACCESSOR_GetKey(MAIN_OBJ, OBJ) (OBJ)

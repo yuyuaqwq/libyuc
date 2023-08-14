@@ -382,14 +382,14 @@ void PrintArt(ArTree* tree, ArNode* node, int Level) {
 }
 
 void PrintHashTable(IntHashTable* table) {
-	IntHashTableIterator iter;
-	for(uint32_t i = 0; i< table->bucket.capacity;i++){
-		if (table->bucket.obj_arr[i].dist != 0){
-			printf("[%d][%d]%llx\n", i, table->bucket.obj_arr[i].dist, table->bucket.obj_arr[i].obj);
-		}else{
-			printf("[%d]null\n", i);
-		}
-	}
+	//IntHashTableIterator iter;
+	//for(uint32_t i = 0; i< table->bucket.capacity;i++){
+	//	if (table->bucket.obj_arr[i].dist != 0){
+	//		printf("[%d][%d]%llx\n", i, table->bucket.obj_arr[i].dist, table->bucket.obj_arr[i].obj);
+	//	}else{
+	//		printf("[%d]null\n", i);
+	//	}
+	//}
 }
 
 
@@ -1291,7 +1291,7 @@ int main() {
 		//}
 		qvq->key = i;// i;
 		//ReverseOrder(&qvq->key, 8);
-		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
