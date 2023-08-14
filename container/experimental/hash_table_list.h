@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 /*
-* 基于链地址法的哈希表
+* 链出单向链表的哈希表实现
 */
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75//%
@@ -146,7 +146,7 @@ extern "C" {
         hash_table_type_name##HashLinkStaticListExpand(hash_table_type_name##HashLinkGetStaticList(arr), old_capacity, new_capacity); \
     } \
     LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashLink, offset_type, hash_table_type_name##HashLinkEntry, allocator, hash_table_type_name##HashLinkVectorCallbacker) \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, offset_type, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, offset_type, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT) \
     \
     /*
     * 哈希表

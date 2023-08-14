@@ -78,7 +78,7 @@ typedef enum {
         entry_id_type entry_id; \
         bp_tree_type_name##BPlusEntryRbTreeIterator element_iterator; \
     } bp_tree_type_name##BPlusElementPos; \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, entry_offset_type, bp_tree_type_name##BPlusElementPos) \
     typedef struct _##bp_tree_type_name##BPlusIterator { \
         bp_tree_type_name##BPlusIteratorStackVector stack; \
         bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
@@ -302,7 +302,15 @@ kv分离是外层处理的，b+树操作的只有element
     */\
     static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
     leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusIteratorStack, entry_offset_type, bp_tree_type_name##BPlusElementPos, iterator_allocator, LIBYUC_CONTAINER_VECTOR_DEFAULT_CALLBACKER) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusIteratorStack, \
+        entry_offset_type, \
+        entry_offset_type, \
+        bp_tree_type_name##BPlusElementPos, \
+        LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
+        iterator_allocator, \
+        LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, \
+        LIBYUC_CONTAINER_VECTOR_COMPARER_INVALID, \
+        LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT) \
     \
     /*
     * 页内红黑树

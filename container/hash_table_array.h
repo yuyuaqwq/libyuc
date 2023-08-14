@@ -15,8 +15,7 @@ extern "C" {
 #endif
 
 /*
-* 基于robin hood hashing的哈希表实现
-* 参考https://github.com/martinus/unordered_dense
+* 链出动态数组的哈希表实现
 */
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
 #define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75    //%
@@ -27,7 +26,6 @@ extern "C" {
 
 #define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, offset_type, element_type, key_type) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
-        offset_type dist; \
         offset_type cur_index; \
     } hash_table_type_name##HashTableIterator; \
     \
@@ -36,11 +34,11 @@ extern "C" {
     element_type* hash_table_type_name##HashTableIteratorLocate(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key); \
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, offset_type, struct _##hash_table_type_name##HashTableEntry) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashTableEntry, offset_type, offset_type, element_type) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, offset_type, offset_type, struct _##hash_table_type_name##HashTableEntry) \
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
-        offset_type dist; /* 与第一次哈希相差的距离，从1开始算起(0表示无效) */ \
-        element_type obj; \
+        hash_table_type_name##HashTableEntryVector vector; \
     } hash_table_type_name##HashTableEntry; \
     typedef struct _##hash_table_type_name##HashTable { \
         offset_type max_detection_count; \
@@ -64,7 +62,12 @@ extern "C" {
     * 动态数组
     */ \
     static const k##hash_table_type_name##HashTableInvalidDist = 0; \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, offset_type, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, \
+        offset_type, \
+        offset_type, \
+        hash_table_type_name##HashTableEntry, \
+        allocator, \
+        LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT) \
     \
     /*
     * 哈希表
@@ -77,19 +80,6 @@ extern "C" {
     } \
     static forceinline offset_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return table->bucket.count * 100 / table->bucket.capacity; \
-    } \
-    static forceinline void hash_table_type_name##HashEntryExchange(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableEntry* entry_a, hash_table_type_name##HashTableEntry* entry_b) { \
-        hash_table_type_name##HashTableEntry temp; \
-        temp.dist = entry_a->dist; \
-        element_mover##_Copy(table, &temp.obj, &entry_a->obj); \
-        entry_a->dist = entry_b->dist; \
-        element_mover##_Copy(table, &entry_a->obj, &entry_b->obj); \
-        entry_b->dist = temp.dist; \
-        element_mover##_Copy(table, &entry_b->obj, &temp.obj); \
-    } \
-    static forceinline void hash_table_type_name##HashEntryMove(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableEntry* entry_dst, const hash_table_type_name##HashTableEntry* entry_src) { \
-        entry_dst->dist = entry_src->dist; \
-        element_mover##_Copy(table, &entry_dst->obj, &entry_src->obj); \
     } \
     offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
     /* 重映射 */ \
@@ -117,7 +107,7 @@ extern "C" {
         table->bucket.count = 0; \
         \
         for (int i = 0; i < table->bucket.capacity; i++) { \
-            hash_table_type_name##HashBucketVectorIndex(&table->bucket, i)->dist = k##hash_table_type_name##HashTableInvalidDist; \
+            hash_table_type_name##HashTableEntryVectorInit(&hash_table_type_name##HashBucketVectorIndex(&table->bucket, i)->vector, 0, NULL); \
         } \
         if (load_fator == 0) { \
             load_fator = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR; \
@@ -133,19 +123,17 @@ extern "C" {
     } \
     forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
         iter->cur_index = hash_table_type_name##HashGetIndex(table, key); \
-        iter->dist = 0; \
         \
-        do { \
-            hash_table_type_name##HashTableEntry* entry = hash_table_type_name##HashBucketVectorIndex(&table->bucket, iter->cur_index); \
-            key_type* entry_key = accessor##_GetKey(table, &entry->obj); \
-            if (comparer##_Equal(table, entry_key, key) && entry->dist != k##hash_table_type_name##HashTableInvalidDist) { \
+        hash_table_type_name##HashTableEntry* entry = hash_table_type_name##HashBucketVectorIndex(&table->bucket, iter->cur_index); \
+        hash_table_type_name##HashTableEntryVectorIterator entry_iter; \
+        element_type* ele = hash_table_type_name##HashTableEntryVectorIteratorFirst(&entry->vector, &entry_iter); \
+        while (ele) { \
+            key_type* entry_key = accessor##_GetKey(table, ele); \
+            if (comparer##_Equal(table, entry_key, key)) { \
                 return &entry->obj; \
             } \
-            if (iter->dist++ > entry->dist || entry->dist == k##hash_table_type_name##HashTableInvalidDist) { \
-                return NULL; \
-            } \
-            iter->cur_index = hash_table_type_name##HashModIndex(table, iter->cur_index + 1); \
-        } while (true); \
+            ele = hash_table_type_name##HashTableEntryVectorIteratorNext(&entry->vector, &entry_iter); \
+        } \
         return NULL; \
     } \
     bool hash_table_type_name##HashTableIteratorDelete(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
