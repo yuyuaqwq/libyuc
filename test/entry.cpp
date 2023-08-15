@@ -522,8 +522,8 @@ void TestArt() {
 		ArTreePut(&artree, ele);
 #else
 
-		ArTreePut(&artree, (element_type*)&it->key);
-		//ArTreePut(&artree, (element_type*)it->key << 1);
+		ArTreePut(&artree, (art_element_type*)&it->key);
+		//ArTreePut(&artree, (art_element_type*)it->key << 1);
 #endif
 		//if (ii == 27) {
 		//	printf("??");
@@ -554,7 +554,7 @@ void TestArt() {
 	ii = 0;
 	for (auto& it : arr2) {
 		ii++;
-		element_type ele;
+		art_element_type ele;
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 		ele.buf = (uint8_t*)&it->key;
 		ele.size = sizeof(it->key);
@@ -579,7 +579,7 @@ void TestArt() {
 	ii = 0;
 	for (auto& it : arr2) {
 		ii++;
-		element_type ele;
+		art_element_type ele;
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 		ele.buf = (uint8_t*)&it->key;
 		ele.size = sizeof(it->key);
@@ -1228,6 +1228,10 @@ void ReverseOrder(void* buf, size_t size) {
 
 
 
+LIBYUC_CONTAINER_VECTOR_DECLARATION(Ac, LIBYUC_CONTAINER_VECTOR_MODE_INLINE_DYNAMIC, uint32_t, uint32_t, uint32_t)
+
+LIBYUC_CONTAINER_VECTOR_DEFINE(Ac, LIBYUC_CONTAINER_VECTOR_MODE_INLINE_DYNAMIC, uint32_t, uint32_t, uint32_t, uint32_t, LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, LIBYUC_BASIC_COMPARER_DEFALUT, LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT)
+
 int main() {
 	//IntLruList lru_list;
 	//IntLru_Entry lru_entry;
@@ -1238,21 +1242,15 @@ int main() {
 	//
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	AcVector vector;
+	AcVectorInit(&vector, 0);
+	uint32_t aa = 0x12345678;
+	AcVectorIsEmpty(&vector);
+	AcVectorPushTail(&vector, &aa);
+	AcVectorPushTail(&vector, &aa);
+	AcVectorPushTail(&vector, &aa);
+	aa = 0x222222;
+	AcVectorPut(&vector, &aa);
 
 	printf("seed：%d\n", seed);
 	srand(seed);

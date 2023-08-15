@@ -184,6 +184,7 @@ extern "C" {
         offset_type, \
         offset_type, \
         hash_table_type_name##HashLinkEntry, \
+        hash_table_type_name##HashLinkEntry, \
         LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
         allocator, \
         hash_table_type_name##HashLinkVectorCallbacker, \
@@ -195,6 +196,7 @@ extern "C" {
         LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
         offset_type, \
         offset_type, \
+        hash_table_type_name##HashTableEntry, \
         hash_table_type_name##HashTableEntry, \
         LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
         allocator, \

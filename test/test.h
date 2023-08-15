@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libyuc/container/vector.h>
-#include <libyuc/container/experimental/hash_table_list.h>
+#include <libyuc/container/hash_table_array.h>
 #include <libyuc/container/list.h>
 #include <libyuc/container/experimental/avl_tree.h>
 #define NP

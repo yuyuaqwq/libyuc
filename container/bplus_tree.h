@@ -320,6 +320,7 @@ kv分离是外层处理的，b+树操作的只有element
         entry_offset_type, \
         entry_offset_type, \
         bp_tree_type_name##BPlusElementPos, \
+        bp_tree_type_name##BPlusElementPos, \
         LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
         iterator_allocator, \
         LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, \

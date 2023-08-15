@@ -13,10 +13,10 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_ALGORITHM_ARRAY_DEFINE(array_name, offset_type, id_type, element_type, accessor, comparer, referencer) \
-    id_type array_name##ArrayFind(element_type* array, offset_type count, const element_type* element) { \
-        for(offset_type i = 0; i < count; i++) { \
-            if (comparer##_Equal(array, &array[i], element)) return (id_type)i; \
+#define LIBYUC_ALGORITHM_ARRAY_DEFINE(array_name, offset_type, id_type, element_type, key_type, accessor, comparer, referencer) \
+    id_type array_name##ArrayFind(element_type* array, offset_type count, const key_type* key) { \
+        for (offset_type i = 0; i < count; i++) { \
+            if (comparer##_Equal(array, accessor##_GetKey(array, &array[i]), key)) return (id_type)i; \
         } \
         return referencer##_InvalidId; \
     } \
@@ -30,7 +30,7 @@ extern "C" {
         for(offset_type i = index; i < count - 1; i++) { \
             array[i] = array[i + 1]; \
         } \
-    } \
+    }
 
 
 #define LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT_GetKey(ARR, OBJ) (OBJ)

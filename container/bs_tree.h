@@ -51,6 +51,7 @@ extern "C" {
         offset_type, \
         offset_type, \
         id_type, \
+        id_type, \
         LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
         LIBYUC_BASIC_ALLOCATOR_DEFALUT, \
         LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, \
