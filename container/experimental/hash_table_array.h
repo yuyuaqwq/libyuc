@@ -151,6 +151,9 @@ extern "C" {
         return true; \
     } \
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table) { \
+        for (int i = 0; i < hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket); i++) { \
+            hash_table_type_name##HashElementVectorRelease(&hash_table_type_name##HashBucketVectorIndex(&table->bucket, i)->obj_vector); \
+        } \
         hash_table_type_name##HashBucketVectorRelease(&table->bucket); \
     } \
     forceinline element_type* hash_table_type_name##HashTableIteratorLocate(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key) { \
