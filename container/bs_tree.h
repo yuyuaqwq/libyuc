@@ -14,7 +14,13 @@ extern "C" {
 
 
 #define LIBYUC_CONTAINER_BS_TREE_DECLARATION(bs_tree_type_name, id_type, offset_type, key_type, stack_count) \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(bs_tree_type_name##BsStack, offset_type, offset_type, id_type, stack_count) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION( \
+        bs_tree_type_name##BsStack, \
+        LIBYUC_CONTAINER_VECTOR_MODE_STATIC, \
+        offset_type, \
+        offset_type, \
+        id_type, \
+        stack_count) \
     typedef struct _##bs_tree_type_name##BsEntry { \
         id_type left; \
         id_type right; \

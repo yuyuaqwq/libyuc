@@ -23,11 +23,16 @@ typedef enum {
 
 #define LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack_name, id_type, offset_type) \
     rb_tree_type_name##RbBsStackVector stack_name; \
-    id_type stack_name##_buf[sizeof(offset_type) * 8 * 2]; \
-    rb_tree_type_name##RbBsStackVectorInit(&stack_name, sizeof(stack_name##_buf) / sizeof(id_type), stack_name##_buf); \
+    rb_tree_type_name##RbBsStackVectorInit(&stack_name); \
 
 #define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, offset_type, key_type) \
-    LIBYUC_CONTAINER_BS_TREE_DECLARATION(rb_tree_type_name##Rb, id_type, offset_type, key_type, sizeof(offset_type) * 8 * 2) \
+    LIBYUC_CONTAINER_BS_TREE_DECLARATION( \
+        rb_tree_type_name##Rb, \
+        id_type, \
+        offset_type, \
+        key_type, \
+        sizeof(offset_type) * 8 * 2 /* 2 * log(n + 1) */ \
+        ) \
     typedef struct _##rb_tree_type_name##RbEntry { \
         union { \
             struct { \
@@ -68,7 +73,15 @@ typedef enum {
 
 // 访问器需要提供_GetKey、_Get/SetRight、_Get/SetLeft、_Set/GetColor方法
 #define LIBYUC_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
-    LIBYUC_CONTAINER_BS_TREE_DEFINE(rb_tree_type_name##Rb, id_type, offset_type, key_type, referencer, accessor, comparer) \
+    LIBYUC_CONTAINER_BS_TREE_DEFINE( \
+    rb_tree_type_name##Rb, \
+    id_type, \
+    offset_type, \
+    key_type, \
+    referencer, \
+    accessor, \
+    comparer \
+    ) \
     /*
     * 取兄弟节点
     */ \

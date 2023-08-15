@@ -36,7 +36,13 @@ extern "C" {
     element_type* hash_table_type_name##HashTableIteratorLocate(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter, const key_type* key); \
     bool hash_table_type_name##HashTableIteratorDelete(struct _##hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter); \
     \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(hash_table_type_name##HashBucket, offset_type, struct _##hash_table_type_name##HashTableEntry) \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION( \
+        hash_table_type_name##HashBucket, \
+        LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
+        offset_type, \
+        offset_type, \
+        struct _##hash_table_type_name##HashTableEntry \
+        ) \
     \
     typedef struct _##hash_table_type_name##HashTableEntry { \
         offset_type dist; /* 与第一次哈希相差的距离，从1开始算起(0表示无效) */ \
@@ -64,19 +70,30 @@ extern "C" {
     * 动态数组
     */ \
     static const k##hash_table_type_name##HashTableInvalidDist = 0; \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(hash_table_type_name##HashBucket, offset_type, hash_table_type_name##HashTableEntry, allocator, LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT) \
+    LIBYUC_CONTAINER_VECTOR_DEFINE( \
+        hash_table_type_name##HashBucket, \
+        LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
+        offset_type, \
+        offset_type, \
+        hash_table_type_name##HashTableEntry, \
+        LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
+        allocator, \
+        LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, \
+        LIBYUC_CONTAINER_VECTOR_COMPARER_INVALID, \
+        LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT \
+        ) \
     \
     /*
     * 哈希表
     */ \
     static forceinline offset_type hash_table_type_name##HashModIndex(hash_table_type_name##HashTable* table, offset_type index) { \
-        return index & table->max_detection_count/* % table->bucket.capacity */; \
+        return index & table->max_detection_count/* % hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket) */; \
     } \
     static forceinline offset_type hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
         return hasher(table, key) >> table->shift; \
     } \
     static forceinline offset_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
-        return table->bucket.count * 100 / table->bucket.capacity; \
+        return hash_table_type_name##HashBucketVectorGetCount(&table->bucket) * 100 / hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket); \
     } \
     static forceinline void hash_table_type_name##HashEntryExchange(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableEntry* entry_a, hash_table_type_name##HashTableEntry* entry_b) { \
         hash_table_type_name##HashTableEntry temp; \
@@ -91,7 +108,7 @@ extern "C" {
         entry_dst->dist = entry_src->dist; \
         element_mover##_Copy(table, &entry_dst->obj, &entry_src->obj); \
     } \
-    offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return table->bucket.count; } \
+    offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return hash_table_type_name##HashBucketVectorGetCount(&table->bucket); } \
     /* 重映射 */ \
     static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, offset_type new_capacity) {    \
         hash_table_type_name##HashTable temp_table; \
@@ -113,10 +130,9 @@ extern "C" {
         if (!LIBYUC_ALGORITHM_TWO_IS_POWER_OF_2(capacity)) { \
             capacity = LIBYUC_ALGORITHM_TWO_ALIGN_TO_POWER_OF_2(capacity); \
         } \
-        hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity, NULL); \
-        table->bucket.count = 0; \
+        hash_table_type_name##HashBucketVectorInit(&table->bucket, capacity); \
         \
-        for (int i = 0; i < table->bucket.capacity; i++) { \
+        for (int i = 0; i < hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket); i++) { \
             hash_table_type_name##HashBucketVectorIndex(&table->bucket, i)->dist = k##hash_table_type_name##HashTableInvalidDist; \
         } \
         if (load_fator == 0) { \
@@ -163,9 +179,9 @@ extern "C" {
             next_entry = hash_table_type_name##HashBucketVectorIndex(&table->bucket, iter->cur_index); \
         } \
         empty_entry->dist = k##hash_table_type_name##HashTableInvalidDist; \
-        table->bucket.count--; \
-        if (table->bucket.capacity > LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE && hash_table_type_name##HashGetCurrentLoadFator(table) <= 100 - table->load_fator) { \
-            hash_table_type_name##HashRehash(table, table->bucket.capacity / LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
+        hash_table_type_name##HashBucketVectorSetCount(&table->bucket, hash_table_type_name##HashBucketVectorGetCount(&table->bucket) - 1); \
+        if (hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket) > LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE && hash_table_type_name##HashGetCurrentLoadFator(table) <= 100 - table->load_fator) { \
+            hash_table_type_name##HashRehash(table, hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket) / LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
         } \
         return true; \
     } \
@@ -176,7 +192,7 @@ extern "C" {
     element_type* hash_table_type_name##HashTableIteratorNext(hash_table_type_name##HashTable* table, hash_table_type_name##HashTableIterator* iter) { \
         hash_table_type_name##HashTableEntry* entry = NULL; \
         do { \
-            if (iter->cur_index >= table->bucket.capacity) { \
+            if (iter->cur_index >= hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket)) { \
                 return NULL; \
             } \
             entry = &table->bucket.obj_arr[iter->cur_index++]; \
@@ -217,10 +233,10 @@ extern "C" {
         } \
         hash_table_type_name##HashEntryExchange(table, &temp, entry); \
         \
-        table->bucket.count++; \
+        hash_table_type_name##HashBucketVectorSetCount(&table->bucket, hash_table_type_name##HashBucketVectorGetCount(&table->bucket) + 1); \
         if (hash_table_type_name##HashGetCurrentLoadFator(table) >= table->load_fator) { \
             /* 触发扩容 */ \
-            hash_table_type_name##HashRehash(table, table->bucket.capacity * LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
+            hash_table_type_name##HashRehash(table, hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket) * LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR); \
         } \
     } \
     bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key) { \

@@ -70,7 +70,12 @@ typedef enum {
     /*
     * 页内红黑树
     */\
-    LIBYUC_CONTAINER_RB_TREE_DECLARATION(bp_tree_type_name##BPlusEntry, element_id_type, element_offset_type, key_type) \
+    LIBYUC_CONTAINER_RB_TREE_DECLARATION( \
+        bp_tree_type_name##BPlusEntry, \
+        element_id_type, \
+        element_offset_type, \
+        key_type \
+        ) \
     /*
     * B+树迭代器
     */ \
@@ -78,11 +83,14 @@ typedef enum {
         entry_id_type entry_id; \
         bp_tree_type_name##BPlusEntryRbTreeIterator element_iterator; \
     } bp_tree_type_name##BPlusElementPos; \
-    LIBYUC_CONTAINER_VECTOR_DECLARATION(bp_tree_type_name##BPlusIteratorStack, \
+    LIBYUC_CONTAINER_VECTOR_DECLARATION( \
+        bp_tree_type_name##BPlusIteratorStack, \
         LIBYUC_CONTAINER_VECTOR_MODE_STATIC, \
         entry_offset_type, \
         entry_offset_type, \
-        bp_tree_type_name##BPlusElementPos) \
+        bp_tree_type_name##BPlusElementPos, \
+        sizeof(entry_offset_type) * 8 \
+        ) \
     typedef struct _##bp_tree_type_name##BPlusIterator { \
         bp_tree_type_name##BPlusIteratorStackVector stack; \
         bp_tree_type_name##BPlusElementPos default_stack[default_stack_size]; \
@@ -306,7 +314,9 @@ kv分离是外层处理的，b+树操作的只有element
     */\
     static const entry_id_type bp_tree_type_name##BPlusLeafEntryReferencer_InvalidId = entry_referencer##_InvalidId; \
     leaf_link_mode##_DEFINE_1(bp_tree_type_name, entry_id_type, entry_referencer) \
-    LIBYUC_CONTAINER_VECTOR_DEFINE(bp_tree_type_name##BPlusIteratorStack, \
+    LIBYUC_CONTAINER_VECTOR_DEFINE( \
+        bp_tree_type_name##BPlusIteratorStack, \
+        LIBYUC_CONTAINER_VECTOR_MODE_STATIC, \
         entry_offset_type, \
         entry_offset_type, \
         bp_tree_type_name##BPlusElementPos, \
@@ -314,7 +324,8 @@ kv分离是外层处理的，b+树操作的只有element
         iterator_allocator, \
         LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT, \
         LIBYUC_CONTAINER_VECTOR_COMPARER_INVALID, \
-        LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT) \
+        LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT \
+        ) \
     \
     /*
     * 页内红黑树

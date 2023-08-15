@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\GT1\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000;
+int count = 10000000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -702,8 +702,7 @@ void TestAvl() {
 	//void** buf = (void**)malloc((count / section) * sizeof(void*));
 
 	IntAvlBsStackVector stack;
-	IntAvlEntry* stack_arr[48];
-	IntAvlBsStackVectorInit(&stack, 64, stack_arr);
+	IntAvlBsStackVectorInit(&stack);
 
 	for (int j = 0; j < section; j++) {
 
@@ -795,7 +794,8 @@ void TestRb() {
 
 
 		l = GetTickCount();
-		printf("统计count:%d        %dms\n", IntRbTreeGetCount(&tree), GetTickCount() - l);
+		auto rbcount = IntRbTreeGetCount(&tree);
+		printf("统计count:%d        %dms\n", rbcount, GetTickCount() - l);
 
 		if (!IntRbTreeVerify(&tree)) {
 			printf("不正确的红黑树");
@@ -1034,7 +1034,6 @@ void TestHashTable() {
 		printf("\n\n\n\n");
 	}
 	l = GetTickCount();
-	for(int k = 0; k < 10000; k++){
 	for (int i = 0; i < count; i++) {
 		//if (Hashmap_murmurhash(&i, 4) % 100000000 == 0) {
 		//	//printf("找不到");
@@ -1043,7 +1042,6 @@ void TestHashTable() {
 		if (!IntHashTableFind(&table, &arr2[i]->key)) {
 			printf("找不到%llx", *&arr2[i]->key);
 		}
-	}
 	}
 	l = GetTickCount() - l;
 	printf("查找耗时：%dms\n", l);
