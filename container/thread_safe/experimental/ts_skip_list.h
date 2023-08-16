@@ -34,7 +34,7 @@ typedef struct _TsSkipListLevel {
 */
 typedef struct _TsSkipListEntry {
     int key;
-    uintptr_t level_count;
+    //uintptr_t level_count;
     TsSkipListLevel upper[];        // 节点的上层，是索引节点
 } TsSkipListEntry;
 
@@ -68,7 +68,7 @@ void TsSkipListInit(TsSkipList* list) {
 static TsSkipListEntry* TsSkipListCreateEntry(int level, int key) {
     TsSkipListEntry* entry = (TsSkipListEntry*)MemoryAlloc(sizeof(TsSkipListEntry) + level * sizeof(TsSkipListLevel));
     entry->key = key;
-    entry->level_count = level;
+    //entry->level_count = level;
     return entry;
 }
 
@@ -259,7 +259,16 @@ _retry:
         }  while (true);
     }
 
-    // 被删除的索引层可能是最高索引层，需要调整，无锁情况较难处理
+    // 被删除的索引层可能是最高索引层，需要调整
+    //while (level > 1 && list->head[level-1].next == NULL) {
+    //    // 标记将要移除高度的节点，使其又指向head，此时使用head作为prev的插入/删除就会陷入自旋
+    //    while (AtomicPtrCompareExchange(&list->head[level-1].next, MARK(ObjectGetFromField(&list->head[level-1], TsSkipListEntry, upper)), NULL)) {
+    //        // 修改成功才允许继续下降
+    //        AtomicInt32CompareExchange(&list->level, level - 1, level);
+    //        list->head[level-1].next = NULL;
+    //        level--;
+    //    }
+    //}
 
     // ObjectRelease(cur);      // 资源释放交给GC
     return success;

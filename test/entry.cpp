@@ -141,21 +141,21 @@ void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
 
 void PrintSkipList(TsSkipList* list) {
 	auto cur = list->head;
-	while (cur) {
-		auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
-		if (cur != list->head) {
-			for (int j = 0; j < entry->level_count; j++) {
-				printf("key:%d\t\t", entry->key);
-			}
-			printf("\n\n");
-		}
-		if (cur[0].next) {
-			cur = (TsSkipListLevel*)cur[0].next->upper;
-		}
-		else {
-			cur = NULL;
-		}
-	}
+	//while (cur) {
+	//	auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
+	//	if (cur != list->head) {
+	//		for (int j = 0; j < entry->level_count; j++) {
+	//			printf("key:%d\t\t", entry->key);
+	//		}
+	//		printf("\n\n");
+	//	}
+	//	if (cur[0].next) {
+	//		cur = (TsSkipListLevel*)cur[0].next->upper;
+	//	}
+	//	else {
+	//		cur = NULL;
+	//	}
+	//}
 }
 
 void PrintAvl(IntAvlTree* head, IntAvlEntry* entry, IntAvlEntry* parent, int Level) {
