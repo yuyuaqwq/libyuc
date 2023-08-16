@@ -34,7 +34,7 @@ typedef struct _TsSkipListLevel {
 */
 typedef struct _TsSkipListEntry {
     int key;
-    //uintptr_t level_count;
+    uintptr_t level_count;
     TsSkipListLevel upper[];        // 节点的上层，是索引节点
 } TsSkipListEntry;
 
@@ -68,7 +68,7 @@ void TsSkipListInit(TsSkipList* list) {
 static TsSkipListEntry* TsSkipListCreateEntry(int level, int key) {
     TsSkipListEntry* entry = (TsSkipListEntry*)MemoryAlloc(sizeof(TsSkipListEntry) + level * sizeof(TsSkipListLevel));
     entry->key = key;
-    //entry->level_count = level;
+    entry->level_count = level;
     return entry;
 }
 
@@ -150,12 +150,6 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
             update[i] = list->head;        // 头节点该层的索引需要指向新节点同层索引，待更新头节点
             update_next[i] = NULL;      // 头节点的下一节点此时应该是NULL
         }
-
-        // 更新高度
-        while (!AtomicInt32CompareExchange(&list->level, new_level, level)) {
-            if (new_level <= list->level) break;        // 新高度更高也可以退出
-            level = list->level;
-        }
     }
 
     // 自底向上插入
@@ -181,6 +175,15 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
             TsSkipListLevelLocate(&prev, &cur, i, key);
         } while (true);
     }
+
+    if (new_level > level) {
+        // 最后再更新高度，确保head是先写入的
+        while (!AtomicInt32CompareExchange(&list->level, new_level, level)) {
+            if (new_level <= list->level) break;        // 新高度更高也可以退出
+            level = list->level;
+        }
+    }
+
     return true;
 }
 
@@ -256,10 +259,7 @@ _retry:
         }  while (true);
     }
 
-    // 被删除的索引层可能是最高索引层，需要调整
-    //while (list->level > 1 && list->head[list->level - 1].next == NULL) {
-    //    list->level--;
-    //}
+    // 被删除的索引层可能是最高索引层，需要调整，无锁情况较难处理
 
     // ObjectRelease(cur);      // 资源释放交给GC
     return success;

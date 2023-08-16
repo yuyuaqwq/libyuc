@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\GT1\Desktop\unordered_dense.h"
+#include "C:\Users\yuyu\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -141,21 +141,21 @@ void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
 
 void PrintSkipList(TsSkipList* list) {
 	auto cur = list->head;
-	//while (cur) {
-	//	auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
-	//	if (cur != list->head) {
-	//		for (int j = 0; j < entry->level_count; j++) {
-	//			printf("key:%d\t\t", entry->key);
-	//		}
-	//		printf("\n\n");
-	//	}
-	//	if (cur[0].next) {
-	//		cur = (TsSkipListLevel*)cur[0].next->upper;
-	//	}
-	//	else {
-	//		cur = NULL;
-	//	}
-	//}
+	while (cur) {
+		auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
+		if (cur != list->head) {
+			for (int j = 0; j < entry->level_count; j++) {
+				printf("key:%d\t\t", entry->key);
+			}
+			printf("\n\n");
+		}
+		if (cur[0].next) {
+			cur = (TsSkipListLevel*)cur[0].next->upper;
+		}
+		else {
+			cur = NULL;
+		}
+	}
 }
 
 void PrintAvl(IntAvlTree* head, IntAvlEntry* entry, IntAvlEntry* parent, int Level) {
@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 1000000;
 std::vector<QVQ*> arr2;
 // int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -990,7 +990,7 @@ void TestTsSkipList() {
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
-		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
@@ -999,15 +999,17 @@ void TestTsSkipList() {
 
 	printf("插入&删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
-	t.clear();
-	l = GetTickCount();
-	for (int i = 0; i < thread_count; i++) {
-		t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
-	}
+	//PrintSkipList(&list);
 
-	for (auto& thread : t) {
-		thread.join();
-	}
+	t.clear();
+	//l = GetTickCount();
+	//for (int i = 0; i < thread_count; i++) {
+	//	t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
+	//}
+
+	//for (auto& thread : t) {
+	//	thread.join();
+	//}
 	printf("查找总耗时：%dms\n", GetTickCount() - l);
 
 	t.clear();
@@ -1331,7 +1333,7 @@ int main() {
 		//}
 		qvq->key = i;// i;
 		//ReverseOrder(&qvq->key, 8);
-		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
