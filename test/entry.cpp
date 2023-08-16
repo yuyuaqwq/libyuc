@@ -141,21 +141,21 @@ void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
 
 void PrintSkipList(TsSkipList* list) {
 	auto cur = list->head;
-	while (cur) {
-		auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
-		if (cur != list->head) {
-			for (int j = 0; j < entry->level_count; j++) {
-				printf("key:%d\t\t", entry->key);
-			}
-			printf("\n\n");
-		}
-		if (cur[0].next) {
-			cur = (TsSkipListLevel*)cur[0].next->upper;
-		}
-		else {
-			cur = NULL;
-		}
-	}
+	//while (cur) {
+	//	auto entry = ObjectGetFromField(cur, TsSkipListEntry, upper);
+	//	if (cur != list->head) {
+	//		for (int j = 0; j < entry->level_count; j++) {
+	//			printf("key:%d\t\t", entry->key);
+	//		}
+	//		printf("\n\n");
+	//	}
+	//	if (cur[0].next) {
+	//		cur = (TsSkipListLevel*)cur[0].next->upper;
+	//	}
+	//	else {
+	//		cur = NULL;
+	//	}
+	//}
 }
 
 void PrintAvl(IntAvlTree* head, IntAvlEntry* entry, IntAvlEntry* parent, int Level) {
@@ -411,7 +411,7 @@ int seed = 377884212;
 
 int section = 1;
 
-int thread_count = 12;
+int thread_count = 10;
 
 void TestArt() {
 	printf("\n自适应基数树：\n");
@@ -884,6 +884,8 @@ void TestTsSortSinglyListDeleteThread(TsSortSinglyListHead* head, int j) {
 }
 
 void TestTsSortSinglyList() {
+	printf("线程安全有序链表：%d个线程\n", thread_count);
+	
 	TsSortSinglyListHead head;
 	head.first = NULL;
 
@@ -900,7 +902,7 @@ void TestTsSortSinglyList() {
 		thread.join();
 	}
 
-	printf("%d个线程，插入总耗时：%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
+	printf("%d个线程，插入&删除总耗时：%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
 
 
 	TsSortSinglyListEntry* prev = NULL;
@@ -955,7 +957,30 @@ void TestTsSkipListInsertThread(TsSkipList* list, int j) {
 	}
 }
 
+void TestTsSkipListFindThread(TsSkipList* list, int j) {
+	for (int i = 0; i < count / thread_count; i++) {
+		if (!TsSkipListFind(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
+			printf("找不到:%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		}
+		// PrintSkipList(list);
+		// printf("\n\n\n\n");
+	}
+}
+
+void TestTsSkipListDeleteThread(TsSkipList* list, int j) {
+	for (int i = 0; i < count / thread_count; i++) {
+		if (!TsSkipListDelete(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
+			//printf("删除失败：%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		}
+		// PrintSkipList(list);
+		// printf("\n\n\n\n");
+	}
+}
+
+
 void TestTsSkipList() {
+	printf("线程安全跳表：%d个线程\n", thread_count);
+
 	TsSkipList list;
 	TsSkipListInit(&list);
 
@@ -965,19 +990,44 @@ void TestTsSkipList() {
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
+		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
 		thread.join();
 	}
 
-	printf("%d个线程，插入总耗时：%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
+	printf("插入&删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
+
+	t.clear();
+	l = GetTickCount();
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
+	}
+
+	for (auto& thread : t) {
+		thread.join();
+	}
+	printf("查找总耗时：%dms\n", GetTickCount() - l);
+
+	t.clear();
+	l = GetTickCount();
+
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+	}
+
+	for (auto& thread : t) {
+		thread.join();
+	}
+
+	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
 
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
-		if (!TsSkipListFind(&list, (arr2[i]->key))) {
-			printf("找不到");
+		if (TsSkipListFind(&list, (arr2[i]->key))) {
+			printf("找到了：%d", arr2[i]->key);
 		}
 	}
 	printf("查找耗时：%dms\n", GetTickCount() - l);
@@ -1242,15 +1292,7 @@ int main() {
 	//
 
 
-	AcVector vector;
-	AcVectorInit(&vector, 0);
-	uint32_t aa = 0x12345678;
-	AcVectorIsEmpty(&vector);
-	AcVectorPushTail(&vector, &aa);
-	AcVectorPushTail(&vector, &aa);
-	AcVectorPushTail(&vector, &aa);
-	aa = 0x222222;
-	AcVectorPut(&vector, &aa);
+
 
 	printf("seed：%d\n", seed);
 	srand(seed);
@@ -1289,7 +1331,7 @@ int main() {
 		//}
 		qvq->key = i;// i;
 		//ReverseOrder(&qvq->key, 8);
-		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
@@ -1307,15 +1349,15 @@ int main() {
 	//TestBPlusTree();
 
 	// TestEpoch();
-	// TestTsSkipList();
+	//TestTsSortSinglyList();
+	TestTsSkipList();
 	//
 	//TestSkipList();
 
 	//TestAvl();
-	//TestArt();
+	TestArt();
 	//TestRb();
-	//TestTsSortSinglyList();
-	TestHashTable();
+	//TestHashTable();
 
 	
 	//goto qqqqqq;

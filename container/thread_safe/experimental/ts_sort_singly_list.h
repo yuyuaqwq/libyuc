@@ -93,13 +93,13 @@ static bool TsSortSinglyListInsertInternal(TsSortSinglyListEntry* prev, TsSortSi
             break;
         }
         // 更新失败的场景，即prev->next不再是cur
-        // 1.prev被删除
+        // 1.prev被删除，被做了标记
         TsSortSinglyListEntry* next = TsSortSinglyListEntryGetNext(prev);
         if (IS_MARK(next)) {
-            prev = CLEAR_MARK(next);
+            prev = CLEAR_MARK(next);        // 定位到标记时写入的上一节点，进行重试
             next = TsSortSinglyListEntryGetNext(prev);
         }
-        // 2.prev和cur之间插入了新节点
+        // 2.prev和cur之间插入了新节点，直接重试
         cur = next;
     } while (true);
     return true;
@@ -127,7 +127,7 @@ static bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr
         // 删除失败的场景，即prev->next不再是cur
         // 1.prev将要被删除/已被删除，被打上标记
         if (IS_MARK(TsSortSinglyListEntryGetNext(prev))) {
-            TsSortSinglyListEntrySetNext(entry, next);     // 此时cur是通过新的prev访问的(其他的删除线程将要/已经进行了prev的prev指向cur的原子操作)，先取消标记
+            TsSortSinglyListEntrySetNext(entry, next);     // 此时cur是通过新的prev访问的(其他的删除线程将要/已经进行了prev的prev指向cur的原子操作)，先取消标记(上面已经经过了CLEAR_MARK的判断)
             prev = CLEAR_MARK(TsSortSinglyListEntryGetNext(prev));        // 由此重试
             entry = TsSortSinglyListEntryGetNext(prev);
         }
@@ -141,6 +141,7 @@ static bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr
         // 标记失败的场景，即cur->next不再是next
         // 1.cur被其他删除线程标记
         if (IS_MARK(TsSortSinglyListEntryGetNext(entry))) {
+            // 此处选择不放弃删除，重新找是否存在相同的key
             prev = CLEAR_MARK(TsSortSinglyListEntryGetNext(entry));
         }
         // 2.cur->next已被其他线程删除
@@ -160,7 +161,6 @@ bool TsSortSinglyListDelete(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* 
             return true;
         }
     } while (true);
-    return false;
 }
 
 void TsSortSinglyListDeleteEntry(TsSortSinglyListEntry* prev, TsSortSinglyListEntry* entry) {
