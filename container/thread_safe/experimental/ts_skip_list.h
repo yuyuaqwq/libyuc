@@ -123,10 +123,12 @@ static forceinline TsSkipListEntry* TsSkipListLocate(TsSkipList* list, int level
     *cmp = -1;
     TsSkipListLevel* cur_level = list->head;
     // 从最顶层开始遍历，每趟循环都相当于下降一层索引
+    TsSkipListEntry* cur_entry = NULL;
+    TsSkipListEntry* next_entry = NULL;
     for (int i = level - 1; i >= 0; i--) {
         // 当前索引层的链表查找
-        TsSkipListEntry* cur_entry = ObjectGetFromField(cur_level, TsSkipListEntry, upper);
-        TsSkipListEntry* next_entry = (TsSkipListEntry*)AtomicPtrLoad(&cur_level[i].next);
+        cur_entry = ObjectGetFromField(cur_level, TsSkipListEntry, upper);
+        next_entry = (TsSkipListEntry*)AtomicPtrLoad(&cur_level[i].next);
         *cmp = TsSkipListLevelLocate(&cur_entry, &next_entry, i, key);
         if (update) {
             update[i] = cur_entry->upper;        // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
@@ -135,7 +137,14 @@ static forceinline TsSkipListEntry* TsSkipListLocate(TsSkipList* list, int level
         cur_level = cur_entry->upper;
         // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
     }
-    return ObjectGetFromField(cur_level, TsSkipListEntry, upper);
+    if (*cmp == 0) {
+        if (update_next[next_entry->level_record - 1] != next_entry) {
+            // 插入是自底向上的，但查找可能提前在低层索引找到了这个插入的节点，但是其他插入线程在高层索引还没有插入这个节点，此时应将当前节点视为未插入
+            // 查找/删除可以在循环里提前返回，插入需要完整的update数组
+            *cmp = -1;
+        }
+    }
+    return cur_entry;
 }
 
 bool TsSkipListFind(TsSkipList* list, int key) {
@@ -206,7 +215,6 @@ bool TsSkipListDelete(TsSkipList* list, int key) {
     TsSkipListLevel* update[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
     TsSkipListEntry* update_next[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
 
-
 _retry:
     int cmp;
     int level = AtomicInt32Load(&list->level);
@@ -221,11 +229,6 @@ _retry:
     TsSkipListEntry* cur = update_next[0];      // 拿最低层的节点
     // 为何更新？因为提供的level可能比cur的level小(cur是新插入的)
     level = cur->level_record;
-
-    if (update_next[level-1] != cur) {
-        // 插入是自底向上的，但删除可能提前在低层索引找到了这个插入的节点，但是插入在高层索引还没有插入这个节点，此时将当前节点视为未插入
-        return false;
-    }
 
     // 自顶向下删除
     for (int i = level - 1; i != -1; i--) {
