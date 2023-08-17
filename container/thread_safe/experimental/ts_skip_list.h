@@ -80,15 +80,16 @@ static TsSkipListEntry* TsSkipListCreateEntry(int level, int key) {
 * 在指定层定位key
 * cur最终指向第一个 >= key的节点
 */
-static forceinline int TsSkipListLevelLocate(TsSkipListEntry** prev_ptr, TsSkipListEntry** cur_ptr, int level, int key) {
+static forceinline int TsSkipListLevelLocate(TsSkipListEntry** prev_ptr, TsSkipListEntry** cur_ptr, int level_sub_1, int key) {
     TsSkipListEntry* cur = *cur_ptr;
     TsSkipListEntry* prev = *prev_ptr;
+    // release_assert(!IS_MARK(prev->upper[level_sub_1].next), "prev is_mark!");
     if (cur != NULL) {
         do {
             if (IS_MARK(cur)) {
                 // 当前节点已经标记了删除，通过MARK标记的prev重试
                 prev = CLEAR_MARK(cur);
-                cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[level].next);
+                cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[level_sub_1].next);
                 continue;
             }
             if (cur->key >= key) {
@@ -97,7 +98,7 @@ static forceinline int TsSkipListLevelLocate(TsSkipListEntry** prev_ptr, TsSkipL
                 return cur->key == key ? 0 : 1;
             }
             prev = cur;
-            cur = (TsSkipListEntry*)AtomicPtrLoad(&cur->upper[level].next);
+            cur = (TsSkipListEntry*)AtomicPtrLoad(&cur->upper[level_sub_1].next);
         } while (cur);
     }
     // 插入到末尾
@@ -219,6 +220,7 @@ _retry:
                 // 尝试删除
                 do {
                     if (AtomicPtrCompareExchange(&prev->upper[i].next, next, cur)) {
+                        // release_assert(list->head[i].next != NULL, "delete head");
                         success = true;
                         break;
                     }
@@ -248,27 +250,16 @@ _retry:
             // 1.cur被其他删除线程标记
             if (IS_MARK(AtomicPtrLoad(&cur->upper[i].next))) {
                 prev = CLEAR_MARK(AtomicPtrLoad(&cur->upper[i].next));
-            }
-            // 2.cur->next已被其他线程删除
-            cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
 
-            // 标记失败，没办法直接在最低层重新定位删除的节点(没有索引节点的update/update_next环境)，所以直接重新搜索
-            goto _retry;
-            // TsSkipListLevelLocate(&prev, &cur, 0, key);
-           
+                // 删除抢占失败，没办法直接在最低层重新定位删除的节点(没有索引节点的update/update_next环境)，考虑到可能存在相同key的节点，不直接返回而是重新搜索
+                goto _retry;
+                // TsSkipListLevelLocate(&prev, &cur, 0, key);
+            }
+            // 2.next已被其他线程删除，尝试重新获取next
         }  while (true);
     }
 
-    // 被删除的索引层可能是最高索引层，需要调整
-    //while (level > 1 && list->head[level-1].next == NULL) {
-    //    // 标记将要移除高度的节点，使其又指向head，此时使用head作为prev的插入/删除就会陷入自旋
-    //    while (AtomicPtrCompareExchange(&list->head[level-1].next, MARK(ObjectGetFromField(&list->head[level-1], TsSkipListEntry, upper)), NULL)) {
-    //        // 修改成功才允许继续下降
-    //        AtomicInt32CompareExchange(&list->level, level - 1, level);
-    //        list->head[level-1].next = NULL;
-    //        level--;
-    //    }
-    //}
+    // 被删除的索引层可能是最高索引层，但不在这里调整
 
     // ObjectRelease(cur);      // 资源释放交给GC
     return success;

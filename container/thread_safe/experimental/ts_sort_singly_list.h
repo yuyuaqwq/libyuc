@@ -144,7 +144,7 @@ static bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr
             // 此处选择不放弃删除，重新找是否存在相同的key
             prev = CLEAR_MARK(TsSortSinglyListEntryGetNext(entry));
         }
-        // 2.cur->next已被其他线程删除
+        // 2.next已被其他线程删除
         entry = TsSortSinglyListEntryGetNext(prev);
     }
     *entry_ptr = entry;

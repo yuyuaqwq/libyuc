@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #ifndef Painc
-#define Painc(...) { printf(__VA_ARGS__); *(int*)0 = 0; }
+#define Painc(...) { printf(__VA_ARGS__); __debugbreak();  /* *(int*)0 = 0;*/ }
 #endif
 
 #ifdef NDEBUG
