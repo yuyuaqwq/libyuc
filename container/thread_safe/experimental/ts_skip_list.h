@@ -99,7 +99,7 @@ static forceinline int TsSkipListLevelLocate(TsSkipListEntry** prev_ptr, TsSkipL
     if (cur != NULL) {
         do {
             if (IS_MARK(cur)) {
-                // 当前节点已经标记了删除，通过MARK标记的prev重试
+                // prev节点已经标记了删除，通过MARK标记的prev重试
                 prev = CLEAR_MARK(cur);
                 cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[level_sub_1].next);
                 continue;
