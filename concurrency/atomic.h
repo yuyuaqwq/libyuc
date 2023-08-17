@@ -50,6 +50,10 @@ static forceinline int32_t AtomicInt32Load(AtomicInt32* target) {
     return *(volatile int32_t*)target;
 }
 
+static forceinline bool AtomicInt32LoadByMemoryOrder(AtomicBool* target, bool val, MemoryOrder order) {
+    *target = (AtomicBool)val;
+}
+
 static forceinline void AtomicInt32Store(AtomicInt32* target, int32_t val) {
     *target = (AtomicInt32)val;        // 无需通过原子指令，只需要保证state是volatile就不会被编译器优化影响，最终会在某一时刻写回内存，原子性交给CPU
 }

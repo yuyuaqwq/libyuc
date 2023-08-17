@@ -405,9 +405,10 @@ struct QVQ {
 DWORD l;
 int count = 10000000;
 std::vector<QVQ*> arr2;
-// int seed = GetTickCount() + rand();
-int seed = 377884212;
+int seed = GetTickCount() + rand();
+//int seed = 377884212;
 
+std::vector<TsSkipListEntry*> ptr_arr;
 
 int section = 1;
 
@@ -951,7 +952,8 @@ void TestTsSortSinglyList() {
 
 void TestTsSkipListInsertThread(TsSkipList* list, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		TsSkipListInsert(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		TsSkipListInsert(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key, &ptr_arr[j * (count / thread_count) + i]);
+
 		// PrintSkipList(list);
 		// printf("\n\n\n\n");
 	}
@@ -979,10 +981,15 @@ void TestTsSkipListDeleteThread(TsSkipList* list, int j) {
 
 
 void TestTsSkipList() {
+
+_re:
+
 	printf("线程安全跳表：%d个线程\n", thread_count);
 
 	TsSkipList list;
 	TsSkipListInit(&list);
+
+	ptr_arr.resize(count, nullptr);
 
 	std::vector<std::thread> t;
 	t.reserve(thread_count);
@@ -990,7 +997,7 @@ void TestTsSkipList() {
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
-		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
@@ -1003,13 +1010,13 @@ void TestTsSkipList() {
 
 	t.clear();
 	l = GetTickCount();
-	for (int i = 0; i < thread_count; i++) {
-		t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
-	}
+	//for (int i = 0; i < thread_count; i++) {
+	//	t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
+	//}
 
-	for (auto& thread : t) {
-		thread.join();
-	}
+	//for (auto& thread : t) {
+	//	thread.join();
+	//}
 	printf("查找总耗时：%dms\n", GetTickCount() - l);
 
 	t.clear();
@@ -1025,6 +1032,9 @@ void TestTsSkipList() {
 
 	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
+	for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
+		release_assert(list.head[i].next == NULL, "delete head error");
+	}
 
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
@@ -1034,6 +1044,13 @@ void TestTsSkipList() {
 	}
 	printf("查找耗时：%dms\n", GetTickCount() - l);
 
+	list.level = 0;
+
+	for (int i = 0; i < ptr_arr.size(); i++) {
+		ObjectRelease(ptr_arr[i]);
+	}
+
+	goto _re;
 }
 
 void TestEpoch() {

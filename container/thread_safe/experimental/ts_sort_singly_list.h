@@ -126,15 +126,16 @@ static bool TsSortSinglyListDeleteEntryInternal(TsSortSinglyListEntry** prev_ptr
         }
         // 删除失败的场景，即prev->next不再是cur
         // 1.prev将要被删除/已被删除，被打上标记
-        if (IS_MARK(TsSortSinglyListEntryGetNext(prev))) {
+        TsSortSinglyListEntry* temp_cur = TsSortSinglyListEntryGetNext(prev);
+        if (IS_MARK(temp_cur)) {
             TsSortSinglyListEntrySetNext(entry, next);     // 此时cur是通过新的prev访问的(其他的删除线程将要/已经进行了prev的prev指向cur的原子操作)，先取消标记(上面已经经过了CLEAR_MARK的判断)
-            prev = CLEAR_MARK(TsSortSinglyListEntryGetNext(prev));        // 由此重试
+            prev = CLEAR_MARK(temp_cur);        // 由此重试
             entry = TsSortSinglyListEntryGetNext(prev);
         }
         // 2.prev和cur之间插入了新节点
         else {
             TsSortSinglyListEntrySetNext(entry, next);
-            prev = TsSortSinglyListEntryGetNext(prev);
+            prev = temp_cur;
         }
     }
     else {

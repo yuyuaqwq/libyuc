@@ -8,6 +8,18 @@
 /*
 * Lock-Free SkipList - 无锁跳表
 */
+
+/*
+* 删除：
+    * 协同删除
+        * 遇到cur被标记为删除时，协同删除
+        * 遇到prev被标记为删除时，从头开始搜索
+    * 等待删除
+        * 即本跳表使用的方案
+        * 其他线程遇到删除标会通过被删除节点提供的回溯指针进行自旋，等待删除线程完成删除
+*/
+
+
 #include <libyuc/basic.h>
 
 #include <libyuc/concurrency/atomic.h>
@@ -34,14 +46,14 @@ typedef struct _TsSkipListLevel {
 */
 typedef struct _TsSkipListEntry {
     int key;
-    //uintptr_t level_count;
+    int level_record;
     TsSkipListLevel upper[];        // 节点的上层，是索引节点
 } TsSkipListEntry;
 
 
 typedef struct _TsSkipList {
     TsSkipListLevel head[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
-    int level;
+    AtomicInt32 level;
 } TsSkipList;
 
 
@@ -59,7 +71,7 @@ static int TsRandomLevel() {
 }
 
 void TsSkipListInit(TsSkipList* list) {
-    list->level = 1;
+    AtomicInt32Store(&list->level, 1);
     for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
         list->head[i].next = NULL;
     }
@@ -68,7 +80,7 @@ void TsSkipListInit(TsSkipList* list) {
 static TsSkipListEntry* TsSkipListCreateEntry(int level, int key) {
     TsSkipListEntry* entry = (TsSkipListEntry*)MemoryAlloc(sizeof(TsSkipListEntry) + level * sizeof(TsSkipListLevel));
     entry->key = key;
-    //entry->level_count = level;
+    entry->level_record = level;
     return entry;
 }
 
@@ -132,7 +144,7 @@ bool TsSkipListFind(TsSkipList* list, int key) {
     return cmp == 0;
 }
 
-bool TsSkipListInsert(TsSkipList* list, int key) {
+bool TsSkipListInsert(TsSkipList* list, int key, TsSkipListEntry** ptr) {
     TsSkipListLevel* update[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
     TsSkipListEntry* update_next[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
 
@@ -155,6 +167,8 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
 
     // 自底向上插入
     TsSkipListEntry* new_entry = TsSkipListCreateEntry(new_level, key);
+
+    *ptr = new_entry;
     for (int i = 0; i < new_level; i++) {
         prev = ObjectGetFromField(update[i], TsSkipListEntry, upper);
         cur = update_next[i];
@@ -163,14 +177,14 @@ bool TsSkipListInsert(TsSkipList* list, int key) {
             if (AtomicPtrCompareExchange(&prev->upper[i].next, new_entry, cur)) {
                 break;
             }
-            // 更新失败的场景，即update的next不为update_next
+            // 更新失败的场景，即prev的next不为cur
             TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
-            // 1.update被删除，被做了标记 
+            // 1.prev被删除，被做了标记 
             if (IS_MARK(next)) {
                 prev = CLEAR_MARK(next);        // 定位到标记时写入的上一节点，进行重试
                 next = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
             }
-            // 2.update和update_next之间插入了新节点，在当前层重新定位合适的插入点
+            // 2.prev和cur之间插入了新节点，在当前层重新定位合适的插入点
             cur = next;
 
             TsSkipListLevelLocate(&prev, &cur, i, key);
@@ -192,11 +206,11 @@ bool TsSkipListDelete(TsSkipList* list, int key) {
     TsSkipListLevel* update[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
     TsSkipListEntry* update_next[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
 
+
 _retry:
     int cmp;
-    int level = list->level;
+    int level = AtomicInt32Load(&list->level);
     TsSkipListEntry* prev = TsSkipListLocate(list, level, key, &cmp, update, update_next);
-    TsSkipListEntry* cur = update_next[0];      // 拿最低层的节点
 
     if (cmp) {
         // 找不到该节点
@@ -204,12 +218,18 @@ _retry:
     }
     bool success = false;
 
+    TsSkipListEntry* cur = update_next[0];      // 拿最低层的节点
+    // 为何更新？因为提供的level可能比cur的level小(cur是新插入的)
+    level = cur->level_record;
+
+    if (update_next[level-1] != cur) {
+        // 插入是自底向上的，但删除可能提前在低层索引找到了这个插入的节点，但是插入在高层索引还没有插入这个节点，此时将当前节点视为未插入
+        return false;
+    }
+
     // 自顶向下删除
     for (int i = level - 1; i != -1; i--) {
-        if (update_next[i] != cur) {
-            // 不从当前层直接连接，找下一层
-            continue;
-        }
+        
         prev = ObjectGetFromField(update[i], TsSkipListEntry, upper);
         do {
             // 为当前层的cur打上删除标记
@@ -226,22 +246,25 @@ _retry:
                     }
                     // 删除失败的场景
                     // 1.prev将要被删除/已被删除，被打上标记
-                    if (IS_MARK(AtomicPtrLoad(&prev->upper[i].next))) {
-                        prev = CLEAR_MARK(AtomicPtrLoad(&prev->upper[i].next));        // 由此重试
+                    TsSkipListEntry* temp_cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
+                    if (IS_MARK(temp_cur)) {
+                        prev = CLEAR_MARK(temp_cur);        // 由此重试
                     }
                     // 2.prev和cur之间插入了新节点
                     else {
-                        prev = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
+                        prev = temp_cur;
                     }
 
                     // 尝试删除失败，允许在当前层重新查找next为cur的prev
                     TsSkipListEntry* temp = prev;
                     int cmp;
+                     release_assert(prev->key < cur->key, "refine key ordered error");
                     do {
                         temp = (TsSkipListEntry*)AtomicPtrLoad(&temp->upper[i].next);
                         cmp = TsSkipListLevelLocate(&prev, &temp, i, key);
+                         release_assert(cmp <= 0, "refine key ordered error");
                     } while (temp != cur);      // 可能有相同的key被插入，所以需要继续向下
-
+                    
                     // 这里与无锁有序链表采用不同的策略，不释放cur的标记，而是直接重试
                 }  while (true);
                 break;
@@ -260,6 +283,26 @@ _retry:
     }
 
     // 被删除的索引层可能是最高索引层，但不在这里调整
+    //while (list->head[level-1].next == NULL && list->level == level) {
+    //    // 只会出现删插冲突(空头节点不可能出现删除)
+    //    
+    //    if (AtomicInt32CompareExchange(&list->level, level-1, level)) {
+    //        // 此时可能出现当前节点又插入了新节点，但CAS修改成功
+    //        printf("%d -> %d\t", level + 1, level);
+    //        if (list->head[level-1].next != NULL) {
+    //            // 出现高度丢失，尝试修正
+    //            if (!AtomicInt32CompareExchange(&list->level, level, level-1)) {
+    //                // 修正失败就说明高度有变，直接结束
+    //                break;
+    //            }
+    //            // 但是此时可能又出现节点被删除，开始重试
+    //            --level;
+    //            continue;
+    //        }
+    //        break;
+    //    }
+    //    --level;
+    //}
 
     // ObjectRelease(cur);      // 资源释放交给GC
     return success;
