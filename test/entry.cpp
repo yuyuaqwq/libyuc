@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\gt1\Desktop\unordered_dense.h"
+#include "C:\Users\yuyu\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -972,9 +972,9 @@ void TestTsSkipListFindThread(TsSkipList* list, int j) {
 
 void TestTsSkipListDeleteThread(TsSkipList* list, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		if (!TsSkipListDelete(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
-			//printf("删除失败：%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
-		}
+		//if (!TsSkipListDelete(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
+		//	//printf("删除失败：%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		//}
 		// PrintSkipList(list);
 		// printf("\n\n\n\n");
 	}
@@ -998,7 +998,7 @@ _re:
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
-		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
@@ -1011,39 +1011,39 @@ _re:
 
 	t.clear();
 	l = GetTickCount();
-	//for (int i = 0; i < thread_count; i++) {
-	//	t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
-	//}
-
-	//for (auto& thread : t) {
-	//	thread.join();
-	//}
-	printf("查找总耗时：%dms\n", GetTickCount() - l);
-
-	t.clear();
-	l = GetTickCount();
-
 	for (int i = 0; i < thread_count; i++) {
-		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
 	}
 
 	for (auto& thread : t) {
 		thread.join();
 	}
+	printf("查找总耗时：%dms\n", GetTickCount() - l);
 
-	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
+	//t.clear();
+	//l = GetTickCount();
 
-	for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
-		release_assert(list.head[i].next == NULL, "delete head error");
-	}
+	//for (int i = 0; i < thread_count; i++) {
+	//	t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+	//}
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (TsSkipListFind(&list, (arr2[i]->key))) {
-			printf("找到了：%d", arr2[i]->key);
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	//for (auto& thread : t) {
+	//	thread.join();
+	//}
+
+	//printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
+
+	//for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
+	//	release_assert(list.head[i].next == NULL, "delete head error");
+	//}
+
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (TsSkipListFind(&list, (arr2[i]->key))) {
+	//		printf("找到了：%d", arr2[i]->key);
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
 
 	list.level = 0;
 
