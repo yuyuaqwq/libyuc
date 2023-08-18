@@ -269,9 +269,9 @@ bool TsSkipListInsert(TsSkipList* list, int key, TsSkipListEntry** ptr) {
                 break;
             }
             // 更新失败的场景，即prev的next不为cur
-            TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&splice.prev[i]->upper[i].next);
+            TsSkipListEntry* new_cur = (TsSkipListEntry*)AtomicPtrLoad(&splice.prev[i]->upper[i].next);
             // 1.prev被删除，被做了标记 
-            if (IS_MARK(next)) {
+            if (IS_MARK(new_cur)) {
                 // 重建铰接点
                 // TsSkipListCollaborativeDelete(&splice, i);
             }
