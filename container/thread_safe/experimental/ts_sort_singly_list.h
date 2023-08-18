@@ -7,6 +7,8 @@
 
 /*
 * Lock-Free SortSinglyList - 无锁有序单向链表
+* 
+* 非完全无锁，删除是可能导致其他线程阻塞的
 */
 
 #include <libyuc/basic.h>
