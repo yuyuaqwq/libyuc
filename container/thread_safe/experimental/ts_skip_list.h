@@ -200,8 +200,7 @@ bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
 
     *ptr = new_entry;
 
-    int i = 0;      // 保存避免上层插入过的level重复插入
-_retry:
+
     int level = AtomicInt32Load(&list->level);
     TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
 
@@ -219,7 +218,7 @@ _retry:
     }
 
     // 自底向上插入
-    for (; i < new_level; i++) {
+    for (int i = 0; i < new_level; i++) {
         do {
             new_entry->upper[i].next = splice.cur[i];
             if (AtomicPtrCompareExchange(&splice.prev[i]->upper[i].next, new_entry, splice.cur[i])) {
@@ -236,7 +235,8 @@ _retry:
                     // 要么上层prev已被摘除，下层prev被标记
                     // 不存在上层prev没标记，下降后下层prev却被被标记的情况
                 // 优化则可以通过当前的铰接点来修正prev
-                goto _retry;
+                TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
+                continue;
             }
             // 2.prev和cur之间插入了新节点，在当前层重新定位合适的插入点
             if (TsSkipListLevelFindKey(&splice.prev[i], &splice.cur[i], i, key) == 0 && i == 0) {
