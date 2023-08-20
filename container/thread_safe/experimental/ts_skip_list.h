@@ -239,7 +239,11 @@ bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
                 continue;
             }
             // 2.prev和cur之间插入了新节点，在当前层重新定位合适的插入点
-            if (TsSkipListLevelFindKey(&splice.prev[i], &splice.cur[i], i, key) == 0 && i == 0) {
+            // 3.cur被删除，也重新定位
+            if (TsSkipListLevelFindKey(&splice.prev[i], &splice.cur[i], i, key) == 0) {
+                if (i != 0) {
+                    continue;
+                }
                 // 在level0中触发相同key的插入冲突，即已经插入了一个相同的key，可以直接回收分配的节点
                 // splice.cur[i].value = value;
                 *ptr = NULL;
