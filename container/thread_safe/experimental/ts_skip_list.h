@@ -327,8 +327,8 @@ _retry:
             }
             // 2.prev和cur之间插入了新节点，在当前层重新定位cur的prev
             else {
-                // 3.cur被删除，可能被其他线程辅助删除，如果被删了就跳过
                 int cmp = TsSkipListLevelFindNode(&splice.prev[i], &splice.cur[i], i, del);
+                // 3.cur被删除，可能被其他线程辅助删除了，如果被删了就跳过
                 if (splice.cur[i] != del) {
                     break;
                 }
