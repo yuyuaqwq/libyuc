@@ -17,8 +17,7 @@
 #include <libyuc/container/experimental/ar_tree.h>
 #include <libyuc/container/experimental/skip_list.h>
 #include <libyuc/container/thread_safe/experimental/epoch.h>
-//#include <libyuc/container/thread_safe/experimental/ts_skip_list.h>
-#include <libyuc/container/thread_safe/experimental/ts_skip_list_2.h>
+#include <libyuc/container/thread_safe/experimental/ts_skip_list.h>
 #include <libyuc/container/thread_safe/experimental/ts_sort_singly_list.h>
 
 #include <regex>
@@ -404,10 +403,10 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 1000000;
 std::vector<QVQ*> arr2;
-int seed = GetTickCount() + rand();
-//int seed = 377884212;
+//int seed = GetTickCount() + rand();
+int seed = 377884212;
 
 std::vector<TsSkipListEntry*> ptr_arr;
 
@@ -842,7 +841,7 @@ void TestSkipList() {
 	SkipListInit(&list);
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
-		SkipListInsert(&list, (arr2[i]->key));
+		SkipListPut(&list, (arr2[i]->key));
 		if (count < 20) {
 			//PrintSkipList(&list);
 			//printf("\n\n\n\n");
@@ -897,7 +896,7 @@ void TestTsSortSinglyList() {
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSortSinglyListInsertThread, &head, i));
-		t.push_back(std::thread(TestTsSortSinglyListDeleteThread, &head, i));
+		//t.push_back(std::thread(TestTsSortSinglyListDeleteThread, &head, i));
 	}
 
 	for (auto& thread : t) {
@@ -953,7 +952,7 @@ void TestTsSortSinglyList() {
 
 void TestTsSkipListInsertThread(TsSkipList* list, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		TsSkipListInsert(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key, &ptr_arr[j * (count / thread_count) + i]);
+		TsSkipListPut(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key, &ptr_arr[j * (count / thread_count) + i]);
 
 		// PrintSkipList(list);
 		// printf("\n\n\n\n");
@@ -972,9 +971,9 @@ void TestTsSkipListFindThread(TsSkipList* list, int j) {
 
 void TestTsSkipListDeleteThread(TsSkipList* list, int j) {
 	for (int i = 0; i < count / thread_count; i++) {
-		//if (!TsSkipListDelete(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
-		//	//printf("删除失败：%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
-		//}
+		if (!TsSkipListDelete(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
+			//printf("删除失败：%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+		}
 		// PrintSkipList(list);
 		// printf("\n\n\n\n");
 	}
@@ -998,7 +997,7 @@ _re:
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
-		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
@@ -1009,41 +1008,41 @@ _re:
 
 	//PrintSkipList(&list);
 
-	t.clear();
-	l = GetTickCount();
-	for (int i = 0; i < thread_count; i++) {
-		t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
-	}
-
-	for (auto& thread : t) {
-		thread.join();
-	}
-	printf("查找总耗时：%dms\n", GetTickCount() - l);
-
 	//t.clear();
 	//l = GetTickCount();
-
 	//for (int i = 0; i < thread_count; i++) {
-	//	t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+	//	t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
 	//}
 
 	//for (auto& thread : t) {
 	//	thread.join();
 	//}
+	//printf("查找总耗时：%dms\n", GetTickCount() - l);
 
-	//printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
+	t.clear();
+	l = GetTickCount();
+
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+	}
+
+	for (auto& thread : t) {
+		thread.join();
+	}
+
+	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
 	//for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
 	//	release_assert(list.head[i].next == NULL, "delete head error");
 	//}
 
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (TsSkipListFind(&list, (arr2[i]->key))) {
-	//		printf("找到了：%d", arr2[i]->key);
-	//	}
-	//}
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (TsSkipListFind(&list, (arr2[i]->key))) {
+			printf("找到了：%d", arr2[i]->key);
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
 
 	list.level = 0;
 

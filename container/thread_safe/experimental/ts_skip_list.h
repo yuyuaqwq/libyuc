@@ -11,12 +11,9 @@
 
 /*
 * 删除：
-    * 协同删除
-        * 遇到cur被标记为删除时，协同删除
-        * 遇到prev被标记为删除时，从头开始搜索
-    * 等待删除
-        * 即本跳表使用的方案
-        * 其他线程遇到删除标会通过被删除节点提供的回溯指针进行自旋，等待删除线程完成删除
+* 协同删除
+    * 遇到cur被标记为删除时，协同删除
+    * 遇到prev被标记为删除时，从头开始搜索
 */
 
 
@@ -34,6 +31,12 @@ const int LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_SKIPLIST_P = (RAND_MAX / 2);
 
 #define id_type AtomicPtr(struct _TsSkipListEntry)
 
+#define IS_MARK(p) ((uintptr_t)(p) & 0x01)
+#define MARK(p) ((TsSkipListEntry*)((uintptr_t)(p) | 0x01))
+#define CLEAR_MARK(p) ((TsSkipListEntry*)((uintptr_t)(p) & ~0x01))
+
+
+
 /*
 * 跳表索引节点
 */
@@ -47,24 +50,33 @@ typedef struct _TsSkipListLevel {
 typedef struct _TsSkipListEntry {
     int key;
     int level_record;
+    int reference_count;
     TsSkipListLevel upper[];        // 节点的上层，是索引节点
 } TsSkipListEntry;
-
 
 typedef struct _TsSkipList {
     TsSkipListLevel head[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
     AtomicInt32 level;
 } TsSkipList;
 
+typedef struct _TsSkipListSplice {
+    TsSkipListEntry* prev[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
+    TsSkipListEntry* cur[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
+    int level;
+    int cmp;
+} TsSkipListSplice;
+
 
 static int TsRandomLevel() {
     int level = 1;
     unsigned int number;
     rand_s(&number);
+    number = rand();
     number &= RAND_MAX;
     while (LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_SKIPLIST_P <= number && level < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL) {
         level++;
         rand_s(&number);
+        number = rand();
         number &= RAND_MAX;
     }
     return level;
@@ -81,122 +93,159 @@ static TsSkipListEntry* TsSkipListCreateEntry(int level, int key) {
     TsSkipListEntry* entry = (TsSkipListEntry*)MemoryAlloc(sizeof(TsSkipListEntry) + level * sizeof(TsSkipListLevel));
     entry->key = key;
     entry->level_record = level;
+    entry->reference_count = 1;
     return entry;
 }
 
-#define IS_MARK(p) ((uintptr_t)(p) & 0x01)
-#define MARK(p) ((TsSkipListEntry*)((uintptr_t)(p) | 0x01))
-#define CLEAR_MARK(p) ((TsSkipListEntry*)((uintptr_t)(p) & ~0x01))
+
+
+
+
 
 /*
-* 在指定层定位key
-* cur最终指向第一个 >= key的节点
+* 根据prev和key定位单层铰接点
 */
-static forceinline int TsSkipListLevelLocate(TsSkipListEntry** prev_ptr, TsSkipListEntry** cur_ptr, int level_sub_1, int key) {
-    TsSkipListEntry* cur = *cur_ptr;
-    TsSkipListEntry* prev = *prev_ptr;
-    // release_assert(!IS_MARK(prev->upper[level_sub_1].next), "prev is_mark!");
-    if (cur != NULL) {
-        do {
-            if (IS_MARK(cur)) {
-                // prev节点已经标记了删除，通过MARK标记的prev重试
-                prev = CLEAR_MARK(cur);
-                cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[level_sub_1].next);
-                continue;
-            }
-            if (cur->key >= key) {
-                *cur_ptr = cur;
-                *prev_ptr = prev;
-                return cur->key == key ? 0 : 1;
-            }
-            prev = cur;
-            cur = (TsSkipListEntry*)AtomicPtrLoad(&cur->upper[level_sub_1].next);
-        } while (cur);
-    }
-    // 插入到末尾
-    *prev_ptr = prev;
-    *cur_ptr = NULL;
+static forceinline int TsSkipListLevelFindKey(TsSkipListEntry** prev, TsSkipListEntry** cur, int level_sub_1, int key) {
+    do {
+        *cur = CLEAR_MARK(AtomicPtrLoad(&(*prev)->upper[level_sub_1].next));
+        if (!*cur) break;
+
+        // 如果遇到cur是被标记的删除就顺带尝试CAS删除
+        TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&(*cur)->upper[level_sub_1].next);
+        if (IS_MARK(next)) {
+            next = CLEAR_MARK(next);
+            AtomicPtrCompareExchange(&(*prev)->upper[level_sub_1].next, next, *cur);
+            // 查找过程不关心是否成功
+            *cur = next;
+        }
+        if (!*cur) break;
+
+        if ((*cur)->key >= key) {
+            return (*cur)->key == key ? 0 : 1;
+        }
+        (*prev) = (*cur);
+    } while (true);
     return -1;
 }
 
-static forceinline TsSkipListEntry* TsSkipListLocate(TsSkipList* list, int level, int key, int* cmp, TsSkipListLevel** update, TsSkipListEntry** update_next) {
-    *cmp = -1;
-    TsSkipListLevel* cur_level = list->head;
-    // 从最顶层开始遍历，每趟循环都相当于下降一层索引
-    TsSkipListEntry* cur_entry = NULL;
-    TsSkipListEntry* next_entry = NULL;
-    for (int i = level - 1; i >= 0; i--) {
-        // 当前索引层的链表查找
-        cur_entry = ObjectGetFromField(cur_level, TsSkipListEntry, upper);
-        next_entry = (TsSkipListEntry*)AtomicPtrLoad(&cur_level[i].next);
-        *cmp = TsSkipListLevelLocate(&cur_entry, &next_entry, i, key);
-        if (update) {
-            update[i] = cur_entry->upper;        // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
-            update_next[i] = next_entry;
+/*
+* 根据prev和node定位单层铰接点
+*/
+static forceinline int TsSkipListLevelFindNode(TsSkipListEntry** prev, TsSkipListEntry** cur, int level_sub_1, TsSkipListEntry* node) {
+    do {
+        *cur = (TsSkipListEntry*)AtomicPtrLoad(&(*prev)->upper[level_sub_1].next);
+        if (!*cur) break;
+
+        // 如果遇到cur是被标记的删除就顺带尝试CAS删除
+        TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&(*cur)->upper[level_sub_1].next);
+        if (IS_MARK(next)) {
+            next = CLEAR_MARK(next);
+            AtomicPtrCompareExchange(&(*prev)->upper[level_sub_1].next, next, *cur);
+            // 查找过程不关心是否成功
+            *cur = next;
+            if (!*cur) break;
         }
-        cur_level = cur_entry->upper;
+        
+        if ((*cur)->key > node->key) {
+            return 1;
+        }
+        if ((*cur) == node) {
+            return 0;
+        }
+
+        (*prev) = (*cur);
+    } while (true);
+    return -1;
+}
+
+/*
+* 按key构建铰接点
+*/
+static forceinline void TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListSplice* splice, int max_level, int min_level, int key) {
+    splice->cmp = -1;
+    // 从最顶层开始遍历，每趟循环都相当于下降一层索引
+    
+    TsSkipListEntry* prev = ObjectGetFromField(list->head, TsSkipListEntry, upper);
+    TsSkipListEntry* cur = NULL;
+    for (int i = max_level - 1; i >= min_level; i--) {
+        // 当前索引层的链表查找
+        splice->cmp = TsSkipListLevelFindKey(&prev, &cur, i, key);
+
+        // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
+        splice->prev[i] = prev;
+        splice->cur[i] = cur;
+
         // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
     }
-    if (*cmp == 0) {
-        if (update_next[next_entry->level_record - 1] != next_entry) {
-            // 插入是自底向上的，但查找可能提前在低层索引找到了这个插入的节点，但是其他插入线程在高层索引还没有插入这个节点，此时应将当前节点视为未插入
-            // 查找/删除可以在循环里提前返回，插入需要完整的update数组
-            *cmp = -1;
-        }
-    }
-    return cur_entry;
+
+    // 插入是自底向上的，但查找可能提前在低层索引找到了这个插入的节点，但是其他插入线程在高层索引还没有完成CAS插入这个节点
+    // 策略1：将当前节点视为未插入(如果有重复key场景需求会导致后面存在的节点找不到)
+    // 策略2：基于引用计数，在节点所有level都完全脱链后再回收
 }
+
+
 
 bool TsSkipListFind(TsSkipList* list, int key) {
-    int cmp;
-    TsSkipListEntry* prev = TsSkipListLocate(list, list->level, key, &cmp, NULL, NULL);
-    return cmp == 0;
+    TsSkipListSplice splice;
+    TsSkipListBuildSpliceByKey(list, &splice, AtomicInt32Load(&list->level), 0, key);
+    return splice.cmp == 0;
 }
 
-bool TsSkipListInsert(TsSkipList* list, int key, TsSkipListEntry** ptr) {
-    TsSkipListLevel* update[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
-    TsSkipListEntry* update_next[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
-
-    int cmp;
-    int level = list->level;
-    TsSkipListEntry* prev = TsSkipListLocate(list, level, key, &cmp, update, update_next);
-
-    // cur此时的next要么指向NULL，要么>=key
-    TsSkipListEntry* cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[0].next);
+bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
+    TsSkipListSplice splice;
 
     // 准备创建随机高度索引层的节点
     int new_level = TsRandomLevel();
+    TsSkipListEntry* new_entry = TsSkipListCreateEntry(new_level, key);
+
+    *ptr = new_entry;
+
+    int i = 0;      // 保存避免上层插入过的level重复插入
+_retry:
+    int level = AtomicInt32Load(&list->level);
+    TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
+
+    if (splice.cmp == 0) {
+        // value
+        return true;
+    }
+
     if (new_level > level) {
         // 新节点的索引层比以往的节点都高，高出来的部分由头节点索引层连接
         for (int i = level; i < new_level; i++) {
-            update[i] = list->head;        // 头节点该层的索引需要指向新节点同层索引，待更新头节点
-            update_next[i] = NULL;      // 头节点的下一节点此时应该是NULL
+            splice.prev[i] = ObjectGetFromField(list->head, TsSkipListEntry, upper);        // 头节点该层的索引需要指向新节点同层索引，待更新头节点
+            splice.cur[i] = NULL;      // 头节点的下一节点此时应该是NULL
         }
     }
 
     // 自底向上插入
-    TsSkipListEntry* new_entry = TsSkipListCreateEntry(new_level, key);
-
-    *ptr = new_entry;
-    for (int i = 0; i < new_level; i++) {
-        prev = ObjectGetFromField(update[i], TsSkipListEntry, upper);
-        cur = update_next[i];
+    for (; i < new_level; i++) {
         do {
-            new_entry->upper[i].next = cur;
-            if (AtomicPtrCompareExchange(&prev->upper[i].next, new_entry, cur)) {
+            new_entry->upper[i].next = splice.cur[i];
+            if (AtomicPtrCompareExchange(&splice.prev[i]->upper[i].next, new_entry, splice.cur[i])) {
                 break;
             }
             // 更新失败的场景，即prev的next不为cur
-            TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
+            TsSkipListEntry* new_cur = (TsSkipListEntry*)AtomicPtrLoad(&splice.prev[i]->upper[i].next);
             // 1.prev被删除，被做了标记 
-            if (IS_MARK(next)) {
-                prev = CLEAR_MARK(next);        // 定位到标记时写入的上一节点，进行重试
-                next = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
+            if (IS_MARK(new_cur)) {
+                // 重建铰接点
+                // 简单策略，直接最上层重算，不会需要等待其他线程完成删除
+                    // 删除是自顶向下的
+                    // 要么上层prev被标记了，下层没标记
+                    // 要么上层prev已被摘除，下层prev被标记
+                    // 不存在上层prev没标记，下降后下层prev却被被标记的情况
+                // 优化则可以通过当前的铰接点来修正prev
+                goto _retry;
             }
             // 2.prev和cur之间插入了新节点，在当前层重新定位合适的插入点
-            cur = next;
-
-            TsSkipListLevelLocate(&prev, &cur, i, key);
+            if (TsSkipListLevelFindKey(&splice.prev[i], &splice.cur[i], i, key) == 0 && i == 0) {
+                // 在level0中触发相同key的插入冲突，即已经插入了一个相同的key，可以直接回收分配的节点
+                // splice.cur[i].value = value;
+                *ptr = NULL;
+                ObjectRelease(new_entry);
+                return true;
+            }
         } while (true);
     }
 
@@ -207,109 +256,93 @@ bool TsSkipListInsert(TsSkipList* list, int key, TsSkipListEntry** ptr) {
             level = list->level;
         }
     }
-
     return true;
 }
 
 bool TsSkipListDelete(TsSkipList* list, int key) {
-    TsSkipListLevel* update[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
-    TsSkipListEntry* update_next[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
+    TsSkipListSplice splice;
 
 _retry:
-    int cmp;
     int level = AtomicInt32Load(&list->level);
-    TsSkipListEntry* prev = TsSkipListLocate(list, level, key, &cmp, update, update_next);
+    TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
 
-    if (cmp) {
-        // 找不到该节点
+    if (splice.cmp) {
         return false;
     }
-    bool success = false;
 
-    TsSkipListEntry* cur = update_next[0];      // 拿最低层的节点
+    TsSkipListEntry* del = splice.cur[0];
+
     // 为何更新？因为提供的level可能比cur的level小(cur是新插入的)
-    level = cur->level_record;
+    level = splice.cur[0]->level_record;
 
     // 自顶向下删除
+    // 先标记
     for (int i = level - 1; i != -1; i--) {
-        
-        prev = ObjectGetFromField(update[i], TsSkipListEntry, upper);
+        if (splice.cur[i] != del) {
+            continue;
+        }
         do {
             // 为当前层的cur打上删除标记
-            TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&cur->upper[i].next);
-            if (AtomicPtrCompareExchange(&cur->upper[i].next, MARK(prev), CLEAR_MARK(next))) {
-                // 只有一个线程能标记成功
+            TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&splice.cur[i]->upper[i].next);
+            if (!AtomicPtrCompareExchange(&splice.cur[i]->upper[i].next, MARK(next), CLEAR_MARK(next))) {
+                // 标记失败的场景                                                    记
+                if (IS_MARK(AtomicPtrLoad(&splice.cur[i]->upper[i].next))) {
+                    // 如果要考虑可能存在相同key的情况，可以不直接返回失败，而是重新找相同的key的节点
+                    // 重新找会出现当前线程等待被标记的节点删除完成的情况吗？
+                    // goto _retry;
 
-                // 尝试删除
-                do {
-                    if (AtomicPtrCompareExchange(&prev->upper[i].next, next, cur)) {
-                        // release_assert(list->head[i].next != NULL, "delete head");
-                        success = true;
-                        break;
-                    }
-                    // 删除失败的场景
-                    // 1.prev将要被删除/已被删除，被打上标记
-                    TsSkipListEntry* temp_cur = (TsSkipListEntry*)AtomicPtrLoad(&prev->upper[i].next);
-                    if (IS_MARK(temp_cur)) {
-                        prev = CLEAR_MARK(temp_cur);        // 由此重试
-                    }
-                    // 2.prev和cur之间插入了新节点
-                    else {
-                        prev = temp_cur;
-                    }
+                    // 已经有其他线程删除了，直接返回false就行
+                    return false;
+                }
+                // 2.next已被其他线程删除，尝试重新获取next
+                // 3.cur和next中插入了其他节点，尝试重新获取next
+                else {
+                    continue;
+                }
+            }
+            break;
+        } while (true);
+    }
 
-                    // 尝试删除失败，允许在当前层重新查找next为cur的prev
-                    TsSkipListEntry* temp = prev;
-                    int cmp;
-                     release_assert(prev->key < cur->key, "refine key ordered error");
-                    do {
-                        temp = (TsSkipListEntry*)AtomicPtrLoad(&temp->upper[i].next);
-                        cmp = TsSkipListLevelLocate(&prev, &temp, i, key);
-                         release_assert(cmp <= 0, "refine key ordered error");
-                    } while (temp != cur);      // 可能有相同的key被插入，所以需要继续向下
-                    
-                    // 这里与无锁有序链表采用不同的策略，不释放cur的标记，而是直接重试
-                }  while (true);
+    // 只有竞争成功的线程会进行删除
+    for (int i = level - 1; i != -1; i--) {
+        if (splice.cur[i] != del) {
+            continue;
+        }
+        do {
+            // 尝试删除
+            TsSkipListEntry* next = CLEAR_MARK(AtomicPtrLoad(&splice.cur[i]->upper[i].next));
+            if (AtomicPtrCompareExchange(&splice.prev[i]->upper[i].next, next, splice.cur[i])) {
+                // 删除成功
                 break;
             }
-            // 标记失败的场景
-            // 1.cur被其他删除线程标记
-            if (IS_MARK(AtomicPtrLoad(&cur->upper[i].next))) {
-                prev = CLEAR_MARK(AtomicPtrLoad(&cur->upper[i].next));
 
-                // 删除抢占失败，没办法直接在最低层重新定位删除的节点(没有索引节点的update/update_next环境)，考虑到可能存在相同key的节点，不直接返回而是重新搜索
-                goto _retry;
-                // TsSkipListLevelLocate(&prev, &cur, 0, key);
+            // 删除失败的场景
+            // 1.prev将要被删除/已被删除，被打上标记
+            TsSkipListEntry* new_cur = (TsSkipListEntry*)AtomicPtrLoad(&splice.prev[i]->upper[i].next);
+            if (IS_MARK(new_cur)) {
+                // 这里需要保证再次构建的splice还是原先的cur
+                // 尝试重新构建铰接点
+                TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
             }
-            // 2.next已被其他线程删除，尝试重新获取next
-        }  while (true);
+            // 2.prev和cur之间插入了新节点，在当前层重新定位cur的prev
+            else {
+                // 3.cur被删除，可能被其他线程辅助删除，如果被删了就跳过
+                int cmp = TsSkipListLevelFindNode(&splice.prev[i], &splice.cur[i], i, del);
+                if (splice.cur[i] != del) {
+                    break;
+                }
+            }
+
+        } while (true);
     }
 
     // 被删除的索引层可能是最高索引层，但不在这里调整
-    //while (list->head[level-1].next == NULL && list->level == level) {
-    //    // 只会出现删插冲突(空头节点不可能出现删除)
-    //    
-    //    if (AtomicInt32CompareExchange(&list->level, level-1, level)) {
-    //        // 此时可能出现当前节点又插入了新节点，但CAS修改成功
-    //        printf("%d -> %d\t", level + 1, level);
-    //        if (list->head[level-1].next != NULL) {
-    //            // 出现高度丢失，尝试修正
-    //            if (!AtomicInt32CompareExchange(&list->level, level, level-1)) {
-    //                // 修正失败就说明高度有变，直接结束
-    //                break;
-    //            }
-    //            // 但是此时可能又出现节点被删除，开始重试
-    //            --level;
-    //            continue;
-    //        }
-    //        break;
-    //    }
-    //    --level;
-    //}
 
     // ObjectRelease(cur);      // 资源释放交给GC
-    return success;
+    return true;
 }
+
 
 
 #ifdef __cplusplus

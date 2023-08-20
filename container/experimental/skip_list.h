@@ -41,14 +41,14 @@ typedef struct _SkipListEntry {
 
 typedef struct _SkipList {
     SkipListLevel head[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];
-    int level;
+    int level_count;
 } SkipList;
 
 
 void SkipListInit(SkipList* list);
 void SkipListRelease(SkipList* list);
 bool SkipListFind(SkipList* list, int key);
-bool SkipListInsert(SkipList* list, int key);
+bool SkipListPut(SkipList* list, int key);
 bool SkipListDelete(SkipList* list, int key);
 SkipListEntry* SkipListFirst(SkipList* list);
 SkipListEntry* SkipListNext(SkipList* list, SkipListEntry* cur);
@@ -64,10 +64,10 @@ static int RandomLevel() {
     return level;
 }
 
-static SkipListEntry* SkipListCreateEntry(int level, int key) {
-    SkipListEntry* entry = (SkipListEntry*)MemoryAlloc(sizeof(SkipListEntry) + level * sizeof(SkipListLevel));
+static SkipListEntry* SkipListCreateEntry(int level_count, int key) {
+    SkipListEntry* entry = (SkipListEntry*)MemoryAlloc(sizeof(SkipListEntry) + level_count * sizeof(SkipListLevel));
     entry->key = key;
-    //entry->level_count = level;
+    //entry->level_count = level_count;
     return entry;
 }
 
@@ -75,7 +75,7 @@ static forceinline SkipListEntry* SkipListLocate(SkipList* list, int key, int* c
     *cmp = 0;
     SkipListLevel* cur = list->head;
     // 从最顶层开始遍历，每趟循环都相当于下降一层索引
-    for (int i = list->level - 1; i >= 0; i--) {
+    for (int i = list->level_count - 1; i >= 0; i--) {
         // 当前索引层的链表查找
         SkipListEntry* next = cur[i].next;
         while (next) {
@@ -95,7 +95,7 @@ static forceinline SkipListEntry* SkipListLocate(SkipList* list, int key, int* c
 }
 
 void SkipListInit(SkipList* list) {
-    list->level = 1;
+    list->level_count = 1;
     for (int i = 0; i < LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL; i++) {
         list->head[i].next = NULL;
     }
@@ -121,7 +121,7 @@ bool SkipListFind(SkipList* list, int key) {
     return false;
 }
 
-bool SkipListInsert(SkipList* list, int key) {
+bool SkipListPut(SkipList* list, int key) {
     SkipListLevel* update[LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL];        // 对应每一层需要更新索引的节点，因为新节点可能会插入索引
 
     int cmp;
@@ -129,18 +129,18 @@ bool SkipListInsert(SkipList* list, int key) {
 
     // cur此时的next要么指向NULL，要么>=key
     if (prev->upper[0].next && cmp == 0) {
-        // key相等则不插入
-        return false;
+        // value
+        return true;
     }
 
     // 准备创建随机高度索引层的节点
     int level = RandomLevel();
-    if (level > list->level) {
+    if (level > list->level_count) {
         // 新节点的索引层比以往的节点都高，高出来的部分由头节点索引层连接
-        for (int i = list->level; i < level; i++) {
+        for (int i = list->level_count; i < level; i++) {
             update[i] = list->head;        // 更新的是头节点的Level
         }
-        list->level = level;
+        list->level_count = level;
     }
 
     // 创建节点
@@ -167,7 +167,7 @@ bool SkipListDelete(SkipList* list, int key) {
     }
 
     // 最底层索引开始向上更新
-    for (int i = 0; i < list->level; i++) {
+    for (int i = 0; i < list->level_count; i++) {
         if (update[i][i].next != cur) {        // 该层的索引不指向被删除的节点，停止更新
             break;
         }
@@ -175,8 +175,8 @@ bool SkipListDelete(SkipList* list, int key) {
     }
 
     // 被删除的索引层可能是最高索引层，需要调整
-    while (list->level > 1 && list->head[list->level - 1].next == NULL) {
-        list->level--;
+    while (list->level_count > 1 && list->head[list->level_count - 1].next == NULL) {
+        list->level_count--;
     }
 
     ObjectRelease(cur);
