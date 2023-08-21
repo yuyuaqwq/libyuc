@@ -7,6 +7,7 @@
 
 /*
 * Lock-Free SkipList - 无锁跳表
+* 参考：https://zhuanlan.zhihu.com/p/600729377
 */
 
 /*
@@ -159,6 +160,34 @@ static forceinline int TsSkipListLevelFindNode(TsSkipListEntry** prev, TsSkipLis
 }
 
 /*
+* 对节点进行删除标记，必定完成，如果是当前线程对其标记返回true，其他线程对其标记返回false
+*/
+static forceinline bool TsSkipListNodeMarkDeleteing(TsSkipListEntry* node, int level) {
+    do {
+        // 为当前层的cur打上删除标记
+        TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&node->upper[level].next);
+        if (!AtomicPtrCompareExchange(&node->upper[level].next, MARK(next), CLEAR_MARK(next))) {
+            // 标记失败的场景                                                    记
+            if (IS_MARK(AtomicPtrLoad(&node->upper[level].next))) {
+                // 如果要考虑可能存在相同key的情况，可以不直接返回失败，而是重新找相同的key的节点
+                // 重新找会出现当前线程等待被标记的节点删除完成的情况吗？
+                // goto _retry;
+
+                // 已经有其他线程标记删除了，直接返回false就行
+                return false;
+            }
+            // 2.next已被其他线程删除，尝试重新获取next
+            // 3.cur和next中插入了其他节点，尝试重新获取next
+            else {
+                continue;
+            }
+        }
+        break;
+    } while (true);
+    return true;
+}
+
+/*
 * 按key构建铰接点
 */
 static forceinline void TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListSplice* splice, int max_level, int min_level, int key) {
@@ -173,6 +202,13 @@ static forceinline void TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListS
 
         // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
         splice->prev[i] = prev;
+        if (IS_MARK(splice->prev[i]->upper[i].next) && splice->prev[i]->level_record > i + 1 && !IS_MARK(splice->prev[i]->upper[i+1].next)) {
+            // 上层如果没有被标记则说明是插删冲突导致上层节点遗留的场景，需要对其进行标记
+            for (int j = i + 1; j < splice->prev[i]->level_record; j++) {
+                 release_assert(!IS_MARK(splice->prev[i]->upper[j].next), "insertion and deletion conflict exception.");
+                TsSkipListNodeMarkDeleteing(splice->prev[i], j);
+            }
+        }
         splice->cur[i] = cur;
 
         // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
@@ -233,7 +269,7 @@ bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
                     // 删除是自顶向下的
                     // 要么上层prev被标记了，下层没标记
                     // 要么上层prev已被摘除，下层prev被标记
-                    // 不存在上层prev没标记，下降后下层prev却被被标记的情况
+                    // 由于插删冲突，还是可能出现上层prev没标记，下层prev却被标记的情况，但构建过程中进行了处理
                 // 优化则可以通过当前的铰接点来修正prev
                 TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
                 continue;
@@ -285,35 +321,17 @@ _retry:
         if (splice.cur[i] != del) {
             continue;
         }
-        do {
-            // 为当前层的cur打上删除标记
-            TsSkipListEntry* next = (TsSkipListEntry*)AtomicPtrLoad(&splice.cur[i]->upper[i].next);
-            if (!AtomicPtrCompareExchange(&splice.cur[i]->upper[i].next, MARK(next), CLEAR_MARK(next))) {
-                // 标记失败的场景                                                    记
-                if (IS_MARK(AtomicPtrLoad(&splice.cur[i]->upper[i].next))) {
-                    // 如果要考虑可能存在相同key的情况，可以不直接返回失败，而是重新找相同的key的节点
-                    // 重新找会出现当前线程等待被标记的节点删除完成的情况吗？
-                    // goto _retry;
-
-                    // 已经有其他线程删除了，直接返回false就行
-                    return false;
-                }
-                // 2.next已被其他线程删除，尝试重新获取next
-                // 3.cur和next中插入了其他节点，尝试重新获取next
-                else {
-                    continue;
-                }
-            }
-            break;
-        } while (true);
+        if (!TsSkipListNodeMarkDeleteing(splice.cur[i], i)) {
+            return false;
+        }
     }
 
     // 只有竞争成功的线程会进行删除
     for (int i = level - 1; i != -1; i--) {
-        if (splice.cur[i] != del) {
-            continue;
-        }
         do {
+            if (splice.cur[i] != del) {
+                break;
+            }
             // 尝试删除
             TsSkipListEntry* next = CLEAR_MARK(AtomicPtrLoad(&splice.cur[i]->upper[i].next));
             if (AtomicPtrCompareExchange(&splice.prev[i]->upper[i].next, next, splice.cur[i])) {
@@ -328,6 +346,7 @@ _retry:
                 // 这里需要保证再次构建的splice还是原先的cur
                 // 尝试重新构建铰接点
                 TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
+                // 重构建的过程可能会删除cur，随即会跳出循环返回true所以不影响
             }
             // 2.prev和cur之间插入了新节点，在当前层重新定位cur的prev
             else {

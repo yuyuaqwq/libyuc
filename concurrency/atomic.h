@@ -27,7 +27,8 @@ typedef volatile uint64_t AtomicUint64;
 #define AtomicPtr(type) volatile type*
 
 /*
-* 原子读写
+* 原子读/写
+* 单读单写的原子操作需要通过内存序确保正确性
 */
 
 static forceinline bool AtomicBoolLoad(AtomicBool* target) {
@@ -67,6 +68,10 @@ static forceinline void AtomicPtrStore(volatile void* target, void* val) {
 }
 
 
+/*
+* 原子读并写
+* 读并写的原子操作默认提供Full屏障
+*/
 
 /*
 * 原子自增

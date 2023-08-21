@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\gt1\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 1000000;
+int count = 10000000;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1032,17 +1032,19 @@ _re:
 
 	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
-	//for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
-	//	release_assert(list.head[i].next == NULL, "delete head error");
-	//}
-
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		if (TsSkipListFind(&list, (arr2[i]->key))) {
 			printf("找到了：%d", arr2[i]->key);
 		}
-	}
+	}	
 	printf("查找耗时：%dms\n", GetTickCount() - l);
+
+
+	for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
+		// release_assert(list.head[i].next == NULL, "delete head error");
+		list.head[i].next == NULL;
+	}
 
 	list.level = 0;
 
