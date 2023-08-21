@@ -118,8 +118,8 @@ static forceinline int TsSkipListLevelFindKey(TsSkipListEntry** prev, TsSkipList
             AtomicPtrCompareExchange(&(*prev)->upper[level_sub_1].next, next, *cur);
             // 查找过程不关心是否成功
             *cur = next;
+            if (!*cur) break;
         }
-        if (!*cur) break;
 
         if ((*cur)->key >= key) {
             return (*cur)->key == key ? 0 : 1;
