@@ -1040,6 +1040,8 @@ _re:
 	}	
 	printf("查找耗时：%dms\n", GetTickCount() - l);
 
+	
+
 
 	for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
 		// release_assert(list.head[i].next == NULL, "delete head error");
@@ -1049,6 +1051,7 @@ _re:
 	list.level = 0;
 
 	for (int i = 0; i < ptr_arr.size(); i++) {
+		 release_assert(ptr_arr[i]->reference_count == 0, "reference count not 0.");
 		ObjectRelease(ptr_arr[i]);
 	}
 
