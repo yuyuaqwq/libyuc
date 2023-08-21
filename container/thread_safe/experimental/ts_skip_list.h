@@ -64,7 +64,6 @@ typedef struct _TsSkipListSplice {
     TsSkipListEntry* prev[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
     TsSkipListEntry* cur[LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL];
     int level;
-    int cmp;
 } TsSkipListSplice;
 
 
@@ -202,15 +201,15 @@ static forceinline bool TsSkipListNodeMarkDeleteing(TsSkipListEntry* node, int l
 /*
 * 按key构建铰接点
 */
-static forceinline void TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListSplice* splice, int max_level, int min_level, int key) {
-    splice->cmp = -1;
+static forceinline int TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListSplice* splice, int max_level, int min_level, int key) {
+    int cmp = -1;
     // 从最顶层开始遍历，每趟循环都相当于下降一层索引
     
     TsSkipListEntry* prev = ObjectGetFromField(list->head, TsSkipListEntry, upper);
     TsSkipListEntry* cur = NULL;
     for (int i = max_level - 1; i >= min_level; i--) {
         // 当前索引层的链表查找
-        splice->cmp = TsSkipListLevelFindKey(&prev, &cur, i, key);
+        cmp = TsSkipListLevelFindKey(&prev, &cur, i, key);
 
         // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
         splice->prev[i] = prev;
@@ -230,14 +229,14 @@ static forceinline void TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListS
     // 插入是自底向上的，但查找可能提前在低层索引找到了这个插入的节点，但是其他插入线程在高层索引还没有完成CAS插入这个节点
     // 策略1：将当前节点视为未插入(如果有重复key场景需求会导致后面存在的节点找不到)
     // 策略2：基于引用计数，在节点所有level都完全脱链后再回收
+    return cmp;
 }
 
 
 
 bool TsSkipListFind(TsSkipList* list, int key) {
     TsSkipListSplice splice;
-    TsSkipListBuildSpliceByKey(list, &splice, AtomicInt32Load(&list->level), 0, key);
-    return splice.cmp == 0;
+    return TsSkipListBuildSpliceByKey(list, &splice, AtomicInt32Load(&list->level), 0, key) == 0;
 }
 
 bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
@@ -251,9 +250,9 @@ bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
 
 
     int level = AtomicInt32Load(&list->level);
-    TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
+    int cmp = TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
 
-    if (splice.cmp == 0) {
+    if (cmp == 0) {
         // value
         return true;
     }
@@ -322,9 +321,9 @@ bool TsSkipListDelete(TsSkipList* list, int key) {
     TsSkipListSplice splice;
 
     int level = AtomicInt32Load(&list->level);
-    TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
+    int cmp = TsSkipListBuildSpliceByKey(list, &splice, level, 0, key);
 
-    if (splice.cmp) {
+    if (cmp) {
         return false;
     }
 

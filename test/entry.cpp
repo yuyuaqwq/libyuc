@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 20;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1032,15 +1032,15 @@ _re:
 
 	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (TsSkipListFind(&list, (arr2[i]->key))) {
-			printf("找到了：%d", arr2[i]->key);
-		}
-	}	
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (TsSkipListFind(&list, (arr2[i]->key))) {
+	//		printf("找到了：%d", arr2[i]->key);
+	//	}
+	//}	
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
 
-	
+	//
 
 
 	for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
@@ -1360,7 +1360,7 @@ int main() {
 	}
 
 	for (int64_t i = 0; i < count; i++) {
-		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+		//std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
 
 
@@ -1370,16 +1370,16 @@ int main() {
 
 	size_t len = 0;
 
-	//TestBPlusTree();
+	TestBPlusTree();
 
 	// TestEpoch();
 	//TestTsSortSinglyList();
-	TestTsSkipList();
+	//TestTsSkipList();
 	//
 	//TestSkipList();
 
 	//TestAvl();
-	TestArt();
+	//TestArt();
 	//TestRb();
 	//TestHashTable();
 
