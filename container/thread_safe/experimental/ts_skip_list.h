@@ -203,12 +203,13 @@ static forceinline void TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListS
         // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
         splice->prev[i] = prev;
         if (IS_MARK(splice->prev[i]->upper[i].next) && splice->prev[i]->level_record > i + 1 && !IS_MARK(splice->prev[i]->upper[i+1].next)) {
-            // 上层如果没有被标记则说明是插删冲突导致上层节点遗留的场景，需要对其进行标记
+            // 上层如果没有被标记但下层被标记/删除了，则说明是插删冲突导致上层节点遗留的场景，需要对其进行标记
             for (int j = i + 1; j < splice->prev[i]->level_record; j++) {
                  release_assert(!IS_MARK(splice->prev[i]->upper[j].next), "insertion and deletion conflict exception.");
                 TsSkipListNodeMarkDeleteing(splice->prev[i], j);
             }
         }
+
         splice->cur[i] = cur;
 
         // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
