@@ -134,7 +134,7 @@ static forceinline int TsSkipListLevelFindKey(TsSkipListEntry** prev, TsSkipList
 */
 static forceinline int TsSkipListLevelFindNode(TsSkipListEntry** prev, TsSkipListEntry** cur, int level_sub_1, TsSkipListEntry* node) {
     do {
-        *cur = (TsSkipListEntry*)AtomicPtrLoad(&(*prev)->upper[level_sub_1].next);
+        *cur = CLEAR_MARK(AtomicPtrLoad(&(*prev)->upper[level_sub_1].next));
         if (!*cur) break;
 
         // 如果遇到cur是被标记的删除就顺带尝试CAS删除
