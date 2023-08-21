@@ -72,12 +72,12 @@ static int TsRandomLevel() {
     int level = 1;
     unsigned int number;
     rand_s(&number);
-    number = rand();
+    // number = rand();
     number &= RAND_MAX;
     while (LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_SKIPLIST_P <= number && level < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL) {
         level++;
         rand_s(&number);
-        number = rand();
+        // number = rand();
         number &= RAND_MAX;
     }
     return level;
