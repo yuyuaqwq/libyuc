@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 20;
+int count = 1000000;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1371,11 +1371,11 @@ int main() {
 
 	size_t len = 0;
 
-	TestBPlusTree();
+	//TestBPlusTree();
 
 	// TestEpoch();
 	//TestTsSortSinglyList();
-	//TestTsSkipList();
+	TestTsSkipList();
 	//
 	//TestSkipList();
 

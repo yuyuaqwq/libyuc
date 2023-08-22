@@ -213,14 +213,15 @@ static forceinline int TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListSp
 
         // 当前节点该层的索引可能需要 指向被删除索引的下一索引 / 指向新节点同层索引
         splice->prev[i] = prev;
-        if (IS_MARK(splice->prev[i]->upper[i].next) && splice->prev[i]->level_record > i + 1 && !IS_MARK(splice->prev[i]->upper[i+1].next)) {
+        if (IS_MARK(AtomicPtrLoad(&splice->prev[i]->upper[i].next)) && splice->prev[i]->level_record > i + 1 && !IS_MARK(AtomicPtrLoad(&splice->prev[i]->upper[i+1].next))) {
             // 上层如果没有被标记但下层被标记/删除了，则说明是插删冲突导致上层节点遗留的场景，需要对其进行标记
             for (int j = i + 1; j < splice->prev[i]->level_record; j++) {
-                 release_assert(!IS_MARK(splice->prev[i]->upper[j].next), "insertion and deletion conflict exception.");
-                TsSkipListNodeMarkDeleteing(splice->prev[i], j);
+                if (!TsSkipListNodeMarkDeleteing(splice->prev[i], j)) {
+                    // 有其他线程构建铰接点时也进行标记了，直接退出减少冲突
+                    break;
+                }
             }
         }
-
         splice->cur[i] = cur;
 
         // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
@@ -269,7 +270,11 @@ bool TsSkipListPut(TsSkipList* list, int key, TsSkipListEntry** ptr) {
     for (int i = 0; i < new_level; i++) {
         do {
             if (i != 0) {
-                AtomicInt32Increment(&new_entry->reference_count);
+                if (AtomicInt32Increment(&new_entry->reference_count) == 1) {
+                    // 插入未完成时同时触发删除并在此刻完全脱链
+                    // AtomicInt32Store(&new_entry->reference_count, 0);
+                    // return true;
+                }
             }
             new_entry->upper[i].next = splice.cur[i];
             if (AtomicPtrCompareExchange(&splice.prev[i]->upper[i].next, new_entry, splice.cur[i])) {
