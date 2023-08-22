@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 1000000;
+int count = 6;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -782,8 +782,8 @@ void TestRb() {
 			IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry);
 			if (count < 20) {
 
-				//PrintRB(&tree, tree.root, 0);
-				//printf("\n\n\n\n");
+				PrintRB(&tree, tree.root, 0);
+				printf("\n\n\n\n");
 			}
 		}
 
@@ -815,6 +815,7 @@ void TestRb() {
 		l = GetTickCount();
 
 		for (int i = 0; i < count / section; i++) {
+
 			if (!IntRbTreeDelete(&tree, &arr2[i]->key)) {
 				printf("无法删除");
 			}
@@ -1371,11 +1372,11 @@ int main() {
 
 	size_t len = 0;
 
-	//TestBPlusTree();
+	TestBPlusTree();
 
 	// TestEpoch();
 	//TestTsSortSinglyList();
-	TestTsSkipList();
+	//TestTsSkipList();
 	//
 	//TestSkipList();
 

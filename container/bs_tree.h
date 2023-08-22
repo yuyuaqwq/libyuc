@@ -270,8 +270,9 @@ extern "C" {
         bs_tree_type_name##BsEntry* entry = referencer##_Reference(tree, entry_id); \
         id_type* parent_id = bs_tree_type_name##BsStackVectorGetTail(stack); \
         bs_tree_type_name##BsEntry* parent = NULL; \
-        if (parent_id != referencer##_InvalidId) { \
-                parent = referencer##_Reference(tree, *parent_id); \
+        if (parent_id != NULL) { \
+             assert(*parent_id != referencer##_InvalidId); \
+            parent = referencer##_Reference(tree, *parent_id); \
         } \
         if (accessor##_GetLeft(tree, entry) != referencer##_InvalidId && accessor##_GetRight(tree, entry) != referencer##_InvalidId) { \
             /* 有左右各有子节点，找当前节点的右子树中最小的节点，用最小节点替换到当前节点所在的位置，摘除当前节点，相当于移除了最小节点 */ \
