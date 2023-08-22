@@ -171,7 +171,6 @@ entry：
         GetFillRate(获取已填充n分比)
         GetMaxRate(获取n)
         GetTempCopyEntry(获取临时Entry，避免分配释放用)
-        TempEntryInit
 
 element:
     基本element定长，附属kv可能不定长
@@ -537,6 +536,7 @@ kv分离是外层处理的，b+树操作的只有element
         entry->type = type; \
         entry->element_count = 0; \
         bp_tree_type_name##BPlusEntryRbTreeInit(&entry->rb_tree); \
+        entry_accessor##_InitCallback(tree, entry); \
     } \
     entry_id_type bp_tree_type_name##BPlusEntryCreate(bp_tree_type_name##BPlusTree* tree, BPlusEntryType type) { \
         size_t size; \
@@ -620,6 +620,8 @@ kv分离是外层处理的，b+树操作的只有element
         bp_tree_type_name##BPlusEntryRbTreeIteratorCopy(&mid_element_iterator, &left_element_iterator); \
         element_offset_type logn = right_count == 1 ? -1 : 0; for (element_offset_type i = right_count; i > 0; i /= 2) ++logn; \
         right->rb_tree.root = bp_tree_type_name##BuildRbTree(left, &left_element_iterator, right, 0, right_count-1, element_referencer##_InvalidId, logn, 0); \
+        \
+        /* 接下来是左侧 */ \
         /* 拷贝到临时节点，在原节点中重构rb树 */ \
         bp_tree_type_name##BPlusEntry* temp_entry = entry_accessor##_GetTempCopyEntry(tree, left); \
         bp_tree_type_name##BPlusEntryInit(tree, left, right->type); \
@@ -654,20 +656,20 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         else { \
             /* 假设如下节点需要分裂
-                         15            18
+                       15             18
                      /                |
                  2     4     8     12        ...
                  |     |     |     |    \
                  1     3     5     10     13     
              ---------------------------
-                 2     4            8     12
+                 2     4              8     12
                  |     |     \        |     |     \
-                 1     3     13     5     10     
+                 1     3     13       5     10     
              ---------------------------
-                     4         15                18
-                    /            |                 |
-                 2             8     12
-                 |    \            |     |     \
+                     4             15                18
+                    /              |                 |
+                 2               8     12
+                 |    \          |     |     \
                  1     3         5     10    13
              此时右节点缺少了一条链接，我们最终选用左节点的末尾元素(4)作为上升元素，故左节点的末尾元素的右侧子节点(13)就可以挂接到右节点的末尾元素的右侧子节点下 */ \
             right->index.tail_child_id = left->index.tail_child_id; \
@@ -773,12 +775,13 @@ kv分离是外层处理的，b+树操作的只有element
                 /* 没有父节点，创建 */ \
                 entry_id_type parent_id = bp_tree_type_name##BPlusEntryCreate(tree, kBPlusEntryIndex); \
                 bp_tree_type_name##BPlusEntry* parent = entry_referencer##_Reference(tree, parent_id); \
-                bp_tree_type_name##BPlusEntry* new_src_entry = src_entry; /* 下面还需要释放，不能直接修改 */ \
+                bp_tree_type_name##BPlusEntry* new_src_entry = src_entry; /* Split用完后还需要释放，先保存 */ \
                 up_element_id = bp_tree_type_name##BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &new_src_entry, insert_element, cur_pos->element_iterator.cur_id, insert_element_child_id, false, &right_id, &up_element_iterator); \
+                entry_referencer##_Dereference(tree, src_entry); /* 原来的释放掉 */ \
                 bp_tree_type_name##BPlusElement* up_element = element_referencer##_Reference(new_src_entry, up_element_id); \
                 bp_tree_type_name##BPlusEntryInsertElement(parent, new_src_entry, up_element, cur_pos->entry_id); \
                 element_referencer##_Dereference(new_src_entry, up_element); \
-                entry_referencer##_Dereference(tree, new_src_entry); /* 处理引用关系 */ \
+                src_entry = new_src_entry; /* 使用新的right_entry */ \
                 tree->root_id = parent_id; \
                 entry_referencer##_Dereference(tree, parent); \
                 break; \
@@ -795,7 +798,7 @@ kv分离是外层处理的，b+树操作的只有element
         } \
         if (src_entry) { \
             element_referencer##_Dereference(src_entry, insert_element); \
-            if (src_entry->type == kBPlusEntryIndex) bp_tree_type_name##BPlusEntryDeleteElement(src_entry, insert_element_id); \
+            if (src_entry->type == kBPlusEntryIndex) bp_tree_type_name##BPlusEntryDeleteElement(src_entry, &up_element_iterator); \
             entry_referencer##_Dereference(tree, src_entry); \
         } \
         return success; \

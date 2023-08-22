@@ -383,7 +383,9 @@ extern "C" {
                 *cmp_status = 0; \
                 return cur_id; \
             } \
-            bs_tree_type_name##BsStackVectorPushTail(stack, &perv_id); \
+            if (cur_id != referencer##_InvalidId) { \
+                bs_tree_type_name##BsStackVectorPushTail(stack, &perv_id); \
+            } \
             referencer##_Dereference(tree, cur); \
         } \
         return perv_id; \
@@ -451,9 +453,11 @@ extern "C" {
     id_type bs_tree_type_name##BsTreeIteratorPrev(bs_tree_type_name##BsTree* tree, bs_tree_type_name##BsStackVector* stack, id_type cur_id) { \
         bs_tree_type_name##BsEntry* cur = referencer##_Reference(tree, cur_id); \
         if (accessor##_GetLeft(tree, cur) != referencer##_InvalidId) { \
+            bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
             cur_id = accessor##_GetLeft(tree, cur); \
             cur = referencer##_Reference(tree, cur_id); \
             while (accessor##_GetRight(tree, cur) != referencer##_InvalidId) { \
+                bs_tree_type_name##BsStackVectorPushTail(stack, &cur_id); \
                 cur_id = accessor##_GetRight(tree, cur); \
                 referencer##_Dereference(tree, cur); \
                 cur = referencer##_Reference(tree, cur_id); \
@@ -465,7 +469,7 @@ extern "C" {
         bs_tree_type_name##BsEntry* parent = NULL; \
         while (parent_id != NULL) { \
             parent = referencer##_Reference(tree, *parent_id); \
-            if (cur_id != accessor##_GetLeft(tree, cur)) break; \
+            if (cur_id != accessor##_GetLeft(tree, parent)) break; \
             referencer##_Dereference(tree, cur); \
             cur = parent; \
             cur_id = *parent_id; \

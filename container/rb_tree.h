@@ -393,7 +393,9 @@ typedef enum {
     } \
     bool rb_tree_type_name##RbTreeDeleteByIterator(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
         if (iterator->cur_id == referencer##_InvalidId) return false; \
-        return rb_tree_type_name##RbTreeDeleteInternal(tree, &iterator->stack, iterator->cur_id); \
+        bool success = rb_tree_type_name##RbTreeDeleteInternal(tree, &iterator->stack, iterator->cur_id); \
+        iterator->cur_id = referencer##_InvalidId; \
+        return success; \
     } \
     offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
         LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
@@ -404,32 +406,41 @@ typedef enum {
     */ \
     id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator, key_type* key, int8_t* cmp_status) { \
         rb_tree_type_name##RbBsStackVectorInit(&iterator->stack); \
-        return rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, key, cmp_status); \
+        iterator->cur_id = rb_tree_type_name##RbBsTreeIteratorLocate((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, key, cmp_status); \
+        return iterator->cur_id; \
     } \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
         rb_tree_type_name##RbBsStackVectorInit(&iterator->stack); \
-        return rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
+        iterator->cur_id = rb_tree_type_name##RbBsTreeIteratorFirst((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
+        return iterator->cur_id; \
     } \
     id_type rb_tree_type_name##RbTreeIteratorLast(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
         rb_tree_type_name##RbBsStackVectorInit(&iterator->stack); \
-        return rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
+        iterator->cur_id = rb_tree_type_name##RbBsTreeIteratorLast((rb_tree_type_name##RbBsTree*)tree, &iterator->stack); \
+        return iterator->cur_id; \
     } \
     id_type rb_tree_type_name##RbTreeIteratorNext(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
         if (iterator->cur_id == referencer##_InvalidId) { \
             rb_tree_type_name##RbTreeIteratorFirst(tree, iterator); \
             return iterator->cur_id; \
         } \
-        return rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
+        iterator->cur_id = rb_tree_type_name##RbBsTreeIteratorNext((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
+        return iterator->cur_id; \
     } \
     id_type rb_tree_type_name##RbTreeIteratorPrev(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator) { \
         if (iterator->cur_id == referencer##_InvalidId) { \
             rb_tree_type_name##RbTreeIteratorLast(tree, iterator); \
             return iterator->cur_id; \
         } \
-        return rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
+        iterator->cur_id = rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
+        return iterator->cur_id; \
     } \
     void rb_tree_type_name##RbTreeIteratorCopy(rb_tree_type_name##RbTreeIterator* dst_iterator, rb_tree_type_name##RbTreeIterator* src_iterator) { \
-        memcpy(dst_iterator, src_iterator, sizeof(*dst_iterator)); \
+        dst_iterator->cur_id = src_iterator->cur_id; \
+        rb_tree_type_name##RbBsStackVectorSetCount(dst_iterator, rb_tree_type_name##RbBsStackVectorGetCount(src_iterator)); \
+        for (offset_type i = 0; i < dst_iterator->stack.count; i++) { \
+            *rb_tree_type_name##RbBsStackVectorIndex(dst_iterator, i) = *rb_tree_type_name##RbBsStackVectorIndex(src_iterator, i); \
+        } \
     } \
     /*
     * 验证红黑树性质

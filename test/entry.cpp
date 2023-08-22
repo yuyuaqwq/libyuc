@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\gt1\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -115,7 +115,7 @@ void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
 		int16_t id = IntBPlusEntryRbTreeIteratorLast(&entry->rb_tree, &iter);
 		//PrintRB(&entry->rb_tree, entry->rb_tree.root, 0, true);
 		for (int i = entry->element_count - 1; i >= 0; i--) {
-			printf("%sleaf:::key:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->leaf.key, empty, Level, empty/*, pos ? ((BPlusEntry*)PageGet(tree, entry->, 1))->indexElement[pos].key : 0*/);
+			printf("%sleaf:::key:%d\n%sLevel:%d\n%sId:%d\n%sParent:%d\n\n", empty, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->leaf.key, empty, Level, empty, id, empty, NULL/*, pos ? ((BPlusEntry*)PageGet(tree, entry->, 1))->indexElement[pos].key : 0*/);
 			id = IntBPlusEntryRbTreeIteratorPrev(&entry->rb_tree, &iter);
 		}
 		free(empty);
@@ -1252,6 +1252,7 @@ void TestBPlusTree() {
 		}
 	}
 	printf("查找耗时：%dms\n", GetTickCount() - l);
+
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		// int* qvq = CreateObject(int);
