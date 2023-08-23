@@ -1366,7 +1366,7 @@ int main() {
 		//}
 		// qvq->key = i & 5;// i;
 		//ReverseOrder(&qvq->key, 8);
-		qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) +*/ rand();
+		qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) +*/ ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
