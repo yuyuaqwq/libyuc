@@ -215,14 +215,15 @@ static forceinline int TsSkipListBuildSpliceByKey(TsSkipList* list, TsSkipListSp
         splice->prev[i] = prev;
         splice->cur[i] = cur;
 
-        // 上层如果没有被标记但下层被标记/删除了，则说明是插删冲突导致上层节点遗留的场景，需要对其进行标记
-        if (IS_MARK(AtomicPtrLoad(&prev->upper[0].next)) && !IS_MARK(AtomicPtrLoad(&prev->upper[i].next))) {
-            TsSkipListNodeMarkDeleteing(prev, i);
+        // 当前层如果没有被标记但下层被标记/删除了，则说明是插删冲突导致当前层节点遗留的场景，需要对其进行标记
+        if (i > 0) {
+            if (IS_MARK(AtomicPtrLoad(&prev->upper[i - 1].next)) && !IS_MARK(AtomicPtrLoad(&prev->upper[i].next))) {
+                TsSkipListNodeMarkDeleteing(prev, i);
+            }
+            if (cur && IS_MARK(AtomicPtrLoad(&cur->upper[i - 1].next)) && !IS_MARK(AtomicPtrLoad(&cur->upper[i].next))) {
+                TsSkipListNodeMarkDeleteing(cur, i);
+            }
         }
-        if (cur && IS_MARK(AtomicPtrLoad(&cur->upper[0].next)) && !IS_MARK(AtomicPtrLoad(&cur->upper[i].next))) {
-            TsSkipListNodeMarkDeleteing(cur, i);
-        }
-
         // 查找到相等节点也要继续下降，因为没有提供prev指针，无法确定cur->upper[0]的上一节点
     }
 
