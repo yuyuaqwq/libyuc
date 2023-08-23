@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\gt1\Desktop\unordered_dense.h"
+#include "C:\Users\yuyu\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 6;
+int count = 1000000;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1020,6 +1020,11 @@ _re:
 	//}
 	//printf("查找总耗时：%dms\n", GetTickCount() - l);
 
+	//for (int i = 0; i < ptr_arr.size(); i++) {
+	//	if (ptr_arr[i])
+	//	    release_assert(ptr_arr[i]->reference_count == ptr_arr[i]->level_record, "insert error");
+	//}
+
 	t.clear();
 	l = GetTickCount();
 
@@ -1033,16 +1038,24 @@ _re:
 
 	printf("删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
-	//l = GetTickCount();
-	//for (int i = 0; i < count; i++) {
-	//	if (TsSkipListFind(&list, (arr2[i]->key))) {
-	//		printf("找到了：%d", arr2[i]->key);
-	//	}
-	//}	
-	//printf("查找耗时：%dms\n", GetTickCount() - l);
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (TsSkipListFind(&list, (arr2[i]->key))) {
+			printf("找到了：%d", arr2[i]->key);
+		}
+	}	
+	printf("查找耗时：%dms\n", GetTickCount() - l);
 
 	//
 
+
+	for (int i = 0; i < ptr_arr.size(); i++) {
+		if (ptr_arr[i]) {
+			 release_assert(ptr_arr[i]->reference_count == 0, "reference count not 0.");
+		}
+		ObjectRelease(ptr_arr[i]);
+		ptr_arr[i] = NULL;
+	}
 
 	for (int i = 0; i < LIBYUC_CONTAINER_THREAD_SAFE_SKIP_LIST_MAX_LEVEL; i++) {
 		// release_assert(list.head[i].next == NULL, "delete head error");
@@ -1051,10 +1064,6 @@ _re:
 
 	list.level = 0;
 
-	for (int i = 0; i < ptr_arr.size(); i++) {
-		 release_assert(ptr_arr[i]->reference_count == 0, "reference count not 0.");
-		ObjectRelease(ptr_arr[i]);
-	}
 
 	goto _re;
 }
@@ -1355,14 +1364,14 @@ int main() {
 		//	((uint8_t*)&qvq->key)[i] = rand() % 26 + 'a';
 		//	if(i == sizeof(qvq->key) - 1)((uint8_t*)&qvq->key)[i] = '\0';
 		//}
-		qvq->key = i;// i;
+		// qvq->key = i & 5;// i;
 		//ReverseOrder(&qvq->key, 8);
-		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) +*/ rand();
 		arr2.push_back(qvq);
 	}
 
 	for (int64_t i = 0; i < count; i++) {
-		//std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
 
 
@@ -1372,13 +1381,13 @@ int main() {
 
 	size_t len = 0;
 
-	TestBPlusTree();
-
+	
 	// TestEpoch();
 	//TestTsSortSinglyList();
-	//TestTsSkipList();
+	TestTsSkipList();
 	//
 	//TestSkipList();
+	TestBPlusTree();
 
 	//TestAvl();
 	//TestArt();
