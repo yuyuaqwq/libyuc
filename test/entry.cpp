@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\gt1\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -998,7 +998,7 @@ _re:
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
-		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
@@ -1366,7 +1366,7 @@ int main() {
 		//}
 		 qvq->key = i ;// i;
 		//ReverseOrder(&qvq->key, 8);
-		// qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) +*/ ((int64_t)rand() << 16) + rand();
+		qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) +*/ ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
