@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 20;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1366,12 +1366,12 @@ int main() {
 		//}
 		 qvq->key = i ;// i;
 		//ReverseOrder(&qvq->key, 8);
-		qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) +*/ ((int64_t)rand() << 16) + rand();
+		//qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) +*/ ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
 	for (int64_t i = 0; i < count; i++) {
-		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+		//std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
 
 
@@ -1384,7 +1384,7 @@ int main() {
 	
 	// TestEpoch();
 	//TestTsSortSinglyList();
-	TestTsSkipList();
+	//TestTsSkipList();
 	//
 	//TestSkipList();
 	TestBPlusTree();

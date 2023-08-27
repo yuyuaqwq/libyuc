@@ -126,6 +126,7 @@ IntBPlusElement* TEST_BPLUS_ELEMENT_REFERENCER_Reference(IntBPlusEntry* ENTRY, i
 //	LIBYUC_BASIC_COMPARER_DEFALUT,
 //	32)
 
+
 static const struct _IntBPlusEntry* IntBPlusLeafEntryReferencer_InvalidId = (((void*)0));
 _Bool IntBPlusIteratorStackVectorIsEmpty(IntBPlusIteratorStackVector* vector) {
 	return vector->count == 0;
@@ -1438,7 +1439,7 @@ static int16_t IntBPlusEntrySplit(IntBPlusTree* tree, IntBPlusEntry* left, struc
 	IntBPlusEntryRbTreeIteratorCopy(&mid_element_iterator, &left_element_iterator);
 	int16_t logn = 0;
 	for (int16_t i = right_count; i > 0; i /= 2) ++logn;
-	logn--;
+	--logn;
 	right->rb_tree.root = IntBuildRbTree(left, &left_element_iterator, right, 0, right_count - 1, (-1), logn, 0);
 	IntBPlusEntry* temp_entry = (memcpy(&temp_bplus_entry, ((Int_BPlusEntryExtend*)((uintptr_t)left - sizeof(Int_BPlusEntryExtend))), sizeof(Int_BPlusEntryExtend) + ((left)->type == kBPlusEntryLeaf ? sizeof(IntBPlusLeafEntry) : sizeof(IntBPlusIndexEntry))), &temp_bplus_entry.entry);
 	IntBPlusEntryInit(tree, left, right->type);
@@ -1450,7 +1451,7 @@ static int16_t IntBPlusEntrySplit(IntBPlusTree* tree, IntBPlusEntry* left, struc
 	IntBPlusEntryRbTreeIteratorFirst(&temp_entry->rb_tree, &left_element_iterator);
 	logn = 0;
 	for (int16_t i = left_count; i > 0; i /= 2) ++logn;
-	logn--;
+	--logn;
 	left->rb_tree.root = IntBuildRbTree(temp_entry, &left_element_iterator, left, 0, left_count - 1, (-1), logn, 0);
 	if (insert_right) {
 		IntBPlusEntryInsertElement(right, *src_entry, insert_element, insert_element_child_id);
@@ -1498,7 +1499,7 @@ static int16_t IntBPlusEntrySplit(IntBPlusTree* tree, IntBPlusEntry* left, struc
 	;
 	return up_element_id;
 }
-static void IntBPlusEntryMerge(IntBPlusTree* tree, IntBPlusEntry* left, struct _IntBPlusEntry* left_id, IntBPlusEntry* right, struct _IntBPlusEntry* right_id, IntBPlusEntry* parent, int16_t parent_index) {
+static void IntBPlusEntryMerge(IntBPlusTree* tree, IntBPlusEntry* left, struct _IntBPlusEntry* left_id, IntBPlusEntry* right, struct _IntBPlusEntry* right_id, IntBPlusEntry* parent, IntBPlusEntryRbTreeIterator* parent_iterator) {
 	IntBPlusEntryRbTreeIterator element_iterator;
 	int16_t right_element_id = IntBPlusEntryRbTreeIteratorLast(&right->rb_tree, &element_iterator);
 	for (int16_t i = 0; i < right->element_count; i++) {
@@ -1519,13 +1520,13 @@ static void IntBPlusEntryMerge(IntBPlusTree* tree, IntBPlusEntry* left, struct _
 	if (left->type == kBPlusEntryLeaf) {
 	}
 	else {
-		IntBPlusElement* parent_element = TEST_BPLUS_ELEMENT_REFERENCER_Reference(parent, parent_index);
+		IntBPlusElement* parent_element = TEST_BPLUS_ELEMENT_REFERENCER_Reference(parent, parent_iterator->cur_id);
 		int16_t left_element_id = IntBPlusEntryInsertElement(left, ((void*)0), parent_element, (((void*)0)));
 		;
 		IntBPlusElementSetChildId(left, left_element_id, left->index.tail_child_id);
 		IntBPlusElementSetChildId(left, -1, right->index.tail_child_id);
 	}
-	IntBPlusElementSetChildId(parent, IntBPlusEntryRbTreeIteratorNext(&parent->rb_tree, parent_index), left_id);
+	IntBPlusElementSetChildId(parent, IntBPlusEntryRbTreeIteratorNext(&parent->rb_tree, parent_iterator), left_id);
 	;
 	IntBPlusEntryRelease(tree, right_id);
 }
@@ -1699,7 +1700,7 @@ static _Bool IntBPlusTreeDeleteElement(IntBPlusTree* tree, IntBPlusIterator* ite
 						}
 					}
 					;
-					IntBPlusElement* element = (last_element_iterator.cur_id);
+					IntBPlusElement* element = TEST_BPLUS_ELEMENT_REFERENCER_Reference(sibling, last_element_iterator.cur_id);
 					IntBPlusEntryInsertElement(entry, sibling, element, (((void*)0)));
 					;
 					IntBPlusEntryDeleteElement(sibling, &last_element_iterator);
@@ -1729,7 +1730,7 @@ static _Bool IntBPlusTreeDeleteElement(IntBPlusTree* tree, IntBPlusIterator* ite
 						}
 					}
 					;
-					IntBPlusElement* element = (first_element_iterator.cur_id);
+					IntBPlusElement* element = TEST_BPLUS_ELEMENT_REFERENCER_Reference(sibling, first_element_iterator.cur_id);
 					IntBPlusEntryInsertElement(entry, sibling, element, (((void*)0)));
 					;
 					IntBPlusEntryDeleteElement(sibling, &first_element_iterator);
@@ -1799,11 +1800,11 @@ static _Bool IntBPlusTreeDeleteElement(IntBPlusTree* tree, IntBPlusIterator* ite
 			break;
 		}
 		if (left_sibling) {
-			IntBPlusEntryMerge(tree, sibling, sibling_entry_id, entry, cur_pos->entry_id, parent, common_parent_element_iterator.cur_id);
+			IntBPlusEntryMerge(tree, sibling, sibling_entry_id, entry, cur_pos->entry_id, parent, &common_parent_element_iterator);
 			entry = ((void*)0);
 		}
 		else {
-			IntBPlusEntryMerge(tree, entry, cur_pos->entry_id, sibling, sibling_entry_id, parent, common_parent_element_iterator.cur_id);
+			IntBPlusEntryMerge(tree, entry, cur_pos->entry_id, sibling, sibling_entry_id, parent, &common_parent_element_iterator);
 			sibling = ((void*)0);
 		}
 		delete_up = 1;
