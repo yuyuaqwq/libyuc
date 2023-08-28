@@ -11,6 +11,10 @@
 #include <string.h>
 #include <assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef Painc
 #define Painc(...) { printf(__VA_ARGS__); __debugbreak();  /* *(int*)0 = 0;*/ }
 #endif
@@ -25,23 +29,73 @@
 #define release_assert(expression, ...) { if(!(expression)){ Painc(__VA_ARGS__); } }
 
 
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef _MSC_VER // for MSVC
+#define forceinline __forceinline
+#elif defined __GNUC__ // for gcc on Linux/Apple OS X
+#define forceinline __inline__ __attribute__((always_inline))
+#else
+#define forceinline
 #endif
 
 
 
+forceinline static void MemorySwap(void* buf1_, void* buf2_, size_t size) {
+    uint8_t* buf1 = (uint8_t*)buf1_;
+    uint8_t* buf2 = (uint8_t*)buf2_;
+    for (size_t i = 0; i < size; i++) {
+        uint8_t temp = buf1[i];
+        buf1[i] = buf2[i];
+        buf2[i] = temp;
+    }
+}
 
-void* MemoryAlloc(size_t size);
-void MemoryFree(void* ptr);
-#define MemoryCopy(DST, SRC, SIZE) memcpy((void*)(DST), (const void*)(SRC), (SIZE))
-void MemoryCopyR(void* dst_, void* src_, size_t size);
-#define MemorySet(DST, VAL, SIZE) memset((void*)(DST), (VAL), (SIZE))
-ptrdiff_t MemoryCmp(const void* buf1_, const void* buf2_, size_t size);
-ptrdiff_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size);
-ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const void* buf2_, size_t size2);
-void MemorySwap(void* buf1_, void* buf2_, size_t size);
+forceinline static void MemoryCopyR(void* dst_, void* src_, size_t size) {
+    uint8_t* dst = dst_;
+    uint8_t* src = src_;
+    while (size-- != 0) {
+        dst[size] = src[size];
+    }
+}
+
+forceinline static ptrdiff_t MemoryCmp(const void* buf1_, const void* buf2_, size_t size) {
+    return memcmp(buf1_, buf2_, size);
+}
+
+forceinline static ptrdiff_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size) {
+    uint8_t* buf1 = buf1_;
+    uint8_t* buf2 = buf2_;
+    while (size-- != 0) {
+        int res = buf1[size] - buf2[size];
+        if (res != 0) {
+            return res;
+        }
+    }
+    return 0;
+}
+
+forceinline static ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const void* buf2_, size_t size2) {
+    if (size1 != size2) {
+        return size1 - size2;
+    }
+    uint8_t* buf1 = buf1_;
+    uint8_t* buf2 = buf2_;
+    while (size1-- != 0) {
+        int res = buf1[size1] - buf2[size1];
+        if (res != 0) {
+            return res;
+        }
+    }
+    return 0;
+}
+
+forceinline static void* MemoryAlloc(size_t size) {
+    return malloc(size);
+}
+
+forceinlie static void MemoryFree(void* ptr) {
+    return free(ptr);
+}
+
 
 
 #define ObjectCreate(OBJ_TYPE) ((OBJ_TYPE*)MemoryAlloc(sizeof(OBJ_TYPE)))
@@ -171,13 +225,6 @@ void MemorySwap(void* buf1_, void* buf2_, size_t size);
 
 
 
-#ifdef _MSC_VER // for MSVC
-#define forceinline __forceinline
-#elif defined __GNUC__ // for gcc on Linux/Apple OS X
-#define forceinline __inline__ __attribute__((always_inline))
-#else
-#define forceinline
-#endif
 
 #ifdef __cplusplus
 }
