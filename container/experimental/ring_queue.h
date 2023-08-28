@@ -6,7 +6,7 @@
 #define LIBYUC_CONTAINER_QUEUE_H_
 
 #include <libyuc/basic.h>
-#include <libyuc/container/array.h>
+#include <libyuc/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +14,7 @@ extern "C" {
 
 
 typedef struct _Queue {
-    Array arr;
+    Vector arr;
     int head;        // head指向即将出队的元素索引
     int tail;        // tail指向最近入队的元素索引的下一个索引
 } Queue;
@@ -37,14 +37,14 @@ void QueueEnqueueByCount(Queue* queue, void* obj, size_t count);
 void* QueueDequeue(Queue* queue);
 
 static void QueueExpand(Queue* queue, size_t addCount) {
-    Array* arr = &queue->arr;
-    ArrayExpand(arr, addCount);
+    Vector* arr = &queue->arr;
+    VectorExpand(arr, addCount);
     if (queue->head > queue->tail) {
         size_t copyCount = arr->count - queue->head;
         if (copyCount != 0) {
-            void* src = ArrayAt(arr, queue->head, void);
+            void* src = VectorAt(arr, queue->head);
             queue->head = arr->capacity - copyCount;
-            void* dst = ArrayAt(arr, queue->head, void);
+            void* dst = VectorAt(arr, queue->head);
             MemoryCopyR(dst, src, copyCount * arr->objSize);
         }
     }
@@ -55,14 +55,14 @@ void QueueInit(Queue* queue, size_t capacity, int objByteCount) {
     if (capacity == 1) {
         capacity = 2;        // 长度不能是1，否则会出现队满=队空的情况
     }
-    ArrayInit(&queue->arr, capacity, objByteCount);
+    VectorInit(&queue->arr, capacity, objByteCount);
     queue->arr.count = capacity;
     queue->head = 0;
     queue->tail = 0;
 }
 
 void QueueRelease(Queue* queue) {
-    ArrayRelease(&queue->arr);
+    VectorRelease(&queue->arr);
     queue->head = 0;
     queue->tail = 0;
 }
@@ -99,7 +99,7 @@ void QueueEnqueue(Queue* queue, void* entry) {
     if (QueueIsFull(queue)) {
         QueueExpand(queue, 1);
     }
-    MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
+    MemoryCopy(VectorAt(&queue->arr, queue->tail), entry, queue->arr.objSize);
     queue->tail = QueueIndexRewind(queue, queue->tail + 1);
 }
 
@@ -107,7 +107,7 @@ void QueueEnqueueByCount(Queue* queue, void* entry, size_t count) {
     if (QueueGetFreeCount(queue) < count) {
         QueueExpand(queue, count);
     }
-    MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
+    MemoryCopy(VectorAt(&queue->arr, queue->tail), entry, queue->arr.objSize);
     queue->tail = QueueIndexRewind(queue, queue->tail + count);
 }
 
@@ -116,7 +116,7 @@ void* QueueDequeue(Queue* queue) {
         return NULL;
     }
     int index = queue->head;
-    void* entry = ArrayAt(&queue->arr, index, void);
+    void* entry = VectorAt(&queue->arr, index);
     queue->head = QueueIndexRewind(queue, queue->head + 1);
     return entry;
 }
