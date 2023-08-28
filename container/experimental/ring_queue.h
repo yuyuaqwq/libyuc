@@ -67,7 +67,7 @@ void QueueRelease(Queue* queue) {
     queue->tail = 0;
 }
 
-inline int QueueIndexRewind(Queue* queue, int index) {
+forceinline static int QueueIndexRewind(Queue* queue, int index) {
     return index % queue->arr.count;
 }
 
@@ -100,8 +100,7 @@ void QueueEnqueue(Queue* queue, void* entry) {
         QueueExpand(queue, 1);
     }
     MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
-    queue->tail++;
-    queue->tail = QueueIndexRewind(queue, queue->tail);
+    queue->tail = QueueIndexRewind(queue, queue->tail + 1);
 }
 
 void QueueEnqueueByCount(Queue* queue, void* entry, size_t count) {
@@ -109,8 +108,7 @@ void QueueEnqueueByCount(Queue* queue, void* entry, size_t count) {
         QueueExpand(queue, count);
     }
     MemoryCopy(ArrayAt(&queue->arr, queue->tail, void), entry, queue->arr.objSize);
-    queue->tail += count;
-    queue->tail = QueueIndexRewind(queue, queue->tail);
+    queue->tail = QueueIndexRewind(queue, queue->tail + count);
 }
 
 void* QueueDequeue(Queue* queue) {
@@ -119,8 +117,7 @@ void* QueueDequeue(Queue* queue) {
     }
     int index = queue->head;
     void* entry = ArrayAt(&queue->arr, index, void);
-    queue->head++;
-    queue->head = QueueIndexRewind(queue, queue->head);
+    queue->head = QueueIndexRewind(queue, queue->head + 1);
     return entry;
 }
 
