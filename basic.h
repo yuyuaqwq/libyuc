@@ -49,9 +49,13 @@ forceinline static void MemorySwap(void* buf1_, void* buf2_, size_t size) {
     }
 }
 
-forceinline static void MemoryCopyR(void* dst_, void* src_, size_t size) {
-    uint8_t* dst = dst_;
-    uint8_t* src = src_;
+forceinline static void MemoryCopy(void* dst_, const void* src_, size_t size) {
+    memcpy(dst_, src_, size);
+}
+
+forceinline static void MemoryCopyR(void* dst_, const void* src_, size_t size) {
+    uint8_t* dst = (uint8_t*)dst_;
+    uint8_t* src = (uint8_t*)src_;
     while (size-- != 0) {
         dst[size] = src[size];
     }
@@ -62,8 +66,8 @@ forceinline static ptrdiff_t MemoryCmp(const void* buf1_, const void* buf2_, siz
 }
 
 forceinline static ptrdiff_t MemoryCmpR(const void* buf1_, const void* buf2_, size_t size) {
-    uint8_t* buf1 = buf1_;
-    uint8_t* buf2 = buf2_;
+    uint8_t* buf1 = (uint8_t*)buf1_;
+    uint8_t* buf2 = (uint8_t*)buf2_;
     while (size-- != 0) {
         int res = buf1[size] - buf2[size];
         if (res != 0) {
@@ -77,8 +81,8 @@ forceinline static ptrdiff_t MemoryCmpR2(const void* buf1_, size_t size1, const 
     if (size1 != size2) {
         return size1 - size2;
     }
-    uint8_t* buf1 = buf1_;
-    uint8_t* buf2 = buf2_;
+    uint8_t* buf1 = (uint8_t*)buf1_;
+    uint8_t* buf2 = (uint8_t*)buf2_;
     while (size1-- != 0) {
         int res = buf1[size1] - buf2[size1];
         if (res != 0) {
@@ -92,7 +96,7 @@ forceinline static void* MemoryAlloc(size_t size) {
     return malloc(size);
 }
 
-forceinlie static void MemoryFree(void* ptr) {
+forceinline static void MemoryFree(void* ptr) {
     return free(ptr);
 }
 

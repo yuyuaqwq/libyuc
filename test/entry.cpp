@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\gt1\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -403,7 +403,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 20;
+int count = 10000000;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1270,7 +1270,7 @@ void TestBPlusTree() {
 		if (!IntBPlusTreeDelete(&bpTree, &arr2[i]->key)) {
 			printf("找不到, %d", &arr2[i]->key);
 		}
-		if (count < 31) {
+		if (count <= 30) {
 			printf("删除%d\n", arr2[i]->key);
 			PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
 			printf("\n\n\n\n");

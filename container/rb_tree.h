@@ -435,7 +435,7 @@ typedef enum {
         iterator->cur_id = rb_tree_type_name##RbBsTreeIteratorPrev((rb_tree_type_name##RbBsTree*)tree, &iterator->stack, iterator->cur_id); \
         return iterator->cur_id; \
     } \
-    void rb_tree_type_name##RbTreeIteratorCopy(rb_tree_type_name##RbTreeIterator* dst_iterator, rb_tree_type_name##RbTreeIterator* src_iterator) { \
+    void rb_tree_type_name##RbTreeIteratorCopy(rb_tree_type_name##RbTreeIterator* dst_iterator, const rb_tree_type_name##RbTreeIterator* src_iterator) { \
         dst_iterator->cur_id = src_iterator->cur_id; \
         offset_type count = rb_tree_type_name##RbBsStackVectorGetCount(&src_iterator->stack); \
         rb_tree_type_name##RbBsStackVectorSetCount(&dst_iterator->stack, count); \
