@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\gt1\Desktop\unordered_dense.h"
+// #include "C:\Users\gt1\Desktop\unordered_dense.h"
 
 
 #include <libyuc/container/experimental/ar_tree.h>
@@ -1157,12 +1157,12 @@ void TestHashTable() {
 	printf("查找耗时：%dms\n", l);
 
 
-	struct hashfunc {
-		size_t operator()(int64_t i) const {
-			// return HashCode_murmur3_fmix64inline(i);
-			return ankerl::unordered_dense::hash<uint64_t>()(i);
-		}
-	};
+	//struct hashfunc {
+	//	size_t operator()(int64_t i) const {
+	//		// return HashCode_murmur3_fmix64inline(i);
+	//		return ankerl::unordered_dense::hash<uint64_t>()(i);
+	//	}
+	//};
 
 
 	struct std_hash_func {
@@ -1175,28 +1175,28 @@ void TestHashTable() {
 
 
 
-	ankerl::unordered_dense::set<int64_t> aaa;
+	//ankerl::unordered_dense::set<int64_t> aaa;
 
-	printf("\nankerl::unordered_dense::set:\n");
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		aaa.insert(arr2[i]->key);
-		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
+	//printf("\nankerl::unordered_dense::set:\n");
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	aaa.insert(arr2[i]->key);
+	//	//mapaa.insert(std::make_pair(arr2[i]->key, 0));
+	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (aaa.find(arr2[i]->key) == aaa.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		aaa.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (aaa.find(arr2[i]->key) == aaa.end()) {
+	//		printf("找不到");
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	aaa.erase(arr2[i]->key);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
 
@@ -1204,7 +1204,7 @@ void TestHashTable() {
 
 	printf("\nstd::unordered_set:\n");
 	l = GetTickCount();
-	std::unordered_set<int64_t, hashfunc> mapaa;
+	std::unordered_set<int64_t, std_hash_func> mapaa;
 	for (int i = 0; i < count; i++) {
 		mapaa.insert(arr2[i]->key);
 		//mapaa.insert(std::make_pair(arr2[i]->key, 0));
@@ -1234,6 +1234,10 @@ void TestHashTable() {
 //	TsSinglyListPutFirst(&head, );
 //}
 
+#define ssize_t size_t
+#undef max
+#undef min
+#include <cpp-btree/btree_set.h>
 
 void TestBPlusTree() {
 
@@ -1279,11 +1283,34 @@ void TestBPlusTree() {
 	}
 	printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	printf("\nSTL rb:\n");
+	printf("btree:\n");
 	l = GetTickCount();
-	std::map<int, int> mapaaaa;
+	btree::btree_set<int> bset;
 	for (int i = 0; i < count; i++) {
-		mapaaaa.insert(std::make_pair(arr2[i]->key, 0));
+		bset.insert(arr2[i]->key);
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		if (bset.find(arr2[i]->key) == bset.end()) {
+			printf("找不到");
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		bset.erase(arr2[i]->key);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
+	printf("\nstl rb:\n");
+	l = GetTickCount();
+	std::set<int> mapaaaa;
+	for (int i = 0; i < count; i++) {
+		mapaaaa.insert(arr2[i]->key);
 	}
 	printf("插入耗时：%dms\n", GetTickCount() - l);
 
@@ -1371,7 +1398,7 @@ int main() {
 	}
 
 	for (int64_t i = 0; i < count; i++) {
-		//std::swap(arr2[i]->key, arr2[randInt() % count]->key);
+		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
 	}
 
 
