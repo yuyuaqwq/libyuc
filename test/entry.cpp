@@ -1237,9 +1237,18 @@ void TestHashTable() {
 #define ssize_t size_t
 #undef max
 #undef min
-#include <cpp-btree/btree_set.h>
+#include <cpp-btree/set.h>
+
+extern "C" {
+#include <bplustree-in-memory/lib/bplustree.h>
+}
+struct bplus_tree_config {
+	int order;
+	int entries;
+};
 
 void TestBPlusTree() {
+
 
 	printf("\nB+树：\n");
 	IntBPlusTree bpTree;
@@ -1256,7 +1265,6 @@ void TestBPlusTree() {
 		}
 	}
 	// PrintBPlus(&bpTree, bpTree.root, 0, 0);
-	int key;
 	printf("插入耗时：%dms\n", GetTickCount() - l);
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
@@ -1285,7 +1293,7 @@ void TestBPlusTree() {
 
 	printf("btree:\n");
 	l = GetTickCount();
-	btree::btree_set<int> bset;
+	btree::set<int> bset;
 	for (int i = 0; i < count; i++) {
 		bset.insert(arr2[i]->key);
 	}
