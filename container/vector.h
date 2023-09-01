@@ -263,7 +263,7 @@ extern "C" {
         return vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector)); \
     } \
     \
-    LIBYUC_ALGORITHM_ARRAY_DEFINE(vector_type_name##Vector, offset_type, id_type, element_type, key_type, accessor, comparer, referencer) \
+    LIBYUC_ALGORITHM_ARRAY_DEFINE(vector_type_name##Vector, offset_type, element_type, key_type, accessor, comparer, referencer) \
     \
     element_type* vector_type_name##VectorPut(vector_type_name##Vector* vector, const element_type* obj) { \
         const key_type* key = accessor##_GetKey(vector, obj); \

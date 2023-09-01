@@ -15,6 +15,11 @@
 extern "C" {
 #endif
 
+/*
+* 为磁盘设计的b+tree
+* 为支持变长kv的设计，不实现m阶等概念
+*/
+
 
 typedef enum _BPlusEntryType {
     kBPlusEntryIndex = 0,
@@ -26,11 +31,6 @@ typedef enum {
     kBPlusIteratorDown,
     kBPlusIteratorEnd,
 } BPlusIteratorStatus;
-
-
-/*
-为支持变长kv，不实现m阶等概念
-*/
 
 
 #define LIBYUC_CONTAINER_BPLUS_TREE_LEAF_LINK_MODE_NORMAL_DECLARATION_1(bp_tree_type_name, entry_id_type, entry_offset_type) LIBYUC_CONTAINER_LIST_DECLARATION(bp_tree_type_name##BPlusLeaf, entry_id_type, entry_offset_type)

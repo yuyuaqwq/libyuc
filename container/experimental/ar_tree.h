@@ -8,7 +8,6 @@
 #define LIBYUC_CONTAINER_AR_TREE_H_
 
 #include <libyuc/basic.h>
-#include <libyuc/algorithm/binary_search.h>
 #include <libyuc/algorithm/array.h>
 #include <libyuc/algorithm/bit.h>
 #include <libyuc/container/static_list.h>
@@ -262,13 +261,28 @@ void ArNodeSetEofChild(ArNode* node, ArLeaf* leaf) {
 uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
     return element;
 }
-LIBYUC_ALGORITHM_BINARY_SEARCH_DEFINE(ArNodeKey, uint8_t, uint8_t, int32_t, ArBsAccessor, LIBYUC_BASIC_INDEXER_DEFALUT, LIBYUC_BASIC_COMPARER_DEFALUT)
 LIBYUC_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, 1)
 
 #define AR_TREE_ARRAY_REFERENCER_InvalidId (-1)
 #define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
-LIBYUC_ALGORITHM_ARRAY_DEFINE(ArNodeKey, ptrdiff_t, ptrdiff_t, uint8_t, uint8_t, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, LIBYUC_BASIC_COMPARER_DEFALUT, AR_TREE_ARRAY_REFERENCER)
-LIBYUC_ALGORITHM_ARRAY_DEFINE(ArNodeChild, ptrdiff_t, ptrdiff_t, ArNode*, ArNode*, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, LIBYUC_BASIC_COMPARER_DEFALUT, AR_TREE_ARRAY_REFERENCER)
+LIBYUC_ALGORITHM_ARRAY_DEFINE(
+    ArNodeKey, 
+    ptrdiff_t, 
+    uint8_t, 
+    uint8_t, 
+    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
+    LIBYUC_BASIC_COMPARER_DEFALUT, 
+    AR_TREE_ARRAY_REFERENCER
+)
+LIBYUC_ALGORITHM_ARRAY_DEFINE(
+    ArNodeChild, 
+    ptrdiff_t, 
+    ArNode*, 
+    ArNode*,
+    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
+    LIBYUC_BASIC_COMPARER_DEFALUT, 
+    AR_TREE_ARRAY_REFERENCER
+)
 
 static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
     head->child_count = 0;
@@ -393,7 +407,7 @@ static forceinline ptrdiff_t ArNode16KeySearch(ArNode16* node, uint8_t key_byte)
     }
     i = _tzcnt_u32(i);
 #else
-    ptrdiff_t i = ArNodeKeyBinarySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
+    ptrdiff_t i = ArNodeKeyArrayOrderFind(node->keys, 0, node->head.child_count - 1, &key_byte);
     if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
         return AR_TREE_ARRAY_REFERENCER_InvalidId;
     }
@@ -493,7 +507,7 @@ static ArNode** ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_by
     ArNode16* node = *node_ptr;
     ptrdiff_t i;
     if (node->head.child_count > 0) {
-        i = ArNodeKeyBinarySearch_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
+        i = ArNodeKeyArrayOrderFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte);
         if (key_byte == node->keys[i]) {
             node->keys[i] = key_byte;
             node->child_arr[i] = child;
