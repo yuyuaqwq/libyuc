@@ -21,13 +21,13 @@ extern "C" {
 
 #define CACHE_LINE_SIZE 64
 
-
 typedef int64_t key_type;
 typedef key_type element_type;
-
 typedef struct _BTreeEntry* entry_id_type;
 
 #define LIBYUC_CONTAINER_B_TREE_M 129
+
+#define LIBYUC_CONTAINER_B_TREE_SEQUENTIAL_SEARCH_ELEMENT_COUNT 8       // CACHE_LINE_SIZE / sizeof(element_type)
 
 typedef enum {
     kBTreeIteratorEq,
@@ -98,6 +98,7 @@ typedef struct _BTreeEntry {
 } BTreeEntry;
 
 
+
 typedef struct _BTreeIterator {
     BTreeIteratorStackVector stack;
 } BTreeIterator;
@@ -142,7 +143,7 @@ BTreeIteratorStatus BTreeIteratorDown(BTree* tree, BTreeIterator* iter, const ke
         return kBTreeIteratorEnd;
     }
     
-    if (iter_pos.entry->count <= CACHE_LINE_SIZE / sizeof(element_type)) {
+    if (iter_pos.entry->count <= LIBYUC_CONTAINER_B_TREE_SEQUENTIAL_SEARCH_ELEMENT_COUNT) {
         // 节点数量少时使用顺序搜索，能极大程度提高性能
         iter_pos.cur_element_pos = BTreeElementArrayOrderFind_Range(iter_pos.entry->element, 0, iter_pos.entry->count - 1, key);
     }

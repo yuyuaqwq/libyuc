@@ -425,7 +425,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 100000000;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -1334,27 +1334,27 @@ void TestBPlusTree() {
 	//}
 	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	printf("\nbtree:\n");
-	l = GetTickCount();
-	btree::set<int64_t> bset;
-	for (int i = 0; i < count; i++) {
-		bset.insert(arr2[i]->key);
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
+	//printf("\nbtree:\n");
+	//l = GetTickCount();
+	//btree::set<int64_t> bset;
+	//for (int i = 0; i < count; i++) {
+	//	bset.insert(arr2[i]->key);
+	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (bset.find(arr2[i]->key) == bset.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (bset.find(arr2[i]->key) == bset.end()) {
+	//		printf("找不到");
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		bset.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	bset.erase(arr2[i]->key);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
 	printf("\nstl rb:\n");
