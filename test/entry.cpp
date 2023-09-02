@@ -1334,7 +1334,7 @@ void TestBPlusTree() {
 	//}
 	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	printf("\nbtree:\n");
+	/*printf("\nbtree:\n");
 	l = GetTickCount();
 	btree::set<int64_t> bset;
 	for (int i = 0; i < count; i++) {
@@ -1354,7 +1354,7 @@ void TestBPlusTree() {
 	for (int i = 0; i < count; i++) {
 		bset.erase(arr2[i]->key);
 	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	printf("删除耗时：%dms\n", GetTickCount() - l);*/
 
 
 	printf("\nstl rb:\n");
@@ -1444,7 +1444,7 @@ int main() {
 		//}
 		 qvq->key = i ;// i;
 		//ReverseOrder(&qvq->key, 8);
-		//qvq->key = /*((int64_t)rand() << 48) + ((int64_t)rand() << 32) +*/ ((int64_t)rand() << 16) + rand();
+		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
@@ -1468,7 +1468,7 @@ int main() {
 	TestBPlusTree();
 
 	//TestAvl();
-	//TestArt();
+	TestArt();
 	//TestRb();
 	//TestHashTable();
 
