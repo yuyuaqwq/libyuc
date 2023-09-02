@@ -146,7 +146,7 @@ typedef enum {
     \
     bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusIteratorCur(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator); \
     bp_tree_type_name##BPlusElementPos* bp_tree_type_name##BPlusIteratorUp(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator); \
-    BPlusIteratorStatus bp_tree_type_name##BPlusIteratorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key); \
+    BPlusIteratorStatus bp_tree_type_name##BPlusIteratorTop(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key); \
     void bp_tree_type_name##BPlusIteratorRelease(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator); \
     BPlusIteratorStatus bp_tree_type_name##BPlusIteratorDown(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key); \
     \
@@ -434,7 +434,7 @@ kv分离是外层处理的，b+树操作的只有element
     \
     \
     /* B+树迭代器 */ \
-    BPlusIteratorStatus bp_tree_type_name##BPlusIteratorFirst(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key) { \
+    BPlusIteratorStatus bp_tree_type_name##BPlusIteratorTop(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusIterator* iterator, key_type* key) { \
         bp_tree_type_name##BPlusIteratorStackVectorInit(&iterator->stack, default_stack_size, iterator->default_stack); \
         iterator->stack.count = 0; \
         iterator->level = -1; \
@@ -993,7 +993,7 @@ kv分离是外层处理的，b+树操作的只有element
     */ \
     bool bp_tree_type_name##BPlusTreeFind(bp_tree_type_name##BPlusTree* tree, key_type* key) { \
         bp_tree_type_name##BPlusIterator iterator; \
-        BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorFirst(tree, &iterator, key); \
+        BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorTop(tree, &iterator, key); \
         while (status == kBPlusIteratorDown) { \
             status = bp_tree_type_name##BPlusIteratorDown(tree, &iterator, key); \
         } \
@@ -1004,7 +1004,7 @@ kv分离是外层处理的，b+树操作的只有element
     */ \
     bool bp_tree_type_name##BPlusTreeInsert(bp_tree_type_name##BPlusTree* tree, bp_tree_type_name##BPlusLeafElement* element) { \
         bp_tree_type_name##BPlusIterator iterator; \
-        BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorFirst(tree, &iterator, &element->key); \
+        BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorTop(tree, &iterator, &element->key); \
         while (status == kBPlusIteratorDown) { \
             status = bp_tree_type_name##BPlusIteratorDown(tree, &iterator, &element->key); \
         } \
@@ -1017,7 +1017,7 @@ kv分离是外层处理的，b+树操作的只有element
     */ \
     bool bp_tree_type_name##BPlusTreeDelete(bp_tree_type_name##BPlusTree* tree, key_type* key) { \
         bp_tree_type_name##BPlusIterator iterator; \
-        BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorFirst(tree, &iterator, key); \
+        BPlusIteratorStatus status = bp_tree_type_name##BPlusIteratorTop(tree, &iterator, key); \
         while (status == kBPlusIteratorDown) { \
             status = bp_tree_type_name##BPlusIteratorDown(tree, &iterator, key); \
         } \

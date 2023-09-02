@@ -13,20 +13,20 @@ extern "C" {
 #endif
 
 
-#define LIBYUC_ALGORITHM_ARRAY_DEFINE(array_name, id_type, element_type, key_type, accessor, comparer, referencer) \
-    id_type array_name##ArrayFind(element_type* array, id_type count, const key_type* key) { \
+#define LIBYUC_ALGORITHM_ARRAY_DEFINE(array_name, offset_type, id_type, element_type, key_type, accessor, comparer, referencer) \
+    id_type array_name##ArrayFind(element_type* array, offset_type count, const key_type* key) { \
         for (id_type i = 0; i < count; i++) { \
             if (comparer##_Equal(array, accessor##_GetKey(array, &array[i]), key)) return (id_type)i; \
         } \
         return referencer##_InvalidId; \
     } \
-    void array_name##ArrayInsert(element_type* array, id_type count, id_type index, element_type* element) { \
+    void array_name##ArrayInsert(element_type* array, offset_type count, id_type index, element_type* element) { \
         for(id_type i = count; i > index; i--) { \
             array[i] = array[i - 1]; \
         } \
         array[index] = *element; \
     } \
-    void array_name##ArrayDelete(element_type* array, id_type count, id_type index) { \
+    void array_name##ArrayDelete(element_type* array, offset_type count, id_type index) { \
         for(id_type i = index; i < count - 1; i++) { \
             array[i] = array[i + 1]; \
         } \
@@ -65,10 +65,10 @@ extern "C" {
         } \
         return first; \
     } \
-    void array_name##ArrayOrderPut(element_type* array, id_type count, element_type* element) { \
+    void array_name##ArrayOrderPut(element_type* array, offset_type count, const element_type* element) { \
         id_type index = array_name##ArrayOrderFind_Range(array, 0, count - 1, (const key_type*)accessor##_GetKey(array, element)); \
     } \
-    bool array_name##ArrayOrderDelete(element_type* array, id_type count, const key_type* key) { \
+    bool array_name##ArrayOrderDelete(element_type* array, offset_type count, const key_type* key) { \
         id_type id = array_name##ArrayOrderFind(array, 0, count - 1, key); \
         if (id == referencer##_InvalidId) return false; \
         array_name##ArrayDelete(array, count, id); \

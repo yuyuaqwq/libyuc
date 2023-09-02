@@ -19,6 +19,7 @@
 #include <libyuc/container/thread_safe/experimental/epoch.h>
 #include <libyuc/container/thread_safe/experimental/ts_skip_list.h>
 #include <libyuc/container/thread_safe/experimental/ts_sort_singly_list.h>
+#include <libyuc/container/experimental/btree.h>
 
 #include <regex>
 #include "test.h"
@@ -134,6 +135,27 @@ void PrintBPlus(IntBPlusTree* tree, IntBPlusEntry* entry, int Level, int pos) {
 		printf("%sindex:::key:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->index.key, empty, Level, empty/*, entry->parentId != kPageInvalidId ? ((BPlusEntry*)PageGet(tree, entry->parentId))->indexElement[pos].key: 0*/);
 		PrintBPlus(tree, TEST_BPLUS_ELEMENT_REFERENCER_Reference(entry, id)->index.child_id, Level + 1, i);
 		id = IntBPlusEntryRbTreeIteratorPrev(&entry->rb_tree, &iter);
+	}
+	free(empty);
+}
+
+void PrintBTree(BTree* tree, BTreeEntry* entry, int Level, int pos) {
+	if (!entry) return;
+	char* empty = (char*)malloc(Level * 8 + 1);
+	memset(empty, ' ', Level * 8);
+	empty[Level * 8] = 0;
+
+	for (int i = entry->count; i >= 0; i--) {
+		if (i == entry->count) {
+			if (!entry->is_leaf) {
+				PrintBTree(tree, entry->child[entry->count], Level + 1, i - 1);
+			}
+			continue;
+		}
+		printf("%skey:%d\n%sLevel:%d\n%sParent:%d\n\n", empty, entry->element[i], empty, Level, empty/*, entry->parentId != kPageInvalidId ? ((BPlusEntry*)PageGet(tree, entry->parentId))->indexElement[pos].key: 0*/);
+		if (!entry->is_leaf) {
+			PrintBTree(tree, entry->child[i], Level + 1, i);
+		}
 	}
 	free(empty);
 }
@@ -1239,8 +1261,8 @@ void TestHashTable() {
 #undef min
 #include <cpp-btree/set.h>
 
+
 extern "C" {
-#include <bplustree-in-memory/lib/bplustree.h>
 }
 struct bplus_tree_config {
 	int order;
@@ -1248,52 +1270,73 @@ struct bplus_tree_config {
 };
 
 void TestBPlusTree() {
+	printf("\nB树：\n");
+	BTree btree;
+	BTreeInit(&btree);
 
-
-	printf("\nB+树：\n");
-	IntBPlusTree bpTree;
-	IntBPlusTreeInit(&bpTree);
 	l = GetTickCount();
-	IntBPlusLeafElement element;
 	for (int i = 0; i < count; i++) {
-		// int* qvq = CreateObject(int);
-		element.key = arr2[i]->key;
-		IntBPlusTreeInsert(&bpTree, &element);
+		BTreePut(&btree, &arr2[i]->key);
 		if (count < 31) {
-			PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+			PrintBTree(&btree, btree.root, 0, 0);
 			printf("\n\n\n\n");
 		}
 	}
-	// PrintBPlus(&bpTree, bpTree.root, 0, 0);
 	printf("插入耗时：%dms\n", GetTickCount() - l);
+
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		// int* qvq = CreateObject(int);
-		if (!IntBPlusTreeFind(&bpTree, &arr2[i]->key)) {
+		if (!BTreeFind(&btree, &arr2[i]->key)) {
 			printf("找不到, %d", arr2[i]->key);
 		}
 	}
 	printf("查找耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		// int* qvq = CreateObject(int);
-		// printf("%d", i);
-		if (!IntBPlusTreeDelete(&bpTree, &arr2[i]->key)) {
-			printf("找不到, %d", &arr2[i]->key);
-		}
-		if (count <= 30) {
-			printf("删除%d\n", arr2[i]->key);
-			PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
-			printf("\n\n\n\n");
-		}
+	//printf("\nB+树：\n");
+	//IntBPlusTree bpTree;
+	//IntBPlusTreeInit(&bpTree);
+	//l = GetTickCount();
+	//IntBPlusLeafElement element;
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	element.key = arr2[i]->key;
+	//	IntBPlusTreeInsert(&bpTree, &element);
+	//	if (count < 31) {
+	//		PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+	//		printf("\n\n\n\n");
+	//	}
+	//}
+	//// PrintBPlus(&bpTree, bpTree.root, 0, 0);
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	if (!IntBPlusTreeFind(&bpTree, &arr2[i]->key)) {
+	//		printf("找不到, %d", arr2[i]->key);
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
 
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	// printf("%d", i);
+	//	if (!IntBPlusTreeDelete(&bpTree, &arr2[i]->key)) {
+	//		printf("找不到, %d", &arr2[i]->key);
+	//	}
+	//	if (count <= 30) {
+	//		printf("删除%d\n", arr2[i]->key);
+	//		PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+	//		printf("\n\n\n\n");
+	//	}
 
-	printf("btree:\n");
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
+
+	printf("\nbtree:\n");
 	l = GetTickCount();
-	btree::set<int> bset;
+	btree::set<int64_t> bset;
 	for (int i = 0; i < count; i++) {
 		bset.insert(arr2[i]->key);
 	}

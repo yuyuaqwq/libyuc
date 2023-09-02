@@ -19,7 +19,7 @@ extern "C" {
     } vector_type_name##Vector;
 #define LIBYUC_CONTAINER_VECTOR_MODE_STATIC_DECLARATION_2(vector_type_name, offset_type) \
     void vector_type_name##VectorInit(vector_type_name##Vector* vector); 
-#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC_DEFINE_1(vector_type_name, offset_type, element_type, allocator, callbacker) \
+#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC_DEFINE_1(vector_type_name, offset_type, id_type, element_type, allocator, callbacker) \
     bool vector_type_name##VectorIsEmpty(vector_type_name##Vector* vector) { \
         return vector->count == 0; \
     } \
@@ -35,7 +35,7 @@ extern "C" {
     element_type* vector_type_name##VectorGetArray(vector_type_name##Vector* vector) { \
         return vector->obj_arr; \
     } \
-    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, offset_type index) { \
+    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, id_type index) { \
         return &vector->obj_arr[index]; \
     } \
     void vector_type_name##VectorInit(vector_type_name##Vector* vector) { \
@@ -58,7 +58,7 @@ extern "C" {
     void vector_type_name##VectorExpand(vector_type_name##Vector* vector, offset_type add_count); \
     void vector_type_name##VectorInit(vector_type_name##Vector* vector, offset_type capacity); \
     void vector_type_name##VectorRelease(vector_type_name##Vector* vector);
-#define LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC_DEFINE_1(vector_type_name, offset_type, element_type, allocator, callbacker) \
+#define LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC_DEFINE_1(vector_type_name, offset_type, id_type, element_type, allocator, callbacker) \
     bool vector_type_name##VectorIsEmpty(vector_type_name##Vector* vector) { \
         return vector->count == 0; \
     } \
@@ -74,7 +74,7 @@ extern "C" {
     element_type* vector_type_name##VectorGetArray(vector_type_name##Vector* vector) { \
         return vector->obj_arr; \
     } \
-    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, offset_type index) { \
+    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, id_type index) { \
         return &vector->obj_arr[index]; \
     } \
     void vector_type_name##VectorResetCapacity(vector_type_name##Vector* vector, offset_type capacity) { \
@@ -134,7 +134,7 @@ extern "C" {
     void vector_type_name##VectorRelease(vector_type_name##Vector* vector);
 
 
-#define LIBYUC_CONTAINER_VECTOR_MODE_INLINE_DYNAMIC_DEFINE_1(vector_type_name, offset_type, element_type, allocator, callbacker) \
+#define LIBYUC_CONTAINER_VECTOR_MODE_INLINE_DYNAMIC_DEFINE_1(vector_type_name, offset_type, id_type, element_type, allocator, callbacker) \
     bool vector_type_name##VectorIsEmpty(vector_type_name##Vector* vector) { \
         return *vector == NULL || (*vector)->count == 0; \
     } \
@@ -154,7 +154,7 @@ extern "C" {
         if (*vector == NULL) return NULL; \
         return (*vector)->obj_arr; \
     } \
-    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, offset_type index) { \
+    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, id_type index) { \
         if (*vector == NULL) return NULL; \
         return &(*vector)->obj_arr[index]; \
     } \
@@ -205,7 +205,7 @@ extern "C" {
 #define LIBYUC_CONTAINER_VECTOR_DECLARATION(vector_type_name, mode, offset_type, id_type, element_type, static_count) \
     mode##_DECLARATION_1(vector_type_name, offset_type, element_type, static_count) \
     typedef struct _##vector_type_name##VectorIterator { \
-        offset_type cur_index; \
+        id_type cur_index; \
     } vector_type_name##VectorIterator; \
     mode##_DECLARATION_2(vector_type_name, offset_type) \
     \
@@ -213,7 +213,7 @@ extern "C" {
     void vector_type_name##VectorSetCount(vector_type_name##Vector* vector, offset_type count); \
     offset_type vector_type_name##VectorGetCapacity(vector_type_name##Vector* vector); \
     element_type* vector_type_name##VectorGetArray(vector_type_name##Vector* vector); \
-    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, offset_type index); \
+    element_type* vector_type_name##VectorIndex(vector_type_name##Vector* vector, id_type index); \
     \
     element_type* vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* vector, const element_type* obj, offset_type count); \
     element_type* vector_type_name##VectorPushTail(vector_type_name##Vector* vector, const element_type* obj); \
@@ -232,42 +232,42 @@ extern "C" {
 * 提供_GetKey方法，即可支持O(n)的Find、Put、Delete
 */
 #define LIBYUC_CONTAINER_VECTOR_DEFINE(vector_type_name, mode, offset_type, id_type, element_type, key_type, accessor, allocator, callbacker, comparer, referencer) \
-    mode##_DEFINE_1(vector_type_name, offset_type, element_type, allocator, callbacker) \
+    mode##_DEFINE_1(vector_type_name, offset_type, id_type, element_type, allocator, callbacker) \
     element_type* vector_type_name##VectorPushTail(vector_type_name##Vector* vector, const element_type* obj) { \
         if (vector_type_name##VectorGetCapacity(vector) <= vector_type_name##VectorGetCount(vector)) { \
             mode##_DEFINE_2(vector_type_name, 1) \
         } \
-        MemoryCopy(vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector)), obj, sizeof(element_type)); \
+        MemoryCopy(vector_type_name##VectorIndex(vector, (id_type)vector_type_name##VectorGetCount(vector)), obj, sizeof(element_type)); \
         vector_type_name##VectorSetCount(vector, vector_type_name##VectorGetCount(vector) + 1); \
-        return vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector) - 1); \
+        return vector_type_name##VectorIndex(vector, (id_type)vector_type_name##VectorGetCount(vector) - 1); \
     } \
     element_type* vector_type_name##VectorPushMultipleTail(vector_type_name##Vector* vector, const element_type* obj, offset_type count) { \
-        if (vector_type_name##VectorGetCapacity(vector) <= vector_type_name##VectorGetCount(vector) + count) { \
+        if (vector_type_name##VectorGetCapacity(vector) <= (id_type)vector_type_name##VectorGetCount(vector) + (id_type)count) { \
             mode##_DEFINE_2(vector_type_name, count) \
         } \
         MemoryCopy(vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector)), obj, sizeof(element_type) * count); \
         vector_type_name##VectorSetCount(vector, vector_type_name##VectorGetCount(vector) + count); \
-        return vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector) - count); \
+        return vector_type_name##VectorIndex(vector, (id_type)vector_type_name##VectorGetCount(vector) - (id_type)count); \
     } \
     element_type* vector_type_name##VectorGetTail(vector_type_name##Vector* vector) { \
         if (vector_type_name##VectorGetCount(vector) == 0) { \
             return NULL; \
         } \
-        return vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector)-1); \
+        return vector_type_name##VectorIndex(vector, (id_type)vector_type_name##VectorGetCount(vector)-1); \
     } \
     element_type* vector_type_name##VectorPopTail(vector_type_name##Vector* vector) { \
         if (vector_type_name##VectorGetCount(vector) == 0) { \
             return NULL; \
         } \
         vector_type_name##VectorSetCount(vector, vector_type_name##VectorGetCount(vector) - 1); \
-        return vector_type_name##VectorIndex(vector, vector_type_name##VectorGetCount(vector)); \
+        return vector_type_name##VectorIndex(vector, (id_type)vector_type_name##VectorGetCount(vector)); \
     } \
     \
-    LIBYUC_ALGORITHM_ARRAY_DEFINE(vector_type_name##Vector, offset_type, element_type, key_type, accessor, comparer, referencer) \
+    LIBYUC_ALGORITHM_ARRAY_DEFINE(vector_type_name##Vector, offset_type, id_type, element_type, key_type, accessor, comparer, referencer) \
     \
     element_type* vector_type_name##VectorPut(vector_type_name##Vector* vector, const element_type* obj) { \
         const key_type* key = accessor##_GetKey(vector, obj); \
-        offset_type index = vector_type_name##VectorArrayFind(vector_type_name##VectorGetArray(vector), vector_type_name##VectorGetCount(vector), key); \
+        id_type index = vector_type_name##VectorArrayFind(vector_type_name##VectorGetArray(vector), vector_type_name##VectorGetCount(vector), key); \
         if (index == referencer##_InvalidId) { \
             return vector_type_name##VectorPushTail(vector, obj); \
         } else { \

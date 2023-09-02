@@ -267,6 +267,7 @@ LIBYUC_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, LIBYUC_CONTAINE
 #define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
 LIBYUC_ALGORITHM_ARRAY_DEFINE(
     ArNodeKey, 
+    size_t,
     ptrdiff_t, 
     uint8_t, 
     uint8_t, 
@@ -275,7 +276,8 @@ LIBYUC_ALGORITHM_ARRAY_DEFINE(
     AR_TREE_ARRAY_REFERENCER
 )
 LIBYUC_ALGORITHM_ARRAY_DEFINE(
-    ArNodeChild, 
+    ArNodeChild,
+    size_t,
     ptrdiff_t, 
     ArNode*, 
     ArNode*,
