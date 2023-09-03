@@ -11,7 +11,7 @@
 #include <libyuc/container/experimental/rb_tree.h>
 #endif
 //#include <libyuc/container/bplus_tree.h>
-#include <libyuc/container/hash_list.h>
+#include <libyuc/container/lru_list.h>
 #include <libyuc/space_manager/buddy.h>
 
 #include <libyuc/container/bplus_tree.h>
@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 
-LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(, int32_t)
+LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(, int32_t, int32_t)
 
 #pragma pack(push) 
 #pragma pack(4)

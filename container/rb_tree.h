@@ -21,17 +21,17 @@ typedef enum {
     kRbRed,
 } RbColor;
 
-#define LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack_name, id_type, offset_type) \
+#define LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack_name, id_type, count_type) \
     rb_tree_type_name##RbBsStackVector stack_name; \
     rb_tree_type_name##RbBsStackVectorInit(&stack_name); \
 
-#define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, offset_type, key_type) \
+#define LIBYUC_CONTAINER_RB_TREE_DECLARATION(rb_tree_type_name, id_type, count_type, key_type) \
     LIBYUC_CONTAINER_BS_TREE_DECLARATION( \
         rb_tree_type_name##Rb, \
         id_type, \
-        offset_type, \
+        count_type, \
         key_type, \
-        sizeof(offset_type) * 8 * 2 /* 2 * log(n + 1) */ \
+        sizeof(count_type) * 8 * 2 /* 2 * log(n + 1) */ \
         ) \
     typedef struct _##rb_tree_type_name##RbEntry { \
         union { \
@@ -59,7 +59,7 @@ typedef enum {
     id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id); \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, key_type* key); \
     bool rb_tree_type_name##RbTreeDeleteByIterator(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
-    offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree); \
+    count_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree); \
     \
     id_type rb_tree_type_name##RbTreeIteratorLocate(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator, key_type* key, int8_t* cmp_status); \
     id_type rb_tree_type_name##RbTreeIteratorFirst(rb_tree_type_name##RbTree* tree, rb_tree_type_name##RbTreeIterator* iterator); \
@@ -72,11 +72,11 @@ typedef enum {
 
 
 // 访问器需要提供_GetKey、_Get/SetRight、_Get/SetLeft、_Set/GetColor方法
-#define LIBYUC_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
+#define LIBYUC_CONTAINER_RB_TREE_DEFINE(rb_tree_type_name, id_type, count_type, key_type, referencer, accessor, comparer) \
     LIBYUC_CONTAINER_BS_TREE_DEFINE( \
     rb_tree_type_name##Rb, \
     id_type, \
-    offset_type, \
+    count_type, \
     key_type, \
     referencer, \
     accessor, \
@@ -339,7 +339,7 @@ typedef enum {
         return rb_tree_type_name##RbBsTreeFind(&tree->bs_tree, stack, key); \
     } \
     id_type rb_tree_type_name##RbTreeFind(rb_tree_type_name##RbTree* tree, key_type* key) { \
-        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, count_type); \
         return rb_tree_type_name##RbTreeFindInternal(&tree->bs_tree, &stack, key); \
     } \
     /*
@@ -347,7 +347,7 @@ typedef enum {
     * 允许重复key，但插入同一个节点时返回false
     */ \
     bool rb_tree_type_name##RbTreeInsert(rb_tree_type_name##RbTree* tree, id_type insert_entry_id) { \
-        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, count_type); \
         if(!rb_tree_type_name##RbBsTreeInsert(&tree->bs_tree, &stack, insert_entry_id)) return false; \
         rb_tree_type_name##RbTreeInsertFixup(tree, &stack, insert_entry_id); \
         return true; \
@@ -357,7 +357,7 @@ typedef enum {
     * 允许覆盖重复key，返回被覆盖的原entry，否则InvalidId，如果put_entry_id已经被插入过了，也会被返回(返回值 == put_entry_id)
     */ \
     id_type rb_tree_type_name##RbTreePut(rb_tree_type_name##RbTree* tree, id_type put_entry_id) { \
-        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, count_type); \
         id_type old_id = rb_tree_type_name##RbBsTreePut(&tree->bs_tree, &stack, put_entry_id); \
         if (old_id == referencer##_InvalidId) rb_tree_type_name##RbTreeInsertFixup(tree, &stack, put_entry_id); \
         return old_id; \
@@ -386,7 +386,7 @@ typedef enum {
         return true; \
     } \
     bool rb_tree_type_name##RbTreeDelete(rb_tree_type_name##RbTree* tree, key_type* key) { \
-        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, count_type); \
         id_type del_entry_id = rb_tree_type_name##RbTreeFindInternal(&tree->bs_tree, &stack, key); \
         if (del_entry_id == referencer##_InvalidId) return false; \
         return rb_tree_type_name##RbTreeDeleteInternal(tree, &stack, del_entry_id); \
@@ -397,8 +397,8 @@ typedef enum {
         iterator->cur_id = referencer##_InvalidId; \
         return success; \
     } \
-    offset_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
-        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, offset_type); \
+    count_type rb_tree_type_name##RbTreeGetCount(rb_tree_type_name##RbTree* tree) { \
+        LIBYUC_CONTAINER_RB_TREE_STACK_BUILD(rb_tree_type_name, stack, id_type, count_type); \
         return rb_tree_type_name##RbBsTreeGetCount((rb_tree_type_name##RbBsTree*)tree, &stack); \
     } \
     /*
@@ -437,16 +437,16 @@ typedef enum {
     } \
     void rb_tree_type_name##RbTreeIteratorCopy(rb_tree_type_name##RbTreeIterator* dst_iterator, const rb_tree_type_name##RbTreeIterator* src_iterator) { \
         dst_iterator->cur_id = src_iterator->cur_id; \
-        offset_type count = rb_tree_type_name##RbBsStackVectorGetCount(&src_iterator->stack); \
+        count_type count = rb_tree_type_name##RbBsStackVectorGetCount(&src_iterator->stack); \
         rb_tree_type_name##RbBsStackVectorSetCount(&dst_iterator->stack, count); \
-        for (offset_type i = 0; i < count; i++) { \
+        for (count_type i = 0; i < count; i++) { \
             *rb_tree_type_name##RbBsStackVectorIndex(&dst_iterator->stack, i) = *rb_tree_type_name##RbBsStackVectorIndex(&src_iterator->stack, i); \
         } \
     } \
     /*
     * 验证红黑树性质
     */ \
-    static bool rb_tree_type_name##RbTreeCheckPath(rb_tree_type_name##RbTree* tree, id_type parent_id, id_type entry_id, offset_type cur_high, offset_type max_high) { \
+    static bool rb_tree_type_name##RbTreeCheckPath(rb_tree_type_name##RbTree* tree, id_type parent_id, id_type entry_id, count_type cur_high, count_type max_high) { \
         if (entry_id == referencer##_InvalidId) { \
             return cur_high == max_high; \
         } \
@@ -474,7 +474,7 @@ typedef enum {
         bool correct = false; \
         do { \
             if (accessor##_GetColor(tree, entry) != kRbBlack) break; \
-            offset_type high = 1; \
+            count_type high = 1; \
             while (accessor##_GetLeft(tree, entry) != referencer##_InvalidId) { \
                 id_type entry_id = accessor##_GetLeft(tree, entry); \
                 referencer##_Dereference(tree, entry); \

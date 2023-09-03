@@ -16,13 +16,13 @@ extern "C" {
 /*
 * 嵌入平衡因子的Avl树
 */
-#define LIBYUC_CONTAINER_AVL_TREE_DECLARATION(avl_tree_type_name, id_type, offset_type, key_type) \
+#define LIBYUC_CONTAINER_AVL_TREE_DECLARATION(avl_tree_type_name, id_type, count_type, key_type) \
     LIBYUC_CONTAINER_BS_TREE_DECLARATION( \
         avl_tree_type_name##Avl, \
         id_type, \
-        offset_type, \
+        count_type, \
         key_type, \
-        sizeof(offset_type) * 8 * 2 /* 1.44 * log(n + 2) - 1.328 */ \
+        sizeof(count_type) * 8 * 2 /* 1.44 * log(n + 2) - 1.328 */ \
         ) \
     typedef struct _##avl_tree_type_name##AvlEntry { \
         union { \
@@ -48,11 +48,11 @@ extern "C" {
     bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree); \
 
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetBalanceFactor方法
-#define LIBYUC_CONTAINER_AVL_TREE_DEFINE(avl_tree_type_name, id_type, offset_type, key_type, referencer, accessor, comparer) \
+#define LIBYUC_CONTAINER_AVL_TREE_DEFINE(avl_tree_type_name, id_type, count_type, key_type, referencer, accessor, comparer) \
     LIBYUC_CONTAINER_BS_TREE_DEFINE( \
         avl_tree_type_name##Avl, \
         id_type, \
-        offset_type, \
+        count_type, \
         key_type, \
         referencer, \
         accessor, \
@@ -376,7 +376,7 @@ extern "C" {
     /*
     * 验证avl树性质
     */ \
-    static bool avl_tree_type_name##AvlTreeCheckPath(avl_tree_type_name##AvlTree* tree, id_type entry_id, offset_type* cur_height) { \
+    static bool avl_tree_type_name##AvlTreeCheckPath(avl_tree_type_name##AvlTree* tree, id_type entry_id, count_type* cur_height) { \
         if (entry_id == referencer##_InvalidId) { \
             ++*cur_height; \
             return true; \
@@ -387,7 +387,7 @@ extern "C" {
         do { \
             entry = referencer##_Reference(tree, entry_id); \
             ++*cur_height; \
-            offset_type left_height = *cur_height, right_height = *cur_height; \
+            count_type left_height = *cur_height, right_height = *cur_height; \
             correct = avl_tree_type_name##AvlTreeCheckPath(tree, accessor##_GetLeft(tree, entry), &left_height) && avl_tree_type_name##AvlTreeCheckPath(tree, accessor##_GetRight(tree, entry), &right_height); \
             correct = correct && (left_height - right_height == accessor##_GetBalanceFactor(tree, entry)); \
             *cur_height = max(left_height, right_height); \
@@ -399,7 +399,7 @@ extern "C" {
     bool avl_tree_type_name##AvlTreeVerify(avl_tree_type_name##AvlTree* tree) { \
         avl_tree_type_name##AvlEntry* entry = referencer##_Reference(tree, tree->root); \
         if (!entry) return true; \
-        offset_type cur_height = 0; \
+        count_type cur_height = 0; \
         bool correct = avl_tree_type_name##AvlTreeCheckPath(tree, tree->root, &cur_height); \
         referencer##_Dereference(tree, entry); \
         return correct; \

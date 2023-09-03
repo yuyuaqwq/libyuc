@@ -24,36 +24,36 @@ extern "C" {
 #define LIBYUC_SPACE_MANAGER_BUDDY_RIGHT_LEAF(index) LIBYUC_CONTAINER_CB_TREE_ONE_GET_RIGHT(index)
 
 
-#define LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(buddy_type_name, id_type) \
+#define LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(buddy_type_name, id_type, count_type) \
     typedef struct _##buddy_type_name##Buddy { \
         /*uint8_t size;*/ \
         uint8_t logn[];        /* 实际存放指数+1，因为0用来表示没有空间，而2^0应该是1 */ \
     } buddy_type_name##Buddy; \
-    buddy_type_name##Buddy* buddy_type_name##BuddyCreate(id_type size); \
-    bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, id_type size); \
-    id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, id_type size); \
-    bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, id_type size); \
-    id_type buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset); \
-    id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset); \
-    id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy); \
-    id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
+    buddy_type_name##Buddy* buddy_type_name##BuddyCreate(count_type size); \
+    bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, count_type size); \
+    id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, count_type size); \
+    bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, count_type size); \
+    count_type buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset); \
+    count_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset); \
+    count_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy); \
+    count_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy); \
 
-#define LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(buddy_type_name, id_type, indexer, allocator) \
-    buddy_type_name##Buddy* buddy_type_name##BuddyCreate(id_type size) { \
+#define LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(buddy_type_name, id_type, count_type, indexer, allocator) \
+    buddy_type_name##Buddy* buddy_type_name##BuddyCreate(count_type size) { \
         buddy_type_name##Buddy* buddy; \
-        id_type alloc_size = size * sizeof(uint8_t) * 2; \
-        if (sizeof(id_type) <= 2) { \
+        count_type alloc_size = size * sizeof(uint8_t) * 2; \
+        if (sizeof(count_type) <= 2) { \
             alloc_size /= 2; \
         } \
         buddy = (buddy_type_name##Buddy*)allocator##_CreateMultiple(NULL, uint8_t, alloc_size); \
         return buddy; \
     } \
-    bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, id_type size) { \
+    bool buddy_type_name##BuddyInit(buddy_type_name##Buddy* buddy, count_type size) { \
         if (size < 1 || !LIBYUC_ALGORITHM_TWO_IS_POWER_OF_2(size)) { \
             return false; \
         } \
         indexer##_Set(buddy, buddy->logn, 0, LIBYUC_ALGORITHM_TWO_TO_EXPONENT_OF_2(size) + 1); \
-        id_type node_size = size * 2; \
+        count_type node_size = size * 2; \
         for (id_type i = 1; i < 2 * size; i++) { \
             if (LIBYUC_ALGORITHM_TWO_IS_POWER_OF_2(i)) { \
                 node_size /= 2; \
@@ -62,7 +62,7 @@ extern "C" {
         } \
         return true; \
     } \
-    id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, id_type size) { \
+    id_type buddy_type_name##BuddyAlloc(buddy_type_name##Buddy* buddy, count_type size) { \
         if (size == 0) { \
             return -1; \
         } \
@@ -74,7 +74,7 @@ extern "C" {
         } \
         /* 从二叉树根节点向下找正好符合分配要求的尺寸 */ \
         id_type index = 1; \
-        id_type node_size = LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
+        count_type node_size = LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
         id_type size_logn = LIBYUC_ALGORITHM_TWO_TO_EXPONENT_OF_2(size) + 1; \
         for (; node_size != size; node_size /= 2) { \
             /* 优先找更小块的，就不必分割大块的了 */ \
@@ -101,9 +101,9 @@ extern "C" {
         } \
         return offset; \
     } \
-    bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, id_type size) { \
+    bool buddy_type_name##BuddyAllocByOffset(buddy_type_name##Buddy* buddy, id_type offset, count_type size) { \
          assert(offset != -1 && offset < LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
-        id_type node_size = 1; \
+        count_type node_size = 1; \
         /* 定位到最底层叶子节点，并向上找到匹配size的节点 */ \
         id_type index = offset + LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
         while (size < node_size) { \
@@ -125,9 +125,9 @@ extern "C" {
         } \
         return true; \
     } \
-    id_type buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
+    count_type buddy_type_name##BuddyFree(buddy_type_name##Buddy* buddy, id_type offset) { \
          assert(offset != -1 && offset < LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
-        id_type node_size_logn = 1; \
+        count_type node_size_logn = 1; \
         /* 定位到最底层叶子节点，并向上找到为0的节点(被分配的节点) */ \
         id_type index = offset + LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
         for (; indexer##_Get(buddy, buddy->logn, index); index = LIBYUC_SPACE_MANAGER_BUDDY_PARENT(index)) { \
@@ -152,9 +152,9 @@ extern "C" {
         } \
         return alloc_aize; \
     } \
-    id_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset) { \
-            assert(offset != -1 && offset < LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
-        id_type node_size_logn = 1; \
+    count_type buddy_type_name##BuddyGetAllocBlockSize(buddy_type_name##Buddy* buddy, id_type offset) { \
+         assert(offset != -1 && offset < LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(/*buddy->size*/indexer##_Get(buddy, buddy->logn, 0)-1)); \
+        count_type node_size_logn = 1; \
         /* 定位到最底层叶子节点，并向上找到为0的节点(被分配的节点) */ \
         id_type index = offset + LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
         for (; indexer##_Get(buddy, buddy->logn, index); index = LIBYUC_SPACE_MANAGER_BUDDY_PARENT(index)) { \
@@ -163,10 +163,10 @@ extern "C" {
         } \
         return LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(node_size_logn-1); \
     } \
-    id_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy) { \
+    count_type buddy_type_name##BuddyGetMaxFreeCount(buddy_type_name##Buddy* buddy) { \
         return LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 1)-1); \
     } \
-    id_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy) { \
+    count_type buddy_type_name##BuddyGetMaxCount(buddy_type_name##Buddy* buddy) { \
         return LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(indexer##_Get(buddy, buddy->logn, 0)-1); \
     } \
 

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#define LIBYUC_CONTAINER_LIST_DECLARATION(list_type_name, id_type, offset_type) \
+#define LIBYUC_CONTAINER_LIST_DECLARATION(list_type_name, id_type, count_type) \
     typedef struct _##list_type_name##ListEntry { \
         id_type prev; \
         id_type next; \
@@ -29,14 +29,14 @@ extern "C" {
     void list_type_name##ListDeleteFirst(list_type_name##ListHead* head); \
     void list_type_name##ListDeleteLast(list_type_name##ListHead* head); \
     void list_type_name##ListReplaceEntry(list_type_name##ListHead* head, id_type entry_id, id_type new_entry_id); \
-    offset_type list_type_name##ListGetCount(list_type_name##ListHead* head); \
+    count_type list_type_name##ListGetCount(list_type_name##ListHead* head); \
     id_type list_type_name##ListFirst(list_type_name##ListHead* head); \
     id_type list_type_name##ListLast(list_type_name##ListHead* head); \
     id_type list_type_name##ListPrev(list_type_name##ListHead* head, id_type cur_id); \
     id_type list_type_name##ListNext(list_type_name##ListHead* head, id_type cur_id); \
 
 
-#define LIBYUC_CONTAINER_LIST_DEFINE(list_type_name, id_type, offset_type, referencer) \
+#define LIBYUC_CONTAINER_LIST_DEFINE(list_type_name, id_type, count_type, referencer) \
     void list_type_name##ListInit(list_type_name##ListHead* head) { \
         head->last = referencer##_InvalidId; \
         head->first = referencer##_InvalidId; \
@@ -151,8 +151,8 @@ extern "C" {
         referencer##_Dereference(head, entry); \
         referencer##_Dereference(head, new_entry); \
     } \
-    offset_type list_type_name##ListGetCount(list_type_name##ListHead* head) { \
-        offset_type count = 0; \
+    count_type list_type_name##ListGetCount(list_type_name##ListHead* head) { \
+        count_type count = 0; \
         id_type cur_id = list_type_name##ListFirst(head); \
         while (cur_id != referencer##_InvalidId) { \
             count++; \

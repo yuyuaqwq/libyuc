@@ -135,12 +135,13 @@ forceinline static void MemoryFree(void* ptr) {
 
 /*
 * id_type
-* 表示引用的id，通常可以直接传值
-*/
-
-/*
-* offset_type
-* 表示在对象集中对对象引用的表示，可能是count，可能是index
+* 表示在一个对象集中对象的唯一id
+* 该对象通常需要间接访问，故存在从id转换为指针的过程，通常可以直接传值
+* 如在数组中是index
+* 
+* count_type
+* 统计对象集的对象数量的类型
+* 通常是unsigned类型
 */
 
 

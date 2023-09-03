@@ -284,7 +284,7 @@ void PrintRB(IntRbTree* tree, IntRbEntry* entry, int Level) {
 	PrintRB(tree, INT_RB_TREE_ACCESSOR_GetLeft(tree, entry), Level + 1);
 }
 
-#include <libyuc/container/hash_list.h>
+#include <libyuc/container/lru_list.h>
 
 #include <thread>
 
@@ -1496,13 +1496,13 @@ int main() {
 	//TestTsSortSinglyList();
 	//TestTsSkipList();
 	//
-	//TestSkipList();
+	TestSkipList();
 	TestBPlusTree();
 
-	//TestAvl();
+	TestAvl();
 	TestArt();
-	//TestRb();
-	//TestHashTable();
+	TestRb();
+	TestHashTable();
 
 	
 	//goto qqqqqq;

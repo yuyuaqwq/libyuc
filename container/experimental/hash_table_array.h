@@ -24,24 +24,24 @@ extern "C" {
 
 
 
-#define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, offset_type, element_type, key_type) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DECLARATION(hash_table_type_name, count_type, element_type, key_type) \
     LIBYUC_CONTAINER_VECTOR_DECLARATION( \
         hash_table_type_name##HashElement, \
         LIBYUC_CONTAINER_VECTOR_MODE_INLINE_DYNAMIC, \
-        offset_type, \
-        offset_type, \
+        count_type, \
+        count_type, \
         element_type \
         ) \
     \
     LIBYUC_CONTAINER_VECTOR_DECLARATION( \
         hash_table_type_name##HashBucket, \
         LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
-        offset_type, \
-        offset_type, \
+        count_type, \
+        count_type, \
         struct _##hash_table_type_name##HashTableEntry \
         ) \
     typedef struct _##hash_table_type_name##HashTableIterator{ \
-        offset_type cur_index; \
+        count_type cur_index; \
         hash_table_type_name##HashElementVectorIterator element_iter; \
     } hash_table_type_name##HashTableIterator; \
     \
@@ -55,15 +55,15 @@ extern "C" {
         hash_table_type_name##HashElementVector obj_vector; \
     } hash_table_type_name##HashTableEntry; \
     typedef struct _##hash_table_type_name##HashTable { \
-        offset_type max_detection_count; \
-        offset_type load_fator; \
-        offset_type shift; \
+        count_type max_detection_count; \
+        count_type load_fator; \
+        count_type shift; \
         hash_table_type_name##HashBucketVector bucket; \
     } ##hash_table_type_name##HashTable; \
     \
-    bool hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator); \
+    bool hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, count_type capacity, count_type load_fator); \
     void hash_table_type_name##HashTableRelease(hash_table_type_name##HashTable* table); \
-    offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
+    count_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table); \
     element_type* hash_table_type_name##HashTableFind(hash_table_type_name##HashTable* table, const key_type* key); \
     void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj); \
     bool hash_table_type_name##HashTableDelete(hash_table_type_name##HashTable* table, const key_type* key); \
@@ -71,15 +71,15 @@ extern "C" {
 
 
 // 访问器需要提供_GetKey、_SetKey方法
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, offset_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer) \
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFINE(hash_table_type_name, count_type, element_type, key_type, allocator, accessor, element_mover, hasher, comparer) \
     /*
     * 动态数组
     */ \
     LIBYUC_CONTAINER_VECTOR_DEFINE(\
         hash_table_type_name##HashElement, \
         LIBYUC_CONTAINER_VECTOR_MODE_INLINE_DYNAMIC, \
-        offset_type, \
-        offset_type, \
+        count_type, \
+        count_type, \
         element_type, \
         key_type, \
         accessor, \
@@ -91,8 +91,8 @@ extern "C" {
     LIBYUC_CONTAINER_VECTOR_DEFINE( \
         hash_table_type_name##HashBucket, \
         LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC, \
-        offset_type, \
-        offset_type, \
+        count_type, \
+        count_type, \
         hash_table_type_name##HashTableEntry, \
         hash_table_type_name##HashTableEntry, \
         LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT, \
@@ -105,18 +105,18 @@ extern "C" {
     /*
     * 哈希表
     */ \
-    static forceinline offset_type hash_table_type_name##HashModIndex(hash_table_type_name##HashTable* table, offset_type index) { \
+    static forceinline count_type hash_table_type_name##HashModIndex(hash_table_type_name##HashTable* table, count_type index) { \
         return index & table->max_detection_count/* % hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket) */; \
     } \
-    static forceinline offset_type hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
+    static forceinline count_type hash_table_type_name##HashGetIndex(hash_table_type_name##HashTable* table, const key_type* key) { \
         return hasher(table, key) >> table->shift; \
     } \
-    static forceinline offset_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
+    static forceinline count_type hash_table_type_name##HashGetCurrentLoadFator(hash_table_type_name##HashTable* table) { \
         return hash_table_type_name##HashBucketVectorGetCount(&table->bucket) * 100 / hash_table_type_name##HashBucketVectorGetCapacity(&table->bucket); \
     } \
-    offset_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return hash_table_type_name##HashBucketVectorGetCount(&table->bucket); } \
+    count_type hash_table_type_name##HashTableGetCount(hash_table_type_name##HashTable* table){ return hash_table_type_name##HashBucketVectorGetCount(&table->bucket); } \
     /* 重映射 */ \
-    static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, offset_type new_capacity) {    \
+    static void hash_table_type_name##HashRehash(hash_table_type_name##HashTable* table, count_type new_capacity) {    \
         hash_table_type_name##HashTable temp_table; \
         hash_table_type_name##HashTableInit(&temp_table, new_capacity, table->load_fator); \
         hash_table_type_name##HashTableIterator iter; \
@@ -129,7 +129,7 @@ extern "C" {
         hash_table_type_name##HashTableRelease(table); \
         MemoryCopy(table, &temp_table, sizeof(temp_table)); \
     } \
-    bool hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, offset_type capacity, offset_type load_fator) { \
+    bool hash_table_type_name##HashTableInit(hash_table_type_name##HashTable* table, count_type capacity, count_type load_fator) { \
         if (capacity < 2) { \
             capacity = LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE; \
         } \
@@ -203,9 +203,9 @@ extern "C" {
     } \
     void hash_table_type_name##HashTablePut(hash_table_type_name##HashTable* table, const element_type* obj) { \
         key_type* key = accessor##_GetKey(table, obj); \
-        offset_type cur_index = hash_table_type_name##HashGetIndex(table, key); \
+        count_type cur_index = hash_table_type_name##HashGetIndex(table, key); \
         hash_table_type_name##HashTableEntry* entry = hash_table_type_name##HashBucketVectorIndex(&table->bucket, cur_index); \
-        offset_type old_count = hash_table_type_name##HashElementVectorGetCount(&entry->obj_vector); \
+        count_type old_count = hash_table_type_name##HashElementVectorGetCount(&entry->obj_vector); \
         hash_table_type_name##HashElementVectorPut(&entry->obj_vector, obj); \
         if (old_count < hash_table_type_name##HashElementVectorGetCount(&entry->obj_vector)) \
             hash_table_type_name##HashBucketVectorSetCount(&table->bucket, hash_table_type_name##HashBucketVectorGetCount(&table->bucket) + 1); \
