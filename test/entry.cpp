@@ -1292,6 +1292,30 @@ void TestBPlusTree() {
 		}
 	}
 	printf("查找耗时：%dms\n", GetTickCount() - l);
+	
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		// int* qvq = CreateObject(int);
+		// printf("%d", i);
+		if (!BTreeDelete(&btree, &arr2[i]->key)) {
+			printf("找不到, %d", &arr2[i]->key);
+		}
+		if (count <= 30) {
+			printf("删除%d\n", arr2[i]->key);
+			PrintBTree(&btree, btree.root, 0, 0);
+			printf("\n\n\n\n");
+		}
+
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+	BTreeIterator iter;
+	element_type* ele = BTreeIteratorFirst(&btree, &iter);
+	while (ele) {
+		printf("%d  ", *ele);
+		ele = BTreeIteratorNext(&btree, &iter);
+	}
 
 	//printf("\nB+树：\n");
 	//IntBPlusTree bpTree;
@@ -1334,27 +1358,35 @@ void TestBPlusTree() {
 	//}
 	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	/*printf("\nbtree:\n");
-	l = GetTickCount();
-	btree::set<int64_t> bset;
-	for (int i = 0; i < count; i++) {
-		bset.insert(arr2[i]->key);
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		if (bset.find(arr2[i]->key) == bset.end()) {
-			printf("找不到");
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	//std::vector<std::string> str_arr(count);
+	//for (int i = 0; i < count; i++) {
+	//	str_arr[i] =
+	//		std::to_string(arr2[i]->key);
+	//}
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		bset.erase(arr2[i]->key);
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);*/
+
+	//printf("\nbtree:\n");
+	//l = GetTickCount();
+	//btree::set<std::string> bset;
+	//for (int i = 0; i < count; i++) {
+	//	bset.insert(str_arr[i]);
+	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (bset.find(str_arr[i]) == bset.end()) {
+	//		printf("找不到");
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
+
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	bset.erase(str_arr[i]);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
 
 	printf("\nstl rb:\n");
