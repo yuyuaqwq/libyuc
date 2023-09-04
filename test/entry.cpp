@@ -425,7 +425,7 @@ struct QVQ {
 };
 
 DWORD l;
-int count = 10000000;
+int count = 200000;
 std::vector<QVQ*> arr2;
 //int seed = GetTickCount() + rand();
 int seed = 377884212;
@@ -864,7 +864,7 @@ void TestSkipList() {
 	SkipListInit(&list);
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
-		SkipListPut(&list, (arr2[i]->key));
+		SkipListPut(&list, (&arr2[i]->key));
 		if (count < 20) {
 			//PrintSkipList(&list);
 			//printf("\n\n\n\n");
@@ -874,14 +874,27 @@ void TestSkipList() {
 	
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
-		if (!SkipListFind(&list, (arr2[i]->key))) {
+		if (!SkipListFind(&list, (&arr2[i]->key))) {
 			printf("找不到");
 		}
 	}
 	printf("查找耗时：%dms\n", GetTickCount() - l);
+
+	//int64_t old = 0;
+	//auto entry = list.head[0].next;
+	//while (entry) {
+	//	if (entry->element < old) {
+	//		printf("错误");
+	//	}
+	//	printf("%llx ", old);
+	//	old = entry->element;
+	//	entry = entry->upper[0].next;
+	//}
+
 	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
-		if (!SkipListDelete(&list, (arr2[i]->key))) {
+
+		if (!SkipListDelete(&list, (&arr2[i]->key))) {
 			printf("找不到");
 		}
 		if (count < 20) {
@@ -1020,7 +1033,7 @@ _re:
 
 	for (int i = 0; i < thread_count; i++) {
 		t.push_back(std::thread(TestTsSkipListInsertThread, &list, i));
-		t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
+		//t.push_back(std::thread(TestTsSkipListDeleteThread, &list, i));
 	}
 
 	for (auto& thread : t) {
@@ -1029,18 +1042,18 @@ _re:
 
 	printf("插入&删除总耗时：%dms    %d\n", GetTickCount() - l, 0, 0);
 
-	//PrintSkipList(&list);
+	PrintSkipList(&list);
 
-	//t.clear();
-	//l = GetTickCount();
-	//for (int i = 0; i < thread_count; i++) {
-	//	t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
-	//}
+	t.clear();
+	l = GetTickCount();
+	for (int i = 0; i < thread_count; i++) {
+		t.push_back(std::thread(TestTsSkipListFindThread, &list, i));
+	}
 
-	//for (auto& thread : t) {
-	//	thread.join();
-	//}
-	//printf("查找总耗时：%dms\n", GetTickCount() - l);
+	for (auto& thread : t) {
+		thread.join();
+	}
+	printf("查找总耗时：%dms\n", GetTickCount() - l);
 
 	//for (int i = 0; i < ptr_arr.size(); i++) {
 	//	if (ptr_arr[i])
@@ -1497,12 +1510,12 @@ int main() {
 	//TestTsSkipList();
 	//
 	TestSkipList();
-	TestBPlusTree();
+	//TestBPlusTree();
 
-	TestAvl();
-	TestArt();
-	TestRb();
-	TestHashTable();
+	//TestAvl();
+	//TestArt();
+	//TestRb();
+	//TestHashTable();
 
 	
 	//goto qqqqqq;
