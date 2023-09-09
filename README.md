@@ -25,11 +25,11 @@
     - 堆
 ## 索引
 - HashTable
-    - 基于于robin hood hashing的哈希表
+    - 基于robin hood hashing的哈希表
 - RbTree
     - 以234树为原型，嵌入颜色的红黑树
 - BPlusTree
-    - 页内嵌入红黑树的B+树
+    - 为磁盘设计的，页内嵌入红黑树的B+树
 ### 实验性
 - AvlTree
     - 嵌入平衡因子的平衡二叉树
@@ -39,3 +39,7 @@
     - 自适应基数树
 - SkipList
     - 跳表
+- BTree
+    - 为内存设计的B树
+- TsSkipList
+    - 无锁跳表
