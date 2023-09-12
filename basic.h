@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 #ifndef Painc
-#define Painc(...) { printf(__VA_ARGS__); __debugbreak();  /* *(int*)0 = 0;*/ }
+#define Painc(...) { /*printf(__VA_ARGS__);*/ __debugbreak();  /* *(int*)0 = 0;*/ }
 #endif
 
 #ifdef NDEBUG
@@ -28,7 +28,6 @@ extern "C" {
 
 #define release_assert(expression, ...) { if(!(expression)){ Painc(__VA_ARGS__); } }
 
-
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline
 #elif defined __GNUC__ // for gcc on Linux/Apple OS X
@@ -37,7 +36,9 @@ extern "C" {
 #define forceinline
 #endif
 
-
+/* 使其优先展开参数 */
+#define MAKE_NAME(class_name, func_name) _MAKE_NAME(class_name, func_name)
+#define _MAKE_NAME(class_name, func_name)  class_name ## func_name
 
 forceinline static void MemorySwap(void* buf1_, void* buf2_, size_t size) {
     uint8_t* buf1 = (uint8_t*)buf1_;

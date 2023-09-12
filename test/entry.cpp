@@ -1272,7 +1272,7 @@ void TestHashTable() {
 #define ssize_t size_t
 #undef max
 #undef min
-#include <cpp-btree/set.h>
+//#include <cpp-btree/set.h>
 
 
 extern "C" {
@@ -1448,7 +1448,6 @@ int main() {
 
 	//InitializeCriticalSection(&cs);
 	//
-
 
 
 
