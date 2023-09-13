@@ -1,24 +1,35 @@
 #pragma once
 
-#include <libyuc/container/vector.h>
-#include <libyuc/container/hash_table.h>
-#include <libyuc/container/experimental/avl_tree.h>
-#define NP
-#ifdef NP
-#include <libyuc/container/rb_tree.h>
-#else
-#include <libyuc/container/experimental/rb_tree.h>
-#endif
-//#include <libyuc/container/bplus_tree.h>
-#include <libyuc/container/lru_list.h>
-#include <libyuc/space_manager/buddy.h>
-
-#include <libyuc/container/bplus_tree.h>
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "C:\Users\gt1\Desktop\wyhash.h"
+
+#define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
+#define LIBYUC_CONTAINER_HASH_TABLE_Type_Element int64_t
+#define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
+#include <libyuc/container/hash_table.h>
+
+
+
+
+//#include <libyuc/container/hash_table.h>
+//#include <libyuc/container/experimental/avl_tree.h>
+//#define NP
+//#ifdef NP
+//#include <libyuc/container/rb_tree.h>
+//#else
+//#include <libyuc/container/experimental/rb_tree.h>
+//#endif
+////#include <libyuc/container/bplus_tree.h>
+//#include <libyuc/container/lru_list.h>
+//#include <libyuc/space_manager/buddy.h>
+//
+//#include <libyuc/container/bplus_tree.h>
+//
+//
+
 
 
 //LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(, int32_t, int32_t)
@@ -43,7 +54,7 @@ extern "C" {
 //
 //
 //
-//#include "C:\Users\gt1\Desktop\wyhash.h"
+
 //
 //#define INT_HASHTABLE_HASHER_KEY(table, key) _wymix(*(key), UINT64_C(0x9E3779B97F4A7C15)) // HashCode_murmur3_fmix64inline(*(key))    // XXH32_int(key)
 //

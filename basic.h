@@ -37,8 +37,8 @@ extern "C" {
 #endif
 
 /* 使其优先展开参数 */
-#define MAKE_NAME(class_name, func_name) _MAKE_NAME(class_name, func_name)
-#define _MAKE_NAME(class_name, func_name)  class_name ## func_name
+#define MAKE_NAME(prefix, func_name) _MAKE_NAME(prefix, func_name)
+#define _MAKE_NAME(prefix, func_name)  prefix ## func_name
 
 forceinline static void MemorySwap(void* buf1_, void* buf2_, size_t size) {
     uint8_t* buf1 = (uint8_t*)buf1_;
