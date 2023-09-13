@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 
+
 #ifdef LIBYUC_CONTAINER_VECTOR_MODE_STATIC
 void VectorInit(Vector* vector) {
     VectorSetCount(vector, 0);
@@ -86,7 +87,7 @@ LIBYUC_CONTAINER_VECTOR_Type_Element* VectorIndex(Vector* vector, LIBYUC_CONTAIN
 
 LIBYUC_CONTAINER_VECTOR_Type_Element* VectorPushTail(Vector* vector, const LIBYUC_CONTAINER_VECTOR_Type_Element* obj) {
     if (VectorGetCapacity(vector) <= VectorGetCount(vector)) {
-
+        VectorExpand(vector, 1);
     }
     MemoryCopy(VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_REFERENCER_Type_Id)VectorGetCount(vector)), obj, sizeof(LIBYUC_CONTAINER_VECTOR_Type_Element));
     VectorSetCount(vector, VectorGetCount(vector) + 1);

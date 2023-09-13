@@ -87,6 +87,9 @@ LIBYUC_CONTAINER_LIST_REFERENCER_Type_Id ListNext(ListHead* head, LIBYUC_CONTAIN
 
 
 #ifndef LIBYUC_TEMPLATE_C_INCLUDE
+#undef ListEntry
+#undef ListHead
+
 #undef ListInit
 #undef ListPutFirst
 #undef ListPutLast
@@ -99,9 +102,6 @@ LIBYUC_CONTAINER_LIST_REFERENCER_Type_Id ListNext(ListHead* head, LIBYUC_CONTAIN
 #undef ListLast
 #undef ListPrev
 #undef ListNext
-
-#undef ListEntry
-#undef ListHead
 
 #undef LIBYUC_CONTAINER_LIST_CLASS_NAME
 #undef LIBYUC_CONTAINER_LIST_REFERENCER_Type_Id

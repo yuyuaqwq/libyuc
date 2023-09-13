@@ -81,17 +81,14 @@ typedef struct HashTableEntry {
 #define LIBYUC_CONTAINER_VECTOR_REFERENCER_Type_Id LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Id
 #include <libyuc/container/vector.h>
 
-
-
+#define HashBucketVector MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVector)
 
 typedef struct HashTable {
     LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset max_detection_count;
     LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset load_fator;
     LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset shift;
-    Vector bucket;
+    HashBucketVector bucket;
 } HashTable;
-
-
 
 
 
@@ -130,6 +127,7 @@ bool HashTableIteratorDelete(struct HashTable* table, HashTableIterator* iter);
 #undef HashTable
 #undef HashTableEntry
 #undef HashTableIterator
+#undef HashBucketVector
 
 #undef HashTableInit
 #undef HashTableRelease
@@ -141,7 +139,6 @@ bool HashTableIteratorDelete(struct HashTable* table, HashTableIterator* iter);
 #undef HashTableIteratorNext
 #undef HashTableIteratorLocate
 #undef HashTableIteratorDelete
-
 
 #undef LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME
 #undef LIBYUC_CONTAINER_HASH_TABLE_Type_Element

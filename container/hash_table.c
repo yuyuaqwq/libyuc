@@ -4,6 +4,14 @@ extern "C" {
 
 #include <libyuc/container/vector.c>
 
+#define HashBucketVectorGetCount MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorGetCount)
+#define HashBucketVectorGetCapacity MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorGetCapacity)
+#define HashBucketVectorInit MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorInit)
+#define HashBucketVectorIndex MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorIndex)
+#define HashBucketVectorRelease MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorRelease)
+#define HashBucketVectorSetCount MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorSetCount)
+
+
 /*
 * 哈希表
 */
@@ -12,7 +20,7 @@ extern "C" {
 #define HashGetCurrentLoadFator MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashGetCurrentLoadFator)
 #define HashEntryExchange MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashEntryExchange)
 #define HashEntryMove MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashEntryMove)
-
+#define HashRehash MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashRehash)
 
 static forceinline LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset HashModIndex(HashTable* table, LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset index) {
     return index & table->max_detection_count/* % HashBucketVectorGetCapacity(&table->bucket) */;
@@ -41,7 +49,7 @@ LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset HashTableGetCount(HashTable* 
     return HashBucketVectorGetCount(&table->bucket); 
 }
 /* 重映射 */
-static void HashRehash(HashTable* table, LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset new_capacity) {   
+static forceinline void HashRehash(HashTable* table, LIBYUC_CONTAINER_HASH_TABLE_REFERENCER_Type_Offset new_capacity) {
     HashTable temp_table;
     HashTableInit(&temp_table, new_capacity, table->load_fator);
     HashTableIterator iter;
@@ -181,8 +189,16 @@ bool HashTableDelete(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_Type_Ke
 }
 #endif
 
+#undef HashBucketVectorGetCount
+#undef HashBucketVectorGetCapacity
+#undef HashBucketVectorInit
+#undef HashBucketVectorIndex
+#undef HashBucketVectorRelease
+#undef HashBucketVectorSetCount
+
 #undef HashModIndex
 #undef HashGetIndex
 #undef HashGetCurrentLoadFatorr
 #undef HashEntryExchange
 #undef HashEntryMove
+#undef HashRehash

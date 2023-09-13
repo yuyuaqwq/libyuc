@@ -83,6 +83,7 @@ typedef struct VectorIterator {
 #define VectorGetCount MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorGetCount)
 #define VectorSetCount MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorSetCount)
 #define VectorGetCapacity MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorGetCapacity)
+#define VectorIsEmpty MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorIsEmpty)
 #define VectorResetCapacity MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorResetCapacity)
 #define VectorGetArray MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorGetArray)
 #define VectorIndex MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorIndex)
@@ -106,6 +107,7 @@ void VectorRelease(Vector* vector);
 void VectorInit(Vector* vector, LIBYUC_CONTAINER_VECTOR_REFERENCER_Type_Offset capacity);
 void VectorRelease(Vector* vector);
 void VectorResetCapacity(Vector* vector, LIBYUC_CONTAINER_VECTOR_REFERENCER_Type_Offset capacity);
+#define VectorExpand MAKE_NAME(LIBYUC_CONTAINER_VECTOR_CLASS_NAME, VectorExpand)
 #endif
 
 LIBYUC_CONTAINER_VECTOR_REFERENCER_Type_Offset VectorGetCount(Vector* vector);
@@ -141,6 +143,8 @@ LIBYUC_CONTAINER_VECTOR_Type_Element* VectorPopTail(Vector* vector);
 #undef VectorGetCapacity
 #undef VectorGetArray
 #undef VectorIndex
+#undef VectorIsEmpty
+#undef VectorExpand
 #undef VectorPushMultipleTail
 #undef VectorPushTail
 #undef VectorGetTail
