@@ -3,6 +3,7 @@ extern "C" {
 #endif
 
 #include <libyuc/container/vector.c>
+#include <libyuc/container/vector.h>
 
 #define HashBucketVectorGetCount MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorGetCount)
 #define HashBucketVectorGetCapacity MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorGetCapacity)
