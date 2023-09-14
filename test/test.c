@@ -2,8 +2,6 @@
 
 #include "test.h"
 
-#include <libyuc/container/hash_table.c>
-
 
 //#define LIBYUC_TEMPLATE_C_INCLUDE
 //#include <libyuc/container/list.h>
@@ -824,146 +822,10 @@
 //	printf("总耗时：%dms    \n", GetTickCount() - l);
 //}
 //
-//void TestAvl() {
-//	printf("\n无父结点Avl树：\n");
-//	IntAvlTree tree;
-//
-//	l = GetTickCount();
-//	//void** buf = (void**)malloc((count / section) * sizeof(void*));
-//
-//	IntAvlBsStackVector stack;
-//	IntAvlBsStackVectorInit(&stack);
-//
-//	for (int j = 0; j < section; j++) {
-//
-//		IntAvlTreeInit(&tree);
-//		l = GetTickCount();
-//		for (int i = 0; i < count / section; i++) {
-//			//if (!IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry)) {
-//			//	//printf("失败%d", i);
-//			//}
-//			//buf[i] = malloc(16);
-//
-//			IntAvlTreePut(&tree, &stack, (IntAvlEntry*)&arr2[i]->entry);
-//
-//			if (count <= 20) {
-//
-//				PrintAvl(&tree, tree.root, NULL, 0);
-//				printf("\n\n\n\n");
-//			}
-//		}
+
 //
 //
-//
-//		//PrintAvl(&tree, tree.root, NULL, 0);
-//		//printf("\n\n\n\n");
-//		printf("插入耗时：%dms    %d\n", GetTickCount() - l, 0, 0/**/);
-//
-//		if (!IntAvlTreeVerify(&tree)) {
-//			printf("不是正确的avl");
-//		}
-//
-//		l = GetTickCount();
-//
-//		for (int i = 0; i < count / section; i++) {
-//			if (!IntAvlTreeFind(&tree, &stack, &arr2[i]->key)) {
-//				printf("找不到");
-//			}
-//		}
-//
-//		printf("查找耗时：%dms\n", GetTickCount() - l);
-//		l = GetTickCount();
-//
-//		for (int i = 0; i < count / section; i++) {
-//			IntAvlEntry* entry = IntAvlTreeFind(&tree, &stack, &arr2[i]->key);
-//			if (!IntAvlTreeDelete(&tree, &stack, entry)) {
-//				printf("无法删除");
-//			}
-//
-//		}
-//		printf("删除耗时：%dms    \n", GetTickCount() - l);
-//
-//	}
-//
-//
-//
-//	printf("总耗时：%dms    \n", GetTickCount() - l);
-//
-//}
-//
-//
-//void TestRb() {
-//	printf("\n无父结点红黑树：\n");
-//	IntRbTree tree;
-//
-//	l = GetTickCount();
-//	//void** buf = (void**)malloc((count / section) * sizeof(void*));
-//
-//	for (int j = 0; j < section; j++) {
-//
-//		IntRbTreeInit(&tree);
-//		l = GetTickCount();
-//		for (int i = 0; i < count / section; i++) {
-//			//if (!IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry)) {
-//			//	//printf("失败%d", i);
-//			//}
-//			//buf[i] = malloc(16);
-//			IntRbTreeInsert(&tree, (IntRbEntry*)&arr2[i]->entry);
-//			if (count < 20) {
-//
-//				PrintRB(&tree, tree.root, 0);
-//				printf("\n\n\n\n");
-//			}
-//		}
-//
-//
-//
-//		//PrintRB(&tree, tree.root, 0);
-//		//printf("\n\n\n\n");
-//		printf("插入耗时：%dms    %d\n", GetTickCount() - l, 0, 0/**/);
-//
-//
-//		l = GetTickCount();
-//		auto rbcount = IntRbTreeGetCount(&tree);
-//		printf("统计count:%d        %dms\n", rbcount, GetTickCount() - l);
-//
-//		if (!IntRbTreeVerify(&tree)) {
-//			printf("不正确的红黑树");
-//		}
-//
-//		l = GetTickCount();
-//
-//		for (int i = 0; i < count / section; i++) {
-//			if (!IntRbTreeFind(&tree, &arr2[i]->key)) {
-//				printf("找不到");
-//			}
-//		}
-//
-//		printf("查找耗时：%dms\n", GetTickCount() - l);
-//
-//		l = GetTickCount();
-//
-//		for (int i = 0; i < count / section; i++) {
-//
-//			if (!IntRbTreeDelete(&tree, &arr2[i]->key)) {
-//				printf("无法删除");
-//			}
-//
-//			if (count < 20) {
-//				PrintRB(&tree, tree.root, 0);
-//				printf("\n\n\n\n");
-//			}
-//			//if (!IntRbTreeVerify(&tree)) {
-//			//	printf("不正确的红黑树");
-//			//}
-//			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
-//		}
-//		printf("删除耗时：%dms    \n", GetTickCount() - l);
-//
-//	}
-//	printf("总耗时：%dms    \n", GetTickCount() - l);
-//
-//}
+
 //
 //void TestSkipList() {
 //	printf("\n跳表：\n");

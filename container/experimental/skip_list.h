@@ -15,8 +15,8 @@ extern "C" {
 #define LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL 32
 const int LIBYUC_CONTAINER_SKIP_LIST_SKIPLIST_P = (RAND_MAX / 2);
 
-typedef int64_t element_type;
-typedef element_type key_type;
+#define element_type int64_t
+#define key_type element_type
 
 /*
 * 2:    5    

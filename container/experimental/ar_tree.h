@@ -31,14 +31,14 @@ extern "C" {
 
 #define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 
-
-typedef struct _ArNode* id_type;
+#define id_type struct _ArNode*
 
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 struct data {
     uint32_t size;
     uint8_t* buf;
 };
+
 typedef struct data art_key_type_t;
 typedef struct data art_element_type;
 #else

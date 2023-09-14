@@ -18,9 +18,9 @@ extern "C" {
 
 #define CACHE_LINE_SIZE 64
 
-//typedef int64_t key_type;
-//typedef key_type element_type;
-typedef struct _BTreeEntry* entry_id_type;
+#define key_type int64_t 
+#define element_type key_type 
+#define entry_id_type struct _BTreeEntry*
 
 #define LIBYUC_CONTAINER_B_TREE_M 129
 
