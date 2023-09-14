@@ -6,98 +6,115 @@
 #define LIBYUC_CONTAINER_STATIC_LIST_H_
 
 #include <libyuc/basic.h>
-#include <libyuc/container/vector.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_1(static_list_type_name, count_type) \
-    typedef struct _##static_list_type_name##StaticListEntry { \
-        count_type next; \
-    } static_list_type_name##StaticListEntry; \
+#ifndef LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME
+#define LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME
+#endif
 
-#define LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_2(static_list_type_name, count_type, element_type, list_count, obj_arr_count) \
-    typedef struct _##static_list_type_name##StaticList { \
-        count_type list_first[list_count]; /* 最少应为1 */ \
-        element_type obj_arr[obj_arr_count]; \
-    } static_list_type_name##StaticList; \
-    \
-    void static_list_type_name##StaticListInit(static_list_type_name##StaticList* list, count_type count); \
-    count_type static_list_type_name##StaticListPop(static_list_type_name##StaticList* list, count_type list_order); \
-    void static_list_type_name##StaticListPush(static_list_type_name##StaticList* list, count_type list_order, count_type index); \
-    count_type static_list_type_name##StaticListDelete(static_list_type_name##StaticList* list, count_type list_order, count_type prev_id, count_type delete_id); \
-    void static_list_type_name##StaticListSwitch(static_list_type_name##StaticList* list, count_type list_order, count_type prev_id, count_type id, count_type new_list_order); \
-    count_type static_list_type_name##StaticListIteratorFirst(static_list_type_name##StaticList* list, count_type list_order); \
-    count_type static_list_type_name##StaticListIteratorNext(static_list_type_name##StaticList* list, count_type cur_id); \
+#ifndef  LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_GetNext
+#define LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_GetNext(main_obj, obj) ((obj)->next)
+#endif
 
-#define LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(static_list_type_name, count_type, element_type, list_count, obj_arr_count) \
-    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_1(static_list_type_name, count_type) \
-    LIBYUC_CONTAINER_STATIC_LIST_DECLARATION_2(static_list_type_name, count_type, element_type, list_count, obj_arr_count) \
+#ifndef  LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext
+#define LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(main_obj, obj, new_next) ((obj)->next = (new_next))
+#endif
+
+#ifndef LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element StaticListEntry
+#endif
+
+#ifndef LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id size_t
+#endif
+
+#ifndef LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Offset
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Offset LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id
+#endif
+
+#ifndef LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId -1
+#endif
+
+
+typedef struct StaticListEntry {
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id next;
+} StaticListEntry;
+
+typedef struct StaticList {
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_first[list_count]; /* 最少应为1 */
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element obj_arr[obj_arr_count];
+} StaticList;
+   
+void StaticListInit(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id count);
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListPop(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order);
+void StaticListPush(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id index);
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListDelete(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id prev_id, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id delete_id);
+void StaticListSwitch(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id prev_id, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id id, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id new_list_order);
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListIteratorFirst(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order);
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListIteratorNext(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id cur_id);
+
 
 /*
 * 访问器需要提供_GetNext、_SetNext方法
 */
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFINE(static_list_type_name, count_type, element_type, accessor, referencer, list_count) \
-    void static_list_type_name##StaticListInit(static_list_type_name##StaticList* list, count_type count) { \
-        list->list_first[0] = 0; \
-        count_type i = 0; \
-        for (; i < count - 1; i++) { \
-            accessor##_SetNext(list, &list->obj_arr[i], i + 1); \
-        } \
-        accessor##_SetNext(list, &list->obj_arr[i], referencer##_InvalidId); \
-        \
-        for (i = 1; i < list_count; i++) { \
-            list->list_first[i] = referencer##_InvalidId; \
-        } \
-    } \
-    void static_list_type_name##StaticListExpand(static_list_type_name##StaticList* list, count_type old_count, count_type new_count) { \
-        count_type old_first = list->list_first[0]; \
-        list->list_first[0] = new_count - 1; \
-        count_type i = old_count; \
-        for (; i < new_count - 1; i++) { \
-            accessor##_SetNext(list, &list->obj_arr[i], i + 1); \
-        } \
-        accessor##_SetNext(list, &list->obj_arr[i], old_first); \
-    } \
-    count_type static_list_type_name##StaticListPop(static_list_type_name##StaticList* list, count_type list_order) { \
-        if (list->list_first[list_order] == referencer##_InvalidId) { \
-            return referencer##_InvalidId; \
-        } \
-        count_type index = list->list_first[list_order]; \
-        list->list_first[list_order] = accessor##_GetNext(list, &list->obj_arr[index]); \
-        return index; \
-    } \
-    void static_list_type_name##StaticListPush(static_list_type_name##StaticList* list, count_type list_order, count_type index) { \
-        accessor##_SetNext(list, &list->obj_arr[index], list->list_first[list_order]); \
-        list->list_first[list_order] = index; \
-    } \
-    count_type static_list_type_name##StaticListDelete(static_list_type_name##StaticList* list, count_type list_order, count_type prev_id, count_type delete_id) { \
-        if (prev_id == referencer##_InvalidId) { \
-            list->list_first[list_order] = accessor##_GetNext(list, &list->obj_arr[delete_id]); \
-        } \
-        else { \
-            accessor##_SetNext(list, &list->obj_arr[prev_id], accessor##_GetNext(list, &list->obj_arr[delete_id])); \
-        } \
-        return delete_id; \
-    } \
-    void static_list_type_name##StaticListSwitch(static_list_type_name##StaticList* list, count_type list_order, count_type prev_id, count_type id, count_type new_list_order) { \
-        static_list_type_name##StaticListDelete(list, list_order, prev_id, id); \
-        static_list_type_name##StaticListPush(list, new_list_order, id); \
-    } \
-    count_type static_list_type_name##StaticListIteratorFirst(static_list_type_name##StaticList* list, count_type list_order) { \
-        return list->list_first[list_order]; \
-    } \
-    count_type static_list_type_name##StaticListIteratorNext(static_list_type_name##StaticList* list, count_type cur_id) { \
-        return accessor##_GetNext(list, &list->obj_arr[cur_id]); \
-    } \
 
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER_InvalidId (-1)
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER
+void StaticListInit(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id count) {
+    list->list_first[0] = 0;
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id i = 0;
+    for (; i < count - 1; i++) {
+         LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(list, &list->obj_arr[i], i + 1);
+    }
+     LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(list, &list->obj_arr[i], LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId);
+       
+    for (i = 1; i < list_count; i++) {
+        list->list_first[i] = LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId;
+    }
+}
+void StaticListExpand(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id old_count, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id new_count) {
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id old_first = list->list_first[0];
+    list->list_first[0] = new_count - 1;
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id i = old_count;
+    for (; i < new_count - 1; i++) {
+         LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(list, &list->obj_arr[i], i + 1);
+    }
+     LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(list, &list->obj_arr[i], old_first);
+}
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListPop(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order) {
+    if (list->list_first[list_order] == LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId) {
+        return LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId;
+    }
+    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id index = list->list_first[list_order];
+    list->list_first[list_order] =  LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_GetNext(list, &list->obj_arr[index]);
+    return index;
+}
+void StaticListPush(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id index) {
+     LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(list, &list->obj_arr[index], list->list_first[list_order]);
+    list->list_first[list_order] = index;
+}
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListDelete(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id prev_id, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id delete_id) {
+    if (prev_id == LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Const_InvalidId) {
+        list->list_first[list_order] =  LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_GetNext(list, &list->obj_arr[delete_id]);
+    }
+    else {
+         LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_SetNext(list, &list->obj_arr[prev_id],  LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_GetNext(list, &list->obj_arr[delete_id]));
+    }
+    return delete_id;
+}
+void StaticListSwitch(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id prev_id, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id id, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id new_list_order) {
+    StaticListDelete(list, list_order, prev_id, id);
+    StaticListPush(list, new_list_order, id);
+}
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListIteratorFirst(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_order) {
+    return list->list_first[list_order];
+}
+LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id StaticListIteratorNext(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id cur_id) {
+    return  LIBYUC_CONTAINER_STATIC_LIST_ACCESSOR_GetNext(list, &list->obj_arr[cur_id]);
+}
 
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR_SetNext(LIST, ELEMENT, NEXT) ((ELEMENT)->next = NEXT)
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR_GetNext(LIST, ELEMENT, NEXT) ((ELEMENT)->next)
-#define LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR
+
 
 #ifdef __cplusplus
 }

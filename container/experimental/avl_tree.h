@@ -12,8 +12,8 @@ extern "C" {
 #define LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME
 #endif
 
-#ifndef LIBYUC_CONTAINER_AVL_TREE_Type_Key
-#define LIBYUC_CONTAINER_AVL_TREE_Type_Key int
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key int
 #endif
 
 #ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetKey
@@ -81,7 +81,7 @@ extern "C" {
 //    Avl,
 //    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id,
 //    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Offset,
-//    LIBYUC_CONTAINER_AVL_TREE_Type_Key,
+//    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key,
 //    sizeof(LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Offset) * 8 * 2 
 //    )
 
@@ -137,7 +137,7 @@ typedef struct AvlTree {
 
 
 void AvlTreeInit(AvlTree* tree);
-LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlTreeFind(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_Type_Key* key);
+LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlTreeFind(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key* key);
 LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlTreePut(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id put_entry_id);
 bool AvlTreeDelete(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id del_entry_id);
 bool AvlTreeVerify(AvlTree* tree);
@@ -455,7 +455,7 @@ void AvlTreeInit(AvlTree* tree) {
 * 从树中查找节点
 * 存在返回查找到的节点对应的对象，不存在返回NULL
 */
-LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlTreeFind(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_Type_Key* key) {
+LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlTreeFind(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key* key) {
     return AvlBsTreeFind(&tree->bs_tree, stack, key);
 }
 /*
@@ -562,7 +562,7 @@ bool AvlTreeVerify(AvlTree* tree) {
 
 
 #undef LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME
-#undef LIBYUC_CONTAINER_AVL_TREE_Type_Key
+#undef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key
 #undef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetKey
 #undef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor
 #undef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft
