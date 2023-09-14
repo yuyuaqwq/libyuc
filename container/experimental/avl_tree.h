@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor
-#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(main_obj, obj) ((intptr_t)(obj)->left & 0x3)
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(main_obj, obj) (((uintptr_t)(obj)->left & 0x3) == 3 ? -1 : (uintptr_t)(obj)->left & 0x3)
 #endif
 
 #ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft
@@ -33,11 +33,11 @@ extern "C" {
 #endif
 
 #ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor
-#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor(main_obj, obj, new_bf) ((obj)->left = (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)(((uintptr_t)(LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft((main_obj), (obj))) | (uintptr_t)(new_bf))))
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor(main_obj, obj, new_bf) ((obj)->left = (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)(((uintptr_t)(LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft((main_obj), (obj))) | (uintptr_t)(new_bf  & 0x3))))
 #endif
 
 #ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetLeft
-#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetLeft(main_obj, obj, new_left) ((obj)->left = (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)((uintptr_t)new_left | (uintptr_t)(LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor((main_obj), (obj)))))
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetLeft(main_obj, obj, new_left) ((obj)->left = (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)((uintptr_t)new_left | (uintptr_t)(LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor((main_obj), (obj)) & 0x3)))
 #endif
 
 #ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetRight
