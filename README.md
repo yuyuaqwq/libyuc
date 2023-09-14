@@ -4,13 +4,10 @@
 **个人使用项目，代码可能随时调整，仅供学习参考。**
 
 # container - 容器
-## 数组
-- vector
+## 常规
+- Vector
     - 动态数组
-- bitmap
-    - 位图
-## 链表
-- list
+- List
     - 双向循环链表
 - SinglyList
     - 单向链表
@@ -18,11 +15,10 @@
     - 静态链表
 - DoublyStaticList
     - 双向静态链表
-## 队列
-- queue
-    - 基于数组的循环队列
+- RingQueue
+    - 环形队列
 - Heap
-    - 堆
+    - 优先级队列
 ## 索引
 - HashTable
     - 基于robin hood hashing的哈希表
