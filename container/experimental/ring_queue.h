@@ -12,6 +12,10 @@
 extern "C" {
 #endif
 
+/*
+* 环形队列
+* 单读单写支持无锁实现
+*/
 
 typedef struct _Queue {
     Vector arr;
@@ -95,20 +99,12 @@ size_t QueueGetFreeCount(Queue* queue) {
     return queue->arr.count - QueueGetEntryCount(queue) - 1;
 }
 
-void QueueEnqueue(Queue* queue, void* entry) {
+bool QueueEnqueue(Queue* queue, void* entry) {
     if (QueueIsFull(queue)) {
-        QueueExpand(queue, 1);
+        return false;
     }
     MemoryCopy(VectorAt(&queue->arr, queue->tail), entry, queue->arr.objSize);
     queue->tail = QueueIndexRewind(queue, queue->tail + 1);
-}
-
-void QueueEnqueueByCount(Queue* queue, void* entry, size_t count) {
-    if (QueueGetFreeCount(queue) < count) {
-        QueueExpand(queue, count);
-    }
-    MemoryCopy(VectorAt(&queue->arr, queue->tail), entry, queue->arr.objSize);
-    queue->tail = QueueIndexRewind(queue, queue->tail + count);
 }
 
 void* QueueDequeue(Queue* queue) {
