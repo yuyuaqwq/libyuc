@@ -1,10 +1,6 @@
 /*
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
-
-#ifndef LIBYUC_CONTAINER_RB_TREE_H_
-#define LIBYUC_CONTAINER_RB_TREE_H_
-
 #include <libyuc/basic.h>
 
 #ifdef __cplusplus
@@ -677,5 +673,3 @@ bool RbTreeVerify(RbTree* tree) {
 #ifdef __cplusplus
 }
 #endif
-
-#endif // LIBYUC_CONTAINER_RB_TREE_H_
