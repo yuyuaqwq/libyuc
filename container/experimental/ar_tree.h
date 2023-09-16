@@ -8,10 +8,8 @@
 #define LIBYUC_CONTAINER_AR_TREE_H_
 
 #include <libyuc/basic.h>
-#include <libyuc/algorithm/array.h>
 #include <libyuc/algorithm/bit.h>
-#include <libyuc/container/static_list.h>
-#include <libyuc/container/vector.h>
+
 
 
 #ifdef __cplusplus
@@ -106,7 +104,16 @@ typedef struct {
         struct _ArNode* child;
     };
 } ArNode48Child;
-LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(ArNode48, uint32_t, ArNode48Child, 1, 48)
+
+#define LIBYUC_TEMPLATE_C_INCLUDE
+#define LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME ArNode48
+#define LIBYUC_CONTAINER_STATIC_LIST_Const_StaticElementCount 48
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element ArNode48Child
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id uint32_t
+#include <libyuc/container/static_list.h>
+
+
+
 
 typedef struct {
     ArNodeHead head;
@@ -261,30 +268,39 @@ void ArNodeSetEofChild(ArNode* node, ArLeaf* leaf) {
 uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
     return element;
 }
-LIBYUC_CONTAINER_STATIC_LIST_DEFINE(ArNode48, uint32_t, ArNode*, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, 1)
 
-#define AR_TREE_ARRAY_REFERENCER_InvalidId (-1)
-#define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
-LIBYUC_ALGORITHM_ARRAY_DEFINE(
-    ArNodeKey, 
-    size_t,
-    ptrdiff_t, 
-    uint8_t, 
-    uint8_t, 
-    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
-    LIBYUC_BASIC_COMPARER_DEFALUT, 
-    AR_TREE_ARRAY_REFERENCER
-)
-LIBYUC_ALGORITHM_ARRAY_DEFINE(
-    ArNodeChild,
-    size_t,
-    ptrdiff_t, 
-    ArNode*, 
-    ArNode*,
-    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
-    LIBYUC_BASIC_COMPARER_DEFALUT, 
-    AR_TREE_ARRAY_REFERENCER
-)
+#define AR_TREE_ARRAY_InvalidId (-1)
+//#define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
+//LIBYUC_ALGORITHM_ARRAY_DEFINE(
+//    ArNodeKey, 
+//    size_t,
+//    ptrdiff_t, 
+//    uint8_t, 
+//    uint8_t, 
+//    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
+//    LIBYUC_BASIC_COMPARER_DEFALUT, 
+//    AR_TREE_ARRAY_REFERENCER
+//)
+//LIBYUC_ALGORITHM_ARRAY_DEFINE(
+//    ArNodeChild,
+//    size_t,
+//    ptrdiff_t, 
+//    ArNode*, 
+//    ArNode*,
+//    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
+//    LIBYUC_BASIC_COMPARER_DEFALUT, 
+//    AR_TREE_ARRAY_REFERENCER
+//)
+
+#define LIBYUC_ALGORITHM_ARRAY_CLASS ArNodeKey
+#define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element uint8_t
+#include <libyuc/algorithm/array.h>
+
+#define LIBYUC_ALGORITHM_ARRAY_CLASS ArNodeChild
+#define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element ArNode*
+#include <libyuc/algorithm/array.h>
+
+
 
 static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
     head->child_count = 0;
@@ -405,13 +421,13 @@ static forceinline ptrdiff_t ArNode16KeySearch(ArNode16* node, uint8_t key_byte)
     ptrdiff_t mask = (1 << node->head.child_count) - 1;
     ptrdiff_t i = _mm_movemask_epi8(results) & mask;
     if (!i) {
-        return AR_TREE_ARRAY_REFERENCER_InvalidId;
+        return AR_TREE_ARRAY_InvalidId;
     }
     i = _tzcnt_u32(i);
 #else
     ptrdiff_t i = ArNodeKeyArrayOrderFind(node->keys, 0, node->head.child_count - 1, &key_byte);
-    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
-        return AR_TREE_ARRAY_REFERENCER_InvalidId;
+    if (i == AR_TREE_ARRAY_InvalidId) {
+        return AR_TREE_ARRAY_InvalidId;
     }
 #endif
     return i;
@@ -419,7 +435,7 @@ static forceinline ptrdiff_t ArNode16KeySearch(ArNode16* node, uint8_t key_byte)
 
 static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
     ptrdiff_t i = ArNode16KeySearch(node, key_byte);
-    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+    if (i == AR_TREE_ARRAY_InvalidId) {
         return InvalidId;
     }
     return &node->child_arr[i];
@@ -427,9 +443,9 @@ static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
 
 static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
     // ptrdiff_t i = ArNodeKeyArrayFind(node->keys, 4, &key_byte);
-    // if (i == AR_TREE_ARRAY_REFERENCER_InvalidId || i >= node->head.child_count) {
+    // if (i == AR_TREE_ARRAY_InvalidId || i >= node->head.child_count) {
     ptrdiff_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
-    if (i == AR_TREE_ARRAY_REFERENCER_InvalidId) {
+    if (i == AR_TREE_ARRAY_InvalidId) {
         return InvalidId;
     }
     return &node->child_arr[i];
@@ -609,7 +625,7 @@ static void ArNode4Delete(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte) {
     ArNode4* node = *node_ptr;
      assert(ArNodeGetFullCount((ArNode*)node) > 0);
     int32_t i = ArNodeKeyArrayFind(node->keys, node->head.child_count, &key_byte);
-    if (i != AR_TREE_ARRAY_REFERENCER_InvalidId) {
+    if (i != AR_TREE_ARRAY_InvalidId) {
         ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
         ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
         node->head.child_count--;
@@ -620,7 +636,7 @@ static void ArNode16Delete(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte) 
     ArNode16* node = *node_ptr;
      assert(ArNodeGetFullCount((ArNode*)node) >= 2);
     int32_t i = ArNode16KeySearch(node, key_byte);
-    if (i != AR_TREE_ARRAY_REFERENCER_InvalidId) {
+    if (i != AR_TREE_ARRAY_InvalidId) {
         ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
         ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
         node->head.child_count--;

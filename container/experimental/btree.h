@@ -6,7 +6,6 @@
 #define LIBYUC_CONTAINER_B_TREE_H_
 
 #include <libyuc/basic.h>
-#include <libyuc/container/vector.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,50 +37,65 @@ typedef struct _BTreeIteratorElement {
     uint32_t cur_element_pos;
 } BTreeIteratorPos;
 
-LIBYUC_CONTAINER_VECTOR_DECLARATION(
-    BTreeIteratorStack,
-    LIBYUC_CONTAINER_VECTOR_MODE_STATIC,
-    uint32_t,
-    uint32_t,
-    BTreeIteratorPos,
-    sizeof(entry_id_type) * 8
-)
+//LIBYUC_CONTAINER_VECTOR_DECLARATION(
+//    BTreeIteratorStack,
+//    LIBYUC_CONTAINER_VECTOR_MODE_STATIC,
+//    uint32_t,
+//    uint32_t,
+//    BTreeIteratorPos,
+//    sizeof(entry_id_type) * 8
+//)
+//
+//LIBYUC_CONTAINER_VECTOR_DEFINE(
+//    BTreeIteratorStack,
+//    LIBYUC_CONTAINER_VECTOR_MODE_STATIC,
+//    uint32_t,
+//    uint32_t,
+//    BTreeIteratorPos,
+//    BTreeIteratorPos,
+//    LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT,
+//    LIBYUC_BASIC_ALLOCATOR_DEFALUT,
+//    LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT,
+//    LIBYUC_CONTAINER_VECTOR_COMPARER_INVALID,
+//    LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT,
+//)
 
-LIBYUC_CONTAINER_VECTOR_DEFINE(
-    BTreeIteratorStack,
-    LIBYUC_CONTAINER_VECTOR_MODE_STATIC,
-    uint32_t,
-    uint32_t,
-    BTreeIteratorPos,
-    BTreeIteratorPos,
-    LIBYUC_CONTAINER_VECTOR_ACCESSOR_DEFAULT,
-    LIBYUC_BASIC_ALLOCATOR_DEFALUT,
-    LIBYUC_CONTAINER_VECTOR_CALLBACKER_DEFAULT,
-    LIBYUC_CONTAINER_VECTOR_COMPARER_INVALID,
-    LIBYUC_CONTAINER_VECTOR_REFERENCER_DEFALUT,
-)
+#define LIBYUC_CONTAINER_VECTOR_CLASS_NAME BTreeIteratorStack
+#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element BTreeIteratorPos
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount sizeof(entry_id_type) * 8
+#include <libyuc/container/vector.h>
 
-LIBYUC_ALGORITHM_ARRAY_DEFINE(
-    BTreeElement, 
-    uint32_t,
-    uint32_t, 
-    element_type, 
-    key_type,
-    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT,
-    LIBYUC_BASIC_COMPARER_DEFALUT, 
-    LIBYUC_BASIC_REFERENCER_DEFALUT
-)
+//LIBYUC_ALGORITHM_ARRAY_DEFINE(
+//    BTreeElement, 
+//    uint32_t,
+//    uint32_t, 
+//    element_type, 
+//    key_type,
+//    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT,
+//    LIBYUC_BASIC_COMPARER_DEFALUT, 
+//    LIBYUC_BASIC_REFERENCER_DEFALUT
+//)
+//
+//LIBYUC_ALGORITHM_ARRAY_DEFINE(
+//    BTreeChild,
+//    uint32_t,
+//    uint32_t,
+//    entry_id_type,
+//    entry_id_type,
+//    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT,
+//    LIBYUC_ALGORITHM_ARRAY_COMPARER_INVALID,
+//    LIBYUC_BASIC_REFERENCER_DEFALUT
+//)
 
-LIBYUC_ALGORITHM_ARRAY_DEFINE(
-    BTreeChild,
-    uint32_t,
-    uint32_t,
-    entry_id_type,
-    entry_id_type,
-    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT,
-    LIBYUC_ALGORITHM_ARRAY_COMPARER_INVALID,
-    LIBYUC_BASIC_REFERENCER_DEFALUT
-)
+#define LIBYUC_ALGORITHM_ARRAY_CLASS BTreeElement
+#define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element element_type
+#define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key key_type
+#include <libyuc/algorithm/array.h>
+
+#define LIBYUC_ALGORITHM_ARRAY_CLASS BTreeChild
+#define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element entry_id_type
+#include <libyuc/algorithm/array.h>
 
 typedef struct _BTree {
     entry_id_type root;

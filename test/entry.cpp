@@ -21,7 +21,11 @@ int randInt() {
 }
 
 
+#include <libyuc/container/experimental/ar_tree.h>
+#include <libyuc/container/experimental/btree.h>
 
+#define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
+#include <libyuc/container/experimental/hash_table_list.h>
 
 
 DWORD l;
@@ -361,6 +365,411 @@ void TestAvl() {
 
 }
 
+
+void TestArt() {
+	printf("\n自适应基数树：\n");
+	ArTree artree;
+	ArTreeInit(&artree);
+
+	//l = GetTickCount();
+	//int j = 0;
+	//for (int jjj = 0; jjj < 10; jjj++) {
+	//	for (int i = 0; i < count; i++) {
+	//		__m128i results = _mm_cmpeq_epi8(_mm_set1_epi8(0x22), _mm_loadu_si128((__m128i*) & arr2[i]->key));
+	//		ptrdiff_t mask = (1 << 16) - 1;
+	//		ptrdiff_t j = _mm_movemask_epi8(results) & mask;
+	//		if (!j) {
+	//			j++;
+	//		}
+	//		j = _tzcnt_u32(j);
+	//		if (j == 16) {
+	//			printf("不存在");
+	//		}
+	//	}
+	//}
+	//l = GetTickCount() - l;
+	//printf("simd查找耗时：%dms%d\n", l, j);
+
+	//l = GetTickCount();
+	//uint8_t key = 0x22;
+	//j = 0;
+	//for (int jjj = 0; jjj < 10; jjj++) {
+	//	for (int i = 0; i < count; i++) {
+	//		ptrdiff_t j = ArNodeKeyBinarySearch((uint8_t*)&arr2[i]->key, 0, 15, &key);
+	//		if (j == 16) {
+	//			printf("不存在");
+	//		}
+	//	}
+	//}
+	//l = GetTickCount() - l;
+	//printf("bs查找耗时：%dms%d\n", l, j);
+
+	//l = GetTickCount();
+	//j = 0;
+	//for (int jjj = 0; jjj < 10; jjj++) {
+	//	for (int i = 0; i < count; i++) {
+	//		//ptrdiff_t j = ArNodeKeyBinarySearch((uint8_t*)&arr2[i]->key, 0, 15, &key);
+	//		ptrdiff_t j = ArNodeKeyArrayFind((uint8_t*)&arr2[i]->key, 16, &key);
+	//		if (j == 15) {
+	//			printf("不存在");
+	//		}
+	//	}
+	//}
+	//l = GetTickCount() - l;
+	//printf("直接查找耗时：%dms%d\n", l, j);
+
+	//
+
+
+	//element_type ele;
+	//ele.buf = (uint8_t*)"abcdefgh";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//ele.buf = (uint8_t*)"abcdefgi";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//ele.buf = (uint8_t*)"abcdefghi";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//ele.buf = (uint8_t*)"abcdefghij";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//ele.buf = (uint8_t*)"abcdefghijk";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//PrintArt(&artree, artree.root, 0);
+
+	//ele.buf = (uint8_t*)"abcde";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//ele.buf = (uint8_t*)"abcdf";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+	//PrintArt(&artree, artree.root, 0);
+	//ele.buf = (uint8_t*)"abc";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreeDelete(&artree, &ele);
+	//PrintArt(&artree, artree.root, 0);
+
+	//ele.buf = (uint8_t*)"abd";
+	//ele.size = strlen((char*)ele.buf);
+	//ArTreePut(&artree, &ele);
+
+	//PrintArt(&artree, artree.root, 0);
+
+	//ArTreeDelete(&artree, &ele);
+
+	l = GetTickCount();
+	int32_t ii = 0;
+
+	for (auto& it : arr2) {
+		ii++;
+		/*if (ii == 986) {
+			printf("??");
+		}*/
+
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		element_type* ele = ObjectCreate(element_type);
+		ele->buf = (uint8_t*)&it->key;
+		ele->size = sizeof(it->key);
+		ArTreePut(&artree, ele);
+#else
+
+		ArTreePut(&artree, (art_element_type*)&it->key);
+		//ArTreePut(&artree, (art_element_type*)it->key << 1);
+#endif
+		//if (ii == 27) {
+		//	printf("??");
+		//}
+
+
+
+		//printf("插入:%s\n", ele->buf);
+		//ele.buf = (uint8_t*)"aacdeedb";
+		//ele.size = strlen((char*)ele.buf);
+		////
+		//PrintArt(&artree, artree.root, 0);
+		//printf("\n\n\n\n");
+		////
+		//if (!ArTreeFind(&artree, &ele)) {
+		//	printf("找不到");
+		//}
+		//else {
+		//	printf("找到了");
+		//}
+
+	}
+
+	l = GetTickCount() - l;
+	printf("插入耗时：%dms\n", l);
+	//PrintArt(&artree, artree.root, 0);
+	l = GetTickCount();
+	ii = 0;
+	for (auto& it : arr2) {
+		ii++;
+		art_element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		ele.buf = (uint8_t*)&it->key;
+		ele.size = sizeof(it->key);
+		if (!ArTreeFind(&artree, &ele)) {
+			printf("找不到");
+		}
+#else
+		ele = it->key;
+		if (!ArTreeFind(&artree, &ele)) {
+			printf("找不到");
+		}
+		/*if (!ArTreeFind(&artree, (key_type*)(it->key << 1))) {
+			printf("找不到");
+		}*/
+#endif
+
+	}
+	//PrintArt(&artree, artree.root, 0);
+	l = GetTickCount() - l;
+	printf("查找耗时：%dms\n", l);
+	l = GetTickCount();
+	ii = 0;
+	for (auto& it : arr2) {
+		ii++;
+		art_element_type ele;
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		ele.buf = (uint8_t*)&it->key;
+		ele.size = sizeof(it->key);
+		if (!ArTreeDelete(&artree, &ele)) {
+			printf("找不到");
+			//PrintArt(&artree, artree.root, 0);
+		}
+#else
+		ele = it->key;
+		if (!ArTreeDelete(&artree, &ele)) {
+			printf("找不到");
+			//PrintArt(&artree, artree.root, 0);
+		}
+		/*if (!ArTreeDelete(&artree, (key_type*)(it->key << 1))) {
+			printf("找不到");
+		}*/
+#endif
+		//if (ii == 0x4390) {
+		//	printf("??");
+		//}
+
+
+
+		//printf("删除:%s\n", ele.buf);
+		//uint8_t buf[] = {05, 05, 05, 05, 05, 05, 05, 01};
+		//ele.buf = buf;
+		//ele.size = 8;
+		//PrintArt(&artree, artree.root, 0);
+
+		//ele = 0x658d2b070e2e2726;
+		//if (!ArTreeFind(&artree, &ele)) {
+		//	printf("找不到");
+		//	//PrintArt(&artree, artree.root, 0);
+		//}
+		//else {
+		//	//printf("找到了");
+		//}
+
+		//PrintArt(&artree, artree.root, 0);
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
+
+	//goto qqqqqq;
+
+
+
+	int qqc = 1;
+
+	l = GetTickCount();
+
+	//printf("插入耗时：%dms    %d\n", GetTickCount() - l, 0, 0/*BsTreeGetEntryCount(&gRb.bst)*/);
+//	for (int j = 0; j < qqc; j++) {
+//		ArTreeInit(&artree);
+//		for (int i = 0; i < count / qqc; i++) {
+//			element_type ele;
+//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+//			ele.buf = (uint8_t*)&arr2[i]->key;
+//			ele.size = sizeof(arr2[i]->key);
+//#else
+//			ele = arr2[i]->key;
+//#endif
+//			//if (ii == 27) {
+//			//	printf("??");
+//			//}
+//
+//			ArTreePut(&artree, &ele);
+//		}
+//
+//		for (int i = 0; i < count / qqc; i++) {
+//			element_type ele;
+//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+//			ele.buf = (uint8_t*)&arr2[i]->key;
+//			ele.size = sizeof(arr2[i]->key);
+//#else
+//			ele = arr2[i]->key;
+//#endif
+//			//if (ii == 27) {
+//			//	printf("??");
+//			//}
+//
+//			if (!ArTreeFind(&artree, &ele)) {
+//				printf("找不到");
+//			}
+//		}
+//		//printf("查找耗时：%dms\n", GetTickCount() - l);
+//
+//
+//		//PrintRB(&gRb, gRb.root, 0);
+//		 //for (int i = 10000000; i >= 1; i--) {
+//		 //	int key = i;
+//		 //	RBDeleteEntryByKey(&gRb, &key);
+//		 //	// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
+//		 //}
+//
+//		for (int i = 0; i < count / qqc; i++) {
+//			element_type ele;
+//#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+//			ele.buf = (uint8_t*)&arr2[i]->key;
+//			ele.size = sizeof(arr2[i]->key);
+//#else
+//			ele = arr2[i]->key;
+//#endif
+//			ArTreeDelete(&artree, &ele);
+//
+//			// printf("\n\n\n\n"); PrintRB(&gRb, gRb.root, 0);
+//		}
+//		//printf("删除耗时：%dms    \n", GetTickCount() - l);
+//
+//	}
+	printf("总耗时：%dms    \n", GetTickCount() - l);
+}
+
+void TestBPlusTree() {
+	printf("\nB树：\n");
+	BTree btree;
+	BTreeInit(&btree);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		BTreePut(&btree, &arr2[i]->key);
+		if (count < 31) {
+			//PrintBTree(&btree, btree.root, 0, 0);
+			printf("\n\n\n\n");
+		}
+	}
+	printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		// int* qvq = CreateObject(int);
+		if (!BTreeFind(&btree, &arr2[i]->key)) {
+			printf("找不到, %d", arr2[i]->key);
+		}
+	}
+	printf("查找耗时：%dms\n", GetTickCount() - l);
+
+
+	l = GetTickCount();
+	for (int i = 0; i < count; i++) {
+		// int* qvq = CreateObject(int);
+		// printf("%d", i);
+		if (!BTreeDelete(&btree, &arr2[i]->key)) {
+			printf("找不到, %d", &arr2[i]->key);
+		}
+		if (count <= 30) {
+			printf("删除%d\n", arr2[i]->key);
+			//PrintBTree(&btree, btree.root, 0, 0);
+			printf("\n\n\n\n");
+		}
+
+	}
+	printf("删除耗时：%dms\n", GetTickCount() - l);
+
+	BTreeIterator iter;
+	element_type* ele = BTreeIteratorFirst(&btree, &iter);
+	while (ele) {
+		printf("%d  ", *ele);
+		ele = BTreeIteratorNext(&btree, &iter);
+	}
+
+	//printf("\nB+树：\n");
+	//IntBPlusTree bpTree;
+	//IntBPlusTreeInit(&bpTree);
+	//l = GetTickCount();
+	//IntBPlusLeafElement element;
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	element.key = arr2[i]->key;
+	//	IntBPlusTreeInsert(&bpTree, &element);
+	//	if (count < 31) {
+	//		PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+	//		printf("\n\n\n\n");
+	//	}
+	//}
+	//// PrintBPlus(&bpTree, bpTree.root, 0, 0);
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	if (!IntBPlusTreeFind(&bpTree, &arr2[i]->key)) {
+	//		printf("找不到, %d", arr2[i]->key);
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
+
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	// printf("%d", i);
+	//	if (!IntBPlusTreeDelete(&bpTree, &arr2[i]->key)) {
+	//		printf("找不到, %d", &arr2[i]->key);
+	//	}
+	//	if (count <= 30) {
+	//		printf("删除%d\n", arr2[i]->key);
+	//		PrintBPlus(&bpTree, bpTree.root_id, 0, 0);
+	//		printf("\n\n\n\n");
+	//	}
+
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
+
+
+	//std::vector<std::string> str_arr(count);
+	//for (int i = 0; i < count; i++) {
+	//	str_arr[i] =
+	//		std::to_string(arr2[i]->key);
+	//}
+
+
+	//printf("\nbtree:\n");
+	//l = GetTickCount();
+	//btree::set<std::string> bset;
+	//for (int i = 0; i < count; i++) {
+	//	bset.insert(str_arr[i]);
+	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
+
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	if (bset.find(str_arr[i]) == bset.end()) {
+	//		printf("找不到");
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
+
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	bset.erase(str_arr[i]);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
+
+}
+
+
+
 //void TestTsSinglyList() {
 //	TsSinglyListHead head;
 //	TsSinglyListInit(head);
@@ -445,10 +854,10 @@ int main() {
 	//TestTsSkipList();
 	//
 	//TestSkipList();
-	//TestBPlusTree();
+	TestBPlusTree();
 
 	TestAvl();
-	//TestArt();
+	TestArt();
 	TestRb();
 	TestHashTable();
 

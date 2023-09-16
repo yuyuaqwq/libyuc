@@ -5,7 +5,6 @@ extern "C" {
 #endif
 
 
-
 #include "C:\Users\gt1\Desktop\wyhash.h"
 #define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element int64_t
@@ -21,6 +20,7 @@ extern "C" {
 #define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key int64_t
 #define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetKey(main_obj, obj) ((int64_t*)((uintptr_t)obj + sizeof(IntAvlBsEntry)))
 #include <libyuc/container/experimental/avl_tree.h>
+
 
 
 typedef struct QVQ {

@@ -4,7 +4,6 @@
 
 
 #include <libyuc/basic.h>
-#include <libyuc/algorithm/array.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,11 +41,11 @@ extern "C" {
 #ifndef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount
 #define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount 1
 #endif
-#ifndef LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidId
-#define LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidId (-1)
+#ifndef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId (-1)
 #endif
-#ifndef LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidDynamicArray
-#define LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidDynamicArray (NULL)
+#ifndef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidDynamicArray
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidDynamicArray (NULL)
 #endif
 #ifndef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id
 #define LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id size_t
@@ -166,7 +165,7 @@ void VectorInit(Vector* vector, LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset capa
 void VectorRelease(Vector* vector) {
     if (vector->obj_arr) {
         LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Release(vector, vector->obj_arr);
-        vector->obj_arr = LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidDynamicArray;
+        vector->obj_arr = LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidDynamicArray;
     }
     vector->capacity = 0;
     vector->count = 0;
@@ -252,7 +251,7 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector) {
 
 
 //LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorIteratorGetIndex(Vector* vector, VectorIterator* iter) {
-//    if (iter->cur_index == LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidId || iter->cur_index >= VectorGetCount(vector)) return NULL;
+//    if (iter->cur_index == LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId || iter->cur_index >= VectorGetCount(vector)) return NULL;
 //        return VectorIndex(vector, iter->cur_index);
 //}
 //void VectorIteratorDelete(Vector* vector, VectorIterator* iter) {
@@ -266,10 +265,11 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector) {
 //    return VectorGetCount(vector) > 0 ? VectorIndex(vector, 0) : NULL;
 //}
 //LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorIteratorNext(Vector* vector, VectorIterator* iter) {
-//    if (iter->cur_index == LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidId || iter->cur_index >= VectorGetCount(vector)) return NULL;
+//    if (iter->cur_index == LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId || iter->cur_index >= VectorGetCount(vector)) return NULL;
 //        ++iter->cur_index;
 //        return VectorIndex(vector, iter->cur_index);
 //}
+
 #endif
 
 #undef Vector
@@ -294,11 +294,13 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector) {
 #undef VectorIteratorNext
 
 #undef LIBYUC_CONTAINER_VECTOR_CLASS_NAME
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element
 #undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_ElementCount
-#undef LIBYUC_CONTAINER_VECTOR_Indexer_Const_InvalidId
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidDynamicArray
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element
 #undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id
 #undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset
+
 #undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Create
 #undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_CreateMultiple
 #undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Release
