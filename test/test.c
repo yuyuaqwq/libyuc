@@ -1,15 +1,15 @@
-#define LIBYUC_TEMPLATE_C_INCLUDE
+#define LIBYUC_TEMPLATE_DEFINE
 
 #include "test.h"
 
 
-//#define LIBYUC_TEMPLATE_C_INCLUDE
+//#define LIBYUC_TEMPLATE_DEFINE
 //#include <libyuc/container/list.h>
 //#include <libyuc/container/list.c>
 //#include <libyuc/container/list.h>
 //
 //
-//#define LIBYUC_TEMPLATE_C_INCLUDE
+//#define LIBYUC_TEMPLATE_DEFINE
 //#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC
 //#define CLASS_NAME HashBucket
 //#include <libyuc/container/vector.h>
@@ -528,7 +528,7 @@
 
 //
 //void TestSkipList() {
-//	printf("\nÌø±í£º\n");
+//	printf("\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n");
 //	SkipList list;
 //	SkipListInit(&list);
 //	l = GetTickCount();
@@ -539,21 +539,21 @@
 //			//printf("\n\n\n\n");
 //		}
 //	}
-//	printf("²åÈëºÄÊ±£º%dms\n", GetTickCount() - l);
+//	printf("ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½%dms\n", GetTickCount() - l);
 //
 //	l = GetTickCount();
 //	for (int i = 0; i < count; i++) {
 //		if (!SkipListFind(&list, (&arr2[i]->key))) {
-//			printf("ÕÒ²»µ½");
+//			printf("ï¿½Ò²ï¿½ï¿½ï¿½");
 //		}
 //	}
-//	printf("²éÕÒºÄÊ±£º%dms\n", GetTickCount() - l);
+//	printf("ï¿½ï¿½ï¿½Òºï¿½Ê±ï¿½ï¿½%dms\n", GetTickCount() - l);
 //
 //	//int64_t old = 0;
 //	//auto entry = list.head[0].next;
 //	//while (entry) {
 //	//	if (entry->element < old) {
-//	//		printf("´íÎó");
+//	//		printf("ï¿½ï¿½ï¿½ï¿½");
 //	//	}
 //	//	printf("%llx ", old);
 //	//	old = entry->element;
@@ -564,14 +564,14 @@
 //	for (int i = 0; i < count; i++) {
 //
 //		if (!SkipListDelete(&list, (&arr2[i]->key))) {
-//			printf("ÕÒ²»µ½");
+//			printf("ï¿½Ò²ï¿½ï¿½ï¿½");
 //		}
 //		if (count < 20) {
 //			//PrintSkipList(&list);
 //			//printf("\n\n\n\n");
 //		}
 //	}
-//	printf("É¾³ýºÄÊ±£º%dms\n", GetTickCount() - l);
+//	printf("É¾ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½%dms\n", GetTickCount() - l);
 //
 //}
 //
@@ -590,7 +590,7 @@
 //}
 //
 //void TestTsSortSinglyList() {
-//	printf("Ïß³Ì°²È«ÓÐÐòÁ´±í£º%d¸öÏß³Ì\n", thread_count);
+//	printf("ï¿½ß³Ì°ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%dï¿½ï¿½ï¿½ß³ï¿½\n", thread_count);
 //
 //	TsSortSinglyListHead head;
 //	head.first = NULL;
@@ -608,7 +608,7 @@
 //		thread.join();
 //	}
 //
-//	printf("%d¸öÏß³Ì£¬²åÈë&É¾³ý×ÜºÄÊ±£º%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
+//	printf("%dï¿½ï¿½ï¿½ß³Ì£ï¿½ï¿½ï¿½ï¿½ï¿½&É¾ï¿½ï¿½ï¿½Üºï¿½Ê±ï¿½ï¿½%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
 //
 //
 //	TsSortSinglyListEntry* prev = NULL;
@@ -637,7 +637,7 @@
 //	for (auto& thread : t) {
 //		thread.join();
 //	}
-//	printf("%d¸öÏß³Ì£¬É¾³ý×ÜºÄÊ±£º%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
+//	printf("%dï¿½ï¿½ï¿½ß³Ì£ï¿½É¾ï¿½ï¿½ï¿½Üºï¿½Ê±ï¿½ï¿½%dms    %d\n", thread_count, GetTickCount() - l, 0, 0);
 //
 //	prev = NULL;
 //	i = 0;
@@ -667,7 +667,7 @@
 //void TestTsSkipListFindThread(TsSkipList* list, int j) {
 //	for (int i = 0; i < count / thread_count; i++) {
 //		if (!TsSkipListFind(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
-//			printf("ÕÒ²»µ½:%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+//			printf("ï¿½Ò²ï¿½ï¿½ï¿½:%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
 //		}
 //		// PrintSkipList(list);
 //		// printf("\n\n\n\n");
@@ -677,7 +677,7 @@
 //void TestTsSkipListDeleteThread(TsSkipList* list, int j) {
 //	for (int i = 0; i < count / thread_count; i++) {
 //		if (!TsSkipListDelete(list, ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key)) {
-//			//printf("É¾³ýÊ§°Ü£º%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
+//			//printf("É¾ï¿½ï¿½Ê§ï¿½Ü£ï¿½%d", ((TsSortSinglyListEntry*)&arr2[j * (count / thread_count) + i]->entry.right)->key);
 //		}
 //		// PrintSkipList(list);
 //		// printf("\n\n\n\n");
@@ -689,7 +689,7 @@
 //
 //_re:
 //
-//	printf("Ïß³Ì°²È«Ìø±í£º%d¸öÏß³Ì\n", thread_count);
+//	printf("ï¿½ß³Ì°ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%dï¿½ï¿½ï¿½ß³ï¿½\n", thread_count);
 //
 //	TsSkipList list;
 //	TsSkipListInit(&list);
@@ -709,7 +709,7 @@
 //		thread.join();
 //	}
 //
-//	printf("²åÈë&É¾³ý×ÜºÄÊ±£º%dms    %d\n", GetTickCount() - l, 0, 0);
+//	printf("ï¿½ï¿½ï¿½ï¿½&É¾ï¿½ï¿½ï¿½Üºï¿½Ê±ï¿½ï¿½%dms    %d\n", GetTickCount() - l, 0, 0);
 //
 //	PrintSkipList(&list);
 //
@@ -722,7 +722,7 @@
 //	for (auto& thread : t) {
 //		thread.join();
 //	}
-//	printf("²éÕÒ×ÜºÄÊ±£º%dms\n", GetTickCount() - l);
+//	printf("ï¿½ï¿½ï¿½ï¿½ï¿½Üºï¿½Ê±ï¿½ï¿½%dms\n", GetTickCount() - l);
 //
 //	//for (int i = 0; i < ptr_arr.size(); i++) {
 //	//	if (ptr_arr[i])
@@ -740,15 +740,15 @@
 //		thread.join();
 //	}
 //
-//	printf("É¾³ý×ÜºÄÊ±£º%dms    %d\n", GetTickCount() - l, 0, 0);
+//	printf("É¾ï¿½ï¿½ï¿½Üºï¿½Ê±ï¿½ï¿½%dms    %d\n", GetTickCount() - l, 0, 0);
 //
 //	l = GetTickCount();
 //	for (int i = 0; i < count; i++) {
 //		if (TsSkipListFind(&list, (arr2[i]->key))) {
-//			printf("ÕÒµ½ÁË£º%d", arr2[i]->key);
+//			printf("ï¿½Òµï¿½ï¿½Ë£ï¿½%d", arr2[i]->key);
 //		}
 //	}
-//	printf("²éÕÒºÄÊ±£º%dms\n", GetTickCount() - l);
+//	printf("ï¿½ï¿½ï¿½Òºï¿½Ê±ï¿½ï¿½%dms\n", GetTickCount() - l);
 //
 //	//
 //

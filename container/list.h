@@ -79,7 +79,7 @@ LIBYUC_CONTAINER_LIST_REFERENCER_Type_Id ListNext(ListHead* head, LIBYUC_CONTAIN
 
 
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 
 void ListInit(ListHead* head) {
     head->last = LIBYUC_CONTAINER_LIST_REFERENCER_Const_InvalidId;

@@ -105,7 +105,7 @@ typedef struct {
     };
 } ArNode48Child;
 
-#define LIBYUC_TEMPLATE_C_INCLUDE
+#define LIBYUC_TEMPLATE_DEFINE
 #define LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME ArNode48
 #define LIBYUC_CONTAINER_STATIC_LIST_Const_StaticElementCount 48
 #define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element ArNode48Child

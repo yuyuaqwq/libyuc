@@ -112,7 +112,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorNext(BsTree* tree, BsT
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorPrev(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id cur_id);
 
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 #define BsTreeStackVectorPushTail MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorPushTail)
 #define BsTreeStackVectorGetTail MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorGetTail)
 #define BsTreeStackVectorPopTail MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorPopTail)

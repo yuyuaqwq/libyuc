@@ -64,7 +64,7 @@ LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Offset SinglyListGetCount(SinglyLis
 LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Id SinglyListIteratorFirst(SinglyListHead* head);
 LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Id SinglyListIteratorNext(SinglyListHead* head, LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Id entry_id);
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 
 void SinglyListHeadInit(SinglyListHead* head) {
     head->first = LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Const_InvalidId;

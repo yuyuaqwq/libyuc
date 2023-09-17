@@ -160,7 +160,7 @@ void RbTreeIteratorCopy(RbTreeIterator* dst_iterator, RbTreeIterator* src_iterat
 bool RbTreeVerify(RbTree* tree);
 
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 #define RbBsTreeStackVectorInit MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeStackVectorInit)
 #define RbBsTreeStackVectorIndex MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeStackVectorIndex)
 #define RbBsTreeStackVectorGetCount MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeStackVectorGetCount)

@@ -113,7 +113,7 @@ LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorNext(struct H
 LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorLocate(struct HashTable* table, HashTableIterator* iter, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key);
 bool HashTableIteratorDelete(struct HashTable* table, HashTableIterator* iter);
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 
 
 #define HashBucketVectorGetCount MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVectorGetCount)

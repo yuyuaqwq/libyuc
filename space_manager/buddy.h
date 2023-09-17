@@ -95,7 +95,7 @@ LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset BuddyGetMaxFreeCount(Buddy* buddy
 LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset BuddyGetMaxCount(Buddy* buddy);
 
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 Buddy* BuddyCreate(LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset size) {
     Buddy* buddy;
     LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset alloc_size = size * sizeof(uint8_t) * 2;

@@ -145,7 +145,7 @@ bool AvlTreeVerify(AvlTree* tree);
 // 访问器需要提供_GetKey、_Set/GetParent、_Set/GetBalanceFactor方法
 
 
-#ifdef LIBYUC_TEMPLATE_C_INCLUDE
+#ifdef LIBYUC_TEMPLATE_DEFINE
 #define AvlBsTreeStackVectorInit MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeStackVectorInit)
 #define AvlBsTreeStackVectorIndex MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeStackVectorIndex)
 #define AvlBsTreeStackVectorGetCount MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeStackVectorGetCount)
@@ -545,7 +545,7 @@ bool AvlTreeVerify(AvlTree* tree) {
 #define AvlTreeInsertFixup
 #define AvlTreeDeleteFixup
 #define AvlTreeCheckPath
-#endif // LIBYUC_TEMPLATE_C_INCLUDE
+#endif // LIBYUC_TEMPLATE_DEFINE
 #undef AvlBsTree
 #undef AvlBsEntry
 #undef AvlBsTreeStackVector
