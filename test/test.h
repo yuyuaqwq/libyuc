@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 
-#include "C:\Users\gt1\Desktop\wyhash.h"
+#include "C:\Users\yuyu\Desktop\wyhash.h"
 #define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element int64_t
 #define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))

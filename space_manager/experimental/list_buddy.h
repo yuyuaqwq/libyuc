@@ -7,7 +7,6 @@
 
 #include <libyuc/basic.h>
 #include <libyuc/container/experimental/cb_tree.h>
-#include <libyuc/container/singly_list.h>
 #include <libyuc/container/bitmap.h>
 
 #ifdef __cplusplus
@@ -46,39 +45,6 @@ extern "C" {
 
 
 
-#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_DECLARATION(list_buddy_type_name, id_type, list_entry_id_type) \
-    typedef struct _##list_buddy_type_name##ListBuddyEntry { \
-        list_entry_id_type next; \
-    } list_buddy_type_name##ListBuddyEntry; \
-    typedef struct _##list_buddy_type_name##ListBuddy { \
-        list_buddy_type_name##ListBuddyEntry list_head[];    \
-        /* uint8_t space[]; */ \
-    } list_buddy_type_name##ListBuddy; \
-    list_buddy_type_name##ListBuddy* list_buddy_type_name##ListBuddyCreate(id_type size); \
-    bool list_buddy_type_name##ListBuddyInit(list_buddy_type_name##ListBuddy* buddy, id_type size); \
-    id_type list_buddy_type_name##ListBuddyAlloc(list_buddy_type_name##ListBuddy* buddy, id_type size); \
-    void list_buddy_type_name##ListBuddyFree(list_buddy_type_name##ListBuddy* buddy, id_type offset); \
-    id_type list_buddy_type_name##ListBuddyGetAllocBlockSize(list_buddy_type_name##ListBuddy* buddy, id_type offset); \
-    id_type list_buddy_type_name##ListBuddyGetMaxFreeCount(list_buddy_type_name##ListBuddy* buddy); \
-    id_type list_buddy_type_name##ListBuddyGetMaxCount(list_buddy_type_name##ListBuddy* buddy); \
-
-#define LIBYUC_SPACE_MANAGER_LIST_BUDDY_DEFINE(list_buddy_type_name, id_type, indexer, allocator, referencer) \
-    void list_buddy_type_name##ListBuddyInit(list_buddy_type_name##ListBuddy* buddy, id_type size) { \
-        id_type i = 0; \
-        do { \
-            size /= 2; \
-            if (size == 0) { \
-                break; \
-            } \
-            buddy->list_head[i] = referencer##_InvalidId; \
-        } while (true); \
-        buddy->list_head[i] = 0; \
-    } \
-    \
-    
-
-
-
 #define list_entry_id_type uint32_t
 #define id_type uint32_t
 #define list_count
@@ -86,7 +52,35 @@ extern "C" {
 
 
 
-LIBYUC_CONTAINER_SINGLY_LIST_DECLARATION(ListBuddy, list_entry_id_type)
+typedef struct ListBuddyEntry {
+    list_entry_id_type next;
+} ListBuddyEntry;
+typedef struct ListBuddy {
+    ListBuddyEntry list_head[];
+    /* uint8_t space[]; */
+} ListBuddy;
+ListBuddy* ListBuddyCreate(id_type size);
+bool ListBuddyInit(ListBuddy* buddy, id_type size);
+id_type ListBuddyAlloc(ListBuddy* buddy, id_type size);
+void ListBuddyFree(ListBuddy* buddy, id_type offset);
+id_type ListBuddyGetAllocBlockSize(ListBuddy* buddy, id_type offset);
+id_type ListBuddyGetMaxFreeCount(ListBuddy* buddy);
+id_type ListBuddyGetMaxCount(ListBuddy* buddy);
+
+void ListBuddyInit(ListBuddy* buddy, id_type size) {
+    id_type i = 0;
+    do {
+        size /= 2;
+        if (size == 0) {
+            break;
+        }
+        buddy->list_head[i] = referencer##_InvalidId;
+    } while (true);
+    buddy->list_head[i] = 0;
+}
+
+
+
 
 typedef struct _ListBuddyObj {
     struct _ListBuddy* buddy;
@@ -107,7 +101,6 @@ forceinline ListBuddySinglyListEntry* LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIS
 #define LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER_InvalidId (-1)
 #define LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER
 
-LIBYUC_CONTAINER_SINGLY_LIST_DEFINE(ListBuddy, list_entry_id_type, LIBYUC_SPACE_MANAGER_LIST_BUDDY_SINGLY_LIST_REFERENCER)
 
 
 static id_type ListBuddyAlignToPowersOf2(id_type size) {

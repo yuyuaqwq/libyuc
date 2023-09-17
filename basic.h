@@ -115,12 +115,6 @@ forceinline static void MemoryFree(void* ptr) {
 #define ObjectGetFromFieldOffset(OBJ_FIELD, FIELD_OFFSET, OBJ_TYPE) ( (OBJ_TYPE*)((uintptr_t)(OBJ_FIELD) - (FIELD_OFFSET)) )
 #define ObjectGetFromField(OBJ_FIELD, OBJ_TYPE, FIELD_NAME) ( (OBJ_TYPE*)((uintptr_t)(OBJ_FIELD) - ObjectGetFieldOffset(OBJ_TYPE, FIELD_NAME)) )
 
-/*
-* C另一种实现泛型的方法：基于#include
-* 通过#define指定参数(类型等)
-* 再通过#include加载模板，头文件中使用宏代替被替换的类型
-* 好处是方便调试
-*/
 
 
 /*
@@ -134,16 +128,7 @@ forceinline static void MemoryFree(void* ptr) {
 * 通常传递的是指针
 */
 
-/*
-* id_type
-* 表示在一个对象集中对象的唯一id
-* 该对象通常需要间接访问，故存在从id转换为指针的过程，通常可以直接传值
-* 如在数组中是index
-* 
-* count_type
-* 统计对象集的对象数量的类型
-* 通常是unsigned类型
-*/
+
 
 
 /*
@@ -219,15 +204,6 @@ forceinline static void MemoryFree(void* ptr) {
 * 具体说明参考iterator.h
 */
 #define LIBYUC_BASIC_ITERATOR_DEFALUT
-
-
-/*
-* 继承示例
-#define NEW_REFERENCER_InvalidId LIBYUC_BASIC_REFERENCER_DEFALUT_InvalidId
-#define NEW_REFERENCER_Reference(MAIN_OBJ, OLD_ID) LIBYUC_BASIC_REFERENCER_DEFALUT_Reference(MAIN_OBJ, OLD_ID)
-#define NEW_REFERENCER_Dereference(MAIN_OBJ, OLD_ID) LIBYUC_BASIC_REFERENCER_DEFALUT_Dereference(MAIN_OBJ, OLD_ID)
-#define NEW_REFERENCER LIBYUC_BASIC_REFERENCER_DEFALUT
-*/
 
 
 
