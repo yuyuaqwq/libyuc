@@ -134,7 +134,7 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector);
 #endif
 
 
-#if !define(LIBYUC_TEMPLATE_DEFINE) || define(LIBYUC_TEMPLATE_UNDECLARE)
+#if !defined(LIBYUC_TEMPLATE_DEFINE) || defined(LIBYUC_TEMPLATE_UNDECLARE)
 #undef Vector
 #undef VectorIterator
 
