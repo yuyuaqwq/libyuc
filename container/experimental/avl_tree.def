@@ -1,0 +1,81 @@
+#ifndef LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME
+#define LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key int
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetKey
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetKey(main_obj, obj)
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(main_obj, obj) (((uintptr_t)(obj)->left & 0x3) == 3 ? -1 : (uintptr_t)(obj)->left & 0x3)
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft(main_obj, obj) ((LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)((uintptr_t)(obj)->left & (~(uintptr_t)0x3)))
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetRight
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetRight(main_obj, obj) ((obj)->right)
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor(main_obj, obj, new_bf) ((obj)->left = (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)(((uintptr_t)(LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft((main_obj), (obj))) | (uintptr_t)(new_bf  & 0x3))))
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetLeft
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetLeft(main_obj, obj, new_left) ((obj)->left = (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)((uintptr_t)new_left | (uintptr_t)(LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor((main_obj), (obj)) & 0x3)))
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetRight
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetRight(main_obj, obj, new_right) ((obj)->right = new_right)
+#endif
+
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id struct AvlEntry*
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Offset
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Offset size_t
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId NULL
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference(main_obj, reference) (reference) 
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(main_obj, reference)
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_COMPARER_Less
+#define LIBYUC_CONTAINER_AVL_TREE_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
+#endif
+
+#ifndef LIBYUC_CONTAINER_AVL_TREE_COMPARER_Greater
+#define LIBYUC_CONTAINER_AVL_TREE_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
+#endif
+
+
+#define AvlBsTree MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTree)
+#define AvlBsEntry MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsEntry)
+
+#define AvlBsTreeStackVector MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeStackVector)
+
+
+#define AvlTree MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTree)
+#define AvlEntry MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlEntry)
+
+#define AvlTreeInit MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeInit)
+#define AvlTreeFind MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeFind)
+#define AvlTreePut MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreePut)
+#define AvlTreeDelete MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeDelete)
+#define AvlTreeVerify MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeVerify)
+

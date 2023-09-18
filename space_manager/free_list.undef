@@ -1,0 +1,22 @@
+#undef FreeBlockEntry
+#undef FreeList
+
+
+#undef FreeListInit
+#undef FreeListAlloc
+#undef FreeListFree
+#undef FreeListGetFreeBlockSize
+#undef FreeListGetMaxFreeBlockSize
+
+
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_CLASS_NAME
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_Const_StaticListCount
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_Const_StaticElementCount
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Const_InvalidId
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Element
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Offset
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_DynamicArray
+
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_MODE_STATIC
+#undef LIBYUC_SPACE_MANAGER_FREE_LIST_MODE_DYNAMIC

@@ -1,0 +1,19 @@
+#undef SinglyListEntry
+#undef SinglyListHead
+
+#undef SinglyListHeadInit
+#undef SinglyListIsEmpty
+#undef SinglyListPutFirst
+#undef SinglyListDeleteFirst
+#undef SinglyListDeleteEntry
+#undef SinglyListGetCount
+#undef SinglyListIteratorFirst
+#undef SinglyListIteratorNext
+
+
+#undef LIBYUC_CONTAINER_SINGLY_LIST_CLASS_NAME
+#undef LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Id
+#undef LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Offset
+#undef LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Const_InvalidId
+#undef LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Reference
+#undef LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Dereference

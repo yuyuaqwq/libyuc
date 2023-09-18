@@ -1,6 +1,30 @@
-#define LIBYUC_TEMPLATE_DEFINE
-
 #include "test.h"
+
+#include "C:\Users\gt1\Desktop\wyhash.h"
+#define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
+#define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element int64_t
+#define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
+#include <libyuc/container/hash_table.c>
+
+
+#define LIBYUC_CONTAINER_RB_TREE_CLASS_NAME Int
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key int64_t
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetKey(main_obj, obj) ((int64_t*)((uintptr_t)obj + sizeof(IntRbBsEntry)))
+#include <libyuc/container/rb_tree.c>
+
+
+#define LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME Int
+#define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key int64_t
+#define LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetKey(main_obj, obj) ((int64_t*)((uintptr_t)obj + sizeof(IntAvlBsEntry)))
+#include <libyuc/container/experimental/avl_tree.c>
+
+//typedef struct QVQ {
+//	IntRbEntry entry;
+//	int64_t key;
+//	//AvlEntry entry;
+//	//int height;
+//	//LruEntry lru_entry;
+//} QVQ;
 
 
 //#define LIBYUC_TEMPLATE_DEFINE

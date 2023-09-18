@@ -1,0 +1,27 @@
+#undef Buddy
+
+#undef BuddyCreate
+#undef BuddyInit
+#undef BuddyAlloc
+#undef BuddyAllocByOffset
+#undef BuddyFree
+#undef BuddyGetAllocBlockSize
+#undef BuddyGetMaxFreeCount
+#undef BuddyGetMaxCount
+
+
+#undef LIBYUC_SPACE_MANAGER_BUDDY_CLASS_NAME
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Const_ElementCount
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Const_InvalidId
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Const_InvalidDynamicArray
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Id
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Set
+#undef LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Get
+#undef LIBYUC_SPACE_MANAGER_BUDDY_ALLOCATOR_Create
+#undef LIBYUC_SPACE_MANAGER_BUDDY_ALLOCATOR_CreateMultiple
+#undef LIBYUC_SPACE_MANAGER_BUDDY_ALLOCATOR_Release
+
+
+#undef LIBYUC_SPACE_MANAGER_BUDDY_MODE_STATIC
+#undef LIBYUC_SPACE_MANAGER_BUDDY_MODE_DYNAMIC

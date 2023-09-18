@@ -1,0 +1,27 @@
+#undef HashBucketVector
+
+#undef HashTable
+#undef HashTableEntry
+#undef HashTableIterator
+
+#undef HashTableInit
+#undef HashTableRelease
+#undef HashTableGetCount
+#undef HashTableFind
+#undef HashTablePut
+#undef HashTableDelete
+#undef HashTableIteratorFirst
+#undef HashTableIteratorNext
+#undef HashTableIteratorLocate
+#undef HashTableIteratorDelete
+
+#undef LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME
+#undef LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element
+#undef LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key
+#undef LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey
+#undef LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Const_InvalidId
+#undef LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Id
+#undef LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Offset
+#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Release
+#undef LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode
+#undef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal

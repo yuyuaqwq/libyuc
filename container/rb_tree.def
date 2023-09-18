@@ -1,0 +1,94 @@
+#ifndef LIBYUC_CONTAINER_RB_TREE_CLASS_NAME
+#define LIBYUC_CONTAINER_RB_TREE_CLASS_NAME
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetKey
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetKey(main_obj, obj)
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(main_obj, obj) ((RbColor)((uintptr_t)(obj)->left & 0x1))
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(main_obj, obj) ((LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id)((uintptr_t)(obj)->left & (~(uintptr_t)0x1)))
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight(main_obj, obj) ((obj)->right)
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(main_obj, obj, new_color) ((obj)->left = (LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id)(((uintptr_t)(LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft((main_obj), (obj))) | (uintptr_t)(new_color))))
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetLeft
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetLeft(main_obj, obj, new_left) ((obj)->left = (LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id)((uintptr_t)new_left | (uintptr_t)(LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor((main_obj), (obj)))))
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetRight
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetRight(main_obj, obj, new_right) ((obj)->right = new_right)
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_COMPARER_Less
+#define LIBYUC_CONTAINER_RB_TREE_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_COMPARER_Greater
+#define LIBYUC_CONTAINER_RB_TREE_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key int
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id struct RbEntry*
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset size_t
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId NULL
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(main_obj, reference) (reference) 
+#endif
+
+#ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(main_obj, reference)
+#endif
+
+
+
+/*
+* 以234树为原型的红黑树实现
+*/
+#define RbColor MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbColor)
+#define RbEntry MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbEntry)
+#define RbTree MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTree)
+#define RbTreeIterator MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIterator)
+
+
+#define RbBsTree MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTree)
+#define RbBsEntry MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsEntry)
+
+#define RbBsTreeStackVector MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeStackVector)
+
+#define RbTreeInit MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeInit)
+#define RbTreeFind MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeFind)
+#define RbTreeInsert MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeInsert)
+#define RbTreePut MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreePut)
+#define RbTreeDelete MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeDelete)
+#define RbTreeDeleteByIterator MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeDeleteByIterator)
+#define RbTreeGetCount MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeGetCount)
+#define RbTreeIteratorLocate MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIteratorLocate)
+#define RbTreeIteratorFirst MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIteratorFirst)
+#define RbTreeIteratorLast MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIteratorLast)
+#define RbTreeIteratorNext MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIteratorNext)
+#define RbTreeIteratorPrev MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIteratorPrev)
+#define RbTreeIteratorCopy MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeIteratorCopy)
+#define RbTreeVerify MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeVerify)

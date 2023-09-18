@@ -1,0 +1,73 @@
+#ifndef LIBYUC_CONTAINER_BS_TREE_CLASS_NAME
+#define LIBYUC_CONTAINER_BS_TREE_CLASS_NAME
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_Type_Key
+#define LIBYUC_CONTAINER_BS_TREE_Type_Key int
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetKey
+#define LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetKey(main_obj, obj)
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetLeft
+#define LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetLeft(main_obj, obj) ((obj)->left)
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight
+#define LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(main_obj, obj) ((obj)->right)
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetLeft
+#define LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetLeft(main_obj, obj, new_left) ((obj)->left = new_left)
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetRight
+#define LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetRight(main_obj, obj, new_right) ((obj)->right = new_right)
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id
+#define LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id struct BsEntry*
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Offset
+#define LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Offset size_t
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId
+#define LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId NULL
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference
+#define LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(main_obj, reference) (reference) 
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference
+#define LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(main_obj, reference)
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_COMPARER_Less
+#define LIBYUC_CONTAINER_BS_TREE_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
+#endif
+
+#ifndef LIBYUC_CONTAINER_BS_TREE_COMPARER_Greater
+#define LIBYUC_CONTAINER_BS_TREE_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
+#endif
+
+#define BsEntry MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsEntry)
+#define BsTree MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTree)
+
+#define BsTreeStackVector MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVector)
+
+
+#define BsTreeInit MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeInit)
+#define BsTreeFind MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeFind)
+#define BsTreePut MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreePut)
+#define BsTreeInsert MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeInsert)
+#define BsTreeDelete MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeDelete)
+#define BsTreeGetCount MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeGetCount)
+#define BsTreeIteratorLocate MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeIteratorLocate)
+#define BsTreeIteratorFirst MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeIteratorFirst)
+#define BsTreeIteratorLast MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeIteratorLast)
+#define BsTreeIteratorNext MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeIteratorNext)
+#define BsTreeIteratorPrev MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeIteratorPrev)

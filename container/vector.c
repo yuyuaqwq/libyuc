@@ -1,3 +1,4 @@
+#include <libyuc/container/vector.def>
 
 #ifdef LIBYUC_CONTAINER_VECTOR_MODE_STATIC
 void VectorInit(Vector* vector) {
@@ -133,6 +134,4 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector) {
 //        return VectorIndex(vector, iter->cur_index);
 //}
 
-#define LIBYUC_TEMPLATE_UNDECLARE
-#include <libyuc/container/vector.h>
-#undef LIBYUC_TEMPLATE_UNDECLARE
+#include <libyuc/container/vector.undef>

@@ -270,27 +270,7 @@ uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
 }
 
 #define AR_TREE_ARRAY_InvalidId (-1)
-//#define AR_TREE_ARRAY_REFERENCER AR_TREE_ARRAY_REFERENCER
-//LIBYUC_ALGORITHM_ARRAY_DEFINE(
-//    ArNodeKey, 
-//    size_t,
-//    ptrdiff_t, 
-//    uint8_t, 
-//    uint8_t, 
-//    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
-//    LIBYUC_BASIC_COMPARER_DEFALUT, 
-//    AR_TREE_ARRAY_REFERENCER
-//)
-//LIBYUC_ALGORITHM_ARRAY_DEFINE(
-//    ArNodeChild,
-//    size_t,
-//    ptrdiff_t, 
-//    ArNode*, 
-//    ArNode*,
-//    LIBYUC_ALGORITHM_ARRAY_ACCESSOR_DEFAULT, 
-//    LIBYUC_BASIC_COMPARER_DEFALUT, 
-//    AR_TREE_ARRAY_REFERENCER
-//)
+
 
 #define LIBYUC_ALGORITHM_ARRAY_CLASS ArNodeKey
 #define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element uint8_t
