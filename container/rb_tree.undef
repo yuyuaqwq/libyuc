@@ -1,9 +1,7 @@
-#undef RbBsTree
-#undef RbBsEntry
-#undef RbBsTreeStackVector
-
+#undef RbColor
 #undef RbEntry
 #undef RbTree
+#undef RbTreeIterator
 
 #undef RbTreeInit
 #undef RbTreeFind
@@ -36,3 +34,11 @@
 #undef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference
 #undef LIBYUC_CONTAINER_RB_TREE_COMPARER_Less
 #undef LIBYUC_CONTAINER_RB_TREE_COMPARER_Greater
+
+
+/*
+* BsTree
+*/
+#undef RbBsTree
+#undef RbBsEntry
+#undef RbBsTreeStackVector

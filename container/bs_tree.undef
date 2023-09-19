@@ -1,4 +1,3 @@
-#undef BsTreeStackVector
 
 #undef BsEntry
 #undef BsTree
@@ -29,3 +28,8 @@
 #undef LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference
 #undef LIBYUC_CONTAINER_BS_TREE_COMPARER_Less
 #undef LIBYUC_CONTAINER_BS_TREE_COMPARER_Greater
+
+/*
+* BsTreeStackVector
+*/
+#undef BsTreeStackVector

@@ -34,22 +34,11 @@
 #define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal(main_obj, obj1, obj2) (*(obj1) == *(obj2))
 #endif
 
-/*
-* 基于robin hood hashing的哈希表实现
-* 参考https://github.com/martinus/unordered_dense
-*/
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75    //%
-#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
-#define LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID 0
+
 
 #define HashTable MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashTable)
 #define HashTableEntry MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashTableEntry)
 #define HashTableIterator MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashTableIterator)
-
-#define HashBucketVector MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVector)
-
-
 
 
 #define HashTableInit MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashTableInit)
@@ -63,3 +52,8 @@
 #define HashTableIteratorLocate MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashTableIteratorLocate)
 #define HashTableIteratorDelete MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashTableIteratorDelete)
 
+
+/*
+* HashBucketVector
+*/
+#define HashBucketVector MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVector)

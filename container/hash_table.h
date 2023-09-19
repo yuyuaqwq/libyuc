@@ -11,6 +11,16 @@ extern "C" {
 #endif
 
 
+/*
+* 基于robin hood hashing的哈希表实现
+* 参考https://github.com/martinus/unordered_dense
+*/
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_BUCKETS_SIZE 16
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_LOAD_FACTOR 75    //%
+#define LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR 2
+#define LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID 0
+
+
 #include <libyuc/container/hash_table.def>
 
 

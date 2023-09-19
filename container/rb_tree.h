@@ -12,11 +12,14 @@ extern "C" {
 #include <libyuc/container/rb_tree_RbBsTree.cfg>
 #include <libyuc/container/bs_tree.h>
 
+#define kRbBlack 0
+#define kRbRed 1
+typedef int RbColor;
 
-typedef enum {
-    kRbBlack,
-    kRbRed,
-} RbColor;
+//typedef enum {
+//    kRbBlack,
+//    kRbRed,
+//} RbColor;
 
 typedef struct RbEntry {
     union {

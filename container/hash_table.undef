@@ -1,5 +1,3 @@
-#undef HashBucketVector
-
 #undef HashTable
 #undef HashTableEntry
 #undef HashTableIterator
@@ -25,3 +23,8 @@
 #undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Release
 #undef LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode
 #undef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal
+
+/*
+* HashBucketVector
+*/
+#undef HashBucketVector
