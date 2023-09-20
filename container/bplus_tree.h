@@ -51,11 +51,11 @@ typedef struct {
     BPlusEntryRbTreeIterator element_iterator;
 } BPlusElementPos;
 
-
+#define STACK_SIZE sizeof(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Offset) // * 8
 
 #define LIBYUC_CONTAINER_VECTOR_CLASS_NAME MAKE_NAME(LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME, BPlusIteratorStack)
 #define LIBYUC_CONTAINER_VECTOR_MODE_STATIC
-#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount sizeof(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Offset) // * 8
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount STACK_SIZE
 #include <libyuc/container/vector.h>
 
 
@@ -79,7 +79,8 @@ typedef struct BPlusTree {
 */
 typedef struct BPlusLeafElement {
     BPlusEntryRbEntry rb_entry;
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Object obj;
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key key;
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Value value;
 } BPlusLeafElement;
 typedef struct BPlusIndexElement {
     BPlusEntryRbEntry rb_entry;
@@ -101,7 +102,7 @@ typedef struct BPlusIndexEntry {
 } BPlusIndexEntry;
 typedef struct BPlusLeafEntry {
     //BPlusLeafListEntry list_entry;         /* 连接所有叶子节点 */
-    uint8_t buf[];
+    uint8_t invalid[];
 } BPlusLeafEntry;
 typedef struct BPlusEntry {
     BPlusEntryRbTree rb_tree;

@@ -242,18 +242,18 @@ static void BPlusElementSet(BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_E
     assert(element_id >= 0);
     BPlusElement* dst_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(dst_entry, element_id);
     if (dst_entry->type == kBPlusEntryLeaf) {
-        element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key);
-        element_accessor##_SetValue(dst_entry, dst_element, src_entry, &element->leaf.value);
+        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key);
+        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetValue(dst_entry, dst_element, src_entry, &element->leaf.value);
     }
     else {
         /* 如果是插入到index_entry，可能是来自leaf的element */
         if (src_entry->type == kBPlusEntryLeaf) {
-            element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key);
+            LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key);
             assert(element_child_id != LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
             dst_element->index.child_id = element_child_id;
         }
         else {
-            element_accessor##_SetKey(dst_entry, dst_element, src_entry, &element->index.key);
+            LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetKey(dst_entry, dst_element, src_entry, &element->index.key);
             /* 如果有附带的孩子id，则使用附带的孩子id */
             if (element_child_id != LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId) {
                 dst_element->index.child_id = element_child_id;
@@ -284,7 +284,7 @@ static void BPlusElementSetChildId(BPlusEntry* index, LIBYUC_CONTAINER_BPLUS_TRE
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(index, element);
 }
 static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusElementCreate(BPlusEntry* entry) {
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id = element_allocator##_CreateBySize(entry, entry->type == kBPlusEntryLeaf ? sizeof(BPlusLeafElement) : sizeof(BPlusIndexElement));
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ALLOCATOR_CreateBySize(entry, entry->type == kBPlusEntryLeaf ? sizeof(BPlusLeafElement) : sizeof(BPlusIndexElement));
     assert(element_id >= 0);
     return element_id;
 }
@@ -292,14 +292,14 @@ static BPlusElement* BPlusElementRelease(BPlusEntry* entry, LIBYUC_CONTAINER_BPL
     assert(element_id >= 0);
     BPlusElement* element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(entry, element_id);
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(entry, element);
-    element_allocator##_Release(entry, element_id);
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ALLOCATOR_Release(entry, element_id);
     return element;
 }
 
 
 /* B+树迭代器 */
 BPlusIteratorStatus BPlusIteratorTop(BPlusTree* tree, BPlusIterator* iterator, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key* key) {
-    BPlusIteratorStackVectorInit(&iterator->stack, default_stack_size, iterator->default_stack);
+    BPlusIteratorStackVectorInit(&iterator->stack, STACK_SIZE);
     iterator->stack.count = 0;
     iterator->level = -1;
     return BPlusIteratorDown(tree, iterator, key);
@@ -401,7 +401,7 @@ void BPlusEntryInit(BPlusTree* tree, BPlusEntry* entry, BPlusEntryType type) {
     entry->type = type;
     entry->element_count = 0;
     BPlusEntryRbTreeInit(&entry->rb_tree);
-    entry_accessor##_InitCallback(tree, entry);
+    LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_InitCallback(tree, entry);
 }
 LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id BPlusEntryCreate(BPlusTree* tree, BPlusEntryType type) {
     size_t size;
@@ -463,12 +463,12 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     BPlusEntryRbTreeIterator left_element_iterator;
     BPlusEntryRbTreeIteratorLast(&left->rb_tree, &left_element_iterator);
     int insert_right = 0;
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset fill_rate = (entry_accessor##_GetFillRate(tree, left) + element_accessor##_GetNeedRate(right, *src_entry, insert_element)) / 2;
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset fill_rate = (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, left) + LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(right, *src_entry, insert_element)) / 2;
     /*
     * 计算出右侧两侧各自的节点数量
     */
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset right_count = 1, left_count = 0;
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset left_fill_rate = entry_accessor##_GetFillRate(tree, left);
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset left_fill_rate = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, left);
     while (true) {
         if (!insert_right && left_element_iterator.cur_id == insert_id) {
             insert_right = 1;
@@ -476,7 +476,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
         if (left_fill_rate <= fill_rate || left->element_count - right_count <= 2 + insert_right) {
             break;
         }
-        left_fill_rate -= element_accessor##_GetNeedRate(left, right, insert_element);
+        left_fill_rate -= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(left, right, insert_element);
         BPlusEntryRbTreeIteratorPrev(&left->rb_tree, &left_element_iterator);
         ++right_count;
     }
@@ -493,7 +493,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
 
     /* 接下来是左侧 */
     /* 拷贝到临时节点，在原节点中重构rb树 */
-    BPlusEntry* temp_entry = entry_accessor##_GetTempCopyEntry(tree, left);
+    BPlusEntry* temp_entry = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetTempCopyEntry(tree, left);
     BPlusEntryInit(tree, left, right->type);
     do {
         BPlusEntryRbTreeIteratorPrev(&temp_entry->rb_tree, &mid_element_iterator);
@@ -616,15 +616,15 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id up_element_id = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId;
     BPlusEntryRbTreeIterator up_element_iterator;
     do {
-        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id free_rate = entry_accessor##_GetFreeRate(tree, cur);
-        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id need_rate = element_accessor##_GetNeedRate(cur, old_src_entry, insert_element);
+        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset free_rate = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(tree, cur);
+        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset need_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, old_src_entry, insert_element);
         if (iterator->leaf_status == kBPlusIteratorEq) {
             BPlusElement* raw = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(cur, cur_pos->element_iterator.cur_id);
-            LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id raw_rate = element_accessor##_GetNeedRate(cur, cur, raw);
+            LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset raw_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, cur, raw);
             LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(cur, raw);
             if (free_rate + need_rate >= raw_rate) {
                 /* SetValue会先释放原有空间，因此空闲空间可以计入已分配的部分 */
-                element_accessor##_SetValue(cur, raw, cur, &insert_element->leaf.value);
+                LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetValue(cur, raw, cur, &insert_element->leaf.value);
                 break;
             }
             else {
@@ -632,7 +632,7 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
                 assert(0);
             }
         }
-        else if (entry_accessor##_GetFreeRate(tree, cur) >= element_accessor##_GetNeedRate(cur, old_src_entry, insert_element)) {
+        else if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(tree, cur) >= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, old_src_entry, insert_element)) {
             /* 有空余的位置插入 */
             BPlusEntryInsertElement(cur, old_src_entry, insert_element, insert_element_child_id);
             break;
@@ -696,7 +696,7 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
     bool success = true, delete_up = false;
     BPlusEntryDeleteElement(entry, &cur_pos->element_iterator);        /* 直接删除即可，叶子元素没有子节点，索引元素在合并时已经处理子节点了 */
     do {
-        if (entry_accessor##_GetFillRate(tree, entry) >= entry_accessor##_GetMergeThresholdRate(tree, entry)) {
+        if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, entry) >= LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetMergeThresholdRate(tree, entry)) {
             break;
         }
         if (!parent_pos) {
@@ -744,7 +744,7 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
         assert(common_parent_element_iterator.cur_id != BPlusEntryRbReferencer_InvalidId);
         assert(sibling_entry_id != LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
         sibling = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, sibling_entry_id);
-        if (entry_accessor##_GetFillRate(tree, sibling) > entry_accessor##_GetMergeThresholdRate(tree, sibling)) {
+        if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, sibling) > LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetMergeThresholdRate(tree, sibling)) {
             /* 向兄弟借节点 */
             assert(sibling->element_count >= 2);
             if (entry->type == kBPlusEntryLeaf) {

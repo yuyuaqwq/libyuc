@@ -1,6 +1,6 @@
 #include "test.h"
 
-#include "C:\Users\yuyu\Desktop\wyhash.h"
+#include "C:\Users\gt1\Desktop\wyhash.h"
 #define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element int64_t
 #define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
@@ -22,62 +22,12 @@
 #define LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME Int
 #include <libyuc/container/bplus_tree.c>
 
-//typedef struct QVQ {
-//	IntRbEntry entry;
-//	int64_t key;
-//	//AvlEntry entry;
-//	//int height;
-//	//LruEntry lru_entry;
-//} QVQ;
-
-
-//#define LIBYUC_TEMPLATE_DEFINE
-//#include <libyuc/container/list.h>
-//#include <libyuc/container/list.c>
-//#include <libyuc/container/list.h>
-//
-//
-//#define LIBYUC_TEMPLATE_DEFINE
-//#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC
-//#define CLASS_NAME HashBucket
-//#include <libyuc/container/vector.h>
-//#include <libyuc/container/vector.c>
-//#include <libyuc/container/vector.h>
 
 
 
-//LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(, int32_t, int32_t, LIBYUC_SPACE_MANAGER_BUDDY_4BIT_INDEXER, LIBYUC_BASIC_ALLOCATOR_DEFALUT)
-//
-//
-////typedef struct _IntLru_Entry {
-////	IntHashListEntry lru_entry;
-////	int key;
-////} IntLru_Entry;
-////#define IntLruListEntryAccessor_GetKey(LRU_LIST, LRU_LIST_ENTRY) (&((IntLru_Entry*)(LRU_LIST_ENTRY))->key)
-////#define IntLruListEntryAccessor IntLruListEntryAccessor
-////LIBYUC_CONTAINER_LRU_LIST_DEFINE(Int, int, IntLruListEntryAccessor, LIBYUC_BASIC_ALLOCATOR_DEFALUT, LIBYUC_BASIC_HASHER_DEFALUT, LIBYUC_BASIC_COMPARER_DEFALUT)
-//
-//
-//#define TEST_COMPARER_DEFALUT_Equal(MAIN_OBJ, OBJ1, OBJ2) (memcmp((OBJ1), (OBJ2), 16) == 0)
-//#define TEST_COMPARER_DEFALUT_Greater(MAIN_OBJ, OBJ1, OBJ2) (memcmp((OBJ1), (OBJ2), 16) > 0)
-//#define TEST_COMPARER_DEFALUT_Less(MAIN_OBJ, OBJ1, OBJ2) (memcmp((OBJ1), (OBJ2), 16) < 0)
-//#define TEST_COMPARER_DEFALUT_Subrrac(MAIN_OBJ, OBJ1, OBJ2) (memcmp((OBJ1), (OBJ2), 16))
-//#define TEST_COMPARER_DEFALUT TEST_COMPARER_DEFALUT
-//LIBYUC_CONTAINER_RB_TREE_DEFINE(Int, IntRbEntry*, uint32_t, int64_t, INT_RB_TREE_REFERENCER, INT_RB_TREE_ACCESSOR, LIBYUC_BASIC_COMPARER_DEFALUT)//TEST_COMPARER_DEFALUT
-//
-//LIBYUC_CONTAINER_AVL_TREE_DEFINE(Int, IntAvlEntry*, uint32_t, int64_t, INT_AVL_TREE_REFERENCER, INT_AVL_TREE_ACCESSOR, LIBYUC_BASIC_COMPARER_DEFALUT)
-//	
-//
-//LIBYUC_CONTAINER_HASH_TABLE_DEFINE(Int, uint32_t, int64_t, int64_t, LIBYUC_BASIC_ALLOCATOR_DEFALUT, INT_HASHTABLE_ACCESSOR, LIBYUC_BASIC_MOVER_DEFALUT, INT_HASHTABLE_HASHER_KEY, LIBYUC_BASIC_COMPARER_DEFALUT)
-//
-//
-//
 //LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(Element, int16_t, int16_t)
 //LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(Element, int16_t, int16_t, LIBYUC_SPACE_MANAGER_BUDDY_4BIT_INDEXER, LIBYUC_BASIC_ALLOCATOR_DEFALUT)
-//
-//
-//
-//
+
 //
 //
 //#define element_max_count 128
