@@ -19,7 +19,80 @@
 #include <libyuc/container/experimental/avl_tree.c>
 
 
+
+
+#define TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY) ((Int_BPlusEntryExtend*)((uintptr_t)ENTRY - sizeof(Int_BPlusEntryExtend)))
+
+typedef struct _Int_BPlusElement {
+	union {
+		uint16_t next;
+		struct {
+			IntBPlusElement element;
+		};
+	};
+} Int_BPlusElement;
+
+#define element_max_count 129
+
+#define LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME IntBPlus
+#define LIBYUC_CONTAINER_STATIC_LIST_MODE_STATIC
+#define LIBYUC_CONTAINER_STATIC_LIST_Const_StaticElementCount element_max_count
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element Int_BPlusElement
+#include <libyuc/container/static_list.h>
+
+#define LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME IntBPlus
+#define LIBYUC_CONTAINER_STATIC_LIST_MODE_STATIC
+#define LIBYUC_CONTAINER_STATIC_LIST_Const_StaticElementCount element_max_count
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element Int_BPlusElement
+#include <libyuc/container/static_list.c>
+
+
+typedef struct _Int_BPlusEntryExtend {
+	uint16_t count;
+	IntBPlusStaticList static_list;
+} Int_BPlusEntryExtend;
+struct {
+	Int_BPlusEntryExtend extend;
+	IntBPlusEntry entry;
+} temp_bplus_entry;
+
+
+
 #define LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME Int
+
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key int64_t
+
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_Const_ElementCount element_max_count
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetTempCopyEntry(TREE, ENTRY)  (memcpy(&temp_bplus_entry, TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY), sizeof(Int_BPlusEntryExtend) + ((ENTRY)->type == kBPlusEntryLeaf ? sizeof(IntBPlusLeafEntry):  sizeof(IntBPlusIndexEntry))), &temp_bplus_entry.entry)
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetMergeThresholdRate(TREE, ENTRY) (element_max_count * 40 / 100)
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(TREE, ENTRY) (element_max_count - TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count)
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(TREE, ENTRY) (TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count)
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_InitCallback(TREE, ENTRY) (TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count = 0, IntBPlusStaticListInit(&TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->static_list, element_max_count))
+
+forceinline IntBPlusEntry* TEST_BPLUS_ENTRY_ALLOCATOR_CreateBySize(IntBPlusTree* tree, size_t SIZE) {
+	Int_BPlusEntryExtend* exptend = (IntBPlusEntry*)MemoryAlloc(sizeof(Int_BPlusEntryExtend) + SIZE);
+	return (IntBPlusEntry*)((uintptr_t)exptend + sizeof(Int_BPlusEntryExtend));
+}
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ALLOCATOR_CreateBySize(TREE, SIZE) TEST_BPLUS_ENTRY_ALLOCATOR_CreateBySize(TREE, SIZE)
+forceinline void TEST_BPLUS_ENTRY_ALLOCATOR_Release(IntBPlusTree* tree, void* entry) {
+	MemoryFree((void*)((uintptr_t)entry - sizeof(Int_BPlusEntryExtend)));
+}
+#define LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ALLOCATOR_Release(TREE, ENTRY) TEST_BPLUS_ENTRY_ALLOCATOR_Release(TREE, ENTRY)
+
+
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(ENTRY, ELEMENT) 1
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ALLOCATOR_CreateBySize(ENTRY, SIZE) (TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count++,  IntBPlusStaticListPop(&((Int_BPlusEntryExtend*)((uintptr_t)ENTRY - sizeof(Int_BPlusEntryExtend)))->static_list, 0))
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ALLOCATOR_Release(ENTRY, ELEMENT) (TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->count--, IntBPlusStaticListPush(&((Int_BPlusEntryExtend*)((uintptr_t)ENTRY - sizeof(Int_BPlusEntryExtend)))->static_list, 0, ELEMENT))
+
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id int16_t
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset uint16_t
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId -1
+IntBPlusElement* TEST_BPLUS_ELEMENT_REFERENCER_Reference(IntBPlusEntry* ENTRY, int16_t ELEMENT_ID) {
+	return &TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY)->static_list.obj_arr[ELEMENT_ID].element;
+}
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(main_obj, reference) TEST_BPLUS_ELEMENT_REFERENCER_Reference(main_obj, reference)
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference
+
 #include <libyuc/container/bplus_tree.c>
 
 
@@ -28,37 +101,6 @@
 //LIBYUC_SPACE_MANAGER_BUDDY_DECLARATION(Element, int16_t, int16_t)
 //LIBYUC_SPACE_MANAGER_BUDDY_DEFINE(Element, int16_t, int16_t, LIBYUC_SPACE_MANAGER_BUDDY_4BIT_INDEXER, LIBYUC_BASIC_ALLOCATOR_DEFALUT)
 
-//
-//
-//#define element_max_count 128
-//
-//typedef struct _Int_BPlusElement {
-//	union {
-//		uint16_t next;
-//		struct {
-//			IntBPlusElement element;
-//		};
-//	};
-//} Int_BPlusElement;
-//LIBYUC_CONTAINER_STATIC_LIST_DECLARATION(IntBPlus, uint16_t, Int_BPlusElement, 1, element_max_count)
-//LIBYUC_CONTAINER_STATIC_LIST_DEFINE(IntBPlus, uint16_t, Int_BPlusElement, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_ACCESSOR, LIBYUC_CONTAINER_STATIC_LIST_DEFAULT_REFERENCER, 1)
-//
-//
-//
-//typedef struct _Int_BPlusEntryExtend {
-//	uint16_t count;
-//	IntBPlusStaticList static_list;
-//} Int_BPlusEntryExtend;
-//
-//#define TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY) ((Int_BPlusEntryExtend*)((uintptr_t)ENTRY - sizeof(Int_BPlusEntryExtend)))
-//
-//
-//
-//struct {
-//	Int_BPlusEntryExtend extend;
-//	IntBPlusEntry entry;
-//} temp_bplus_entry;
-//
 //
 //
 //#define TEST_BPLUS_ENTRY_ACCESSOR_GetTempCopyEntry(TREE, ENTRY) (memcpy(&temp_bplus_entry, TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY), sizeof(Int_BPlusEntryExtend) + ((ENTRY)->type == kBPlusEntryLeaf ? sizeof(IntBPlusLeafEntry):  sizeof(IntBPlusIndexEntry))), &temp_bplus_entry.entry)

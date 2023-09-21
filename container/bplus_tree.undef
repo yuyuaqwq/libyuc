@@ -1,5 +1,6 @@
 #undef LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME
 #undef LIBYUC_CONTAINER_BPLUS_TREE_ALLOCATOR_Create
+#undef LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ALLOCATOR_Create
 #undef LIBYUC_CONTAINER_BPLUS_TREE_ALLOCATOR_CreateMultiple
 #undef LIBYUC_CONTAINER_BPLUS_TREE_ALLOCATOR_Release
 #undef LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id
@@ -19,6 +20,7 @@
 #undef BPlusIterator
 #undef BPlusTree
 #undef BPlusLeafElement
+#undef BPlusIndexElement
 #undef BPlusElement
 #undef BPlusIndexEntry
 #undef BPlusLeafEntry
@@ -33,3 +35,34 @@
 #undef BPlusTreeFind
 #undef BPlusTreeInsert
 #undef BPlusTreeDelete
+
+
+/*
+* BPlusEntryRbTree
+*/
+#undef BPlusEntryRbTree
+#undef BPlusEntryRbTreeIterator
+#undef BPlusEntryRbEntry
+#undef BPlusEntryRbColor
+#undef BPlusEntryRbBsEntry
+
+#undef BPlusEntryRbTreeInit
+#undef BPlusEntryRbTreePut
+#undef BPlusEntryRbTreeIteratorPrev
+#undef BPlusEntryRbTreeIteratorNext
+#undef BPlusEntryRbTreeIteratorLocate
+#undef BPlusEntryRbTreeIteratorLast
+#undef BPlusEntryRbTreeIteratorFirst
+#undef BPlusEntryRbTreeIteratorCopy
+#undef BPlusEntryRbTreeDeleteByIterator
+
+
+
+/*
+* BPlusIteratorStackVector
+*/
+#undef BPlusIteratorStackVector
+
+#undef BPlusIteratorStackVectorInit
+#undef BPlusIteratorStackVectorRelease
+#undef BPlusIteratorStackVectorPushTail

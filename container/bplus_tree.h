@@ -51,11 +51,7 @@ typedef struct {
     BPlusEntryRbTreeIterator element_iterator;
 } BPlusElementPos;
 
-#define STACK_SIZE sizeof(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Offset) // * 8
-
-#define LIBYUC_CONTAINER_VECTOR_CLASS_NAME MAKE_NAME(LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME, BPlusIteratorStack)
-#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC
-#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount STACK_SIZE
+#include <libyuc/container/bplus_tree_BPlusIteratorStackVector.cfg>
 #include <libyuc/container/vector.h>
 
 
@@ -63,12 +59,10 @@ typedef struct {
 typedef struct BPlusIterator {
     BPlusIteratorStackVector stack;
     // BPlusElementPos default_stack[default_stack_size];
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset level;
+    int32_t level;
     BPlusIteratorStatus leaf_status;
 } BPlusIterator;
    
-
-// LIBYUC_CONTAINER_BPLUS_TREE_DECLARATION(BPlusLeaf, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id, entry_count_type)
 
 typedef struct BPlusTree {
     LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id root_id;

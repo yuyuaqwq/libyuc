@@ -12,7 +12,6 @@ void VectorRelease(Vector* vector) {
 LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset VectorGetCapacity(Vector* vector) {
     return sizeof(vector->obj_arr) / sizeof(vector->obj_arr[0]);
 }
-
 #endif
 
 #ifdef LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC

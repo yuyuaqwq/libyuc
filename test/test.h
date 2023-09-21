@@ -37,6 +37,10 @@ typedef struct QVQ {
 #include <libyuc/container/experimental/avl_tree.h>
 
 #define LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME Int
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key int64_t
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id int16_t
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset uint16_t
+#define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId -1
 #include <libyuc/container/bplus_tree.h>
 
 

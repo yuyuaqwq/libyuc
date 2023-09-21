@@ -152,7 +152,8 @@ kv分离是外层处理的，b+树操作的只有element
 //}
 
 
-
+#include <libyuc/container/bplus_tree_BPlusIteratorStackVector.cfg>
+#include <libyuc/container/vector.c>
 
 /*
 * B+树迭代器
@@ -204,21 +205,21 @@ forceinline void BPlusEntryRbReferencer_Dereference(BPlusEntryRbTree* tree, BPlu
 }
 
 typedef struct {
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id left : sizeof(LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id) * 8 - 1;
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset color : 1;
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset left : sizeof(LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id) * 8 - 1;
 } BPlusEntryRbParentColor;
 
 forceinline LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntryRbAccessor_GetLeft(BPlusEntryRbTree* tree, BPlusEntryRbBsEntry* bs_entry) {
-    return (LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id)(((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)bs_entry)->left))->left);
+    return ((BPlusEntryRbParentColor*)bs_entry)->left;
 }
 forceinline BPlusEntryRbColor BPlusEntryRbAccessor_GetColor(BPlusEntryRbTree* tree, BPlusEntryRbBsEntry* bs_entry) {
-    return (BPlusEntryRbColor)(((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)bs_entry)->left))->color == -1 ? 1 : 0);
+    return ((BPlusEntryRbParentColor*)bs_entry)->color;
 }
 forceinline void BPlusEntryRbAccessor_SetLeft(BPlusEntryRbTree* tree, BPlusEntryRbBsEntry* bs_entry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id new_id) {
-    ((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)bs_entry)->left))->left = (LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset)new_id;
+    ((BPlusEntryRbParentColor*)bs_entry)->left = new_id;
 }
 forceinline void BPlusEntryRbAccessor_SetColor(BPlusEntryRbTree* tree, BPlusEntryRbBsEntry* bs_entry, BPlusEntryRbColor new_color) {
-    ((BPlusEntryRbParentColor*)&(((BPlusEntryRbEntry*)bs_entry)->left))->color = new_color;
+    ((BPlusEntryRbParentColor*)bs_entry)->color = new_color;
 }
 forceinline LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntryRbAccessor_GetRight(BPlusEntryRbTree* tree, BPlusEntryRbBsEntry* bs_entry) {
     return (LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id)bs_entry->right;
@@ -232,6 +233,18 @@ forceinline LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key* BPlusEntryR
 }
 
 // LIBYUC_CONTAINER_RB_TREE_DEFINE(BPlusEntry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key, BPlusEntryRbReferencer, BPlusEntryRbAccessor, element_key_comparer)
+
+#include <libyuc/container/bplus_tree_BPlusEntryRbTree.cfg>
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference BPlusEntryRbReferencer_Reference
+#define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference BPlusEntryRbReferencer_Dereference
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft BPlusEntryRbAccessor_GetLeft
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight BPlusEntryRbAccessor_GetRight
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor BPlusEntryRbAccessor_GetColor
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetLeft BPlusEntryRbAccessor_SetLeft
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetRight BPlusEntryRbAccessor_SetRight
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor BPlusEntryRbAccessor_SetColor
+#define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetKey BPlusEntryRbAccessor_GetKey
+#include <libyuc/container/rb_tree.c>
 
 
 
@@ -285,11 +298,11 @@ static void BPlusElementSetChildId(BPlusEntry* index, LIBYUC_CONTAINER_BPLUS_TRE
 }
 static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusElementCreate(BPlusEntry* entry) {
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ALLOCATOR_CreateBySize(entry, entry->type == kBPlusEntryLeaf ? sizeof(BPlusLeafElement) : sizeof(BPlusIndexElement));
-    assert(element_id >= 0);
+      assert(element_id >= 0);
     return element_id;
 }
 static BPlusElement* BPlusElementRelease(BPlusEntry* entry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id) {
-    assert(element_id >= 0);
+      assert(element_id >= 0);
     BPlusElement* element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(entry, element_id);
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(entry, element);
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ALLOCATOR_Release(entry, element_id);
@@ -377,7 +390,7 @@ BPlusIteratorStatus BPlusIteratorDown(BPlusTree* tree, BPlusIterator* iterator, 
 */
 static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntryInsertElement(BPlusEntry* dst_entry, BPlusEntry* src_entry, BPlusElement* insert_element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id element_child_id) {
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id = BPlusElementCreate(dst_entry);
-    assert(element_id != BPlusEntryRbReferencer_InvalidId);
+      assert(element_id != BPlusEntryRbReferencer_InvalidId);
     BPlusElementSet(dst_entry, element_id, src_entry, insert_element, element_child_id);
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id old_element_id = BPlusEntryRbTreePut(&dst_entry->rb_tree, element_id);
     if (old_element_id != BPlusEntryRbReferencer_InvalidId && old_element_id != element_id) BPlusElementRelease(dst_entry, old_element_id);
@@ -424,7 +437,7 @@ void BPlusEntryRelease(BPlusTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERE
 /*
 * 有序链表建树，参考https://leetcode.cn/problems/convert-sorted-list-to-binary-search-tree/solution/you-xu-lian-biao-zhuan-huan-er-cha-sou-suo-shu-1-3/
 */
-static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BuildRbTree(BPlusEntry* src_entry, BPlusEntryRbTreeIterator* element_iterator, BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset left, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset right, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id parent_id, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset max_level, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset level) {
+static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BuildRbTree(BPlusEntry* src_entry, BPlusEntryRbTreeIterator* element_iterator, BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id left, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id right, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id parent_id, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset max_level, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset level) {
     if (left > right) return LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId;
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id mid = (left + right + 1) / 2;
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id new_element_id = BPlusElementCreate(dst_entry);
