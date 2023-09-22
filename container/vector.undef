@@ -1,13 +1,33 @@
+#undef LIBYUC_CONTAINER_VECTOR_CLASS_NAME
+#undef LIBYUC_CONTAINER_VECTOR_ACCESSOR_GetArray
+#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Create
+#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_CreateMultiple
+#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Release
+#undef LIBYUC_CONTAINER_VECTOR_CALLBACK_Expand
+
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_DynamicArray
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidDynamicArray
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id
+#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset
+#undef LIBYUC_CONTAINER_VECTOR_MODE_STATIC
+#undef LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
+
+
 #undef Vector
 #undef VectorIterator
 
+#undef VectorInit
+#undef VectorRelease
 #undef VectorGetCount
 #undef VectorSetCount
 #undef VectorGetCapacity
+#undef VectorIsEmpty
+#undef VectorResetCapacity
 #undef VectorGetArray
 #undef VectorIndex
-#undef VectorIsEmpty
-#undef VectorExpand
 #undef VectorPushMultipleTail
 #undef VectorPushTail
 #undef VectorGetTail
@@ -18,20 +38,3 @@
 #undef VectorIteratorDelete
 #undef VectorIteratorFirst
 #undef VectorIteratorNext
-
-#undef LIBYUC_CONTAINER_VECTOR_CLASS_NAME
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_ElementCount
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidId
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Const_InvalidDynamicArray
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id
-#undef LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset
-
-#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Create
-#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_CreateMultiple
-#undef LIBYUC_CONTAINER_VECTOR_ALLOCATOR_Release
-#undef LIBYUC_CONTAINER_VECTOR_CALLBACK_Expand
-
-
-#undef LIBYUC_CONTAINER_VECTOR_MODE_STATIC
-#undef LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC

@@ -1,0 +1,8 @@
+#ifndef.*\r\n(.+)\r\n#endif\r\n\r\n
+\1\r\n
+
+#ifndef.*\r\n(.+)\r\n#endif\r\n
+\1\r\n
+
+#define ([^ \(\r]+)[^\r]*(\r\n|$)
+#undef \1\r\n
