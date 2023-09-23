@@ -30,8 +30,12 @@
 #define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) HashCode_hashint(*obj)
 #endif
 
+#ifndef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Type_Diff
+#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Type_Diff ptrdiff_t
+#endif
+
 #ifndef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp
-#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(main_obj, obj1, obj2) ((int)(*(obj1) - *(obj2)))
+#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(main_obj, obj1, obj2) ((LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Type_Diff)(*(obj1) - *(obj2)))
 #endif
 
 

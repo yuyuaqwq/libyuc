@@ -35,9 +35,11 @@ extern "C" {
 #define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id
 #endif
 
-
+#ifndef LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff
+#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff ptrdiff_t
+#endif
 #ifndef LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp
-#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(main_obj, obj1, obj2) ((int)(*(obj1) - *(obj2)))
+#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(main_obj, obj1, obj2) ((LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff)(*(obj1) - *(obj2)))
 #endif
 
 #define ArrayFind MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayFind)
@@ -95,7 +97,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_IND
     LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id mid;
     while (first <= last) {
         mid = first + ((last - first) >> 1);
-        int cmp = LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key);
+        LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff cmp = LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key);
         if (cmp < 0) {
             last = mid - 1;
         } else if (cmp > 0) {
@@ -146,6 +148,7 @@ bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidDynamicArray
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset
+#undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff
 #undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp
 
 #ifdef __cplusplus

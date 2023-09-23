@@ -175,7 +175,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreePut(BsTree* tree, BsTreeStackV
         cur = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, cur_id);
         LIBYUC_CONTAINER_BS_TREE_Type_Key* cur_key = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetKey(tree, cur);
         LIBYUC_CONTAINER_BS_TREE_Type_Key* entry_key = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetKey(tree, entry);
-        int res = LIBYUC_CONTAINER_BS_TREE_COMPARER_Cmp(tree, cur_key, entry_key);
+        LIBYUC_CONTAINER_BS_TREE_COMPARER_Type_Diff res = LIBYUC_CONTAINER_BS_TREE_COMPARER_Cmp(tree, cur_key, entry_key);
         if (res < 0) {
             if (LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, cur) == LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId) {
                 BsEntryInit(tree, entry);
@@ -328,7 +328,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLocate(BsTree* tree, B
         perv_id = cur_id;
         BsEntry* cur = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, cur_id);
         LIBYUC_CONTAINER_BS_TREE_Type_Key* cur_key = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetKey(tree, cur);
-        int res = LIBYUC_CONTAINER_BS_TREE_COMPARER_Cmp(tree, cur_key, key);
+        LIBYUC_CONTAINER_BS_TREE_COMPARER_Type_Diff res = LIBYUC_CONTAINER_BS_TREE_COMPARER_Cmp(tree, cur_key, key);
         if (res < 0) {
             *cmp_status = 1;
             cur_id = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, cur);
