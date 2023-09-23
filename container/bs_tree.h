@@ -29,7 +29,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreePut(BsTree* tree, BsTreeStackV
 bool BsTreeInsert(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id entry_id);
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeDelete(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id entry_id);
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Offset BsTreeGetCount(BsTree* tree);
-LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLocate(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_Type_Key* key, int8_t* cmp_status);
+LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLocate(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_Type_Key* key, LIBYUC_CONTAINER_BS_TREE_COMPARER_Type_Diff* cmp_diff);
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorFirst(BsTree* tree, BsTreeStackVector* stack);
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLast(BsTree* tree, BsTreeStackVector* stack);
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorNext(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id cur_id);

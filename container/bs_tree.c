@@ -102,7 +102,7 @@ void BsTreeInit(BsTree* tree) {
 * 存在返回查找到的节点对应的对象，不存在返回NULL
 */
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeFind(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_Type_Key* key) {
-    int8_t status;
+    LIBYUC_CONTAINER_BS_TREE_COMPARER_Type_Diff status;
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id id = BsTreeIteratorLocate(tree, stack, key, &status);
     return status == 0 ? id : LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId;
 }
@@ -320,7 +320,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Offset BsTreeGetCount(BsTree* tree, BsT
     }
     return count;
 }
-LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLocate(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_Type_Key* key, int8_t* cmp_status) {
+LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLocate(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_Type_Key* key, LIBYUC_CONTAINER_BS_TREE_COMPARER_Type_Diff* cmp_diff) {
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id cur_id = tree->root;
     stack->count = 0;
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id perv_id = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId;
@@ -328,18 +328,15 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorLocate(BsTree* tree, B
         perv_id = cur_id;
         BsEntry* cur = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, cur_id);
         LIBYUC_CONTAINER_BS_TREE_Type_Key* cur_key = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetKey(tree, cur);
-        LIBYUC_CONTAINER_BS_TREE_COMPARER_Type_Diff res = LIBYUC_CONTAINER_BS_TREE_COMPARER_Cmp(tree, cur_key, key);
-        if (res < 0) {
-            *cmp_status = 1;
+        *cmp_diff = LIBYUC_CONTAINER_BS_TREE_COMPARER_Cmp(tree, key, cur_key);
+        if (*cmp_diff > 0) {
             cur_id = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, cur);
         }
-        else if (res > 0) {
-            *cmp_status = -1;
+        else if (*cmp_diff < 0) {
             cur_id = LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetLeft(tree, cur);
         }
         else {
             LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
-            *cmp_status = 0;
             return cur_id;
         }
         if (cur_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId) {

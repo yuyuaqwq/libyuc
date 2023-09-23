@@ -357,9 +357,9 @@ LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset RbTreeGetCount(RbTree* tree) {
 /*
 * 迭代器相关
 */
-LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorLocate(RbTree* tree, RbTreeIterator* iterator, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key* key, int8_t* cmp_status) {
+LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorLocate(RbTree* tree, RbTreeIterator* iterator, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key* key, LIBYUC_CONTAINER_RB_TREE_COMPARER_Type_Diff* cmp_diff) {
     RbBsTreeStackVectorInit(&iterator->stack);
-    iterator->cur_id = RbBsTreeIteratorLocate((RbBsTree*)tree, &iterator->stack, key, cmp_status);
+    iterator->cur_id = RbBsTreeIteratorLocate((RbBsTree*)tree, &iterator->stack, key, cmp_diff);
     return iterator->cur_id;
 }
 LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorFirst(RbTree* tree, RbTreeIterator* iterator) {
