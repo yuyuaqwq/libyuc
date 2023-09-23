@@ -93,7 +93,7 @@ forceinline LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorL
     do {
         HashTableEntry* entry = HashBucketVectorIndex(&table->bucket, iter->cur_index);
         LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* entry_key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj);
-        if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal(table, entry_key, key) && entry->dist != LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID) {
+        if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, entry_key, key) == 0 && entry->dist != LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID) {
             return &entry->obj;
         }
         if (iter->dist++ > entry->dist || entry->dist == LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID) {
@@ -153,7 +153,7 @@ void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Ty
     HashTableEntry* entry;
     do {
         entry = HashBucketVectorIndex(&table->bucket, cur_index);
-        if (dist == entry->dist && LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj), key)) {
+        if (dist == entry->dist && LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj), key) == 0) {
             entry->obj = *obj;
             return;
         }

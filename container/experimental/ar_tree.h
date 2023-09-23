@@ -37,13 +37,14 @@ struct data {
     uint8_t* buf;
 };
 
-typedef struct data art_key_type_t;
-typedef struct data art_element_type;
+#define art_key_type_t struct data
 #else
-typedef uint64_t art_key_type_t;
-typedef art_key_type_t art_element_type;
+#define art_key_type_t int64_t
 #endif
 
+#ifndef art_element_type
+#define art_element_type art_key_type_t
+#endif
 
 #define InvalidId 0
 #define prefix_max_len sizeof(art_key_type_t)
@@ -55,7 +56,7 @@ typedef art_key_type_t art_element_type;
 * 通过传参传递
 */
 
-typedef art_element_type ArLeaf;
+#define ArLeaf art_element_type
 
 
 typedef enum {
@@ -82,6 +83,7 @@ typedef struct _ArNodeHead {
     union {
         uint8_t prefix[prefix_max_len];
     };
+    struct _ArNode* parent;
 } ArNodeHead;
 
 
@@ -112,6 +114,12 @@ typedef struct {
 #define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id uint32_t
 #include <libyuc/container/static_list.h>
 
+#define LIBYUC_TEMPLATE_DEFINE
+#define LIBYUC_CONTAINER_STATIC_LIST_CLASS_NAME ArNode48
+#define LIBYUC_CONTAINER_STATIC_LIST_Const_StaticElementCount 48
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element ArNode48Child
+#define LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id uint32_t
+#include <libyuc/container/static_list.c>
 
 
 
@@ -152,7 +160,7 @@ typedef struct {
 * Key
 */
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-uint32_t ArKeyGetLen(art_key_type_t* key) {
+uint32_t ArKeyGetLen(const art_key_type_t* key) {
     return key->size;
 }
 
@@ -160,11 +168,14 @@ uint8_t* ArKeyGetByteBuf(art_key_type_t** key, uint32_t offset) {
     return &(*key)->buf[offset];
 }
 
-bool ArKeyEqual(art_key_type_t* key1, art_key_type_t* key2, uint32_t offset) {
-    return key1->size == key2->size && !memcmp(&key1->buf[offset], &key2->buf[offset], key1->size - offset);
+size_t ArKeyCmp(const art_key_type_t* key1, const art_key_type_t* key2, uint32_t offset) {
+    if (key1->size != key2->size) {
+        return key1->size - key2->size;
+    }
+    return memcmp(&key1->buf[offset], &key2->buf[offset], key1->size - offset);
 }
 #else
-uint32_t ArKeyGetLen(art_key_type_t* key) {
+uint32_t ArKeyGetLen(const art_key_type_t* key) {
     return sizeof(*key);
 }
 
@@ -173,11 +184,10 @@ uint8_t* ArKeyGetByteBuf(art_key_type_t** key, uint32_t offset) {
     // return ((uint8_t*)key) + offset;
 }
 
-bool ArKeyEqual(art_key_type_t* key1, art_key_type_t* key2, uint32_t offset) {
+size_t ArKeyCmp(const art_key_type_t* key1, const art_key_type_t* key2, uint32_t offset) {
     // return !memcmp(ArGetKeyByte(key1, offset), ArGetKeyByte(key2, offset), ArGetKeyLen(key1) - offset);
     // 完整key比较时才会调用，整数就直接比较
-    return *key1 == *key2;
-    // return key1 == key2;
+    return *key1 - *key2;
 }
 #endif
 
@@ -186,9 +196,16 @@ bool ArKeyEqual(art_key_type_t* key1, art_key_type_t* key2, uint32_t offset) {
 * Element
 */
 art_key_type_t* ArElementGetKey(art_element_type* element) {
-    return element;
+    return (art_key_type_t*)element;
 }
 
+#ifndef ArElementSetParent
+#define ArElementSetParent(ELEMENT, PARENT)
+#endif
+
+#ifndef ArElementGetParent
+#define ArElementGetParent(ELEMENT) NULL
+#endif
 
 /*
 * Leaf
@@ -201,7 +218,10 @@ void ArLeafSetElement(ArLeaf** leaf, art_element_type* element) {
     *leaf = (ArLeaf*)((uintptr_t)element | (uintptr_t)1);
 }
 
-static ArLeaf* ArLeafCreate(ArTree* tree, art_element_type* element) {
+
+
+static ArLeaf* ArLeafCreate(ArTree* tree, art_element_type* element, ArNode* parent) {
+    ArElementSetParent(element, parent);
     return (ArLeaf*)((uintptr_t)element | (uintptr_t)1);
 }
 
@@ -213,6 +233,7 @@ static void ArLeafRelease(ArTree* tree, ArLeaf* leaf) {
 /*
 * Node
 */
+
 bool ArNodeIsLeaf(ArNode* node) {
     return ((uintptr_t)node & 1) == 1;
 }
@@ -223,6 +244,24 @@ ArLeaf* ArNodeGetLeaf(ArNode* node) {
 
 void ArNodeSetLeaf(ArNode** node, ArLeaf* leaf) {
     *node = (ArNode*)(uintptr_t)leaf;
+}
+
+ArNode* ArNodeGetParent(ArNode* node) {
+    if (ArNodeIsLeaf(node)) {
+        return ArElementGetParent(node);
+    }
+    else {
+        node->head.parent;
+    }
+}
+
+void ArNodeSetParent(ArNode* node, ArNode* parent) {
+    if (ArNodeIsLeaf(node)) {
+        ArElementSetParent(ArLeafGetElement(ArNodeGetLeaf(node)), new_node);
+    }
+    else {
+        node->head.parent = parent;
+    }
 }
 
 
@@ -282,7 +321,8 @@ uint8_t* ArBsAccessor_GetKey(uint8_t* arr, uint8_t* element) {
 
 
 
-static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
+static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type, ArNode* parent) {
+    head->parent = parent;
     head->child_count = 0;
     head->node_type = type;
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
@@ -293,6 +333,7 @@ static void ArNodeHeadInit(ArNodeHead* head, ArNodeType type) {
 }
 
 void ArNodeHeadCopy(ArNode* dst, ArNode* src) {
+    //dst->head.parent = src->head.parent;
     // dst->int_key_len_shift = src->int_key_len_shift;
     memcpy(dst->head.prefix, src->head.prefix, min(prefix_max_len, src->head.prefix_len));
     dst->head.prefix_len = src->head.prefix_len;
@@ -312,27 +353,27 @@ static forceinline uint16_t ArNodeGetFullCount(ArNode* node) {
 #endif
 }
 
-static ArNode4* ArNode4Create(ArTree* tree) {
+static ArNode4* ArNode4Create(ArTree* tree, ArNode* parent) {
     ArNode4* node4 = ObjectCreate(ArNode4);
     for (int i = 0; i < 4; i++) {
         node4->keys[i] = 0;
         node4->child_arr[i] = InvalidId;
     }
-    ArNodeHeadInit(&node4->head, kArNode4);
+    ArNodeHeadInit(&node4->head, kArNode4, parent);
     return node4;
 }
 
-static ArNode16* ArNode16Create(ArTree* tree) {
+static ArNode16* ArNode16Create(ArTree* tree, ArNode* parent) {
     ArNode16* node16 = ObjectCreate(ArNode16);
     for (int i = 0; i < 16; i++) {
         node16->keys[i] = 0;
         node16->child_arr[i] = InvalidId;
     }
-    ArNodeHeadInit(&node16->head, kArNode16);
+    ArNodeHeadInit(&node16->head, kArNode16, parent);
     return node16;
 }
 
-static ArNode48* ArNode48Create(ArTree* tree) {
+static ArNode48* ArNode48Create(ArTree* tree, ArNode* parent) {
     ArNode48* node48 = ObjectCreate(ArNode48);
     for (int i = 0; i < 256; i++) {
         node48->keys[i] = -1;
@@ -342,16 +383,16 @@ static ArNode48* ArNode48Create(ArTree* tree) {
 #else
     ArNode48StaticListInit(&node48->child_arr, 48);
 #endif
-    ArNodeHeadInit(&node48->head, kArNode48);
+    ArNodeHeadInit(&node48->head, kArNode48, parent);
     return node48;
 }
 
-static ArNode256* ArNode256Create(ArTree* tree) {
+static ArNode256* ArNode256Create(ArTree* tree, ArNode* parent) {
     ArNode256* node256 = ObjectCreate(ArNode256);
     for (int i = 0; i < 256; i++) {
         node256->child_arr[i] = InvalidId;
     }
-    ArNodeHeadInit(&node256->head, kArNode256);
+    ArNodeHeadInit(&node256->head, kArNode256, parent);
     return node256;
 }
 
@@ -481,7 +522,7 @@ static ArNode** ArNode48Insert(ArTree* tree, ArNode48** node_ptr, uint8_t key_by
 #else
         if (node->head.child_count >= 48) {
 #endif
-            ArNode256* new_node256 = ArNode256Create(tree);
+            ArNode256* new_node256 = ArNode256Create(tree, node->head.parent);
             ArNodeHeadCopy((ArNode*)new_node256, (ArNode*)node);
             *node_ptr = (ArNode48*)new_node256;
             for (int32_t i = 0; i < 256; i++) {
@@ -523,7 +564,7 @@ static ArNode** ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_by
         return &node->child_arr[i];
     }
     else {
-        ArNode48* new_node48 = ArNode48Create(tree);
+        ArNode48* new_node48 = ArNode48Create(tree, node->head.parent);
         ArNodeHeadCopy((ArNode*)new_node48, (ArNode*)node);
         *node_ptr = (ArNode16*)new_node48;
         for (ptrdiff_t i = 0; i < node->head.child_count; i++) {
@@ -560,7 +601,7 @@ static ArNode** ArNode4Insert(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte
         return &node->child_arr[i];
     }
     else {
-        ArNode16* new_node16 = ArNode16Create(tree);
+        ArNode16* new_node16 = ArNode16Create(tree, node->head.parent);
         ArNodeHeadCopy((ArNode*)new_node16, (ArNode*)node);
         *node_ptr = (ArNode4*)new_node16;
         for (int32_t i = 0; i < node->head.child_count; i++) {
@@ -621,7 +662,7 @@ static void ArNode16Delete(ArTree* tree, ArNode16** node_ptr, uint8_t key_byte) 
         ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);
         node->head.child_count--;
         if (ArNodeGetFullCount((ArNode*)node) <= 2) {
-            ArNode4* new_node4 = ArNode4Create(tree);
+            ArNode4* new_node4 = ArNode4Create(tree, node->head.parent);
             ArNodeHeadCopy((ArNode*)new_node4, (ArNode*)node);
             *node_ptr = (ArNode16*)new_node4;
             for (int i = 0; i < node->head.child_count; i++) {
@@ -641,7 +682,7 @@ static void ArNode48Delete(ArTree* tree, ArNode48** node_ptr, uint8_t key_byte) 
         node->head.child_count--;
         node->keys[key_byte] = 0xff;
         if (node->head.child_count <= 10) {
-            ArNode16* new_node16 = ArNode16Create(tree);
+            ArNode16* new_node16 = ArNode16Create(tree, node->head.parent);
             ArNodeHeadCopy((ArNode*)new_node16, (ArNode*)node);
             *node_ptr = (ArNode48*)new_node16;
             for (int32_t i = 0; i < 256; i++) {
@@ -662,7 +703,7 @@ static void ArNode256Delete(ArTree* tree, ArNode256** node_ptr, uint8_t key_byte
         node->head.child_count--;
         node->child_arr[key_byte] = InvalidId;
         if (node->head.child_count <= 32) {
-            ArNode48* new_node48 = ArNode48Create(tree);
+            ArNode48* new_node48 = ArNode48Create(tree, node->head.parent);
             ArNodeHeadCopy((ArNode*)new_node48, (ArNode*)node);
             *node_ptr = (ArNode256*)new_node48;
             for (int32_t i = 0; i < 256; i++) {
@@ -798,8 +839,8 @@ static void ArNodeMergePrefix(ArLeaf* del_leaf, uint32_t offset, uint32_t len, A
     memcpy(temp_buf, child->head.prefix, child_vaild_prefix_len);
 
     // 先拷贝parent的前缀部分
-    art_element_type* element = ArElementGetKey(ArLeafGetElement(del_leaf));
-    uint8_t* buf = ArKeyGetByteBuf(&element, offset);
+    art_key_type_t* key = ArElementGetKey(ArLeafGetElement(del_leaf));
+    uint8_t* buf = ArKeyGetByteBuf(&key, offset);
     uint32_t parent_copy_len = min(prefix_max_len, len);
     memcpy(child->head.prefix, buf, parent_copy_len);
     
@@ -854,7 +895,7 @@ static ArNode* ArNodeSplit(ArTree* tree, ArNode* node, ArLeaf* leaf, uint32_t of
             break;
         }
     }
-    ArNode4* new_node4 = ArNode4Create(tree);
+    ArNode4* new_node4 = ArNode4Create(tree, ArNodeGetParent(node));
     ArNodeUpdatePrefix(&new_node4->head, leaf_key_buf, match_len);
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
     if (match_len == min_len) {
@@ -882,17 +923,15 @@ static ArNode* ArNodeSplit(ArTree* tree, ArNode* node, ArLeaf* leaf, uint32_t of
 
 
 
-void ArTreeInit(ArTree* tree) {
-    tree->root = InvalidId;
-    tree->element_count = 0;
-}
-
-art_element_type* ArTreeFind(ArTree* tree, art_key_type_t* key) {
+typedef struct ArTreeIterator {
+    ArNode* cur;
+} ArTreeIterator;
+art_element_type* ArTreeIteratorLocate(ArTree* tree, ArTreeIterator* iterator, const art_key_type_t* key, int8_t* cmp_status) {
     ArNode* cur = tree->root;
     bool optimistic = false;
     uint32_t offset = 0;
     uint32_t optimistic_offset = -1;
-    uint8_t* key_buf = ArKeyGetByteBuf(&key, 0);
+    uint8_t* key_buf = ArKeyGetByteBuf((art_key_type_t**)&key, 0);
     uint32_t key_len = ArKeyGetLen(key);
     while (cur) {
         if (ArNodeIsLeaf(cur)) {
@@ -905,7 +944,13 @@ art_element_type* ArTreeFind(ArTree* tree, art_key_type_t* key) {
 #endif
             art_element_type* cur_element = ArLeafGetElement(cur_leaf);
             art_key_type_t* leaf_key = ArElementGetKey(cur_element);
-            if (!ArKeyEqual(key, leaf_key, offset)) {
+            if (!ArKeyCmp(key, leaf_key, offset) == 0) {
+                if (cmp_status) {
+                    // 找第一个比key大的(实在没有才是比key小的)
+                    // node4和node16顺序找
+                    // node48和node256则key_byte二分就行
+                    return NULL;
+                }
                 return NULL;
             }
             return cur_element;
@@ -927,7 +972,7 @@ art_element_type* ArTreeFind(ArTree* tree, art_key_type_t* key) {
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
         else if (offset == key_len) {
             ArLeaf* eof_child = *ArNodeGetEofChild(cur);
-             assert(ArNodeIsLeaf((ArNode*)eof_child));
+            assert(ArNodeIsLeaf((ArNode*)eof_child));
             cur = (ArNode*)eof_child;
             continue;
         }
@@ -943,9 +988,20 @@ art_element_type* ArTreeFind(ArTree* tree, art_key_type_t* key) {
     return NULL;
 }
 
+
+void ArTreeInit(ArTree* tree) {
+    tree->root = InvalidId;
+    tree->element_count = 0;
+}
+
+art_element_type* ArTreeFind(ArTree* tree, const art_key_type_t* key) {
+    ArTreeIterator iterator;
+    return ArTreeIteratorLocate(tree, &iterator, key, NULL);
+}
+
 void ArTreePut(ArTree* tree, art_element_type* element) {
     if (tree->root == InvalidId) {
-        ArLeaf* leaf = ArLeafCreate(tree, element);
+        ArLeaf* leaf = ArLeafCreate(tree, element, NULL);
         tree->element_count = 1;
         ArNodeSetLeaf(&tree->root, leaf);
         return;
@@ -972,7 +1028,7 @@ void ArTreePut(ArTree* tree, art_element_type* element) {
             ArLeaf* cur_leaf = ArNodeGetLeaf(cur);
             art_key_type_t* leaf_key = ArElementGetKey(ArLeafGetElement(cur_leaf));
             uint8_t* leaf_key_buf = ArKeyGetByteBuf(&leaf_key, 0);
-            if (ArKeyEqual(key, leaf_key, offset)) {
+            if (ArKeyCmp(key, leaf_key, offset) == 0) {
                 ArLeafSetElement(&cur_leaf, element);
                 /* only update */
                 return;
@@ -985,7 +1041,7 @@ void ArTreePut(ArTree* tree, art_element_type* element) {
                 continue;
             }
 #endif
-            *cur_ptr = ArNodeSplit(tree, cur, ArLeafCreate(tree, element), offset, optimistic_leaf_node_key);
+            *cur_ptr = ArNodeSplit(tree, cur, ArLeafCreate(tree, element, cur), offset, optimistic_leaf_node_key);
             return;
         }
 
@@ -1013,7 +1069,7 @@ void ArTreePut(ArTree* tree, art_element_type* element) {
 #endif
 
                 // 前缀匹配不完整，需要在这里分裂
-                *cur_ptr = ArNodeSplit(tree, cur, ArLeafCreate(tree, element), offset, optimistic_leaf_node_key);
+                *cur_ptr = ArNodeSplit(tree, cur, ArLeafCreate(tree, element, cur), offset, optimistic_leaf_node_key);
 
                 // 更新前缀
                 // 分裂后前缀需要去掉一个字节，因为在新的new_node4中的keys记录了当前node4的第一个字符
@@ -1053,7 +1109,7 @@ void ArTreePut(ArTree* tree, art_element_type* element) {
                 continue;
             }
 #endif
-            *cur_ptr = ArNodeSplit(tree, cur, ArLeafCreate(tree, element), offset - match_len, optimistic_leaf_node_key);
+            *cur_ptr = ArNodeSplit(tree, cur, ArLeafCreate(tree, element, cur), offset - match_len, optimistic_leaf_node_key);
             return;
         }
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
@@ -1074,7 +1130,7 @@ void ArTreePut(ArTree* tree, art_element_type* element) {
                 cur_ptr = optimistic_retry_node_ptr;
                 continue;
             }
-            ArNodeInsert(tree, cur_ptr, key_buf[offset], (ArNode*)ArLeafCreate(tree, element));
+            ArNodeInsert(tree, cur_ptr, key_buf[offset], (ArNode*)ArLeafCreate(tree, element, cur));
             break;
         }
         offset++;
@@ -1109,7 +1165,7 @@ art_element_type* ArTreeDelete(ArTree* tree, art_key_type_t* key) {
             }
 #endif
             art_key_type_t* leaf_key = ArElementGetKey(cur_element);
-            if (!ArKeyEqual(key, leaf_key, offset)) {
+            if (!ArKeyCmp(key, leaf_key, offset) == 0) {
                 return NULL;
             }
             do {
@@ -1130,21 +1186,22 @@ art_element_type* ArTreeDelete(ArTree* tree, art_key_type_t* key) {
                     cur->head.eof = 0;
                 }
 #endif
-                 assert(!ArNodeIsLeaf(*parent_ptr));
-                 assert((*parent_ptr)->head.child_count > 0);
+                  assert(!ArNodeIsLeaf(*parent_ptr));
+                  assert((*parent_ptr)->head.child_count > 0);
                 if ((*parent_ptr)->head.node_type == kArNode4 && ArNodeGetFullCount(*parent_ptr) == 1) {
                     // 只剩下一个子节点，Node4路径压缩的合并处理，使指向父节点的 祖父节点的child_arr元素 指向父节点剩下的一个孩子节点
                     ArNode* parent = *parent_ptr;
                     ArNode* child;
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-                    if ((*parent_ptr)->head.child_count == 0) {
+                    if (parent->head.child_count == 0) {
                         // 如果剩下了一个eof
                         child = *eof_chile;
-                         assert(ArNodeIsLeaf(child));
+                          assert(ArNodeIsLeaf(child));
+                        ArElementSetParent(ArLeafGetElement(ArNodeGetLeaf(child)), parent);
                     }
                     else {
 #endif
-                         assert((*parent_ptr)->head.child_count > 0);
+                          assert(parent->head.child_count > 0);
                         child = parent->node4.child_arr[0];
                         // 将父节点的前缀和余下孩子的前缀进行合并
                         ArNodeMergePrefix(cur_leaf, marge_offset - parent->head.prefix_len, parent->head.prefix_len, child, parent->node4.keys[0]);
@@ -1152,6 +1209,7 @@ art_element_type* ArTreeDelete(ArTree* tree, art_key_type_t* key) {
                     }
 #endif
                     (*parent_ptr) = child;
+                    ArNodeSetParent(child, parent);
 
                     // 释放父节点
                     ArNode4Release(tree, &parent->node4);

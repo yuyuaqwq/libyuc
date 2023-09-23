@@ -46,8 +46,8 @@ extern "C" {
 #define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) HashCode_hashint(*obj)
 #endif
 
-#ifndef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal
-#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal(main_obj, obj1, obj2) (*(obj1) == *(obj2))
+#ifndef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp
+#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(main_obj, obj1, obj2) (*(obj1) - *(obj2))
 #endif
 
 
@@ -230,7 +230,7 @@ forceinline LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorL
     iter->entry_prev_id = HashLinkReferencer_InvalidId;
     while (iter->entry_cur_id != HashLinkReferencer_InvalidId) {
         HashLinkEntry* link_entry = HashLinkVectorIndex(&table->link, iter->entry_cur_id + 1);
-        if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &link_entry->obj), key)) {
+        if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &link_entry->obj), key) == 0) {
             return &link_entry->obj;
         }
         iter->entry_prev_id = iter->entry_cur_id;
@@ -245,7 +245,7 @@ void HashTableIteratorPut(HashTable* table, HashTableIterator* iter, const LIBYU
     main_obj.head = entry->list_head;
     if (iter->entry_cur_id != HashLinkReferencer_InvalidId) {
         HashLinkEntry* link_entry = (HashLinkEntry*)HashLinkReferencer_Reference(&main_obj.head, iter->entry_cur_id);
-        if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Equal(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &link_entry->obj), LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, obj))) {
+        if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &link_entry->obj), LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, obj)) == 0) {
             link_entry->obj = *obj;
             return;
         }

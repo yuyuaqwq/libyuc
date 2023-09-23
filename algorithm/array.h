@@ -48,6 +48,7 @@ extern "C" {
 #endif
 
 #define ArrayFind MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayFind)
+#define ArrayFind_Range MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayFind_Range)
 #define ArrayInsert MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayInsert)
 #define ArrayDelete MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayDelete)
 #define ArrayOrderFind MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayOrderFind)
@@ -64,7 +65,6 @@ void ArrayOrderPut(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_AL
 bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
 
 
-#ifdef LIBYUC_TEMPLATE_DEFINE
 
 LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     for (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id i = 0; i < count; i++) {
@@ -73,6 +73,15 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_
     }
     return LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidId;
 }
+
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
+    for (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id i = 0; i < count; i++) {
+        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Equal(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[i]), key))
+            return (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id)i;
+    }
+    return LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidId;
+}
+
 void ArrayInsert(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id index, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element) {
     for(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id i = count; i > index; i--) {
         array[i] = array[i - 1];
@@ -92,14 +101,12 @@ void ArrayDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGO
 LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id first, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id last, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id mid;
     while (first <= last) {
-        mid = first + (last - first) / 2;
+        mid = first + ((last - first) >> 1);
         if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Greater(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) {
             last = mid - 1;
-        }
-        else if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Less(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) {
+        } else if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Less(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) {
             first = mid + 1;
-        }
-        else {
+        } else {
             return mid;
         }
     }
@@ -112,7 +119,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_IND
 LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id first, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id last, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id mid = 0;
     while (first < last) {
-        mid = first + (last - first) / 2;
+        mid = first + ((last - first) >> 1);
         if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Less(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) first = mid + 1;
         else last = mid;
     }
@@ -127,7 +134,7 @@ bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC
     ArrayDelete(array, count, id);
     return true;
 }
-#endif
+
 
 #undef ArrayFind
 #undef ArrayInsert

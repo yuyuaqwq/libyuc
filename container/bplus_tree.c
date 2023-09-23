@@ -5,71 +5,71 @@
 
 /*
 
-entry£º
-    ÇëÈ·±£1¸öentryÖÁÉÙÄÜ·ÖÅä3¸öelement
+entryï¼š
+    è¯·ç¡®ä¿1ä¸ªentryè‡³å°‘èƒ½åˆ†é…3ä¸ªelement
 
-    Rate×ÔĞĞ¸ù¾İÒ³ÃæÀ´Ö¸¶¨
-    ±ÈÈçÒ³ÃæÊÇ4096£¬¾Í·µ»Ø4096·Ö±È
+    Rateè‡ªè¡Œæ ¹æ®é¡µé¢æ¥æŒ‡å®š
+    æ¯”å¦‚é¡µé¢æ˜¯4096ï¼Œå°±è¿”å›4096åˆ†æ¯”
 
-    entry·ÃÎÊÆ÷ĞèÒªÌá¹©
-        GetMergeThresholdRate(»ñÈ¡ºÏ²¢ãĞÖµn·Ö±È£¬ÍÆ¼öÎª40%(µ«²»ÊÇ40£¬¶øÊÇ°Ù·ÖÖ®40£¬ĞèÒª¸ù¾İn·Ö±È»»Ëã))
-            ´óÓÚ¸Ã°Ù·Ö±ÈµÄentryÖÁÉÙÓĞ2¸öelement
-        GetFreeRate(»ñÈ¡¿ÕÏĞn·Ö±È£¬¿É·ÖÅäµÄ×î´ó¿ÕÏĞ)
-        GetFillRate(»ñÈ¡ÒÑÌî³än·Ö±È)
-        GetMaxRate(»ñÈ¡n)
-        GetTempCopyEntry(»ñÈ¡ÁÙÊ±Entry£¬±ÜÃâ·ÖÅäÊÍ·ÅÓÃ)
+    entryè®¿é—®å™¨éœ€è¦æä¾›
+        GetMergeThresholdRate(è·å–åˆå¹¶é˜ˆå€¼nåˆ†æ¯”ï¼Œæ¨èä¸º40%(ä½†ä¸æ˜¯40ï¼Œè€Œæ˜¯ç™¾åˆ†ä¹‹40ï¼Œéœ€è¦æ ¹æ®nåˆ†æ¯”æ¢ç®—))
+            å¤§äºè¯¥ç™¾åˆ†æ¯”çš„entryè‡³å°‘æœ‰2ä¸ªelement
+        GetFreeRate(è·å–ç©ºé—²nåˆ†æ¯”ï¼Œå¯åˆ†é…çš„æœ€å¤§ç©ºé—²)
+        GetFillRate(è·å–å·²å¡«å……nåˆ†æ¯”)
+        GetMaxRate(è·å–n)
+        GetTempCopyEntry(è·å–ä¸´æ—¶Entryï¼Œé¿å…åˆ†é…é‡Šæ”¾ç”¨)
 
 element:
-    »ù±¾element¶¨³¤£¬¸½Êôkv¿ÉÄÜ²»¶¨³¤
-    element·ÃÎÊÆ÷ĞèÒªÌá¹©
-        GetNeedRate(»ñÈ¡elementĞèÒªµÄn·Ö±È)
+    åŸºæœ¬elementå®šé•¿ï¼Œé™„å±kvå¯èƒ½ä¸å®šé•¿
+    elementè®¿é—®å™¨éœ€è¦æä¾›
+        GetNeedRate(è·å–elementéœ€è¦çš„nåˆ†æ¯”)
 
 
-²åÈëÊ±£¬elementËùĞèµÄ¿Õ¼ä²»×ã²åÈëĞÂelementÊ±´¥·¢·ÖÁÑ
-    ·ÖÁÑÇ°£¬µ±Ç°entry±ØĞëÖÁÉÙÓĞ2¸öelement(Ò¶×Ó¿ÉÒÔ1¸ö£¬Ë÷Òı±ØĞë2¸ö£¬·ñÔòÃ»ÓĞÉÏÉı½Úµã£¬Í³Ò»¹æ¶¨2¸ö)
-    Ê×ÏÈ¼ÆËãµ±Ç°entryµÄÌî³äÂÊ£¬ÔÙ¼ÓÉÏĞÂelementµÄ×ÜÕ¼ÓÃÂÊÔÙ/2
-    ·ÖÁÑµÄÊ±ºò¸ù¾İÌî³äÂÊ½øĞĞ·ÖÁÑ£¬Ê¹µÃ±»²åÈëµÄÒ»²à·ÖÁÑºóÄÜÓĞ×ã¹»µÄ¿ÕÎ»·ÖÅä²¢²åÈëĞÂÔªËØ
-    value×î´óÕ¼ÓÃ25%, key×î´óÕ¼ÓÃ12.5%
-        ¼ò»¯ÊµÏÖ£¬¿ÉÒÔÊÇ2µÄ´ÎÃİ£¬entryÖÁÉÙÒª2¸öelement, Òò´Ë±ØĞëÏŞÖÆµ¥¸öelement×ÜÕ¼ÓÃÂÊ²»ÄÜ³¬¹ı×ÜÒ³ÃæµÄ50%£¬ĞèÒªÈ·±£Ã¿´Î·ÖÁÑºó¶¼Ò»¶¨ÄÜ×°ÏÂĞÂÔªËØ
-        ¹ı´óµÄvalue¾Í·ÖÅä¶ÀÁ¢Ò³Ãæ
-    ·ÖÁÑË¼Â·£ºµ¹×Å±éÀú½Úµã²¢Õª³ı£¬ÒÆ¶¯µÄÊ±ºò»¹ĞèÒª²åÈëelementµÄ²ÎÓë
-        Ò»Ö±ÊÍ·Å¾É£¬²åÈëĞÂ£¬Ò»Ö±µ½¾ÉentryÌî³äÂÊ<=1/2¾ÍÍ£Ö¹·ÖÁÑ
-        Èç¹û´ËÊ±ĞèÒª²åÈëelement£¬Ö±½Ó²åÈëµ½ĞÂµÄÒ»²à£¬µÈµ½¾ÉentryÌî³äÂÊ´ïµ½±ê×¼¼´·µ»Ø
-        Èç¹û¾ÉentryÌî³äÂÊ<=1/2£¬»¹Ã»ÓĞ²åÈëelement
-            ¼ì²é¾Éentry¿ÕÎ»ÊÇ·ñ×ã¹»²åÈëelement£¬²»×ã¾Í´¥·¢ËéÆ¬ÕûÀí£¬ÔÙ²åÈë
+æ’å…¥æ—¶ï¼Œelementæ‰€éœ€çš„ç©ºé—´ä¸è¶³æ’å…¥æ–°elementæ—¶è§¦å‘åˆ†è£‚
+    åˆ†è£‚å‰ï¼Œå½“å‰entryå¿…é¡»è‡³å°‘æœ‰2ä¸ªelement(å¶å­å¯ä»¥1ä¸ªï¼Œç´¢å¼•å¿…é¡»2ä¸ªï¼Œå¦åˆ™æ²¡æœ‰ä¸Šå‡èŠ‚ç‚¹ï¼Œç»Ÿä¸€è§„å®š2ä¸ª)
+    é¦–å…ˆè®¡ç®—å½“å‰entryçš„å¡«å……ç‡ï¼Œå†åŠ ä¸Šæ–°elementçš„æ€»å ç”¨ç‡å†/2
+    åˆ†è£‚çš„æ—¶å€™æ ¹æ®å¡«å……ç‡è¿›è¡Œåˆ†è£‚ï¼Œä½¿å¾—è¢«æ’å…¥çš„ä¸€ä¾§åˆ†è£‚åèƒ½æœ‰è¶³å¤Ÿçš„ç©ºä½åˆ†é…å¹¶æ’å…¥æ–°å…ƒç´ 
+    valueæœ€å¤§å ç”¨25%, keyæœ€å¤§å ç”¨12.5%
+        ç®€åŒ–å®ç°ï¼Œå¯ä»¥æ˜¯2çš„æ¬¡å¹‚ï¼Œentryè‡³å°‘è¦2ä¸ªelement, å› æ­¤å¿…é¡»é™åˆ¶å•ä¸ªelementæ€»å ç”¨ç‡ä¸èƒ½è¶…è¿‡æ€»é¡µé¢çš„50%ï¼Œéœ€è¦ç¡®ä¿æ¯æ¬¡åˆ†è£‚åéƒ½ä¸€å®šèƒ½è£…ä¸‹æ–°å…ƒç´ 
+        è¿‡å¤§çš„valueå°±åˆ†é…ç‹¬ç«‹é¡µé¢
+    åˆ†è£‚æ€è·¯ï¼šå€’ç€éå†èŠ‚ç‚¹å¹¶æ‘˜é™¤ï¼Œç§»åŠ¨çš„æ—¶å€™è¿˜éœ€è¦æ’å…¥elementçš„å‚ä¸
+        ä¸€ç›´é‡Šæ”¾æ—§ï¼Œæ’å…¥æ–°ï¼Œä¸€ç›´åˆ°æ—§entryå¡«å……ç‡<=1/2å°±åœæ­¢åˆ†è£‚
+        å¦‚æœæ­¤æ—¶éœ€è¦æ’å…¥elementï¼Œç›´æ¥æ’å…¥åˆ°æ–°çš„ä¸€ä¾§ï¼Œç­‰åˆ°æ—§entryå¡«å……ç‡è¾¾åˆ°æ ‡å‡†å³è¿”å›
+        å¦‚æœæ—§entryå¡«å……ç‡<=1/2ï¼Œè¿˜æ²¡æœ‰æ’å…¥element
+            æ£€æŸ¥æ—§entryç©ºä½æ˜¯å¦è¶³å¤Ÿæ’å…¥elementï¼Œä¸è¶³å°±è§¦å‘ç¢ç‰‡æ•´ç†ï¼Œå†æ’å…¥
 
 
-É¾³ıÊ±£¬Á½±ßÌî³äÂÊ<=40%(Á½±ß¼ÓÆğÀ´<=80%)Ôò´¥·¢ºÏ²¢
-    ÓÉÓÚÁ½²à¶¼ÊÇ40%£¬Ò»¶¨ÄÜ¹»ºÏ²¢³É¹¦(²¢²»Ò»¶¨£¬ÓĞ¿ÉÄÜÓĞ¿Õ¼äËéÆ¬ÎÊÌâ)
-Ò»±ßÌî³äÂÊ<=40%(Á½±ß¼ÓÆğÀ´>80%)Ôò´¥·¢elementÒÆ¶¯
-    elementÒ»¶¨¿ÉÒÔÒÆ¶¯£¬ÒòÎªµ¥¸öelement×î´óÊÇ25%(²¢²»Ò»¶¨£¬ÓĞ¿ÉÄÜÓĞ¿Õ¼äËéÆ¬)
-    Èç¹ûÒÆ¶¯Ò»¸öÖ®ºó»¹²»×ã40%(¾Í¼ÌĞøÒÆ¶¯)
-    ¿ÉÄÜ»á³öÏÖÒÆ¶¯Ö®ºóĞÖµÜentryµÄÌî³äÂÊ²»×ã40%(±ÈÈçÄ©Î²Ö±½ÓÊÇ25%Õ¼ÓÃÂÊµÄelement)
-        Òò´ËÃ¿´ÎÒÆ¶¯Ç°ÅĞ¶ÏÒÆ¶¯ºóĞÖµÜµÄÌî³äÂÊ»á±äÎª¶àÉÙ£¬Èç¹ûµÍÓÚ40%¾Í²»ÔÙÒÆ¶¯£¬Ö±½Ó·µ»Ø
+åˆ é™¤æ—¶ï¼Œä¸¤è¾¹å¡«å……ç‡<=40%(ä¸¤è¾¹åŠ èµ·æ¥<=80%)åˆ™è§¦å‘åˆå¹¶
+    ç”±äºä¸¤ä¾§éƒ½æ˜¯40%ï¼Œä¸€å®šèƒ½å¤Ÿåˆå¹¶æˆåŠŸ(å¹¶ä¸ä¸€å®šï¼Œæœ‰å¯èƒ½æœ‰ç©ºé—´ç¢ç‰‡é—®é¢˜)
+ä¸€è¾¹å¡«å……ç‡<=40%(ä¸¤è¾¹åŠ èµ·æ¥>80%)åˆ™è§¦å‘elementç§»åŠ¨
+    elementä¸€å®šå¯ä»¥ç§»åŠ¨ï¼Œå› ä¸ºå•ä¸ªelementæœ€å¤§æ˜¯25%(å¹¶ä¸ä¸€å®šï¼Œæœ‰å¯èƒ½æœ‰ç©ºé—´ç¢ç‰‡)
+    å¦‚æœç§»åŠ¨ä¸€ä¸ªä¹‹åè¿˜ä¸è¶³40%(å°±ç»§ç»­ç§»åŠ¨)
+    å¯èƒ½ä¼šå‡ºç°ç§»åŠ¨ä¹‹åå…„å¼Ÿentryçš„å¡«å……ç‡ä¸è¶³40%(æ¯”å¦‚æœ«å°¾ç›´æ¥æ˜¯25%å ç”¨ç‡çš„element)
+        å› æ­¤æ¯æ¬¡ç§»åŠ¨å‰åˆ¤æ–­ç§»åŠ¨åå…„å¼Ÿçš„å¡«å……ç‡ä¼šå˜ä¸ºå¤šå°‘ï¼Œå¦‚æœä½äº40%å°±ä¸å†ç§»åŠ¨ï¼Œç›´æ¥è¿”å›
 
 
-ËéÆ¬ÕûÀí£º
-    Èç¹û³öÏÖ¿Õ¼äËéÆ¬(¼´×Ü¿ÕÏĞ×ã¹»µ«ÎŞ·¨·ÖÅä)£¬¾ÍĞèÒª½øĞĞËéÆ¬ÕûÀí
-    ËéÆ¬ÕûÀíÁ÷³ÌÖ¸µ¼£º
+ç¢ç‰‡æ•´ç†ï¼š
+    å¦‚æœå‡ºç°ç©ºé—´ç¢ç‰‡(å³æ€»ç©ºé—²è¶³å¤Ÿä½†æ— æ³•åˆ†é…)ï¼Œå°±éœ€è¦è¿›è¡Œç¢ç‰‡æ•´ç†
+    ç¢ç‰‡æ•´ç†æµç¨‹æŒ‡å¯¼ï¼š
         buddy:
-            °´Õ¼ÓÃÂÊ´Ó´óµ½Ğ¡ÖØĞÂ·ÖÅäËùÓĞblock
+            æŒ‰å ç”¨ç‡ä»å¤§åˆ°å°é‡æ–°åˆ†é…æ‰€æœ‰block
 
-    ËéÆ¬ÕûÀíÎÊÌâ£º
-        ±ØĞë±£Ö¤ÕûÀíÊ±b+Ê÷²»´æÔÚÈÎºÎÒıÓÃelementµÄÇé¿ö£¬·ñÔò½«»áµ¼ÖÂelement_idÊ§Ğ§
-        b+Ê÷±£Ö¤µ÷ÓÃInsertElementµÄÉÏÏÂÎÄÖĞ£¬²»»á´æÔÚÒıÓÃentryÖĞelementµÄÇé¿ö£¬¹Ê½¨ÒéÔÚInsertElementÖĞ½øĞĞËéÆ¬ÕûÀí
+    ç¢ç‰‡æ•´ç†é—®é¢˜ï¼š
+        å¿…é¡»ä¿è¯æ•´ç†æ—¶b+æ ‘ä¸å­˜åœ¨ä»»ä½•å¼•ç”¨elementçš„æƒ…å†µï¼Œå¦åˆ™å°†ä¼šå¯¼è‡´element_idå¤±æ•ˆ
+        b+æ ‘ä¿è¯è°ƒç”¨InsertElementçš„ä¸Šä¸‹æ–‡ä¸­ï¼Œä¸ä¼šå­˜åœ¨å¼•ç”¨entryä¸­elementçš„æƒ…å†µï¼Œæ•…å»ºè®®åœ¨InsertElementä¸­è¿›è¡Œç¢ç‰‡æ•´ç†
 
-    Èç¹ûÊ¹ÓÃÏàµÈ´óĞ¡µÄ¿é½øĞĞ·ÖÅä£¬Âß¼­ÉÏÁ¬ĞøµÄ¿éÍ¨¹ıÁ´±íÁ¬½ÓÔò²»´æÔÚÄÚ´æËéÆ¬
-        È±µãÊÇ´ó¿éµÄ·ÖÅäÊÍ·Å½ÏÂı
+    å¦‚æœä½¿ç”¨ç›¸ç­‰å¤§å°çš„å—è¿›è¡Œåˆ†é…ï¼Œé€»è¾‘ä¸Šè¿ç»­çš„å—é€šè¿‡é“¾è¡¨è¿æ¥åˆ™ä¸å­˜åœ¨å†…å­˜ç¢ç‰‡
+        ç¼ºç‚¹æ˜¯å¤§å—çš„åˆ†é…é‡Šæ”¾è¾ƒæ…¢
 
 
-kv·ÖÀëÊÇÍâ²ã´¦ÀíµÄ£¬b+Ê÷²Ù×÷µÄÖ»ÓĞelement
-ËéÆ¬ÕûÀíÒ²ÔÚÍâ±ß½øĞĞ£¬µ±¿ÕÏĞÎ»×ã¹»µ«·ÖÅäÊ§°ÜÊ±´¦Àí
+kvåˆ†ç¦»æ˜¯å¤–å±‚å¤„ç†çš„ï¼Œb+æ ‘æ“ä½œçš„åªæœ‰element
+ç¢ç‰‡æ•´ç†ä¹Ÿåœ¨å¤–è¾¹è¿›è¡Œï¼Œå½“ç©ºé—²ä½è¶³å¤Ÿä½†åˆ†é…å¤±è´¥æ—¶å¤„ç†
 
 
 */
 
 /*
-* ²»Í¨¹ıÓĞĞòÁ´±í½¨Ê÷µÄ·½·¨£¬±£Áô¿ÉÄÜÎ´À´ĞŞ¸ÄÎªartÊ±Ê¹ÓÃ
+* ä¸é€šè¿‡æœ‰åºé“¾è¡¨å»ºæ ‘çš„æ–¹æ³•ï¼Œä¿ç•™å¯èƒ½æœªæ¥ä¿®æ”¹ä¸ºartæ—¶ä½¿ç”¨
 */
 //static BPlusElement BPlusEntrySplit(BPlusTree* tree, BPlusEntry* left, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id left_id, BPlusEntry* parent, int16_t parent_element_id, BPlusElement* insert_element, int16_t insert_id, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id* out_right_id) {
 //    /* assert(insert_id != BPlusEntryRbReferencer_InvalidId); */
@@ -80,16 +80,16 @@ kv·ÖÀëÊÇÍâ²ã´¦ÀíµÄ£¬b+Ê÷²Ù×÷µÄÖ»ÓĞelement
 //    int32_t right_count;
 //    if (left->type == kBPlusEntryLeaf) {
 //        //BPlusLeafListPutEntryNext(&tree->leaf_list, left_id, right_id);
-//        /* Ô­µØ·ÖÁÑË¼Â·£ºmid½«Î´²åÈëµÄÔªËØÒ²ËãÉÏ£¬ºÃ¼ÆËãnewCount£¬4½×²åÈëºó4½Úµã¾ÍÊÇ2(×ó2ÓÒ2)£¬5½×²åÈëºó5½Úµã»¹ÊÇ2(×ó2ÓÒ3)
-//            ¾ÍÊÇÌáÇ°ËãºÃÓÒ²àÓ¦µ±ÓĞ¶àÉÙ¸öÔªËØ£¬¿½±´¹ıÈ¥£¬ÖĞ¼äÓöµ½ĞÂÔªËØ²åÈë¾Í´úÌæÕâÒ»´ÎµÄ¿½±´£¬Ã»²åÈëÔÙ²åÈëµ½×ó²à */
+//        /* åŸåœ°åˆ†è£‚æ€è·¯ï¼šmidå°†æœªæ’å…¥çš„å…ƒç´ ä¹Ÿç®—ä¸Šï¼Œå¥½è®¡ç®—newCountï¼Œ4é˜¶æ’å…¥å4èŠ‚ç‚¹å°±æ˜¯2(å·¦2å³2)ï¼Œ5é˜¶æ’å…¥å5èŠ‚ç‚¹è¿˜æ˜¯2(å·¦2å³3)
+//            å°±æ˜¯æå‰ç®—å¥½å³ä¾§åº”å½“æœ‰å¤šå°‘ä¸ªå…ƒç´ ï¼Œæ‹·è´è¿‡å»ï¼Œä¸­é—´é‡åˆ°æ–°å…ƒç´ æ’å…¥å°±ä»£æ›¿è¿™ä¸€æ¬¡çš„æ‹·è´ï¼Œæ²¡æ’å…¥å†æ’å…¥åˆ°å·¦ä¾§ */
 //        mid = tree->leaf_m / 2;
-//        right_count = left->element_count + 1 - mid;        /* +1ÊÇÒòÎªÕâ¸öÊ±ºòentry->count²¢Ã»ÓĞ°ÑÎ´²åÈëÔªËØÒ²ËãÉÏ */
+//        right_count = left->element_count + 1 - mid;        /* +1æ˜¯å› ä¸ºè¿™ä¸ªæ—¶å€™entry->countå¹¶æ²¡æœ‰æŠŠæœªæ’å…¥å…ƒç´ ä¹Ÿç®—ä¸Š */
 //    }
 //    else {
-//        /* Ô­µØ·ÖÁÑË¼Â·£ºmid½«Î´²åÈëµÄÔªËØºÍ¼´½«ÉÏÉıµÄÔªËØ¶¼ËãÉÏ£¬ºÃ¼ÆËãnewCount£¬4½×²åÈëºó4½Úµã¾ÍÊÇ4/2=2(×ó1ÓÒ2)£¬5½×²åÈëºó5½ÚµãÒ²ÊÇ2(×ó2ÓÒ2)£¬ÉÙÁËÒ»¸öÊÇÒòÎªÉÏÉıµÄÒ²ËãÉÏÁË
-//            ÏÈ½«ºó°ë²¿·Ö¿½±´µ½ĞÂ½Úµã£¬Èç¹ûÖĞ¼äÓöµ½ÁËË÷ÒıµÄ²åÈë£¬ÄÇ¾ÍÒ»²¢²åÈë£¬×îºóµÄmidkeyÊÇentry->indexData[entry->count-1]£¬ÒòÎªÓÒ²àµÄÊıÁ¿ÊÇÌáÇ°ËãºÃµÄ£¬¶à³öÀ´µÄÒ»¶¨·Åµ½×ó²à */
+//        /* åŸåœ°åˆ†è£‚æ€è·¯ï¼šmidå°†æœªæ’å…¥çš„å…ƒç´ å’Œå³å°†ä¸Šå‡çš„å…ƒç´ éƒ½ç®—ä¸Šï¼Œå¥½è®¡ç®—newCountï¼Œ4é˜¶æ’å…¥å4èŠ‚ç‚¹å°±æ˜¯4/2=2(å·¦1å³2)ï¼Œ5é˜¶æ’å…¥å5èŠ‚ç‚¹ä¹Ÿæ˜¯2(å·¦2å³2)ï¼Œå°‘äº†ä¸€ä¸ªæ˜¯å› ä¸ºä¸Šå‡çš„ä¹Ÿç®—ä¸Šäº†
+//            å…ˆå°†ååŠéƒ¨åˆ†æ‹·è´åˆ°æ–°èŠ‚ç‚¹ï¼Œå¦‚æœä¸­é—´é‡åˆ°äº†ç´¢å¼•çš„æ’å…¥ï¼Œé‚£å°±ä¸€å¹¶æ’å…¥ï¼Œæœ€åçš„midkeyæ˜¯entry->indexData[entry->count-1]ï¼Œå› ä¸ºå³ä¾§çš„æ•°é‡æ˜¯æå‰ç®—å¥½çš„ï¼Œå¤šå‡ºæ¥çš„ä¸€å®šæ”¾åˆ°å·¦ä¾§ */
 //        mid = (tree->index_m - 1) / 2;
-//        right_count = left->element_count - mid;        /* Õâ¸öÊ±ºòentry->count²¢Ã»ÓĞ°ÑÎ´²åÈëÔªËØÒ²ËãÉÏ£¬µ«ÊÇ»áÉÏÉıÒ»¸öÔªËØ£¬µÖÏû¹Ê²»¼ÆÈë */
+//        right_count = left->element_count - mid;        /* è¿™ä¸ªæ—¶å€™entry->countå¹¶æ²¡æœ‰æŠŠæœªæ’å…¥å…ƒç´ ä¹Ÿç®—ä¸Šï¼Œä½†æ˜¯ä¼šä¸Šå‡ä¸€ä¸ªå…ƒç´ ï¼ŒæŠµæ¶ˆæ•…ä¸è®¡å…¥ */
 //    }
 //    int32_t i = right_count - 1;
 //    int16_t left_elemeng_id = BPlusEntryRbTreeIteratorLast(&left->rb_tree);
@@ -105,19 +105,19 @@ kv·ÖÀëÊÇÍâ²ã´¦ÀíµÄ£¬b+Ê÷²Ù×÷µÄÖ»ÓĞelement
 //        BPlusEntryInsertElement(tree, right, BPlusEntryDeleteElement(tree, left, left_elemeng_id));
 //        left_elemeng_id = next_elemeng_id;
 //    }
-//    /* ĞÂÔªËØ»¹Ã»ÓĞ²åÈë£¬½«Æä²åÈë */
+//    /* æ–°å…ƒç´ è¿˜æ²¡æœ‰æ’å…¥ï¼Œå°†å…¶æ’å…¥ */
 //    if (!insert) {
 //        BPlusEntryInsertElement(tree, left, insert_element);
 //    }
 //   
 //    if (left->type == kBPlusEntryLeaf) {
-//        /* ´ÓmidÄÃµ½ÉÏÉıÔªËØ£¬Ò¶×ÓÔªËØ×ª»»ÎªË÷ÒıÔªËØ£¬ÉÏÉıÔªËØµÄ×Ó½ÚµãÖ¸Ïò×ó½Úµã */
+//        /* ä»midæ‹¿åˆ°ä¸Šå‡å…ƒç´ ï¼Œå¶å­å…ƒç´ è½¬æ¢ä¸ºç´¢å¼•å…ƒç´ ï¼Œä¸Šå‡å…ƒç´ çš„å­èŠ‚ç‚¹æŒ‡å‘å·¦èŠ‚ç‚¹ */
 //        up_element = *BPlusElementGet(tree, right, BPlusEntryRbTreeIteratorFirst(&right->rb_tree));
 //        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key key = up_element.leaf.key;
 //        up_element.index.key = key;
 //    }
 //    else {
-//        /* ¼ÙÉèÈçÏÂ½ÚµãĞèÒª·ÖÁÑ
+//        /* å‡è®¾å¦‚ä¸‹èŠ‚ç‚¹éœ€è¦åˆ†è£‚
 //                        15            18
 //                    /                |
 //                2     4     8     12        ...
@@ -133,17 +133,17 @@ kv·ÖÀëÊÇÍâ²ã´¦ÀíµÄ£¬b+Ê÷²Ù×÷µÄÖ»ÓĞelement
 //                2             8     12
 //                |               |     |    
 //                1     3         5     10    13
-//            ´ËÊ±ÓÒ½ÚµãÈ±ÉÙÁËÒ»ÌõÁ´½Ó£¬ÎÒÃÇ×îÖÕÑ¡ÓÃ×ó½ÚµãµÄÄ©Î²ÔªËØ(4)×÷ÎªÉÏÉıÔªËØ£¬¹Ê×ó½ÚµãµÄÄ©Î²ÔªËØµÄÓÒ²à×Ó½Úµã(13)¾Í¿ÉÒÔ¹Ò½Óµ½ÓÒ½ÚµãµÄÄ©Î²ÔªËØµÄÓÒ²à×Ó½ÚµãÏÂ */
+//            æ­¤æ—¶å³èŠ‚ç‚¹ç¼ºå°‘äº†ä¸€æ¡é“¾æ¥ï¼Œæˆ‘ä»¬æœ€ç»ˆé€‰ç”¨å·¦èŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ (4)ä½œä¸ºä¸Šå‡å…ƒç´ ï¼Œæ•…å·¦èŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ çš„å³ä¾§å­èŠ‚ç‚¹(13)å°±å¯ä»¥æŒ‚æ¥åˆ°å³èŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ çš„å³ä¾§å­èŠ‚ç‚¹ä¸‹ */
 //        right->index.tail_child_id = left->index.tail_child_id;
 //       
-//        /* ×îºó´Ó×ó½ÚµãÄ©Î²ÄÃµ½ÉÏÉıÔªËØ£¬½«ÆäÕª³ı */
+//        /* æœ€åä»å·¦èŠ‚ç‚¹æœ«å°¾æ‹¿åˆ°ä¸Šå‡å…ƒç´ ï¼Œå°†å…¶æ‘˜é™¤ */
 //        up_element = *BPlusEntryDeleteElement(tree, left, BPlusEntryRbTreeIteratorLast(&left->rb_tree));
-//        left->index.tail_child_id = up_element.index.child_id;         /* 3Ö¸¶¨Îª2µÄÓÒ²à×Ó½Úµã */
+//        left->index.tail_child_id = up_element.index.child_id;         /* 3æŒ‡å®šä¸º2çš„å³ä¾§å­èŠ‚ç‚¹ */
 //    }
-//    /* ÉÏÉıµÄ4µÄ×Ó½ÚµãÎª×ó */
+//    /* ä¸Šå‡çš„4çš„å­èŠ‚ç‚¹ä¸ºå·¦ */
 //    up_element.index.child_id = left_id;
 //   
-//    /* 4ÉÏÉıºó£¬Ô­ÏÈÖ¸Ïò4µÄ¸¸ÔªËØ£¬¾ÍÖ¸Ïò8|12£¬(Ô­ÏÈÖ¸Ïò×ó½ÚµãµÄ¸¸ÔªËØÖ¸ÏòÓÒ½Úµã£¬ÒòÎªÉÏÉıµÄÔªËØ»á±ä³É¸¸ÔªËØµÄĞÖµÜ£¬Ö¸Ïò×ó½Úµã) */
+//    /* 4ä¸Šå‡åï¼ŒåŸå…ˆæŒ‡å‘4çš„çˆ¶å…ƒç´ ï¼Œå°±æŒ‡å‘8|12ï¼Œ(åŸå…ˆæŒ‡å‘å·¦èŠ‚ç‚¹çš„çˆ¶å…ƒç´ æŒ‡å‘å³èŠ‚ç‚¹ï¼Œå› ä¸ºä¸Šå‡çš„å…ƒç´ ä¼šå˜æˆçˆ¶å…ƒç´ çš„å…„å¼Ÿï¼ŒæŒ‡å‘å·¦èŠ‚ç‚¹) */
 //    BPlusElementSetChildId(tree, parent, parent_element_id, right_id);
 //   
 //    *out_right_id = right_id;
@@ -156,7 +156,7 @@ kv·ÖÀëÊÇÍâ²ã´¦ÀíµÄ£¬b+Ê÷²Ù×÷µÄÖ»ÓĞelement
 #include <libyuc/container/vector.c>
 
 /*
-* B+Ê÷µü´úÆ÷
+* B+æ ‘è¿­ä»£å™¨
 */\
 static const LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id BPlusLeafEntryReferencer_InvalidId = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId;
 
@@ -188,7 +188,7 @@ static const LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id BPlusLeafEntry
 
 
 /*
-* Ò³ÄÚºìºÚÊ÷
+* é¡µå†…çº¢é»‘æ ‘
 */\
 static const LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntryRbReferencer_InvalidId = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId;
 forceinline BPlusEntryRbEntry* BPlusEntryRbReferencer_Reference(BPlusEntryRbTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id) {
@@ -249,7 +249,7 @@ forceinline LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key* BPlusEntryR
 
 
 /*
-* B+Ê÷
+* B+æ ‘
 */\
 static void BPlusElementSet(BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id, BPlusEntry* src_entry, BPlusElement* element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id element_child_id) {
     assert(element_id >= 0);
@@ -259,7 +259,7 @@ static void BPlusElementSet(BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_E
         LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetValue(dst_entry, dst_element, src_entry, &element->leaf.value);
     }
     else {
-        /* Èç¹ûÊÇ²åÈëµ½index_entry£¬¿ÉÄÜÊÇÀ´×ÔleafµÄelement */
+        /* å¦‚æœæ˜¯æ’å…¥åˆ°index_entryï¼Œå¯èƒ½æ˜¯æ¥è‡ªleafçš„element */
         if (src_entry->type == kBPlusEntryLeaf) {
             LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetKey(dst_entry, dst_element, src_entry, &element->leaf.key);
             assert(element_child_id != LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
@@ -267,7 +267,7 @@ static void BPlusElementSet(BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_E
         }
         else {
             LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetKey(dst_entry, dst_element, src_entry, &element->index.key);
-            /* Èç¹ûÓĞ¸½´øµÄº¢×Óid£¬ÔòÊ¹ÓÃ¸½´øµÄº¢×Óid */
+            /* å¦‚æœæœ‰é™„å¸¦çš„å­©å­idï¼Œåˆ™ä½¿ç”¨é™„å¸¦çš„å­©å­id */
             if (element_child_id != LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId) {
                 dst_element->index.child_id = element_child_id;
             }
@@ -310,7 +310,7 @@ static BPlusElement* BPlusElementRelease(BPlusEntry* entry, LIBYUC_CONTAINER_BPL
 }
 
 
-/* B+Ê÷µü´úÆ÷ */
+/* B+æ ‘è¿­ä»£å™¨ */
 BPlusIteratorStatus BPlusIteratorTop(BPlusTree* tree, BPlusIterator* iterator, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key* key) {
     BPlusIteratorStackVectorInit(&iterator->stack, STACK_SIZE);
     iterator->stack.count = 0;
@@ -350,8 +350,8 @@ BPlusIteratorStatus BPlusIteratorDown(BPlusTree* tree, BPlusIterator* iterator, 
     int8_t cmp_status = -1;
     if (cur_entry->element_count > 0) {
         BPlusEntryRbTreeIteratorLocate(&cur_entry->rb_tree, &cur.element_iterator, key, &cmp_status);
-        if (cmp_status == -1) { /* keyĞ¡ÓÚµ±Ç°¶¨Î»ÔªËØ */ }
-        else { /* key´óÓÚµÈÓÚµ±Ç°¶¨Î»ÔªËØ */
+        if (cmp_status == -1) { /* keyå°äºå½“å‰å®šä½å…ƒç´  */ }
+        else { /* keyå¤§äºç­‰äºå½“å‰å®šä½å…ƒç´  */
             if (cur_entry->type == kBPlusEntryIndex || cmp_status == 1) {
                 BPlusEntryRbTreeIteratorNext(&cur_entry->rb_tree, &cur.element_iterator);
             }
@@ -378,15 +378,15 @@ BPlusIteratorStatus BPlusIteratorDown(BPlusTree* tree, BPlusIterator* iterator, 
 
 
 /*
-* º¢×Ó¹ØÏµ¶ÔÓ¦ÈçÏÂ
+* å­©å­å…³ç³»å¯¹åº”å¦‚ä¸‹
 *         3     |    6    |    8
 *        /            /        /
 *     1|2         4|5         7        10|11
-* ÈçÉÏÃæ»­µÄÊ¾Àı£¬Ä¬ÈÏÊÇ3¶ÔÓ¦1|2£¬6¶ÔÓ¦4|5¡¢8¶ÔÓ¦7
+* å¦‚ä¸Šé¢ç”»çš„ç¤ºä¾‹ï¼Œé»˜è®¤æ˜¯3å¯¹åº”1|2ï¼Œ6å¯¹åº”4|5ã€8å¯¹åº”7
 */
 /*
-* Ïò½Úµã²åÈëÔªËØ
-* ²»Ö§³Ö´¦ÀíÄ©Î²×Ó½Úµã
+* å‘èŠ‚ç‚¹æ’å…¥å…ƒç´ 
+* ä¸æ”¯æŒå¤„ç†æœ«å°¾å­èŠ‚ç‚¹
 */
 static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntryInsertElement(BPlusEntry* dst_entry, BPlusEntry* src_entry, BPlusElement* insert_element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id element_child_id) {
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id element_id = BPlusElementCreate(dst_entry);
@@ -398,9 +398,9 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntryInsertEl
     return element_id;
 }
 /*
-* ´Ó½ÚµãÖĞÉ¾³ıÖ¸¶¨µÄÔªËØ
-* ²»Ö§³Ö´¦ÀíÄ©Î²×Ó½Úµã
-* ·µ»Ø±»É¾³ıµÄÔªËØ
+* ä»èŠ‚ç‚¹ä¸­åˆ é™¤æŒ‡å®šçš„å…ƒç´ 
+* ä¸æ”¯æŒå¤„ç†æœ«å°¾å­èŠ‚ç‚¹
+* è¿”å›è¢«åˆ é™¤çš„å…ƒç´ 
 */
 static void BPlusEntryDeleteElement(BPlusEntry* entry, BPlusEntryRbTreeIterator* element_iterator) {
     assert(element_iterator->cur_id != BPlusEntryRbReferencer_InvalidId);
@@ -435,7 +435,7 @@ void BPlusEntryRelease(BPlusTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERE
 }
 
 /*
-* ÓĞĞòÁ´±í½¨Ê÷£¬²Î¿¼https://leetcode.cn/problems/convert-sorted-list-to-binary-search-tree/solution/you-xu-lian-biao-zhuan-huan-er-cha-sou-suo-shu-1-3/
+* æœ‰åºé“¾è¡¨å»ºæ ‘ï¼Œå‚è€ƒhttps://leetcode.cn/problems/convert-sorted-list-to-binary-search-tree/solution/you-xu-lian-biao-zhuan-huan-er-cha-sou-suo-shu-1-3/
 */
 static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BuildRbTree(BPlusEntry* src_entry, BPlusEntryRbTreeIterator* element_iterator, BPlusEntry* dst_entry, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id left, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id right, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id parent_id, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset max_level, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset level) {
     if (left > right) return LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId;
@@ -455,15 +455,15 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BuildRbTree(BPlusE
     return new_element_id;
 }
 /*
-* ·ÖÁÑ½Úµã
-* ·µ»ØÉÏÉıµÄË÷ÒıÔªËØ
+* åˆ†è£‚èŠ‚ç‚¹
+* è¿”å›ä¸Šå‡çš„ç´¢å¼•å…ƒç´ 
 *
-* Í¬Ò»¸öÒ¶½Úµã¶à´Î·ÖÁÑ»áµ¼ÖÂÖØ¸´µÄkeyÉÏÉıÂğ£¿
-* Èç¹ûÒ¶½Úµã²»´æÔÚÏàÍ¬µÄkey£¬ÄÇÃ´ÊÇ²»»áµÄ
-* ÒòÎª·ÖÁÑºóÑ¡ÔñÓÒ½ÚµãµÄ×î×óÔªËØµÄkey×÷ÎªÉÏÉıµÄkey
-* Õâ¸öÊ±ºòÎŞÂÛÔõÃ´²åÈëÔªËØ¶¼²»»á²åÈëµ½¸Ã½Úµã×î×óÔªËØµÄ×ó²à(±ÈËüĞ¡µÄ»á±»·Öµ½×ó²à½Úµã£¬ÒòÎª¸¸ÔªËØkeyµÈÓÚ¸ÃÔªËØ)£¬¸Ã½ÚµãÔÙ·ÖÁÑÒ²¾Í²»´æÔÚ×î×óÔªËØÔÙ´ÎÉÏÉıµÄ¿ÉÄÜÁË
+* åŒä¸€ä¸ªå¶èŠ‚ç‚¹å¤šæ¬¡åˆ†è£‚ä¼šå¯¼è‡´é‡å¤çš„keyä¸Šå‡å—ï¼Ÿ
+* å¦‚æœå¶èŠ‚ç‚¹ä¸å­˜åœ¨ç›¸åŒçš„keyï¼Œé‚£ä¹ˆæ˜¯ä¸ä¼šçš„
+* å› ä¸ºåˆ†è£‚åé€‰æ‹©å³èŠ‚ç‚¹çš„æœ€å·¦å…ƒç´ çš„keyä½œä¸ºä¸Šå‡çš„key
+* è¿™ä¸ªæ—¶å€™æ— è®ºæ€ä¹ˆæ’å…¥å…ƒç´ éƒ½ä¸ä¼šæ’å…¥åˆ°è¯¥èŠ‚ç‚¹æœ€å·¦å…ƒç´ çš„å·¦ä¾§(æ¯”å®ƒå°çš„ä¼šè¢«åˆ†åˆ°å·¦ä¾§èŠ‚ç‚¹ï¼Œå› ä¸ºçˆ¶å…ƒç´ keyç­‰äºè¯¥å…ƒç´ )ï¼Œè¯¥èŠ‚ç‚¹å†åˆ†è£‚ä¹Ÿå°±ä¸å­˜åœ¨æœ€å·¦å…ƒç´ å†æ¬¡ä¸Šå‡çš„å¯èƒ½äº†
 *
-* »áĞŞ¸Äsrc_entryÖ¸ÏòĞÂµÄright_entry£¬µ«²»»áÊÍ·ÅÔ­À´µÄsrc_entry
+* ä¼šä¿®æ”¹src_entryæŒ‡å‘æ–°çš„right_entryï¼Œä½†ä¸ä¼šé‡Šæ”¾åŸæ¥çš„src_entry
 */
 static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BPlusTree* tree, BPlusEntry* left, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id left_id, BPlusEntry* parent, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id parent_element_id, BPlusEntry** src_entry, BPlusElement* insert_element, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id insert_id, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id insert_element_child_id, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id* out_right_id, BPlusEntryRbTreeIterator* up_element_iterator) {
     /* assert(insert_id != BPlusEntryRbReferencer_InvalidId); */
@@ -478,7 +478,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     int insert_right = 0;
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset fill_rate = (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, left) + LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(right, *src_entry, insert_element)) / 2;
     /*
-    * ¼ÆËã³öÓÒ²àÁ½²à¸÷×ÔµÄ½ÚµãÊıÁ¿
+    * è®¡ç®—å‡ºå³ä¾§ä¸¤ä¾§å„è‡ªçš„èŠ‚ç‚¹æ•°é‡
     */
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset right_count = 1, left_count = 0;
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset left_fill_rate = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, left);
@@ -495,7 +495,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     }
     assert(left_element_iterator.cur_id != LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId);
     assert(right_count > 0);
-    /* ÏÈ¹¹½¨ÓÒ²à½ÚµãµÄrbÊ÷ */
+    /* å…ˆæ„å»ºå³ä¾§èŠ‚ç‚¹çš„rbæ ‘ */
     BPlusEntryRbTreeIterator mid_element_iterator;
     BPlusEntryRbTreeIteratorCopy(&mid_element_iterator, &left_element_iterator);
     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset logn = 0;
@@ -504,8 +504,8 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     --logn;
     right->rb_tree.root = BuildRbTree(left, &left_element_iterator, right, 0, right_count - 1, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId, logn, 0);
 
-    /* ½ÓÏÂÀ´ÊÇ×ó²à */
-    /* ¿½±´µ½ÁÙÊ±½Úµã£¬ÔÚÔ­½ÚµãÖĞÖØ¹¹rbÊ÷ */
+    /* æ¥ä¸‹æ¥æ˜¯å·¦ä¾§ */
+    /* æ‹·è´åˆ°ä¸´æ—¶èŠ‚ç‚¹ï¼Œåœ¨åŸèŠ‚ç‚¹ä¸­é‡æ„rbæ ‘ */
     BPlusEntry* temp_entry = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetTempCopyEntry(tree, left);
     BPlusEntryInit(tree, left, right->type);
     do {
@@ -520,7 +520,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     --logn;
     left->rb_tree.root = BuildRbTree(temp_entry, &left_element_iterator, left, 0, left_count - 1, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId, logn, 0);
 
-    /* ×îÖÕ²åÈë½Úµã */
+    /* æœ€ç»ˆæ’å…¥èŠ‚ç‚¹ */
     if (insert_right == 1) {
         BPlusEntryInsertElement(right, *src_entry, insert_element, insert_element_child_id);
         ++right_count;
@@ -534,14 +534,14 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
 
     BPlusElement* up_element;
     if (left->type == kBPlusEntryLeaf) {
-        /* ´ÓmidÄÃµ½ÉÏÉıÔªËØ£¬Ò¶×ÓÔªËØ×ª»»ÎªË÷ÒıÔªËØ£¬ÉÏÉıÔªËØµÄ×Ó½ÚµãÖ¸Ïò×ó½Úµã£¬Ò¶×ÓÉÏÉı²»ĞèÒª±»Õª³ı */
+        /* ä»midæ‹¿åˆ°ä¸Šå‡å…ƒç´ ï¼Œå¶å­å…ƒç´ è½¬æ¢ä¸ºç´¢å¼•å…ƒç´ ï¼Œä¸Šå‡å…ƒç´ çš„å­èŠ‚ç‚¹æŒ‡å‘å·¦èŠ‚ç‚¹ï¼Œå¶å­ä¸Šå‡ä¸éœ€è¦è¢«æ‘˜é™¤ */
         *src_entry = right;
         LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, right_id);
         up_element_id = BPlusEntryRbTreeIteratorFirst(&right->rb_tree, up_element_iterator);
         up_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(*src_entry, up_element_id);
     }
     else {
-        /* ¼ÙÉèÈçÏÂ½ÚµãĞèÒª·ÖÁÑ
+        /* å‡è®¾å¦‚ä¸‹èŠ‚ç‚¹éœ€è¦åˆ†è£‚
                     15             18
                     /                |
                 2     4     8     12        ...
@@ -557,20 +557,20 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
                 2               8     12
                 |             |     |
                 1     3         5     10    13
-            ´ËÊ±ÓÒ½ÚµãÈ±ÉÙÁËÒ»ÌõÁ´½Ó£¬ÎÒÃÇ×îÖÕÑ¡ÓÃ×ó½ÚµãµÄÄ©Î²ÔªËØ(4)×÷ÎªÉÏÉıÔªËØ£¬¹Ê×ó½ÚµãµÄÄ©Î²ÔªËØµÄÓÒ²à×Ó½Úµã(13)¾Í¿ÉÒÔ¹Ò½Óµ½ÓÒ½ÚµãµÄÄ©Î²ÔªËØµÄÓÒ²à×Ó½ÚµãÏÂ */
+            æ­¤æ—¶å³èŠ‚ç‚¹ç¼ºå°‘äº†ä¸€æ¡é“¾æ¥ï¼Œæˆ‘ä»¬æœ€ç»ˆé€‰ç”¨å·¦èŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ (4)ä½œä¸ºä¸Šå‡å…ƒç´ ï¼Œæ•…å·¦èŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ çš„å³ä¾§å­èŠ‚ç‚¹(13)å°±å¯ä»¥æŒ‚æ¥åˆ°å³èŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ çš„å³ä¾§å­èŠ‚ç‚¹ä¸‹ */
         right->index.tail_child_id = left->index.tail_child_id;
 
-        /* ×îºó´Ó×ó½ÚµãÄ©Î²ÄÃµ½ÉÏÉıÔªËØ£¬µÈ´ı½«ÆäÕª³ı */
+        /* æœ€åä»å·¦èŠ‚ç‚¹æœ«å°¾æ‹¿åˆ°ä¸Šå‡å…ƒç´ ï¼Œç­‰å¾…å°†å…¶æ‘˜é™¤ */
         up_element_id = BPlusEntryRbTreeIteratorLast(&left->rb_tree, up_element_iterator);
         *src_entry = left;
-        LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, left_id); /* ÀÛ¼ÓÒ»´Î¼ÆÊı */
+        LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, left_id); /* ç´¯åŠ ä¸€æ¬¡è®¡æ•° */
         up_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(*src_entry, up_element_id);
-        left->index.tail_child_id = up_element->index.child_id;         /* 3Ö¸¶¨Îª2µÄÓÒ²à×Ó½Úµã */
+        left->index.tail_child_id = up_element->index.child_id;         /* 3æŒ‡å®šä¸º2çš„å³ä¾§å­èŠ‚ç‚¹ */
     }
-    /* ÉÏÉıµÄ4µÄ×Ó½ÚµãÎª×ó */
-    /*up_element->index.child_id = left_id;     up_element¿ÉÄÜÊÇleafµÄÔªËØ£¬²»ÄÜÖ±½ÓÔÚ´Ë´¦¸³Öµ */
+    /* ä¸Šå‡çš„4çš„å­èŠ‚ç‚¹ä¸ºå·¦ */
+    /*up_element->index.child_id = left_id;     up_elementå¯èƒ½æ˜¯leafçš„å…ƒç´ ï¼Œä¸èƒ½ç›´æ¥åœ¨æ­¤å¤„èµ‹å€¼ */
 
-    /* 4ÉÏÉıºó£¬Ô­ÏÈÖ¸Ïò4µÄ¸¸ÔªËØ£¬¾ÍÖ¸Ïò8|12£¬(Ô­ÏÈÖ¸Ïò×ó½ÚµãµÄ¸¸ÔªËØÖ¸ÏòÓÒ½Úµã£¬ÒòÎªÉÏÉıµÄÔªËØ»á±ä³É¸¸ÔªËØµÄĞÖµÜ£¬Ö¸Ïò×ó½Úµã) */
+    /* 4ä¸Šå‡åï¼ŒåŸå…ˆæŒ‡å‘4çš„çˆ¶å…ƒç´ ï¼Œå°±æŒ‡å‘8|12ï¼Œ(åŸå…ˆæŒ‡å‘å·¦èŠ‚ç‚¹çš„çˆ¶å…ƒç´ æŒ‡å‘å³èŠ‚ç‚¹ï¼Œå› ä¸ºä¸Šå‡çš„å…ƒç´ ä¼šå˜æˆçˆ¶å…ƒç´ çš„å…„å¼Ÿï¼ŒæŒ‡å‘å·¦èŠ‚ç‚¹) */
     BPlusElementSetChildId(parent, parent_element_id, right_id);
 
     *out_right_id = right_id;
@@ -580,8 +580,8 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     return up_element_id;
 }
 /*
-* ºÏ²¢½Úµã
-* ÊÍ·ÅÓÒ½Úµã£¬·µ»ØÊ±ÓÒ½Úµã²»ÔÙÓĞĞ§
+* åˆå¹¶èŠ‚ç‚¹
+* é‡Šæ”¾å³èŠ‚ç‚¹ï¼Œè¿”å›æ—¶å³èŠ‚ç‚¹ä¸å†æœ‰æ•ˆ
 *     2
 * 1     3
 */
@@ -597,27 +597,27 @@ static void BPlusEntryMerge(BPlusTree* tree, BPlusEntry* left, LIBYUC_CONTAINER_
     }
     if (left->type == kBPlusEntryLeaf) {
         //BPlusLeafListDeleteEntry(&tree->leaf_list, right_id);
-        /* ÊÇÒ¶×Ó½Úµã£¬½«right²¢ÈëleftÖĞ£¬²¢É¾³ı¸¸ÔªËØ */
+        /* æ˜¯å¶å­èŠ‚ç‚¹ï¼Œå°†rightå¹¶å…¥leftä¸­ï¼Œå¹¶åˆ é™¤çˆ¶å…ƒç´  */
     }
     else {
-        /* ÊÇË÷Òı½Úµã£¬½«¸¸ÔªËØ(×Ó½ÚµãÔ­ÏÈÖ¸Ïò×óºÍÓÒ£¬ÏÂ½µĞèÒªÖ¸Ïò×óµÄÄ©Î²×Ó½Úµã)ºÍright¶¼²¢Èëµ½leftÖĞ£¬ÏòÉÏ´«µİÉ¾³ı¸¸ÔªËØ */
+        /* æ˜¯ç´¢å¼•èŠ‚ç‚¹ï¼Œå°†çˆ¶å…ƒç´ (å­èŠ‚ç‚¹åŸå…ˆæŒ‡å‘å·¦å’Œå³ï¼Œä¸‹é™éœ€è¦æŒ‡å‘å·¦çš„æœ«å°¾å­èŠ‚ç‚¹)å’Œrightéƒ½å¹¶å…¥åˆ°leftä¸­ï¼Œå‘ä¸Šä¼ é€’åˆ é™¤çˆ¶å…ƒç´  */
         BPlusElement* parent_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(parent, parent_iterator->cur_id);
         LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id left_element_id = BPlusEntryInsertElement(left, parent, parent_element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
         LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(parent, parent_element);
-        BPlusElementSetChildId(left, left_element_id, left->index.tail_child_id);         /* leftµÄÄ©Î²ÔªËØ´ËÊ±ÎªÏÂ½µµÄ¸¸ÔªËØ£¬ĞŞ¸ÄÆä×Ó½Úµã */
+        BPlusElementSetChildId(left, left_element_id, left->index.tail_child_id);         /* leftçš„æœ«å°¾å…ƒç´ æ­¤æ—¶ä¸ºä¸‹é™çš„çˆ¶å…ƒç´ ï¼Œä¿®æ”¹å…¶å­èŠ‚ç‚¹ */
         BPlusElementSetChildId(left, -1, right->index.tail_child_id);
     }
 
-    /* ¸¸ÔªËØ»á±»É¾³ı£¬¸¸ÓÒĞÖµÜÔªËØµÄ×ó²à×Ó½Úµã(»òÎ²×Ó½Úµã)Ô­ÏÈÖ¸ÏòÓÒ½Úµã(±»É¾³ı)£¬´ËÊ±¼Ì³Ğ×ó½Úµã(ºÏ²¢ºóÊ£ÏÂµÄ½Úµã) */
+    /* çˆ¶å…ƒç´ ä¼šè¢«åˆ é™¤ï¼Œçˆ¶å³å…„å¼Ÿå…ƒç´ çš„å·¦ä¾§å­èŠ‚ç‚¹(æˆ–å°¾å­èŠ‚ç‚¹)åŸå…ˆæŒ‡å‘å³èŠ‚ç‚¹(è¢«åˆ é™¤)ï¼Œæ­¤æ—¶ç»§æ‰¿å·¦èŠ‚ç‚¹(åˆå¹¶åå‰©ä¸‹çš„èŠ‚ç‚¹) */
     BPlusElementSetChildId(parent, BPlusEntryRbTreeIteratorNext(&parent->rb_tree, parent_iterator), left_id);
     LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Dereference(tree, right);
     BPlusEntryRelease(tree, right_id);
-    /* ºÏ²¢²¿·ÖÍê³É£¬É¾³ı²¿·Ö½»¸øµ÷ÓÃÕß */
+    /* åˆå¹¶éƒ¨åˆ†å®Œæˆï¼Œåˆ é™¤éƒ¨åˆ†äº¤ç»™è°ƒç”¨è€… */
 }
 
 /*
-* ÏòÊ÷²åÈëÔªËØ
-* »áÇÀ¶ásrc_entryµÄËùÓĞÈ¨
+* å‘æ ‘æ’å…¥å…ƒç´ 
+* ä¼šæŠ¢å¤ºsrc_entryçš„æ‰€æœ‰æƒ
 */
 static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPlusEntry* src_entry, BPlusElement* insert_element, BPlusEntryRbTreeIterator* insert_element_iterator, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id insert_element_child_id) {
     BPlusElementPos* cur_pos = BPlusIteratorCur(tree, iterator);
@@ -636,23 +636,23 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
             LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset raw_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, cur, raw);
             LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(cur, raw);
             if (free_rate + need_rate >= raw_rate) {
-                /* SetValue»áÏÈÊÍ·ÅÔ­ÓĞ¿Õ¼ä£¬Òò´Ë¿ÕÏĞ¿Õ¼ä¿ÉÒÔ¼ÆÈëÒÑ·ÖÅäµÄ²¿·Ö */
+                /* SetValueä¼šå…ˆé‡Šæ”¾åŸæœ‰ç©ºé—´ï¼Œå› æ­¤ç©ºé—²ç©ºé—´å¯ä»¥è®¡å…¥å·²åˆ†é…çš„éƒ¨åˆ† */
                 LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_SetValue(cur, raw, cur, &insert_element->leaf.value);
                 break;
             }
             else {
-                /* ¿Õ¼ä²»×ã½«»á´¥·¢·ÖÁÑ£¬ÕâÀïÊ²Ã´¶¼²»×ö£¬ÔÚ·ÖÁÑÊ±ÖØĞÂSetValue */
+                /* ç©ºé—´ä¸è¶³å°†ä¼šè§¦å‘åˆ†è£‚ï¼Œè¿™é‡Œä»€ä¹ˆéƒ½ä¸åšï¼Œåœ¨åˆ†è£‚æ—¶é‡æ–°SetValue */
                 assert(0);
             }
         }
         else if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(tree, cur) >= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, old_src_entry, insert_element)) {
-            /* ÓĞ¿ÕÓàµÄÎ»ÖÃ²åÈë */
+            /* æœ‰ç©ºä½™çš„ä½ç½®æ’å…¥ */
             BPlusEntryInsertElement(cur, old_src_entry, insert_element, insert_element_child_id);
             break;
         }
         else {
-            /* Ã»ÓĞ¶àÓàÎ»ÖÃ£¬ĞèÒª·ÖÁÑÏòÉÏ²åÈë£¬²åÈëµÄÎ»ÖÃĞèÒªÊÇµÚÒ»¸öĞ¡ÓÚkeyµÄÔªËØ£¬element_idÖ¸ÏòµÚÒ»¸ö´óÓÚkeyµÄÔªËØ */
-            if (cur_pos->element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) { /* ²»´æÔÚ´óÓÚkeyµÄÔªËØ£¬Ö±½ÓÄÃÄ©Î²ÔªËØ */
+            /* æ²¡æœ‰å¤šä½™ä½ç½®ï¼Œéœ€è¦åˆ†è£‚å‘ä¸Šæ’å…¥ï¼Œæ’å…¥çš„ä½ç½®éœ€è¦æ˜¯ç¬¬ä¸€ä¸ªå°äºkeyçš„å…ƒç´ ï¼Œelement_idæŒ‡å‘ç¬¬ä¸€ä¸ªå¤§äºkeyçš„å…ƒç´  */
+            if (cur_pos->element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) { /* ä¸å­˜åœ¨å¤§äºkeyçš„å…ƒç´ ï¼Œç›´æ¥æ‹¿æœ«å°¾å…ƒç´  */
                 BPlusEntryRbTreeIteratorLast(&cur->rb_tree, &cur_pos->element_iterator);
             }
             else {
@@ -660,7 +660,7 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
             }
         }
         if (!parent_pos) {
-            /* Ã»ÓĞ¸¸½Úµã£¬´´½¨ */
+            /* æ²¡æœ‰çˆ¶èŠ‚ç‚¹ï¼Œåˆ›å»º */
             LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id parent_id = BPlusEntryCreate(tree, kBPlusEntryIndex);
             BPlusEntry* parent = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, parent_id);
             up_element_id = BPlusEntrySplit(tree, cur, cur_pos->entry_id, parent, -1, &src_entry, insert_element, cur_pos->element_iterator.cur_id, insert_element_child_id, &right_id, &up_element_iterator);
@@ -670,7 +670,7 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
             tree->root_id = parent_id;
             LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Dereference(tree, parent);
             if (src_entry->type == kBPlusEntryIndex) {
-                /* ´´½¨¸¸½ÚµãµÄ»°£¬²»»áÔÙĞèÒªÉÏÉıÁË£¬Ö±½ÓÕª³ıÒªÉÏÉıµÄ½Úµã */
+                /* åˆ›å»ºçˆ¶èŠ‚ç‚¹çš„è¯ï¼Œä¸ä¼šå†éœ€è¦ä¸Šå‡äº†ï¼Œç›´æ¥æ‘˜é™¤è¦ä¸Šå‡çš„èŠ‚ç‚¹ */
                 BPlusEntryDeleteElement(src_entry, &up_element_iterator);
             }
             break;
@@ -682,7 +682,7 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
     } while (false);
     LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Dereference(tree, cur);
     if (old_src_entry) {
-        /* Ë÷Òı½ÚµãÉÏÉıºóÔ­½ÚµãĞèÒª±»Õª³ı */
+        /* ç´¢å¼•èŠ‚ç‚¹ä¸Šå‡ååŸèŠ‚ç‚¹éœ€è¦è¢«æ‘˜é™¤ */
         LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(old_src_entry, insert_element);
         if (old_src_entry->type == kBPlusEntryIndex) {
             BPlusEntryDeleteElement(old_src_entry, insert_element_iterator);
@@ -697,7 +697,7 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
 }
 
 /*
-* É¾³ıÊ÷ÖĞµÄÖ¸¶¨ÔªËØ
+* åˆ é™¤æ ‘ä¸­çš„æŒ‡å®šå…ƒç´ 
 */
 static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
     BPlusElementPos* cur_pos = BPlusIteratorCur(tree, iterator);
@@ -707,13 +707,13 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
     BPlusEntry* sibling = NULL;
     BPlusEntry* parent = NULL;
     bool success = true, delete_up = false;
-    BPlusEntryDeleteElement(entry, &cur_pos->element_iterator);        /* Ö±½ÓÉ¾³ı¼´¿É£¬Ò¶×ÓÔªËØÃ»ÓĞ×Ó½Úµã£¬Ë÷ÒıÔªËØÔÚºÏ²¢Ê±ÒÑ¾­´¦Àí×Ó½ÚµãÁË */
+    BPlusEntryDeleteElement(entry, &cur_pos->element_iterator);        /* ç›´æ¥åˆ é™¤å³å¯ï¼Œå¶å­å…ƒç´ æ²¡æœ‰å­èŠ‚ç‚¹ï¼Œç´¢å¼•å…ƒç´ åœ¨åˆå¹¶æ—¶å·²ç»å¤„ç†å­èŠ‚ç‚¹äº† */
     do {
         if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, entry) >= LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetMergeThresholdRate(tree, entry)) {
             break;
         }
         if (!parent_pos) {
-            /* Ã»ÓĞ¸¸½Úµã¾ÍÒÑ¾­µ½¸ù½ÚµãÁË£¬ÊÇÒ¶×Ó½Úµã¾ÍÌø¹ı£¬ÊÇË÷Òı½ÚµãÔòÅĞ¶ÏÊÇ·ñÃ»ÓĞÈÎºÎ×Ó½ÚµãÁË£¬ÊÇÔò±ä¸üÓàÏÂ×îºóÒ»¸ö×Ó½ÚµãÎª¸ù½Úµã£¬·ñÔòÖ±½Ó½áÊø */
+            /* æ²¡æœ‰çˆ¶èŠ‚ç‚¹å°±å·²ç»åˆ°æ ¹èŠ‚ç‚¹äº†ï¼Œæ˜¯å¶å­èŠ‚ç‚¹å°±è·³è¿‡ï¼Œæ˜¯ç´¢å¼•èŠ‚ç‚¹åˆ™åˆ¤æ–­æ˜¯å¦æ²¡æœ‰ä»»ä½•å­èŠ‚ç‚¹äº†ï¼Œæ˜¯åˆ™å˜æ›´ä½™ä¸‹æœ€åä¸€ä¸ªå­èŠ‚ç‚¹ä¸ºæ ¹èŠ‚ç‚¹ï¼Œå¦åˆ™ç›´æ¥ç»“æŸ */
             if (entry->type == kBPlusEntryIndex && entry->element_count == 0) {
                 LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id childId = entry->index.tail_child_id;
                 tree->root_id = childId;
@@ -728,19 +728,19 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
         parent = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, parent_pos->entry_id);
         bool left_sibling = true;
         BPlusEntryRbTreeIterator common_parent_element_iterator;
-        BPlusEntryRbTreeIteratorCopy(&common_parent_element_iterator, &parent_pos->element_iterator);     /* Ê¼ÖÕÊÇÖ¸Ïò×ó²àÔªËØ */
+        BPlusEntryRbTreeIteratorCopy(&common_parent_element_iterator, &parent_pos->element_iterator);     /* å§‹ç»ˆæ˜¯æŒ‡å‘å·¦ä¾§å…ƒç´  */
         BPlusEntryRbTreeIterator sibling_element_iterator;
-        if (common_parent_element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) { /* ²»´æÔÚ´óÓÚkeyµÄ¸¸ÔªËØ£¬µ±Ç°½ÚµãÊÇÄ©Î²½Úµã£¬ÊÇ×óĞÖµÜ */
+        if (common_parent_element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) { /* ä¸å­˜åœ¨å¤§äºkeyçš„çˆ¶å…ƒç´ ï¼Œå½“å‰èŠ‚ç‚¹æ˜¯æœ«å°¾èŠ‚ç‚¹ï¼Œæ˜¯å·¦å…„å¼Ÿ */
             BPlusEntryRbTreeIteratorLast(&parent->rb_tree, &sibling_element_iterator);
         }
         else {
             BPlusEntryRbTreeIteratorCopy(&sibling_element_iterator, &common_parent_element_iterator);
             BPlusEntryRbTreeIteratorPrev(&parent->rb_tree, &sibling_element_iterator);
-            if (sibling_element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) {     /* µ±Ç°ÔªËØÒÑ¾­ÊÇ×îĞ¡µÄÔªËØ */
+            if (sibling_element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) {     /* å½“å‰å…ƒç´ å·²ç»æ˜¯æœ€å°çš„å…ƒç´  */
                 left_sibling = false;
                 BPlusEntryRbTreeIteratorCopy(&sibling_element_iterator, &common_parent_element_iterator);
                 BPlusEntryRbTreeIteratorNext(&parent->rb_tree, &sibling_element_iterator);
-                if (sibling_element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) { /* Ö±½ÓÕÒ¼ÈÃ»ÓĞ×óĞÖµÜÒ²Ã»ÓĞÓÒĞÖµÜ£¬ÄÇ¾ÍÊÇÄ©Î²½ÚµãÊÇÓÒĞÖµÜ */
+                if (sibling_element_iterator.cur_id == BPlusEntryRbReferencer_InvalidId) { /* ç›´æ¥æ‰¾æ—¢æ²¡æœ‰å·¦å…„å¼Ÿä¹Ÿæ²¡æœ‰å³å…„å¼Ÿï¼Œé‚£å°±æ˜¯æœ«å°¾èŠ‚ç‚¹æ˜¯å³å…„å¼Ÿ */
                     sibling_entry_id = parent->index.tail_child_id;
                 }
             }
@@ -752,18 +752,18 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
         }
         if (left_sibling) {
             BPlusEntryRbTreeIteratorCopy(&common_parent_element_iterator, &sibling_element_iterator);
-            BPlusEntryRbTreeIteratorCopy(&parent_pos->element_iterator, &sibling_element_iterator);       /* ¸üĞÂÒ»ÏÂ£¬¸ø¸¸½ÚµãÉ¾³ıÊ¹ÓÃ */
+            BPlusEntryRbTreeIteratorCopy(&parent_pos->element_iterator, &sibling_element_iterator);       /* æ›´æ–°ä¸€ä¸‹ï¼Œç»™çˆ¶èŠ‚ç‚¹åˆ é™¤ä½¿ç”¨ */
         }
         assert(common_parent_element_iterator.cur_id != BPlusEntryRbReferencer_InvalidId);
         assert(sibling_entry_id != LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
         sibling = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Reference(tree, sibling_entry_id);
         if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, sibling) > LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetMergeThresholdRate(tree, sibling)) {
-            /* ÏòĞÖµÜ½è½Úµã */
+            /* å‘å…„å¼Ÿå€ŸèŠ‚ç‚¹ */
             assert(sibling->element_count >= 2);
             if (entry->type == kBPlusEntryLeaf) {
-                /* Ò¶×Ó½Úµã´¦Àí½Ï¼òµ¥£¬¿ÉÒÔÖ±½ÓÒÆ¶¯ */
+                /* å¶å­èŠ‚ç‚¹å¤„ç†è¾ƒç®€å•ï¼Œå¯ä»¥ç›´æ¥ç§»åŠ¨ */
                 if (left_sibling) {
-                    /* ×óĞÖµÜ½ÚµãµÄÄ©Î²µÄÔªËØ²åÈëµ½µ±Ç°½ÚµãµÄÍ·²¿£¬¸üĞÂ¸¸ÔªËØkeyÎª½èÀ´µÄkey */
+                    /* å·¦å…„å¼ŸèŠ‚ç‚¹çš„æœ«å°¾çš„å…ƒç´ æ’å…¥åˆ°å½“å‰èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œæ›´æ–°çˆ¶å…ƒç´ keyä¸ºå€Ÿæ¥çš„key */
                     BPlusEntryRbTreeIterator last_element_iterator;
                     BPlusEntryRbTreeIteratorLast(&sibling->rb_tree, &last_element_iterator);
                     assert(last_element_iterator.cur_id != BPlusEntryRbReferencer_InvalidId);
@@ -773,11 +773,11 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
                     BPlusEntryDeleteElement(sibling, &last_element_iterator);
 
                     BPlusElement* common_parent_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(parent, common_parent_element_iterator.cur_id);
-                    common_parent_element->index.key = element->leaf.key;         /* ¸üĞÂË÷Òı */
+                    common_parent_element->index.key = element->leaf.key;         /* æ›´æ–°ç´¢å¼• */
                     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(parent, common_parent_element);
                 }
                 else {
-                    /* ÓÒĞÖµÜ½ÚµãµÄÍ·²¿µÄÔªËØ²åÈëµ½µ±Ç°½ÚµãµÄÎ²²¿£¬²¢ĞÂ¸¸ÔªËØkeyÎªÓÒĞÖµÜµÄĞÂÊ×ÔªËØ */
+                    /* å³å…„å¼ŸèŠ‚ç‚¹çš„å¤´éƒ¨çš„å…ƒç´ æ’å…¥åˆ°å½“å‰èŠ‚ç‚¹çš„å°¾éƒ¨ï¼Œå¹¶æ–°çˆ¶å…ƒç´ keyä¸ºå³å…„å¼Ÿçš„æ–°é¦–å…ƒç´  */
                     BPlusEntryRbTreeIterator first_element_iterator;
                     BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree, &first_element_iterator);
                     BPlusEntryRbTreeIterator new_element_iterator;
@@ -789,23 +789,23 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
                     BPlusEntryInsertElement(entry, sibling, element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
                     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(sibling, element);
                     BPlusEntryDeleteElement(sibling, &first_element_iterator);
-                    /* ÓÒ½ÚµãµÄÍ·ÔªËØkey¿ÉÄÜÕıºÃºÍ¹²Í¬¸¸½ÚµãÏàµÈ(´ËÊ±ºÍË÷ÒıÏàµÈµÄkeyÅÜµ½×ó±ß£¬¾Í»áµ¼ÖÂÕÒ²»µ½)£¬Òò´Ëkey¸üĞÂÎªĞÂµÄÊ×ÔªËØÊÇ×îºÃµÄ */
+                    /* å³èŠ‚ç‚¹çš„å¤´å…ƒç´ keyå¯èƒ½æ­£å¥½å’Œå…±åŒçˆ¶èŠ‚ç‚¹ç›¸ç­‰(æ­¤æ—¶å’Œç´¢å¼•ç›¸ç­‰çš„keyè·‘åˆ°å·¦è¾¹ï¼Œå°±ä¼šå¯¼è‡´æ‰¾ä¸åˆ°)ï¼Œå› æ­¤keyæ›´æ–°ä¸ºæ–°çš„é¦–å…ƒç´ æ˜¯æœ€å¥½çš„ */
                     BPlusElement* common_parent_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(parent, common_parent_element_iterator.cur_id);
                     BPlusElement* sibling_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(sibling, new_element_iterator.cur_id);
-                    common_parent_element->index.key = sibling_element->leaf.key;         /* ¸üĞÂË÷Òı */
+                    common_parent_element->index.key = sibling_element->leaf.key;         /* æ›´æ–°ç´¢å¼• */
                     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(parent, common_parent_element);
                     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(sibling, sibling_element);
                 }
             }
             else {
-                /* Ë÷Òı½Úµã´¦Àí½Ï¸´ÔÓ£¬ĞèÒªÏÂ½µ¸¸½ÚµãÖĞµ±Ç°½ÚµãºÍĞÖµÜ½ÚµãµÄ¹²Í¬¸¸ÔªËØ£¬ÉÏÉıĞÖµÜµÄÔªËØµ½¹²Í¬¸¸ÔªËØ(¼´½»»») */
+                /* ç´¢å¼•èŠ‚ç‚¹å¤„ç†è¾ƒå¤æ‚ï¼Œéœ€è¦ä¸‹é™çˆ¶èŠ‚ç‚¹ä¸­å½“å‰èŠ‚ç‚¹å’Œå…„å¼ŸèŠ‚ç‚¹çš„å…±åŒçˆ¶å…ƒç´ ï¼Œä¸Šå‡å…„å¼Ÿçš„å…ƒç´ åˆ°å…±åŒçˆ¶å…ƒç´ (å³äº¤æ¢) */
                 if (left_sibling) {
-                    /* ×óĞÖµÜ½ÚµãµÄÄ©Î²ÔªËØÉÏÉıµ½¸¸½ÚµãµÄÍ·²¿£¬¸¸½ÚµãµÄ¶ÔÓ¦ÔªËØÏÂ½µµ½µ±Ç°½ÚµãµÄÍ·²¿£¬ÉÏÉıÔªËØÆäÓÒ×Ó½Úµã¹ÒÔÚÏÂ½µµÄ¸¸½ÚµãÔªËØµÄ×ó²à */
+                    /* å·¦å…„å¼ŸèŠ‚ç‚¹çš„æœ«å°¾å…ƒç´ ä¸Šå‡åˆ°çˆ¶èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œçˆ¶èŠ‚ç‚¹çš„å¯¹åº”å…ƒç´ ä¸‹é™åˆ°å½“å‰èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œä¸Šå‡å…ƒç´ å…¶å³å­èŠ‚ç‚¹æŒ‚åœ¨ä¸‹é™çš„çˆ¶èŠ‚ç‚¹å…ƒç´ çš„å·¦ä¾§ */
                     BPlusEntryRbTreeIterator last_element_iterator;
                     BPlusEntryRbTreeIteratorLast(&sibling->rb_tree, &last_element_iterator);
                     assert(last_element_iterator.cur_id != BPlusEntryRbReferencer_InvalidId);
                     BPlusElement* left_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(sibling, last_element_iterator.cur_id);
-                    ObjectSwap(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id, left_element->index.child_id, sibling->index.tail_child_id);        /* ÒªÄÃµÄÊÇÄ©Î²µÄ×Ó½Úµã£¬´¦ÀíÒ»ÏÂ */
+                    ObjectSwap(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id, left_element->index.child_id, sibling->index.tail_child_id);        /* è¦æ‹¿çš„æ˜¯æœ«å°¾çš„å­èŠ‚ç‚¹ï¼Œå¤„ç†ä¸€ä¸‹ */
                     BPlusElement* par_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(parent, common_parent_element_iterator.cur_id);
                     par_element->index.child_id = left_element->index.child_id;
                     BPlusEntryInsertElement(entry, parent, par_element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
@@ -817,14 +817,14 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
                     BPlusEntryDeleteElement(sibling, &last_element_iterator);
                 }
                 else {
-                    /* ÓÒĞÖµÜ½ÚµãµÄÍ·ÔªËØÉÏÉıµ½¸¸½ÚµãµÄÍ·²¿£¬¸¸½ÚµãµÄ¶ÔÓ¦ÔªËØÏÂ½µµ½µ±Ç°½ÚµãµÄÎ²²¿£¬ÉÏÉıÔªËØÆä×ó×Ó½Úµã¹ÒÔÚÏÂ½µµÄ¸¸½ÚµãÔªËØµÄÓÒ²à */
+                    /* å³å…„å¼ŸèŠ‚ç‚¹çš„å¤´å…ƒç´ ä¸Šå‡åˆ°çˆ¶èŠ‚ç‚¹çš„å¤´éƒ¨ï¼Œçˆ¶èŠ‚ç‚¹çš„å¯¹åº”å…ƒç´ ä¸‹é™åˆ°å½“å‰èŠ‚ç‚¹çš„å°¾éƒ¨ï¼Œä¸Šå‡å…ƒç´ å…¶å·¦å­èŠ‚ç‚¹æŒ‚åœ¨ä¸‹é™çš„çˆ¶èŠ‚ç‚¹å…ƒç´ çš„å³ä¾§ */
                     BPlusEntryRbTreeIterator first_element_iterator;
                     BPlusEntryRbTreeIteratorFirst(&sibling->rb_tree, &first_element_iterator);
                     assert(first_element_iterator.cur_id != BPlusEntryRbReferencer_InvalidId);
                     BPlusElement* right_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(sibling, first_element_iterator.cur_id);
                     BPlusElement* par_element = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(parent, common_parent_element_iterator.cur_id);
                     par_element->index.child_id = right_element->index.child_id;
-                    ObjectSwap(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id, par_element->index.child_id, entry->index.tail_child_id);        /* Òª²åÈëµÄÊÇÄ©Î²µÄ×Ó½Úµã£¬´¦ÀíÒ»ÏÂ */
+                    ObjectSwap(LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Type_Id, par_element->index.child_id, entry->index.tail_child_id);        /* è¦æ’å…¥çš„æ˜¯æœ«å°¾çš„å­èŠ‚ç‚¹ï¼Œå¤„ç†ä¸€ä¸‹ */
                     BPlusEntryInsertElement(entry, parent, par_element, LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Const_InvalidId);
                     LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(parent, par_element);
                     BPlusEntryDeleteElement(parent, &common_parent_element_iterator);
@@ -837,7 +837,7 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
             break;
         }
 
-        /* ĞÖµÜ½Úµã²»¹»½è£¬ĞèÒªºÏ²¢(ºÏ²¢ÁËÒ²²»»á³¬¹ım-1£¬ÒòÎªÒ»±ß²»×ãm-1µÄÒ»°ë£¬Ò»±ßÊÇm-1µÄÒ»°ë£¬ÊÇË÷Òı½ÚµãµÄºÏ²¢Ò²×ã¹»ÏÂ½µÒ»¸ö¸¸ÔªËØ) */
+        /* å…„å¼ŸèŠ‚ç‚¹ä¸å¤Ÿå€Ÿï¼Œéœ€è¦åˆå¹¶(åˆå¹¶äº†ä¹Ÿä¸ä¼šè¶…è¿‡m-1ï¼Œå› ä¸ºä¸€è¾¹ä¸è¶³m-1çš„ä¸€åŠï¼Œä¸€è¾¹æ˜¯m-1çš„ä¸€åŠï¼Œæ˜¯ç´¢å¼•èŠ‚ç‚¹çš„åˆå¹¶ä¹Ÿè¶³å¤Ÿä¸‹é™ä¸€ä¸ªçˆ¶å…ƒç´ ) */
         if (left_sibling) {
             BPlusEntryMerge(tree, sibling, sibling_entry_id, entry, cur_pos->entry_id, parent, &common_parent_element_iterator);
             entry = NULL;
@@ -853,22 +853,22 @@ static bool BPlusTreeDeleteElement(BPlusTree* tree, BPlusIterator* iterator) {
     if (entry) { LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_REFERENCER_Dereference(tree, entry); }
 
     if (delete_up) {
-        return BPlusTreeDeleteElement(tree, iterator);     /* Î²µİ¹é */
+        return BPlusTreeDeleteElement(tree, iterator);     /* å°¾é€’å½’ */
     }
     return success;
 }
 
 /*
-* ³õÊ¼»¯B+Ê÷
+* åˆå§‹åŒ–B+æ ‘
 */
 void BPlusTreeInit(BPlusTree* tree) {
-    /* Ë÷Òı×îÉÙ3½×£¬·ñÔòË÷Òı½Úµã·ÖÁÑ»á³öÏÖÒ»²àÃ»ÓĞ½ÚµãµÄÇé¿ö */
-    /* Ò¶×Ó¿ÉÒÔ2½×£¬µ«ÊÇÉ¾³ıÓĞµØ·½ĞèÒª¼ÓÇ¿ÅĞ¶Ï */
+    /* ç´¢å¼•æœ€å°‘3é˜¶ï¼Œå¦åˆ™ç´¢å¼•èŠ‚ç‚¹åˆ†è£‚ä¼šå‡ºç°ä¸€ä¾§æ²¡æœ‰èŠ‚ç‚¹çš„æƒ…å†µ */
+    /* å¶å­å¯ä»¥2é˜¶ï¼Œä½†æ˜¯åˆ é™¤æœ‰åœ°æ–¹éœ€è¦åŠ å¼ºåˆ¤æ–­ */
     tree->root_id = BPlusEntryCreate(tree, kBPlusEntryLeaf);
     //BPlusLeafListInit(&tree->leaf_list); BPlusLeafListPutFirst(&tree->leaf_list, tree->root_id);
 }
 /*
-* ´ÓB+Ê÷ÖĞ²éÕÒÖ¸¶¨key
+* ä»B+æ ‘ä¸­æŸ¥æ‰¾æŒ‡å®škey
 */
 bool BPlusTreeFind(BPlusTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key* key) {
     BPlusIterator iterator;
@@ -879,7 +879,7 @@ bool BPlusTreeFind(BPlusTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENC
     return status == kBPlusIteratorEq;
 }
 /*
-* ´ÓB+Ê÷ÖĞ²åÈëÖ¸¶¨key
+* ä»B+æ ‘ä¸­æ’å…¥æŒ‡å®škey
 */
 bool BPlusTreeInsert(BPlusTree* tree, BPlusLeafElement* element) {
     BPlusIterator iterator;
@@ -892,7 +892,7 @@ bool BPlusTreeInsert(BPlusTree* tree, BPlusLeafElement* element) {
     return success;
 }
 /*
-* ´ÓB+Ê÷ÖĞÉ¾³ıÖ¸¶¨key
+* ä»B+æ ‘ä¸­åˆ é™¤æŒ‡å®škey
 */
 bool BPlusTreeDelete(BPlusTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key* key) {
     BPlusIterator iterator;

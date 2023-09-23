@@ -43,6 +43,12 @@ typedef struct _BTreeIteratorElement {
 #define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount sizeof(entry_id_type) * 8
 #include <libyuc/container/vector.h>
 
+#define LIBYUC_CONTAINER_VECTOR_CLASS_NAME BTreeIteratorStack
+#define LIBYUC_CONTAINER_VECTOR_MODE_STATIC
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element BTreeIteratorPos
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount sizeof(entry_id_type) * 8
+#include <libyuc/container/vector.c>
+
 
 #define LIBYUC_ALGORITHM_ARRAY_CLASS BTreeElement
 #define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element element_type
