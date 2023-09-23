@@ -22,7 +22,7 @@ int randInt() {
 
 
 #include <libyuc/container/experimental/ar_tree.h>
-#include <libyuc/container/experimental/btree.h>
+//#include <libyuc/container/experimental/btree.h>
 
 #define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
 //#include <libyuc/container/experimental/hash_table_list.h>
@@ -649,52 +649,52 @@ void TestArt() {
 }
 
 void TestBPlusTree() {
-	printf("\nB树：\n");
-	BTree btree;
-	BTreeInit(&btree);
+	//printf("\nB树：\n");
+	//BTree btree;
+	//BTreeInit(&btree);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		BTreePut(&btree, &arr2[i]->key);
-		if (count < 31) {
-			//PrintBTree(&btree, btree.root, 0, 0);
-			printf("\n\n\n\n");
-		}
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	BTreePut(&btree, &arr2[i]->key);
+	//	if (count < 31) {
+	//		//PrintBTree(&btree, btree.root, 0, 0);
+	//		printf("\n\n\n\n");
+	//	}
+	//}
+	//printf("插入耗时：%dms\n", GetTickCount() - l);
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		// int* qvq = CreateObject(int);
-		if (!BTreeFind(&btree, &arr2[i]->key)) {
-			printf("找不到, %d", arr2[i]->key);
-		}
-	}
-	printf("查找耗时：%dms\n", GetTickCount() - l);
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	if (!BTreeFind(&btree, &arr2[i]->key)) {
+	//		printf("找不到, %d", arr2[i]->key);
+	//	}
+	//}
+	//printf("查找耗时：%dms\n", GetTickCount() - l);
 
 
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		// int* qvq = CreateObject(int);
-		// printf("%d", i);
-		if (!BTreeDelete(&btree, &arr2[i]->key)) {
-			printf("找不到, %d", &arr2[i]->key);
-		}
-		if (count <= 30) {
-			printf("删除%d\n", arr2[i]->key);
-			//PrintBTree(&btree, btree.root, 0, 0);
-			printf("\n\n\n\n");
-		}
+	//l = GetTickCount();
+	//for (int i = 0; i < count; i++) {
+	//	// int* qvq = CreateObject(int);
+	//	// printf("%d", i);
+	//	if (!BTreeDelete(&btree, &arr2[i]->key)) {
+	//		printf("找不到, %d", &arr2[i]->key);
+	//	}
+	//	if (count <= 30) {
+	//		printf("删除%d\n", arr2[i]->key);
+	//		//PrintBTree(&btree, btree.root, 0, 0);
+	//		printf("\n\n\n\n");
+	//	}
 
-	}
-	printf("删除耗时：%dms\n", GetTickCount() - l);
+	//}
+	//printf("删除耗时：%dms\n", GetTickCount() - l);
 
-	BTreeIterator iter;
-	element_type* ele = BTreeIteratorFirst(&btree, &iter);
-	while (ele) {
-		printf("%d  ", *ele);
-		ele = BTreeIteratorNext(&btree, &iter);
-	}
+	//BTreeIterator iter;
+	//element_type* ele = BTreeIteratorFirst(&btree, &iter);
+	//while (ele) {
+	//	printf("%d  ", *ele);
+	//	ele = BTreeIteratorNext(&btree, &iter);
+	//}
 
 	printf("\nB+树：\n");
 	IntBPlusTree bpTree;
@@ -856,10 +856,10 @@ int main() {
 	//
 	//TestSkipList();
 	//TestBPlusTree();
-	//TestArt();
-	//TestAvl();
+	TestArt();
+	TestAvl();
 	//
-	//TestRb();
+	TestRb();
 	TestHashTable();
 
 	

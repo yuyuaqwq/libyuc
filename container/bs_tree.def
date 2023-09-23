@@ -46,13 +46,6 @@
 #define LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(main_obj, reference)
 #endif
 
-#ifndef LIBYUC_CONTAINER_BS_TREE_COMPARER_Less
-#define LIBYUC_CONTAINER_BS_TREE_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
-#endif
-
-#ifndef LIBYUC_CONTAINER_BS_TREE_COMPARER_Greater
-#define LIBYUC_CONTAINER_BS_TREE_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
-#endif
 
 #define BsEntry MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsEntry)
 #define BsTree MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTree)

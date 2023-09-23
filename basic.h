@@ -145,10 +145,7 @@ forceinline static void MemoryFree(void* ptr) {
 * 默认比较器
 * 负责对象与对象的大小比较，相当于重载 < > ==
 */
-#define LIBYUC_BASIC_COMPARER_DEFALUT_Equal(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) == *(OBJ2))
-#define LIBYUC_BASIC_COMPARER_DEFALUT_Greater(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) > *(OBJ2))
-#define LIBYUC_BASIC_COMPARER_DEFALUT_Less(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) < *(OBJ2))
-#define LIBYUC_BASIC_COMPARER_DEFALUT_Subrrac(MAIN_OBJ, OBJ1, OBJ2) (*(OBJ1) - *(OBJ2))
+#define LIBYUC_BASIC_COMPARER_DEFALUT_Cmp(MAIN_OBJ, OBJ1, OBJ2) (int)((*(OBJ1) - *(OBJ2)))
 #define LIBYUC_BASIC_COMPARER_DEFALUT LIBYUC_BASIC_COMPARER_DEFALUT
 
 /*

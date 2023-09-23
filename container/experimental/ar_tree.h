@@ -168,7 +168,7 @@ uint8_t* ArKeyGetByteBuf(art_key_type_t** key, uint32_t offset) {
     return &(*key)->buf[offset];
 }
 
-size_t ArKeyCmp(const art_key_type_t* key1, const art_key_type_t* key2, uint32_t offset) {
+int ArKeyCmp(const art_key_type_t* key1, const art_key_type_t* key2, uint32_t offset) {
     if (key1->size != key2->size) {
         return key1->size - key2->size;
     }
@@ -184,7 +184,7 @@ uint8_t* ArKeyGetByteBuf(art_key_type_t** key, uint32_t offset) {
     // return ((uint8_t*)key) + offset;
 }
 
-size_t ArKeyCmp(const art_key_type_t* key1, const art_key_type_t* key2, uint32_t offset) {
+int ArKeyCmp(const art_key_type_t* key1, const art_key_type_t* key2, uint32_t offset) {
     // return !memcmp(ArGetKeyByte(key1, offset), ArGetKeyByte(key2, offset), ArGetKeyLen(key1) - offset);
     // 完整key比较时才会调用，整数就直接比较
     return *key1 - *key2;

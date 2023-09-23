@@ -35,16 +35,9 @@ extern "C" {
 #define LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id
 #endif
 
-#ifndef LIBYUC_ALGORITHM_ARRAY_COMPARER_Less
-#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
-#endif
 
-#ifndef LIBYUC_ALGORITHM_ARRAY_COMPARER_Greater
-#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
-#endif
-
-#ifndef LIBYUC_ALGORITHM_ARRAY_COMPARER_Equal
-#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Equal(main_obj, obj1, obj2) (*(obj1) == *(obj2))
+#ifndef LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp
+#define LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(main_obj, obj1, obj2) ((int)(*(obj1) - *(obj2)))
 #endif
 
 #define ArrayFind MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayFind)
@@ -68,7 +61,7 @@ bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC
 
 LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     for (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id i = 0; i < count; i++) {
-        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Equal(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[i]), key))
+        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[i]), key) == 0)
             return (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id)i;
     }
     return LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidId;
@@ -76,7 +69,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_
 
 LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     for (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id i = 0; i < count; i++) {
-        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Equal(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[i]), key))
+        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[i]), key) == 0)
             return (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id)i;
     }
     return LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidId;
@@ -102,9 +95,10 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_IND
     LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id mid;
     while (first <= last) {
         mid = first + ((last - first) >> 1);
-        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Greater(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) {
+        int cmp = LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key);
+        if (cmp < 0) {
             last = mid - 1;
-        } else if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Less(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) {
+        } else if (cmp > 0) {
             first = mid + 1;
         } else {
             return mid;
@@ -120,7 +114,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind_Range(LIBYUC_ALGORITHM_ARR
     LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id mid = 0;
     while (first < last) {
         mid = first + ((last - first) >> 1);
-        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Less(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key)) first = mid + 1;
+        if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[mid]), key) < 0) first = mid + 1;
         else last = mid;
     }
     return first;
@@ -152,9 +146,7 @@ bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidDynamicArray
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset
-#undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Less
-#undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Greater
-#undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Equal
+#undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp
 
 #ifdef __cplusplus
 }

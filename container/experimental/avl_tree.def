@@ -55,12 +55,9 @@
 #define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(main_obj, reference)
 #endif
 
-#ifndef LIBYUC_CONTAINER_AVL_TREE_COMPARER_Less
-#define LIBYUC_CONTAINER_AVL_TREE_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
-#endif
 
-#ifndef LIBYUC_CONTAINER_AVL_TREE_COMPARER_Greater
-#define LIBYUC_CONTAINER_AVL_TREE_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
+#ifndef LIBYUC_CONTAINER_AVL_TREE_COMPARER_Cmp
+#define LIBYUC_CONTAINER_AVL_TREE_COMPARER_Cmp(main_obj, obj1, obj2) (int)((*(obj1) - *(obj2)))
 #endif
 
 

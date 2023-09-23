@@ -31,7 +31,7 @@
 #endif
 
 #ifndef LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp
-#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(main_obj, obj1, obj2) (int)((*(obj1) - *(obj2)))
+#define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(main_obj, obj1, obj2) ((int)(*(obj1) - *(obj2)))
 #endif
 
 

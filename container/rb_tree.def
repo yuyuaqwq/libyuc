@@ -30,13 +30,10 @@
 #define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetRight(main_obj, obj, new_right) ((obj)->right = new_right)
 #endif
 
-#ifndef LIBYUC_CONTAINER_RB_TREE_COMPARER_Less
-#define LIBYUC_CONTAINER_RB_TREE_COMPARER_Less(main_obj, obj1, obj2) (*(obj1) < *(obj2))
+#ifndef LIBYUC_CONTAINER_RB_TREE_COMPARER_Cmp
+#define LIBYUC_CONTAINER_RB_TREE_COMPARER_Cmp(main_obj, obj1, obj2) (int)((*(obj1) - *(obj2)))
 #endif
 
-#ifndef LIBYUC_CONTAINER_RB_TREE_COMPARER_Greater
-#define LIBYUC_CONTAINER_RB_TREE_COMPARER_Greater(main_obj, obj1, obj2) (*(obj1) > *(obj2))
-#endif
 
 #ifndef LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key
 #define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key int
