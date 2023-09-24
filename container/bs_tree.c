@@ -222,7 +222,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreePut(BsTree* tree, BsTreeStackV
 * 返回被删除的节点(或被替换到当前位置的右子树最小节点)，构造所有回溯条件
 */
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeDelete(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id entry_id, bool* is_parent_left) {
-        assert(entry_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId);
+      assert(entry_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId);
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id backtrack_id;
     BsEntry* entry = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, entry_id);
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = BsTreeStackVectorGetTail(stack);

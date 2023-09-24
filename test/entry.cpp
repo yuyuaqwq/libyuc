@@ -20,7 +20,6 @@ int randInt() {
 	return (rand() << 16) | rand();
 }
 
-
 #include <libyuc/container/experimental/ar_tree.h>
 //#include <libyuc/container/experimental/btree.h>
 
@@ -31,8 +30,8 @@ int randInt() {
 DWORD l;
 int count = 10000000;
 std::vector<QVQ*> arr2;
-//int seed = GetTickCount() + rand();
-int seed = 377884212;
+int seed = GetTickCount() + rand();
+//int seed = 377884212;
 
 // std::vector<TsSkipListEntry*> ptr_arr;
 
@@ -351,7 +350,7 @@ void TestAvl() {
 
 		for (int i = 0; i < count / section; i++) {
 			IntAvlEntry* entry = IntAvlTreeFind(&tree, &stack, &arr2[i]->key);
-			if (!IntAvlTreeDelete(&tree, &stack, entry)) {
+			if (entry && !IntAvlTreeDelete(&tree, &stack, entry)) {
 				printf("无法删除");
 			}
 
@@ -366,7 +365,119 @@ void TestAvl() {
 
 }
 
+void PrintArt(ArTree* tree, ArNode* node, int Level) {
+	if (!node)return;
+	char* empty = (char*)malloc(Level * 8 + 1);
+	memset(empty, ' ', Level * 8);
+	empty[Level * 8] = 0;
+	if (ArNodeIsLeaf(node)) {
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+		printf("%sleaf:%s\n", empty, ArLeafGetElement(ArNodeGetLeaf(node))->buf);
+#else
+		printf("%sleaf:%llx\n", empty, *ArLeafGetElement(ArNodeGetLeaf(node)));
+#endif
+	}
+	else {
+		if (node->head.node_type == kArNode4) {
+			const char* abc = "";
+			char prefix[prefix_max_len + 1];
+			prefix[0] = 0;
+			if (node->head.prefix_len > prefix_max_len) {
+				abc = "...";
+			}
+			else {
+				memcpy(prefix, node->head.prefix, node->head.prefix_len);
+				prefix[node->head.prefix_len] = 0;
+			}
+			printf("%snode4:\n%s        prefix:%d[%d] \"%s%s\"\n", empty, empty, node->head.prefix_len, node->head.prefix_len, prefix, abc);
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			if (node->head.eof) {
+				printf("%s        eof:\n", empty);
 
+				PrintArt(tree, (ArNode*)ArNodeGetEofChild(node), Level + 1);
+			}
+#endif
+			for (int i = 0; i < node->head.child_count; i++) {
+				printf("%s        [%x]:\n", empty, node->node4.keys[i]);
+				PrintArt(tree, node->node4.child_arr[i], Level + 1);
+			}
+		}
+		else if (node->head.node_type == kArNode16) {
+			const char* abc = "";
+			char prefix[prefix_max_len + 1];
+			prefix[0] = 0;
+			if (node->head.prefix_len > prefix_max_len) {
+				abc = "...";
+			}
+			else {
+				memcpy(prefix, node->head.prefix, node->head.prefix_len);
+				prefix[node->head.prefix_len] = 0;
+			}
+			printf("%snode16:\n%s        prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			if (node->head.eof) {
+				printf("%s        eof:\n", empty);
+				PrintArt(tree, (ArNode*)ArNodeGetEofChild(node), Level + 1);
+			}
+#endif
+			for (int i = 0; i < node->head.child_count; i++) {
+				printf("%s        [%x]:\n", empty, node->node16.keys[i]);
+				PrintArt(tree, node->node16.child_arr[i], Level + 1);
+			}
+		}
+		else if (node->head.node_type == kArNode48) {
+			const char* abc = "";
+			char prefix[prefix_max_len + 1];
+			prefix[0] = 0;
+			if (node->head.prefix_len > prefix_max_len) {
+				abc = "...";
+			}
+			else {
+				memcpy(prefix, node->head.prefix, node->head.prefix_len);
+				prefix[node->head.prefix_len] = 0;
+			}
+			printf("%snode48:\n%s        prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			if (node->head.eof) {
+				printf("%s        eof:\n", empty);
+				PrintArt(tree, (ArNode*)ArNodeGetEofChild(node), Level + 1);
+			}
+#endif
+			for (int i = 0; i < 255; i++) {
+				if (node->node48.keys[i] != 0xff) {
+					printf("%s        [%x]:\n", empty, i);
+					PrintArt(tree, node->node48.child_arr.obj_arr[node->node48.keys[i]].child, Level + 1);
+				}
+			}
+		}
+		else {
+			const char* abc = "";
+			char prefix[prefix_max_len + 1];
+			prefix[0] = 0;
+			if (node->head.prefix_len > prefix_max_len) {
+				abc = "...";
+			}
+			else {
+				memcpy(prefix, node->head.prefix, node->head.prefix_len);
+				prefix[node->head.prefix_len] = 0;
+			}
+			printf("%snode256:\n%s        prefix:%d \"%s%s\"\n", empty, empty, node->head.prefix_len, prefix, abc);
+#ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+			if (node->head.eof) {
+				printf("%s        eof:\n", empty);
+				PrintArt(tree, (ArNode*)ArNodeGetEofChild(node), Level + 1);
+			}
+#endif
+			for (int i = 0; i < 255; i++) {
+				if (node->node256.child_arr[i] != NULL) {
+					printf("%s        [%x]:\n", empty, i);
+					PrintArt(tree, node->node256.child_arr[i], Level + 1);
+				}
+			}
+		}
+	}
+	free(empty);
+}
 void TestArt() {
 	printf("\n自适应基数树：\n");
 	ArTree artree;
@@ -476,7 +587,7 @@ void TestArt() {
 		ArTreePut(&artree, ele);
 #else
 
-		ArTreePut(&artree, (art_element_type*)&it->key);
+		ArTreePut(&artree, &it->key);
 		//ArTreePut(&artree, (art_element_type*)it->key << 1);
 #endif
 		//if (ii == 27) {
@@ -503,7 +614,23 @@ void TestArt() {
 
 	l = GetTickCount() - l;
 	printf("插入耗时：%dms\n", l);
+
+
 	//PrintArt(&artree, artree.root, 0);
+
+	ArTreeIterator iter;
+	art_element_type* ele_ptr;
+
+	l = GetTickCount();
+	ele_ptr = ArTreeIteratorFirst(&artree, &iter);
+	while (ele_ptr) {
+		//printf("%llx ", *ele_ptr);
+		ele_ptr = ArTreeIteratorNext(&iter);
+	}
+	l = GetTickCount() - l;
+	printf("迭代耗时：%dms\n", l);
+
+
 	l = GetTickCount();
 	ii = 0;
 	for (auto& it : arr2) {
@@ -516,8 +643,7 @@ void TestArt() {
 			printf("找不到");
 		}
 #else
-		ele = it->key;
-		if (!ArTreeFind(&artree, &ele)) {
+		if (!ArTreeFind(&artree, &it->key)) {
 			printf("找不到");
 		}
 		/*if (!ArTreeFind(&artree, (key_type*)(it->key << 1))) {
@@ -542,8 +668,7 @@ void TestArt() {
 			//PrintArt(&artree, artree.root, 0);
 		}
 #else
-		ele = it->key;
-		if (!ArTreeDelete(&artree, &ele)) {
+		if (!ArTreeDelete(&artree, &it->key)) {
 			printf("找不到");
 			//PrintArt(&artree, artree.root, 0);
 		}
@@ -834,7 +959,7 @@ int main() {
 		//}
 		 qvq->key = i ;// i;
 		//ReverseOrder(&qvq->key, 8);
-		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
