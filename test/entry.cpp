@@ -83,6 +83,19 @@ void TestHashTable() {
 	printf("查找耗时：%dms\n", l);
 
 	l = GetTickCount();
+	IntHashTableIterator iter;
+	int64_t* ele_ptr = IntHashTableIteratorFirst(&table, &iter);
+	int i = 0;
+	while (ele_ptr) {
+		//printf("%llx ", *ele_ptr);
+		i++;
+		ele_ptr = IntHashTableIteratorNext(&table, &iter);
+	}
+	l = GetTickCount() - l;
+	printf("迭代耗时：%dms, %d\n", l, i);
+
+
+	l = GetTickCount();
 	for (int i = 0; i < count; i++) {
 		if (!IntHashTableDelete(&table, &arr2[i]->key)) {
 			printf("删除找不到");
@@ -622,13 +635,15 @@ void TestArt() {
 	art_element_type* ele_ptr;
 
 	l = GetTickCount();
+	int i = 0;
 	ele_ptr = ArTreeIteratorFirst(&artree, &iter);
 	while (ele_ptr) {
+		i++;
 		//printf("%llx ", *ele_ptr);
 		ele_ptr = ArTreeIteratorNext(&iter);
 	}
 	l = GetTickCount() - l;
-	printf("迭代耗时：%dms\n", l);
+	printf("迭代耗时：%dms, %d\n", l, i);
 
 
 	l = GetTickCount();
@@ -959,7 +974,7 @@ int main() {
 		//}
 		 qvq->key = i ;// i;
 		//ReverseOrder(&qvq->key, 8);
-		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
@@ -982,9 +997,9 @@ int main() {
 	//TestSkipList();
 	//TestBPlusTree();
 	TestArt();
-	TestAvl();
+	//TestAvl();
 	//
-	TestRb();
+	//TestRb();
 	TestHashTable();
 
 	
