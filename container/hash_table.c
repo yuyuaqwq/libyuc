@@ -89,7 +89,6 @@ void HashTableRelease(HashTable* table) {
 forceinline LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorLocate(HashTable* table, HashTableIterator* iter, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key) {
     iter->cur_index = HashGetIndex(table, key);
     iter->dist = LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID;
-
     do {
         HashTableEntry* entry = HashBucketVectorIndex(&table->bucket, iter->cur_index);
         LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* entry_key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj);
