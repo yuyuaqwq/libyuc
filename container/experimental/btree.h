@@ -126,7 +126,8 @@ BTreeIteratorStatus BTreeIteratorDown(BTree* tree, BTreeIterator* iter, const ke
         }
     }
     else {
-        iter_pos.cur_element_pos = BTreeElementArrayOrderFind_Range(iter_pos.entry->element, 0, iter_pos.entry->count - 1, key);
+        ptrdiff_t cmp_diff;
+        iter_pos.cur_element_pos = BTreeElementArrayOrderFind_Range(iter_pos.entry->element, 0, iter_pos.entry->count - 1, key, &cmp_diff);
     }
     if (iter_pos.entry->element[iter_pos.cur_element_pos] == *key) {
         BTreeIteratorStackVectorPushTail(&iter->stack, &iter_pos);

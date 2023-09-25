@@ -11,7 +11,7 @@
 #include <thread>
 
 
-#include "C:\Users\yuyu\Desktop\unordered_dense.h"
+#include "C:\Users\gt1\Desktop\unordered_dense.h"
 
 
 #include <regex>
@@ -594,7 +594,7 @@ void TestArt() {
 		}*/
 
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-		element_type* ele = ObjectCreate(element_type);
+		art_element_type* ele = ObjectCreate(art_element_type);
 		ele->buf = (uint8_t*)&it->key;
 		ele->size = sizeof(it->key);
 		ArTreePut(&artree, ele);
@@ -974,7 +974,7 @@ int main() {
 		//}
 		 qvq->key = i ;// i;
 		//ReverseOrder(&qvq->key, 8);
-		//qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
 		arr2.push_back(qvq);
 	}
 
