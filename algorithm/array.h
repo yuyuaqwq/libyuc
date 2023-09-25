@@ -88,7 +88,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind_Range(LIBYUC_ALGORITHM_ARRAY_IN
             return i;
         }
     }
-    return count - 1;
+    return end;
 }
 
 void ArrayInsert(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id index, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element) {

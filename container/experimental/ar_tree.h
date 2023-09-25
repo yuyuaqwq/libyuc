@@ -549,7 +549,7 @@ static ArNode** ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_by
     if (node->head.child_count > 0) {
         ptrdiff_t cmp_diff;
         //i = ArNodeKeyArrayOrderFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
-        i = ArNodeKeyArrayFind_Range(node->keys, 0, node->head.child_count, &key_byte, &cmp_diff);
+        i = ArNodeKeyArrayFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
         if (cmp_diff == 0) {
             node->keys[i] = key_byte;
             node->child_arr[i] = child;
