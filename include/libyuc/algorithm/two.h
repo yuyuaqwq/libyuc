@@ -17,7 +17,7 @@ extern "C" {
 #define LIBYUC_ALGORITHM_TWO_TO_POWER_OF_2(exponent) (1 << (exponent))
 
 /* 根据2的幂求指数 */
-static forceinline int32_t LIBYUC_ALGORITHM_TWO_TO_EXPONENT_OF_2(uint32_t power) {
+static forceinline size_t LIBYUC_ALGORITHM_TWO_TO_EXPONENT_OF_2(size_t power) {
     int32_t exponent = 0;
     while (power != 0) {
         exponent++;
@@ -29,7 +29,7 @@ static forceinline int32_t LIBYUC_ALGORITHM_TWO_TO_EXPONENT_OF_2(uint32_t power)
 /*
 * 对齐到2的幂
 */
-static forceinline int32_t LIBYUC_ALGORITHM_TWO_ALIGN_TO_POWER_OF_2(uint32_t num) {
+static forceinline size_t LIBYUC_ALGORITHM_TWO_ALIGN_TO_POWER_OF_2(size_t num) {
     for (int i = 1; i < sizeof(num) * 8 / 2 + 1; i *= 2) {
         num |= num >> i;
     }

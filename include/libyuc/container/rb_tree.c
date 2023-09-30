@@ -21,8 +21,8 @@
 #define RbBsTreeIteratorLast MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeIteratorLast)
 #define RbBsTreeIteratorNext MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeIteratorNext)
 #define RbBsTreeIteratorPrev MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsTreeIteratorPrev)
-#define RbRotateLeft MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbRotateLeft)
-#define RbRotateRight MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbRotateRight)
+#define RbBsRotateLeft MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsRotateLeft)
+#define RbBsRotateRight MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbBsRotateRight)
 
 #define GetSiblingEntry MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, GetSiblingEntry)
 #define RbTreeInsertFixup MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeInsertFixup)
@@ -30,6 +30,19 @@
 #define RbTreeFindInternal MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeFindInternal)
 #define RbTreeDeleteInternal MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeDeleteInternal)
 #define RbTreeCheckPath MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbTreeCheckPath)
+#define RbRotateLeft MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbRotateLeft)
+#define RbRotateRight MAKE_NAME(LIBYUC_CONTAINER_RB_TREE_CLASS_NAME, RbRotateRight)
+
+
+static LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbRotateRight(RbTree* tree, RbEntry* sub_root_parent, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id sub_root_id, RbEntry* sub_root) {
+    return (LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id)RbBsRotateRight(&tree->bs_tree, (RbBsEntry*)sub_root_parent, sub_root_id, (RbBsEntry*)sub_root);
+}
+
+static LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbRotateLeft(RbTree* tree, RbEntry* sub_root_parent, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id sub_root_id, RbEntry* sub_root) {
+    return (LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id)RbBsRotateLeft(&tree->bs_tree, (RbBsEntry*)sub_root_parent, sub_root_id, (RbBsEntry*)sub_root);
+}
+
+
 /*
 * 取兄弟节点
 */
@@ -192,8 +205,8 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, old_sub_root);
             /* grandpa变为新根节点 */
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, grandpa);
-            grandpa_id = new_sub_root_id;
-            grandpa = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, grandpa_id);
+            grandpa_id = &new_sub_root_id;
+            grandpa = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *grandpa_id);
         }
            
         /* 至此兄弟节点一定为黑 */
@@ -289,7 +302,7 @@ static LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeFindInternal(RbTree* tr
 LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeFind(RbTree* tree, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key* key) {
     RbBsTreeStackVector stack;
     RbBsTreeStackVectorInit(&stack); 
-    return RbTreeFindInternal(&tree->bs_tree, &stack, key);
+    return RbTreeFindInternal(tree, &stack, key);
 }
 /*
 * 向树中插入节点
@@ -339,7 +352,7 @@ static bool RbTreeDeleteInternal(RbTree* tree, RbBsTreeStackVector* stack, LIBYU
 bool RbTreeDelete(RbTree* tree, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key* key) {
     RbBsTreeStackVector stack;
     RbBsTreeStackVectorInit(&stack);
-    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id del_entry_id = RbTreeFindInternal(&tree->bs_tree, &stack, key);
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id del_entry_id = RbTreeFindInternal(tree, &stack, key);
     if (del_entry_id == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId) return false;
     return RbTreeDeleteInternal(tree, &stack, del_entry_id);
 }
@@ -390,16 +403,18 @@ LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorPrev(RbTree* tree, RbT
 }
 void RbTreeIteratorCopy(RbTreeIterator* dst_iterator, const RbTreeIterator* src_iterator) {
     dst_iterator->cur_id = src_iterator->cur_id;
-    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset count = RbBsTreeStackVectorGetCount(&src_iterator->stack);
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset count = RbBsTreeStackVectorGetCount((RbBsTreeStackVector*)&src_iterator->stack);
     RbBsTreeStackVectorSetCount(&dst_iterator->stack, count);
     for (LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset i = 0; i < count; i++) {
-        *RbBsTreeStackVectorIndex(&dst_iterator->stack, i) = *RbBsTreeStackVectorIndex(&src_iterator->stack, i);
+        *RbBsTreeStackVectorIndex(&dst_iterator->stack, i) = *RbBsTreeStackVectorIndex((RbBsTreeStackVector*)&src_iterator->stack, i);
     }
 }
 /*
 * 验证红黑树性质
 */
-static bool RbTreeCheckPath(RbTree* tree, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id parent_id, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id entry_id, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset cur_high, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset max_high) {
+static bool RbTreeCheckPath(RbTree* tree, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id parent_id, 
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id entry_id, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset cur_high, 
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Offset max_high) {
     if (entry_id == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId) {
         return cur_high == max_high;
     }
@@ -470,5 +485,8 @@ bool RbTreeVerify(RbTree* tree) {
 #undef RbTreeFindInternal
 #undef RbTreeDeleteInternal
 #undef RbTreeCheckPath
+#undef RbRotateLefta
+#undef RbRotateRight
+
 
 #include <libyuc/container/rb_tree.undef>

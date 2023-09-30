@@ -11,16 +11,14 @@
 #include <thread>
 
 
-#include "C:\Users\gt1\Desktop\unordered_dense.h"
+#include "C:\Users\yuyu\Desktop\unordered_dense.h"
 
 
 #include <regex>
 #include "test.h"
-int randInt() {
-	return (rand() << 16) | rand();
-}
 
-#include <libyuc/container/experimental/ar_tree.h>
+
+#include <libyuc/container/experimental/ar_tree.h>\
 //#include <libyuc/container/experimental/btree.h>
 
 #define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
@@ -40,24 +38,7 @@ int section = 1;
 int thread_count = 10;
 
 void TestHashTable() {
-	printf("\n哈希表：\n");
-
-	IntHashTable table;
-	IntHashTableInit(&table, 8, 0);
-	l = GetTickCount();
-	for (int i = 0; i < count; i++) {
-		IntHashTablePut(&table, &arr2[i]->key);
-		//printf("666");
-
-		//HashTableIterator iter;
-		//int* obj = (int*)HashTableFirst(&table, &iter);
-		//while (obj) {
-		//	printf("%d\n", *obj);
-		//	obj = (int*)HashTableNext(&iter);
-		//}
-		//printf("\n\n\n");
-	}
-	printf("插入耗时：%dms\n", GetTickCount() - l);
+	
 
 	//HashTableIterator iter;
 	//int* obj = (int*)HashTableFirst(&table, &iter);
@@ -931,19 +912,10 @@ struct bplus_tree_config {
 };
 
 
-void ReverseOrder(void* buf, size_t size) {
-	uint8_t* buf_ = (uint8_t*)buf;
-	for (size_t i = 0; i < size / 2; i++) {
-		uint8_t temp = buf_[i];
-		buf_[i] = buf_[size - 1 - i];
-		buf_[size - 1 - i] = temp;
-	}
-}
+
 
 
 int main() {
-
-
 	printf("seed：%d\n", seed);
 	srand(seed);
 
@@ -963,26 +935,6 @@ int main() {
 	//	}
 	//	arrarr.insert(qqqq);
 	//}
-
-	arr2.reserve(count);
-	for (int64_t i = 0; i < count; i++) {
-		QVQ* qvq = ObjectCreate(QVQ);
-		//
-		//for (uint32_t i = 0; i < sizeof(qvq->key); i++) {
-		//	((uint8_t*)&qvq->key)[i] = rand() % 26 + 'a';
-		//	if(i == sizeof(qvq->key) - 1)((uint8_t*)&qvq->key)[i] = '\0';
-		//}
-		 qvq->key = i ;// i;
-		//ReverseOrder(&qvq->key, 8);
-		qvq->key = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
-		arr2.push_back(qvq);
-	}
-
-	for (int64_t i = 0; i < count; i++) {
-		std::swap(arr2[i]->key, arr2[randInt() % count]->key);
-	}
-
-
 
 
 

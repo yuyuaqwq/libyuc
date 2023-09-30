@@ -82,9 +82,11 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPushTail(Vector* vector, con
     if (VectorGetCapacity(vector) <= VectorGetCount(vector)) {
 #ifdef LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
         VectorExpand(vector, 1);
+#else
+        release_assert(false);
 #endif
     }
-    MemoryCopy(VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector)), obj, sizeof(LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element));
+    MemoryCopy(VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector)), (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element*)obj, sizeof(LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element));
     VectorSetCount(vector, VectorGetCount(vector) + 1);
     return VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector) - 1);
 }
@@ -92,6 +94,8 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPushMultipleTail(Vector* vec
     if (VectorGetCapacity(vector) <= (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector) + (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)count) {
 #ifdef LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
         VectorExpand(vector, count);
+#else
+        release_assert(false);
 #endif
     }
     MemoryCopy(VectorIndex(vector, VectorGetCount(vector)), obj, sizeof(LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element) * count);

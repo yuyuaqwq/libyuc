@@ -1,10 +1,7 @@
 #include "test.h"
 
-#include "C:\Users\gt1\Desktop\wyhash.h"
-#define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
-#define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element int64_t
-#define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
-#include <libyuc/container/hash_table.c>
+#include "C:\Users\yuyu\Desktop\wyhash.h"
+
 
 
 #define LIBYUC_CONTAINER_RB_TREE_CLASS_NAME Int
@@ -211,39 +208,7 @@ IntBPlusElement* TEST_BPLUS_ELEMENT_REFERENCER_Reference(IntBPlusEntry* ENTRY, i
 //#define LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(TREE, ENTRY) (((BPlusRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->color == -1 ? 1 : 0)
 //#define LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetParent(TREE, ENTRY, NEW_PARENT_ID) (((BPlusRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->parent = NEW_PARENT_ID)
 //#define LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_SetColor(TREE, ENTRY, COLOR) (((BPlusRbParentColor*)&(((BPlusEntryRbEntry*)ENTRY)->parent_color))->color = COLOR)
-//void PrintRB(BPlusEntryRbTree* tree, int16_t entry_id, int Level, bool leaf) {
-//	if (entry_id == -1) return;
-//	BPlusEntryRbEntry* entry = LIBYUC_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(tree, entry_id);
-//	PrintRB(tree, entry->right, Level + 1, leaf);
-//
-//	//print
-//	const char* str = "Not";
-//	if (LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(tree, entry) != -1) {
-//		str = (LIBYUC_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(tree, LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(tree, entry))->right == entry_id ? "Right" : "Left");
-//	}
-//	int aaa = LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetColor(tree, entry);
-//	const char* color = aaa == 1 ? "Red" : "Black";
-//
-//	char* empty = (char*)malloc(Level * 8 + 1);
-//	memset(empty, ' ', Level * 8);
-//	empty[Level * 8] = 0;
-//
-//	int parentKey = 0;
-//	if (LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(tree, entry) != -1) {
-//		if (leaf) {
-//			parentKey = ((BPlusLeafElement*)LIBYUC_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(tree, LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(tree, entry)))->key.data;
-//		}
-//		else {
-//			parentKey = ((BPlusIndexElement*)LIBYUC_CONTAINER_BPLUS_RB_TREE_REFERENCER_Reference(tree, LIBYUC_CONTAINER_BPLUS_RB_TREE_ACCESSOR_GetParent(tree, entry)))->key.data;
-//		}
-//	}
-//
-//	printf("%skey:%d\n%sLevel:%d\n%sParent.%s:%x\n%scolor:%s\n\n", empty, leaf ? ((BPlusLeafElement*)entry)->key.data : ((BPlusIndexElement*)entry)->key.data, empty, Level, empty, str, parentKey, empty, color);
-//
-//	free(empty);
-//
-//	PrintRB(tree, entry->left, Level + 1, leaf);
-//}
+
 //
 //
 //
