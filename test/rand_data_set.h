@@ -1,4 +1,6 @@
 #include <vector>
+#include <string>
+#include <functional>
 
 static int RandInt() {
 	return (rand() << 16) | rand();
@@ -25,6 +27,22 @@ static std::vector<int64_t> GenerateI64Vector(size_t count) {
 
 	for (int64_t i = 0; i < count; i++) {
 		std::swap(res[i], res[RandInt() % count]);
+	}
+
+	return res;
+}
+
+static std::vector<std::string> GenerateStringVector(size_t count, size_t min_len, size_t max_len) {
+	std::vector<std::string> res;
+	res.reserve(count);
+	for (size_t i = 0; i < count; i++) {
+		size_t size = RandInt() % (max_len + 1) + min_len;
+		std::string data;
+		data.resize(size);
+		for (int j = 0; j < size; j++) {
+			data[j] = rand() % 255 + 1 /* + ('a' - 1)*/; // rand() % 26 + 'a';
+		}
+		res.push_back(data);
 	}
 
 	return res;

@@ -27,7 +27,7 @@ static IntRbTree test_rb_tree;
 static std::set<int64_t> test_set;
 static std::vector<int64_t> test_res_data_set;
 
-void PrintRb(IntRbTree* tree, IntRbEntry* parent, IntRbEntry* entry_id, int Level) {
+static void PrintRb(IntRbTree* tree, IntRbEntry* parent, IntRbEntry* entry_id, int Level) {
 	if (entry_id == NULL) return;
 	IntRbEntry* entry = entry_id;
 	PrintRb(tree, entry, entry->right, Level + 1);
@@ -135,7 +135,6 @@ TEST(STL_set, Find) {
 
 TEST(STL_set, Iterator) {
 	size_t i = 0;
-	IntRbTreeIterator iter;
 	for (auto& key : test_set) {
 		++i;
 	}

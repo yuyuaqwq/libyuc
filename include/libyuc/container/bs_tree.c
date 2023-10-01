@@ -19,7 +19,7 @@ static void BsTreeSetNewChild(BsTree* tree, BsEntry* entry_parent, LIBYUC_CONTAI
         LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetLeft(tree, entry_parent, new_entry_id);
     }
     else {
-          assert(LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, entry_parent) == entry_id);
+          assert(LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, entry_parent) == entry_id); 
         LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetRight(tree, entry_parent, new_entry_id);
     }
 }

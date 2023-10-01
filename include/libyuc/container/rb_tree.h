@@ -56,7 +56,7 @@ LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorFirst(RbTree* tree, Rb
 LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorLast(RbTree* tree, RbTreeIterator* iterator);
 LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorNext(RbTree* tree, RbTreeIterator* iterator);
 LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id RbTreeIteratorPrev(RbTree* tree, RbTreeIterator* iterator);
-void RbTreeIteratorCopy(RbTreeIterator* dst_iterator, RbTreeIterator* src_iterator);
+void RbTreeIteratorCopy(RbTreeIterator* dst_iterator, const RbTreeIterator* src_iterator);
    
 bool RbTreeVerify(RbTree* tree);
 

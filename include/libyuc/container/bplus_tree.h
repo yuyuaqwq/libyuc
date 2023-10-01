@@ -31,12 +31,6 @@ typedef enum {
 /*
 * 页内红黑树
 */\
-//LIBYUC_CONTAINER_RB_TREE_DECLARATION(
-//    BPlusEntry,
-//    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id,
-//    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset,
-//    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key
-//    
 
 #include <libyuc/container/bplus_tree_BPlusEntryRbTree.cfg>
 #include <libyuc/container/rb_tree.h>

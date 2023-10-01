@@ -28,6 +28,9 @@ extern "C" {
 
 #define release_assert(expression, ...) { if(!(expression)){ Painc(__VA_ARGS__); } }
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 #ifdef _MSC_VER // for MSVC
 #define forceinline __forceinline
 #elif defined __GNUC__ // for gcc on Linux/Apple OS X

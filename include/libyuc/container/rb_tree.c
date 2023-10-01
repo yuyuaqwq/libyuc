@@ -476,8 +476,8 @@ bool RbTreeVerify(RbTree* tree) {
 #undef RbBsTreeIteratorLast
 #undef RbBsTreeIteratorNext
 #undef RbBsTreeIteratorPrev
-#undef RbRotateLeft
-#undef RbRotateRight
+#undef RbBsRotateLeft
+#undef RbBsRotateLeft
 
 #undef GetSiblingEntry
 #undef RbTreeInsertFixup

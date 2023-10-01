@@ -21,13 +21,27 @@
 #define AvlBsTreeIteratorLast MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeIteratorLast)
 #define AvlBsTreeIteratorNext MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeIteratorNext)
 #define AvlBsTreeIteratorPrev MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsTreeIteratorPrev)
-#define AvlRotateLeft MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlRotateLeft)
-#define AvlRotateRight MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlRotateRight)
+#define AvlBsRotateLeft MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsRotateLeft)
+#define AvlBsRotateRight MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlBsRotateRight)
 
 #define RotateByBalanceFactor MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, RotateByBalanceFactor)
 #define AvlTreeInsertFixup MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeInsertFixup)
 #define AvlTreeDeleteFixup MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeDeleteFixup)
 #define AvlTreeCheckPath MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlTreeCheckPath)
+
+#define AvlRotateLeft MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlRotateLeft)
+#define AvlRotateRight MAKE_NAME(LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME, AvlRotateRight)
+
+
+static LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlRotateRight(AvlTree* tree, AvlEntry* sub_root_parent, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id sub_root_id, AvlEntry* sub_root) {
+    return (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)AvlBsRotateRight(&tree->bs_tree, (AvlBsEntry*)sub_root_parent, sub_root_id, (AvlBsEntry*)sub_root);
+}
+
+static LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id AvlRotateLeft(AvlTree* tree, AvlEntry* sub_root_parent, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id sub_root_id, AvlEntry* sub_root) {
+    return (LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id)AvlBsRotateLeft(&tree->bs_tree, (AvlBsEntry*)sub_root_parent, sub_root_id, (AvlBsEntry*)sub_root);
+}
+
+
 
 /*
 * 旋转平衡因子调整(右旋为例)：
@@ -361,7 +375,7 @@ static bool AvlTreeCheckPath(AvlTree* tree, LIBYUC_CONTAINER_AVL_TREE_REFERENCER
         LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Offset left_height = *cur_height, right_height = *cur_height;
         correct = AvlTreeCheckPath(tree, LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft(tree, entry), &left_height) && AvlTreeCheckPath(tree, LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetRight(tree, entry), &right_height);
         correct = correct && (left_height - right_height == LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(tree, entry));
-        *cur_height = max(left_height, right_height);
+        *cur_height = MAX(left_height, right_height);
     } while (false);
     if (entry) LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(tree, entry);
     if (parent) LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(tree, parent);
@@ -395,12 +409,14 @@ bool AvlTreeVerify(AvlTree* tree) {
 #undef AvlBsTreeIteratorLast
 #undef AvlBsTreeIteratorNext
 #undef AvlBsTreeIteratorPrev
-#undef AvlRotateLeft
-#undef AvlRotateRight
+#undef AvlBsRotateLeft
+#undef AvlBsRotateLeft
 
 #undef RotateByBalanceFactor
 #undef AvlTreeInsertFixup
 #undef AvlTreeDeleteFixup
 #undef AvlTreeCheckPath
+#undef AvlRotateLeft
+#undef AvlRotateRight
 
 #include <libyuc/container/experimental/avl_tree.undef>

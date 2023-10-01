@@ -115,23 +115,17 @@ BTreeIteratorStatus BTreeIteratorDown(BTree* tree, BTreeIterator* iter, const ke
         return kBTreeIteratorEnd;
     }
     
-    if (iter_pos.entry->count <= LIBYUC_CONTAINER_B_TREE_SEQUENTIAL_SEARCH_ELEMENT_COUNT) {
+    //if (iter_pos.entry->count <= LIBYUC_CONTAINER_B_TREE_SEQUENTIAL_SEARCH_ELEMENT_COUNT) {
         // 若key的获取与比较成本较低(int型)，即便是较大的数据量(这里选用129阶进行测试有很好的效果)
         // 使用顺序搜索，相较于二分搜索也有碾压式的性能优势(2~3倍)
         // 猜测是二分搜索对缓存利用较差的缘故(一般cache line是64byte，而btree页面通常是k为单位)
-        //for (iter_pos.cur_element_pos = 0; iter_pos.cur_element_pos < iter_pos.entry->count - 1; iter_pos.cur_element_pos++) {
-        //    if (iter_pos.entry->element[iter_pos.cur_element_pos] >= *key) {
-        //        break;
-        //    }
-        //}
         ptrdiff_t cmp_diff;
         iter_pos.cur_element_pos = BTreeElementArrayFind_Range(iter_pos.entry->element, 0, iter_pos.entry->count - 1, key, &cmp_diff);
-
-    }
-    else {
-        ptrdiff_t cmp_diff;
-        iter_pos.cur_element_pos = BTreeElementArrayOrderFind_Range(iter_pos.entry->element, 0, iter_pos.entry->count - 1, key, &cmp_diff);
-    }
+    //}
+    //else {
+    //    ptrdiff_t cmp_diff;
+    //    iter_pos.cur_element_pos = BTreeElementArrayOrderFind_Range(iter_pos.entry->element, 0, iter_pos.entry->count - 1, key, &cmp_diff);
+    //}
     if (iter_pos.entry->element[iter_pos.cur_element_pos] == *key) {
         BTreeIteratorStackVectorPushTail(&iter->stack, &iter_pos);
         return kBTreeIteratorEq;
