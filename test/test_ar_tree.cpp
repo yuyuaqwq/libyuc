@@ -7,7 +7,7 @@
 
 #include <libyuc/test/rand_data_set.h>
 
-#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+//#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 #include <libyuc/container/experimental/ar_tree.h>
 
 
