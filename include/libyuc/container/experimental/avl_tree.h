@@ -4,10 +4,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libyuc/container/experimental/avl_tree.def>
 
 /*
@@ -46,7 +42,3 @@ bool AvlTreeVerify(AvlTree* tree);
 
 
 #include <libyuc/container/experimental/avl_tree.undef>
-
-#ifdef __cplusplus
-}
-#endif

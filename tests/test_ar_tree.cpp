@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/test/rand_data_set.h>
+#include <libyuc/tests/rand_data_set.h>
 
 //#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 #include <libyuc/container/experimental/ar_tree.h>
@@ -188,7 +188,7 @@ TEST(ArTreeTest, Iterator) {
 		++i;
 		data = ArTreeIteratorNext(&iter);
 	}
-	ASSERT_EQ(i, test_count);
+	ASSERT_EQ(i, test_res_data_set.size());
 }
 
 TEST(ArTreeTest, Delete) {

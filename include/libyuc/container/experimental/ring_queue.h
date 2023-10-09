@@ -8,10 +8,6 @@
 #include <libyuc/basic.h>
 #include <libyuc/container/vector.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 环形队列
 * 单读单写支持无锁实现
@@ -117,9 +113,5 @@ void* QueueDequeue(Queue* queue) {
     return entry;
 }
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_QUEUE_H_

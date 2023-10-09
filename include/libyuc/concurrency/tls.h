@@ -11,9 +11,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #if defined(_MSC_VER)
 #define thread_local __declspec(thread)
@@ -55,8 +52,5 @@ static forceinline void* TlsGetValue_(TlsId id) {
 
 #endif
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif //LIBYUC_CONCURRENCY_TLS_H_

@@ -5,9 +5,6 @@
 #include <libyuc/basic.h>
 #include <libyuc/algorithm/hash_code.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
 * 链出单向链表的哈希表实现
@@ -332,9 +329,3 @@ bool HashTableDelete(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER
 }
    
 
-
-
-
-#ifdef __cplusplus
-}
-#endif

@@ -4,9 +4,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
 * 为磁盘设计的b+tree
@@ -117,6 +114,3 @@ bool BPlusTreeDelete(BPlusTree* tree, LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERE
 #include <libyuc/container/bplus_tree.undef>
 
 
-#ifdef __cplusplus
-}
-#endif

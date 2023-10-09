@@ -7,11 +7,6 @@
 
 #include <libyuc/basic.h>
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 归并排序
 * left填0，right填数组成员数 - 1
@@ -49,9 +44,5 @@ void MergeSort(int * arr, int left, int right) {
     }
     ObjectDelete(temp);
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_MERGE_SORT_H_

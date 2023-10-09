@@ -8,9 +8,6 @@
 #include <libyuc/basic.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
 * 快速排序
@@ -50,8 +47,5 @@ void QuickSort(int* arr, int left, int right) {
     QuickSort(arr, i + 1, right);
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_QUICK_SORT_H_

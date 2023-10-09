@@ -4,9 +4,6 @@
 
 
 #include <libyuc/basic.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <libyuc/container/static_list.def>
 
@@ -44,6 +41,3 @@ void StaticListExpand(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Typ
 
 #include <libyuc/container/static_list.undef>
 
-#ifdef __cplusplus
-}
-#endif

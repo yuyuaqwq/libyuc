@@ -3,9 +3,6 @@
 */
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <libyuc/container/rb_tree.def>
 
@@ -62,11 +59,6 @@ bool RbTreeVerify(RbTree* tree);
 
 
 
-
-
 #include <libyuc/container/rb_tree.undef>
 
 
-#ifdef __cplusplus
-}
-#endif

@@ -4,10 +4,6 @@
 #include <libyuc/basic.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef LIBYUC_ALGORITHM_ARRAY_CLASS
 #define LIBYUC_ALGORITHM_ARRAY_CLASS
 #endif
@@ -175,6 +171,3 @@ bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC
 #undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff
 #undef LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp
 
-#ifdef __cplusplus
-}
-#endif

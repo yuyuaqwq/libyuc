@@ -5,10 +5,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libyuc/container/vector.def>
 
 #ifdef LIBYUC_CONTAINER_VECTOR_MODE_STATIC
@@ -63,6 +59,4 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector);
 
 #include <libyuc/container/vector.undef>
 
-#ifdef __cplusplus
-}
-#endif
+

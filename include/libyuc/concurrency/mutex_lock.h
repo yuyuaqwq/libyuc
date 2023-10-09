@@ -10,9 +10,6 @@
 #include <libyuc/concurrency/thread.h>
 #include <libyuc/concurrency/atomic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
 * 互斥锁(基于线程切换)
@@ -31,9 +28,5 @@ static forceinline void MutexLockAcquire(MutexLock* lock) {
 static forceinline void MutexLockRelease(MutexLock* lock) {
     AtomicBoolStore(&lock->state, true);
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONCURRENCY_MUTEX_LOCK_H_

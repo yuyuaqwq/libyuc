@@ -8,10 +8,6 @@
 #include <libyuc/basic.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * https://www.bilibili.com/video/BV1AY4y157yL/?spm_id_from=333.337.search-card.all.click&vd_source=2f16cbe6e2d0a9708b5b399c0b862fe3
 */
@@ -115,8 +111,5 @@ int KmpMatch(const char* main, size_t mainLen, const char* pattern, size_t patte
 
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_MERGE_SORT_H_

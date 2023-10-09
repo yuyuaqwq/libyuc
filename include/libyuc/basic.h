@@ -11,9 +11,6 @@
 #include <string.h>
 #include <assert.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifndef Painc
 #define Painc(...) { /*printf(__VA_ARGS__);*/ __debugbreak();  /* *(int*)0 = 0;*/ }
@@ -206,11 +203,6 @@ forceinline static void MemoryFree(void* ptr) {
 #define LIBYUC_BASIC_ITERATOR_DEFALUT
 
 
-
-
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif LIBYUC_BASIC_H_

@@ -7,11 +7,6 @@
 
 #include <libyuc/basic.h>
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * BruteForce
 */
@@ -30,8 +25,5 @@ int BruteForceMatch(const char* main, size_t mainLen, const char* pattern, size_
     return -1;
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_BRUTE_FORCE_MATCH_H_

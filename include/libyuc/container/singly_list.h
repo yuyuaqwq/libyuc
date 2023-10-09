@@ -4,9 +4,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <libyuc/container/singly_list.def>
 
@@ -30,6 +27,3 @@ LIBYUC_CONTAINER_SINGLY_LIST_REFERENCER_Type_Id SinglyListIteratorNext(SinglyLis
 
 #include <libyuc/container/singly_list.undef>
 
-#ifdef __cplusplus
-}
-#endif

@@ -7,10 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libyuc/container/lru_list.def>
 
 #define LIBYUC_CONTAINER_LIST_CLASS_NAME LruLink
@@ -44,8 +40,5 @@ void LruListDeleteByEntry(LruList* list, LruListEntry* entry);
 
 #include <libyuc/container/lru_list.c>
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_LRU_LIST_H_

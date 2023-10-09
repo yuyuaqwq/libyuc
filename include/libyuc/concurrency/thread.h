@@ -7,9 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef uint32_t ThreadId;
 
@@ -75,8 +72,5 @@ static forceinline ThreadId ThreadGetId() {
 #endif
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONCURRENCY_THREAD_H_

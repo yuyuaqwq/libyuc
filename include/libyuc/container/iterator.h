@@ -7,9 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* 
 * 迭代器抽象
@@ -32,9 +29,5 @@ extern "C" {
 // Locate - 直接定位，如array支持基于整数索引随机定位、map支持基于key定位
 
 // ... 自定义方法，如树可能还会提供Up、Down等迭代方法
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_LIST_H_

@@ -7,10 +7,6 @@
 #include <libyuc/container/static_list.h>
 #include <libyuc/container/list.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /*
 * 1-2-3确定性跳表
@@ -83,8 +79,5 @@ void DeterminSkipListInsert(DeterminSkipList* list, void* entry) {
 }
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_DETERMIN_SKIP_LIST_H_

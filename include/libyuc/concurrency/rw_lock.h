@@ -8,10 +8,6 @@
 #include <libyuc/basic.h>
 #include <libyuc/concurrency/mutex_lock.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 读写锁
 */
@@ -50,8 +46,5 @@ static forceinline void RwLockWriteRelease(RwLock* lock) {
     MutexLockRelease(&lock->write_lock);
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONCURRENCY_RW_LOCK_H_

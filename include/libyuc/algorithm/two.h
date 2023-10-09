@@ -1,10 +1,6 @@
 #ifndef LIBYUC_ALGORITHM_TWO_H_
 #define LIBYUC_ALGORITHM_TWO_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libyuc/basic.h>
 
 
@@ -35,9 +31,5 @@ static forceinline size_t LIBYUC_ALGORITHM_TWO_ALIGN_TO_POWER_OF_2(size_t num) {
     }
     return num + 1;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_TWO_H_

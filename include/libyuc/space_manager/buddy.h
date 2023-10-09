@@ -6,10 +6,6 @@
 #include <libyuc/algorithm/two.h>
 #include <libyuc/container/experimental/cb_tree.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /*
 * 主要参考自项目：https://github.com/wuwenbin/buddy2
@@ -34,6 +30,3 @@ LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset BuddyGetMaxCount(Buddy* buddy);
 
 #include <libyuc/space_manager/buddy.undef>
 
-#ifdef __cplusplus
-}
-#endif

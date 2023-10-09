@@ -10,10 +10,6 @@
 #include <libyuc/container/vector.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /*
 * 位图
@@ -143,8 +139,5 @@ size_t BitmapGetMaxFreeCount(Bitmap* bitmap) {
     return max_free_count;
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_BITMAP_H_

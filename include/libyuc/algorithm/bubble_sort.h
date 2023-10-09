@@ -8,10 +8,6 @@
 #include <libyuc/basic.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 冒泡排序
 */
@@ -34,8 +30,5 @@ void BubbleSort(int * arr, int lenght)    {
     }
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_HASH_MAP_H_

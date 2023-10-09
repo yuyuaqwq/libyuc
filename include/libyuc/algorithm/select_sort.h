@@ -8,10 +8,6 @@
 #include <libyuc/basic.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 选择排序
 */
@@ -36,9 +32,5 @@ void SelectSort(int* arr, int lenght) {
         }
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_SELECT_SORT_H_

@@ -7,9 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* complete binary tree - 完全二叉树 */
 
@@ -46,8 +43,5 @@ extern "C" {
 //    }
 //}
     
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_CB_TREE_H_

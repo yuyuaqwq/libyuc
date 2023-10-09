@@ -4,11 +4,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 /*
 * 常规空闲链表
 */
@@ -33,6 +28,3 @@ LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id FreeListGetMaxFreeBlockSize(FreeL
 
 #include <libyuc/space_manager/free_list.undef>
 
-#ifdef __cplusplus
-}
-#endif

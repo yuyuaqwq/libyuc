@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/test/rand_data_set.h>
+#include <libyuc/tests/rand_data_set.h>
 
 #define LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key int64_t

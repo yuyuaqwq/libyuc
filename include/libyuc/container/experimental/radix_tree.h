@@ -8,10 +8,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 基数树
 */
@@ -219,8 +215,5 @@ bool RadixTreeDelete(RadixTree* tree, RadixKey key) {
     return true;
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_REDIX_TREE_H_

@@ -7,10 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 #define LIBYUC_CONTAINER_SKIP_LIST_MAX_LEVEL 32
 const int LIBYUC_CONTAINER_SKIP_LIST_SKIPLIST_P = (RAND_MAX / 2);
@@ -195,9 +191,5 @@ SkipListEntry* SkipListFirst(SkipList* list) {
 SkipListEntry* SkipListNext(SkipList* list, SkipListEntry* cur) {
     return cur->upper[0].next;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_STATIC_LIST_H_

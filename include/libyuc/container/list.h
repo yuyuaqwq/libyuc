@@ -4,9 +4,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <libyuc/container/list.def>
 
@@ -39,7 +36,3 @@ LIBYUC_CONTAINER_LIST_REFERENCER_Type_Id ListNext(ListHead* head, LIBYUC_CONTAIN
 
 #include <libyuc/container/list.undef>
 
-
-#ifdef __cplusplus
-}
-#endif

@@ -6,11 +6,7 @@
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_
 
 #include <libyuc/basic.h>
-//
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <libyuc/space_manager/object_pool.def>
 
@@ -41,8 +37,5 @@ void ObjectPoolFree(ObjectPool* pool, ObjectPoolBucketEntry* free_entry);
 #include <libyuc/space_manager/object_pool.undef>
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_SPACE_MANAGER_OBJECT_POOL_H_

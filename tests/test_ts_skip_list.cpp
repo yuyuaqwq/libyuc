@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <libyuc/container/thread_safe/experimental/ts_skip_list.h>
-#include <libyuc/test/rand_data_set.h>
+#include <libyuc/tests/rand_data_set.h>
 
 static size_t test_count = 10000000;
 static size_t test_thread_count = 1;

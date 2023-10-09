@@ -8,10 +8,6 @@
 #include <libyuc/basic.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 插入排序
 */
@@ -37,9 +33,5 @@ extern "C" {
             } \
         } \
     } \
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_INSERT_SORT_H_

@@ -10,10 +10,6 @@
 #if defined(_WIN32)
 #include <Windows.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 原子操作
 */
@@ -131,9 +127,5 @@ static forceinline bool AtomicPtrCompareExchange(volatile void* target, void* ex
 
 #endif
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONCURRENCY_ATOMIC_H_

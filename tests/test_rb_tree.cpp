@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/test/rand_data_set.h>
+#include <libyuc/tests/rand_data_set.h>
 
 
 #define LIBYUC_CONTAINER_RB_TREE_CLASS_NAME Int

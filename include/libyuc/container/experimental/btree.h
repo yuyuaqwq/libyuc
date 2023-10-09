@@ -7,10 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * 为内存设计的b-tree
 */
@@ -433,8 +429,5 @@ bool BTreeDelete(BTree* tree, const key_type* key) {
     return true;
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_B_TREE_H_

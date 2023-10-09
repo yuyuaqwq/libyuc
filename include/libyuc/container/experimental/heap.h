@@ -8,9 +8,6 @@
 #include <libyuc/basic.h>
 #include <libyuc/container/vector.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
 * 默认为大顶堆，可以自定义CmpFunc以调整为小顶堆
@@ -125,8 +122,5 @@ extern "C" {
 //    return topObj;
 //}
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONTAINER_HEAP_H_

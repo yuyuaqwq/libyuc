@@ -4,10 +4,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libyuc/container/bs_tree.def>
 
 
@@ -36,7 +32,3 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorNext(BsTree* tree, BsT
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorPrev(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id cur_id);
 
 #include <libyuc/container/bs_tree.undef>
-
-#ifdef __cplusplus
-}
-#endif

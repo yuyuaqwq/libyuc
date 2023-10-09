@@ -10,9 +10,6 @@
 #include <libyuc/concurrency/thread.h>
 #include <libyuc/concurrency/atomic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
 * 自旋锁
@@ -33,8 +30,5 @@ static forceinline void SpinLockRelease(SpinLock* lock) {
     AtomicBoolStore(&lock->state, false);
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_CONCURRENCY_SPIN_LOCK_H_

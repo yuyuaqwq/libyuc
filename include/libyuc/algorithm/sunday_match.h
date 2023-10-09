@@ -7,10 +7,6 @@
 
 #include <libyuc/basic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 * sunday思想：
 * 提前记录字符最后一次出现的位置(从后算起)，即构建shift数组
@@ -41,9 +37,5 @@ int SundayMatch(const char* main, size_t mainLen, const char* pattern, size_t pa
     return -1;
 }
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_ALGORITHM_SUNDAY_MATCH_H_

@@ -9,9 +9,6 @@
 #include <libyuc/container/experimental/cb_tree.h>
 #include <libyuc/container/bitmap.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 #define LIBYUC_SPACE_MANAGER_LIST_BUDDY_PARENT(index) LIBYUC_CONTAINER_CB_TREE_ONE_GET_PARENT(index)
@@ -205,9 +202,5 @@ id_type ListBuddyAlloc(ListBuddy* buddy, size_t size) {
 
 }
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LIBYUC_SPACE_MANAGER_LIST_BUDDY_H_
