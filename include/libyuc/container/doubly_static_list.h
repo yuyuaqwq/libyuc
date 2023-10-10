@@ -17,7 +17,11 @@ typedef struct DoublyStaticListEntry{
 
 typedef struct DoublyStaticList{
     LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_INDEXER_Type_Id list_first[LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_Const_StaticListCount];
-    LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_INDEXER_Type_Element obj_arr[LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_Const_StaticListCount];
+#if defined(LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_MODE_STATIC)
+    LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_INDEXER_Type_Element obj_arr[LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_Const_StaticElementCount];
+#elif defined(LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_MODE_DYNAMIC)
+    LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_INDEXER_Type_DynamicArray obj_arr;
+#endif
 } DoublyStaticList;
    
 void DoublyStaticListInit(DoublyStaticList* list, LIBYUC_CONTAINER_DOUBLY_STATIC_LIST_INDEXER_Type_Offset count);

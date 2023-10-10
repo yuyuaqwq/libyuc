@@ -48,5 +48,5 @@ C语言基础组件库
 
 ## 引用
 1. [unordered_dense](https://github.com/martinus/unordered_dense)
-    - 参考了其哈希表的实现
-2. [高性能无锁数据结构探索-无锁可删除跳表]https://zhuanlan.zhihu.com/p/600729377
+    - 参考了其哈希表的一些设计
+2. [高性能无锁数据结构探索-无锁可删除跳表](https://zhuanlan.zhihu.com/p/600729377)

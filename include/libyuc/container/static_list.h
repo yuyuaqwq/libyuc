@@ -11,21 +11,15 @@ typedef struct StaticListEntry {
     LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id next;
 } StaticListEntry;
 
-#define LIBYUC_CONTAINER_STATIC_LIST_MODE_STATIC
 
-#ifdef LIBYUC_CONTAINER_STATIC_LIST_MODE_STATIC
 typedef struct StaticList {
     LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_first[LIBYUC_CONTAINER_STATIC_LIST_Const_StaticListCount];
+#if defined(LIBYUC_CONTAINER_STATIC_LIST_MODE_STATIC)
     LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Element obj_arr[LIBYUC_CONTAINER_STATIC_LIST_Const_StaticElementCount];
-} StaticList;
-#endif
-
-#ifdef LIBYUC_CONTAINER_STATIC_LIST_MODE_DYNAMIC
-typedef struct StaticList {
-    LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Id list_first[LIBYUC_CONTAINER_STATIC_LIST_Const_StaticListCount];
+#elif defined(LIBYUC_CONTAINER_STATIC_LIST_MODE_DYNAMIC)
     LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_DynamicArray obj_arr;
-} StaticList;
 #endif
+} StaticList;
 
 
 void StaticListInit(StaticList* list, LIBYUC_CONTAINER_STATIC_LIST_INDEXER_Type_Offset count);

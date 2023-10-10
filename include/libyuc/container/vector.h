@@ -7,20 +7,15 @@
 
 #include <libyuc/container/vector.def>
 
-#ifdef LIBYUC_CONTAINER_VECTOR_MODE_STATIC
 typedef struct Vector {
     LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset count;
+#if defined(LIBYUC_CONTAINER_VECTOR_MODE_STATIC)
     LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element obj_arr[LIBYUC_CONTAINER_VECTOR_INDEXER_Const_StaticElementCount];
-} Vector;
-#endif
-
-#ifdef LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
-typedef struct Vector {
-    LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset count;
+#elif defined(LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC)
     LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Offset capacity;
     LIBYUC_CONTAINER_VECTOR_INDEXER_Type_DynamicArray obj_arr;
-} Vector;
 #endif
+} Vector;
 
 typedef struct VectorIterator {
     LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id cur_index;

@@ -61,3 +61,8 @@
 * HashBucketVector
 */
 #define HashBucketVector MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashBucketVector)
+
+/*
+* HashLruDoublyStaticList
+*/
+#define HashLruDoublyStaticListEntry MAKE_NAME(LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME, HashLruDoublyStaticListEntry)
