@@ -451,7 +451,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
     BPlusEntryRbTreeIterator left_element_iterator;
     BPlusEntryRbTreeIteratorLast(&left->rb_tree, &left_element_iterator);
     int insert_right = 0;
-    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset fill_rate = (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, left) + LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(right, *src_entry, insert_element)) / 2;
+    LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset fill_rate = (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFillRate(tree, left) + LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(*src_entry, insert_element)) / 2;
     /*
     * 计算出右侧两侧各自的节点数量
     */
@@ -464,7 +464,7 @@ static LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id BPlusEntrySplit(BP
         if (left_fill_rate <= fill_rate || left->element_count - right_count <= 2 + insert_right) {
             break;
         }
-        left_fill_rate -= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(left, right, insert_element);
+        left_fill_rate -= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(*src_entry, insert_element);
         BPlusEntryRbTreeIteratorPrev(&left->rb_tree, &left_element_iterator);
         ++right_count;
     }
@@ -605,10 +605,10 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
     BPlusEntryRbTreeIterator up_element_iterator;
     do {
         LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset free_rate = LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(tree, cur);
-        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset need_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, old_src_entry, insert_element);
+        LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset need_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(old_src_entry, insert_element);
         if (iterator->leaf_status == kBPlusIteratorEq) {
             BPlusElement* raw = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Reference(cur, cur_pos->element_iterator.cur_id);
-            LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset raw_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, cur, raw);
+            LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset raw_rate = LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, raw);
             LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference(cur, raw);
             if (free_rate + need_rate >= raw_rate) {
                 /* SetValue会先释放原有空间，因此空闲空间可以计入已分配的部分 */
@@ -620,7 +620,7 @@ static bool BPlusTreeInsertElement(BPlusTree* tree, BPlusIterator* iterator, BPl
                 assert(0);
             }
         }
-        else if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(tree, cur) >= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(cur, old_src_entry, insert_element)) {
+        else if (LIBYUC_CONTAINER_BPLUS_TREE_ENTRY_ACCESSOR_GetFreeRate(tree, cur) >= LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_ACCESSOR_GetNeedRate(old_src_entry, insert_element)) {
             /* 有空余的位置插入 */
             BPlusEntryInsertElement(cur, old_src_entry, insert_element, insert_element_child_id);
             break;

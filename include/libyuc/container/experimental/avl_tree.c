@@ -133,7 +133,7 @@ static bool RotateByBalanceFactor(AvlTree* tree, LIBYUC_CONTAINER_AVL_TREE_REFER
                 assert(deep_child_right);
             int8_t right_bf = LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(tree, deep_child_right);
             LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor(tree, deep_child_right, 0);
-            LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(tree, tree, deep_child_right);
+            LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(tree, deep_child_right);
             AvlRotateLeft(tree, sub_root, deep_child_id, deep_child);
             new_sub_root_id = AvlRotateRight(tree, parent, sub_root_id, sub_root);
                
