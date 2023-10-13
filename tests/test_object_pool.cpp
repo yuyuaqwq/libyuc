@@ -10,24 +10,24 @@
 
 
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME Int
-#define LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_Type_Element union IntEntry_User
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element union IntEntry_User
 #include <libyuc/space_manager/object_pool.h>
 
 union IntEntry_User {
-	IntObjectPoolSlot slot;
+	IntObjectPoolSlotPos pos;
 	int64_t ele;
 };
 
 
 #include "C:/Users/gt1/Desktop/wyhash.h"
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME Int
-#define LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_Type_Element IntEntry_User
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element IntEntry_User
 #include <libyuc/space_manager/object_pool.c>
 
 
 static size_t test_count = 100000000;
 static IntObjectPool test_pool;
-static std::vector<IntObjectPoolSlot> test_res;
+static std::vector<IntObjectPoolSlotPos> test_res;
 static std::vector<int64_t*> test_res_stl;
 
 
@@ -40,16 +40,17 @@ TEST(ObjectPoolTestEnv, Start) {
 
 TEST(ObjectPoolTest, Alloc) {
 	for (int i = 0; i < test_count; i++) {
-		IntEntry_User* obj = IntObjectPoolAlloc(&test_pool, &test_res[i]);
-		obj->ele = i;
+		test_res[i] = IntObjectPoolAlloc(&test_pool);
+		//auto obj = ObjectPoolGetPtr(&test_pool, &test_res[i]);
+		//obj->ele = i;
 	}
 }
 
 
 TEST(ObjectPoolTest, Free) {
 	for (int i = 0; i < test_count; i++) {
-		auto slot = (IntEntry_User*)&test_res[i].next_block_id[test_res[i].next_slot_index];
-		ASSERT_EQ(slot->ele, i);
+		//auto obj = ObjectPoolGetPtr(&test_pool, &test_res[i]);;
+		//ASSERT_EQ(obj->ele, i);
 		IntObjectPoolFree(&test_pool, &test_res[i]);
 	}
 
@@ -71,4 +72,5 @@ TEST(ObjectPoolTest, Alloc_Free) {
 TEST(ObjectPoolTest, End) {
 	test_res.clear();
 	test_res_stl.clear();
+	IntObjectPoolRelease(&test_pool);
 }

@@ -10,27 +10,29 @@
 
 #include <libyuc/space_manager/object_pool.def>
 
+#define LIBYUC_CONTAINER_VECTOR_CLASS_NAME ObjectPoolBlock
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element*      // &block[0]
+#define LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
+#include <libyuc/container/vector.h>
+
 /*
 * 动态对象池
 */
 
-#define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME ObjectPoolBlock
-#define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element uintptr_t      // LIBYUC_SPACE_MANAGER_OBJECT_POOL_REFERENCER_Type_Id
-#include <libyuc/container/hash_table.h>
-
 typedef struct ObjectPoolSlotPos {
-    LIBYUC_SPACE_MANAGER_OBJECT_POOL_REFERENCER_Type_Id block_id; /* slot的block_id */
-    LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_Type_Id slot_id; /* slot的index */
+    LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Type_Id block_id; /* slot的block_id */
+    LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Id slot_id; /* slot的index */
 } ObjectPoolSlotPos;
 
 typedef struct ObjectPool {
     ObjectPoolSlotPos first;
+    ObjectPoolBlockVector block_table;
 } ObjectPool;
 
 void ObjectPoolSlotInit(ObjectPoolSlotPos* slot);
 void ObjectPoolInit(ObjectPool* pool);
 void ObjectPoolRelease(ObjectPool* pool);
-LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_Type_Element* ObjectPoolAlloc(ObjectPool* pool, ObjectPoolSlotPos* ret_pos);
+ObjectPoolSlotPos ObjectPoolAlloc(ObjectPool* pool);
 void ObjectPoolFree(ObjectPool* pool, ObjectPoolSlotPos* free_pos);
 
 
