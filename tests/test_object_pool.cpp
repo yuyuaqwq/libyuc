@@ -7,19 +7,15 @@
 #include <libyuc/tests/rand_data_set.h>
 
 
-
-
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME Int
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element union IntEntry_User
 #include <libyuc/space_manager/object_pool.h>
 
 union IntEntry_User {
-	IntObjectPoolSlotPos pos;
 	int64_t ele;
 };
 
 
-#include "C:/Users/gt1/Desktop/wyhash.h"
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME Int
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element IntEntry_User
 #include <libyuc/space_manager/object_pool.c>
@@ -41,16 +37,16 @@ TEST(ObjectPoolTestEnv, Start) {
 TEST(ObjectPoolTest, Alloc) {
 	for (int i = 0; i < test_count; i++) {
 		test_res[i] = IntObjectPoolAlloc(&test_pool);
-		//auto obj = ObjectPoolGetPtr(&test_pool, &test_res[i]);
-		//obj->ele = i;
+		//auto& obj = ObjectPoolGetPtr(&test_pool, &test_res[i])->element;
+		//obj.ele = i;
 	}
 }
 
 
 TEST(ObjectPoolTest, Free) {
 	for (int i = 0; i < test_count; i++) {
-		//auto obj = ObjectPoolGetPtr(&test_pool, &test_res[i]);;
-		//ASSERT_EQ(obj->ele, i);
+		//auto obj = ObjectPoolGetPtr(&test_pool, &test_res[i])->element;
+		//ASSERT_EQ(obj.ele, i);
 		IntObjectPoolFree(&test_pool, &test_res[i]);
 	}
 

@@ -6,9 +6,15 @@
 */
 
 #define LIBYUC_CONTAINER_VECTOR_CLASS_NAME ObjectPoolBlock
-#define LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element*
+#define LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element union ObjectPoolSlot*
 #define LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
 #include <libyuc/container/vector.c>
+
+typedef union ObjectPoolSlot {
+    ObjectPoolSlotPos next;
+    LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element element;
+} ObjectPoolSlot;
+
 
 void ObjectPoolSlotInit(ObjectPoolSlotPos* entry) {
     entry->block_id = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Const_InvalidId;
@@ -27,8 +33,10 @@ void ObjectPoolRelease(ObjectPool* pool) {
     ObjectPoolBlockVectorRelease(&pool->block_table);
 }
 
-LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element* ObjectPoolGetPtr(ObjectPool* pool, ObjectPoolSlotPos* pos) {
-    LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element* block = *ObjectPoolBlockVectorIndex(&pool->block_table, pos->block_id);
+
+
+ObjectPoolSlot* ObjectPoolGetPtr(ObjectPool* pool, ObjectPoolSlotPos* pos) {
+    ObjectPoolSlot* block = *ObjectPoolBlockVectorIndex(&pool->block_table, pos->block_id);
     return LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, pos->slot_id);
 }
 
@@ -39,15 +47,15 @@ ObjectPoolSlotPos ObjectPoolAlloc(ObjectPool* pool) {
     ObjectPoolSlotPos ret_pos;
     if (pool->first.block_id == LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Const_InvalidId) {
         // 没有空闲的块
-        LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element* block = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_ALLOCATOR_CreateMultiple(pool, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount);
+        ObjectPoolSlot* block = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_ALLOCATOR_CreateMultiple(pool, ObjectPoolSlot, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount);
         LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Type_Id next_block_id = ObjectPoolBlockVectorGetCount(&pool->block_table);
-        ObjectPoolBlockVectorPushTail(&pool->block_table, (const LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element**)&block);
+        ObjectPoolBlockVectorPushTail(&pool->block_table, (const ObjectPoolSlot**)&block);
         for (ptrdiff_t i = 0; i < LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount - 1; i++) {
-            ObjectPoolSlotPos* next_slot_entry = (ObjectPoolSlotPos*)LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, i);
+            ObjectPoolSlotPos* next_slot_entry = &LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, i)->next;
             next_slot_entry->block_id = next_block_id;
             next_slot_entry->slot_id = i + 1;
         }
-        ObjectPoolSlotPos* next_slot = (ObjectPoolSlotPos*)LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount - 1);
+        ObjectPoolSlotPos* next_slot = &LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount - 1)->next;
         next_slot->block_id = pool->first.block_id;
         next_slot->slot_id = pool->first.slot_id;
 
@@ -57,14 +65,14 @@ ObjectPoolSlotPos ObjectPoolAlloc(ObjectPool* pool) {
     // 取第一个空闲的slot
     ret_pos.block_id = pool->first.block_id;
     ret_pos.slot_id = pool->first.slot_id;
-    ObjectPoolSlotPos* next_slot = (ObjectPoolSlotPos*)ObjectPoolGetPtr(pool, &ret_pos);
+    ObjectPoolSlotPos* next_slot = &ObjectPoolGetPtr(pool, &ret_pos)->next;
     pool->first.block_id = next_slot->block_id;
     pool->first.slot_id = next_slot->slot_id;
     return ret_pos;
 }
 
 void ObjectPoolFree(ObjectPool* pool, ObjectPoolSlotPos* free_pos) {
-    ObjectPoolSlotPos* slot = (ObjectPoolSlotPos*)ObjectPoolGetPtr(pool, free_pos);
+    ObjectPoolSlotPos* slot = &ObjectPoolGetPtr(pool, free_pos)->next;
     slot->block_id = pool->first.block_id;
     slot->slot_id = pool->first.slot_id;
     pool->first.block_id = free_pos->block_id;
