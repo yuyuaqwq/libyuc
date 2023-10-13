@@ -55,7 +55,7 @@ static forceinline void HashRehash(HashTable* table, LIBYUC_CONTAINER_HASH_TABLE
     HashTableIterator iter;
     LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* obj = HashTableIteratorFirst(table, &iter);
     while (obj) {
-        HashTablePut(&temp_table, obj);
+        HashTablePut(&temp_table, (const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element*)obj);
         LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, obj);
         obj = HashTableIteratorNext(table, &iter);
     }
@@ -153,7 +153,7 @@ void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Ty
     do {
         entry = HashBucketVectorIndex(&table->bucket, cur_index);
         if (dist == entry->dist && LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj), key) == 0) {
-            entry->obj = *obj;
+            entry->obj = (LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element)*obj;
             return;
         }
         if (dist > entry->dist) break;
@@ -162,7 +162,7 @@ void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Ty
     } while (true);
     HashTableEntry temp;
     temp.dist = dist;
-    temp.obj = *obj;
+    temp.obj = (LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element)*obj;
     while (entry->dist != 0) {
         HashEntryExchange(table, &temp, entry);
         ++temp.dist;

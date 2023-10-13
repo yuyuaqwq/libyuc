@@ -17,3 +17,14 @@
 #undef LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_Type_Id
 #undef LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_Type_Offset
 #undef LIBYUC_CONTAINER_OBJECT_POOL_INDEXER_GetPtr
+
+
+
+#undef ObjectPoolSlot
+#undef ObjectPool
+
+#undef ObjectPoolSlotInit
+#undef ObjectPoolInit
+#undef ObjectPoolRelease
+#undef ObjectPoolAlloc
+#undef ObjectPoolFree
