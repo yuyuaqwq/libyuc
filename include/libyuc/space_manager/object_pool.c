@@ -10,18 +10,26 @@
 #define LIBYUC_CONTAINER_VECTOR_MODE_DYNAMIC
 #include <libyuc/container/vector.c>
 
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_Const_InvalidId (-1)
+
+static ObjectPoolSlotPos kSlotPosInvalid = -1;
+static ObjectPoolSlotPos kBlockSlotCount = 512;
+static ObjectPoolSlotPos kBlockShift = 9;
+static ObjectPoolSlotPos kSlotMark = kBlockSlotCount - 1;
+
+
+
 typedef union ObjectPoolSlot {
     ObjectPoolSlotPos next;
     LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element element;
 } ObjectPoolSlot;
 
 
-void ObjectPoolSlotInit(ObjectPoolSlotPos* entry) {
-    entry->block_id = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Const_InvalidId;
-    entry->slot_id = 0;
-}
+
 void ObjectPoolInit(ObjectPool* pool) {
-    ObjectPoolSlotInit(&pool->first);
+    pool->free_slot = kSlotPosInvalid;
+    ObjectPoolBlockVectorInit(&pool->block_table, 8);
+    
 }
 /*
 * 释放整个对象池
@@ -34,10 +42,21 @@ void ObjectPoolRelease(ObjectPool* pool) {
 }
 
 
+static void SplitId(ObjectPoolSlotPos slot_pos, ObjectPoolBlockId* block_id, ObjectPoolSlotId* slot_id) {
+    //*block_id = slot_pos / kBlockSlotCount;
+    //*slot_id = slot_pos % kBlockSlotCount;
+    *block_id = slot_pos >> kBlockShift;
+    *slot_id = slot_pos & kSlotMark;
+}
 
-ObjectPoolSlot* ObjectPoolGetPtr(ObjectPool* pool, ObjectPoolSlotPos* pos) {
-    ObjectPoolSlot* block = *ObjectPoolBlockVectorIndex(&pool->block_table, pos->block_id);
-    return LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, pos->slot_id);
+
+
+ObjectPoolSlot* ObjectPoolGetPtr(ObjectPool* pool, ObjectPoolSlotPos pos) {
+    ObjectPoolBlockId block_id;
+    ObjectPoolSlotId slot_id;
+    SplitId(pos, &block_id, &slot_id);
+    ObjectPoolSlot* block = *ObjectPoolBlockVectorIndex(&pool->block_table, block_id);
+    return LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, slot_id);
 }
 
 /*
@@ -45,40 +64,39 @@ ObjectPoolSlot* ObjectPoolGetPtr(ObjectPool* pool, ObjectPoolSlotPos* pos) {
 */
 ObjectPoolSlotPos ObjectPoolAlloc(ObjectPool* pool) {
     ObjectPoolSlotPos ret_pos;
-    if (pool->first.block_id == LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Const_InvalidId) {
-        // 没有空闲的块
-        ObjectPoolSlot* block = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_ALLOCATOR_CreateMultiple(pool, ObjectPoolSlot, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount);
-        LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Type_Id next_block_id = ObjectPoolBlockVectorGetCount(&pool->block_table);
-        ObjectPoolBlockVectorPushTail(&pool->block_table, (const ObjectPoolSlot**)&block);
-        for (ptrdiff_t i = 0; i < LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount - 1; i++) {
-            ObjectPoolSlotPos* next_slot_entry = &LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, i)->next;
-            next_slot_entry->block_id = next_block_id;
-            next_slot_entry->slot_id = i + 1;
-        }
-        ObjectPoolSlotPos* next_slot = &LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr(pool, block, LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Const_StaticElementCount - 1)->next;
-        next_slot->block_id = pool->first.block_id;
-        next_slot->slot_id = pool->first.slot_id;
-
-        pool->first.block_id = next_block_id;
-        pool->first.slot_id = 0;
+    if (pool->free_slot != kSlotPosInvalid) {
+        ret_pos = pool->free_slot;
+        ObjectPoolBlockId block_id;
+        ObjectPoolSlotId slot_id;
+        SplitId(ret_pos, &block_id, &slot_id);
+        ObjectPoolSlot* block = *ObjectPoolBlockVectorIndex(&pool->block_table, block_id);
+        pool->free_slot = block[slot_id].next;
+        return ret_pos;
     }
-    // 取第一个空闲的slot
-    ret_pos.block_id = pool->first.block_id;
-    ret_pos.slot_id = pool->first.slot_id;
-    ObjectPoolSlotPos* next_slot = &ObjectPoolGetPtr(pool, &ret_pos)->next;
-    pool->first.block_id = next_slot->block_id;
-    pool->first.slot_id = next_slot->slot_id;
-    return ret_pos;
+
+    if (pool->begin_slot >= pool->end_slot) {
+        // 没有空闲的块
+        ObjectPoolSlot* block = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_ALLOCATOR_CreateMultiple(pool, ObjectPoolSlot, kBlockSlotCount);
+        ObjectPoolSlotPos slot_pos = ObjectPoolBlockVectorGetCount(&pool->block_table) * kBlockSlotCount;
+        ObjectPoolBlockVectorPushTail(&pool->block_table, (const ObjectPoolSlot**)&block);
+
+        pool->begin_slot = slot_pos;
+        pool->end_slot = slot_pos + kBlockSlotCount;
+    }
+    return pool->begin_slot++;
 }
 
-void ObjectPoolFree(ObjectPool* pool, ObjectPoolSlotPos* free_pos) {
-    ObjectPoolSlotPos* slot = &ObjectPoolGetPtr(pool, free_pos)->next;
-    slot->block_id = pool->first.block_id;
-    slot->slot_id = pool->first.slot_id;
-    pool->first.block_id = free_pos->block_id;
-    pool->first.slot_id = free_pos->slot_id;
-    free_pos->block_id = LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Const_InvalidId;
-    free_pos->slot_id = 0;
+void ObjectPoolFree(ObjectPool* pool, ObjectPoolSlotPos free_pos) {
+    if (free_pos != kSlotPosInvalid) {
+        ObjectPoolBlockId block_id;
+        ObjectPoolSlotId slot_id;
+        SplitId(free_pos, &block_id, &slot_id);
+
+        ObjectPoolSlot* block = *ObjectPoolBlockVectorIndex(&pool->block_table, block_id);
+        block[slot_id].next = pool->free_slot;
+
+        pool->free_slot = free_pos;
+    }
 }
 
 

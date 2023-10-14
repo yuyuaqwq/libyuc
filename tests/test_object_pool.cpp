@@ -35,11 +35,14 @@ TEST(ObjectPoolTestEnv, Start) {
 
 
 TEST(ObjectPoolTest, Alloc) {
+	//printf("a");
+
 	for (int i = 0; i < test_count; i++) {
 		test_res[i] = IntObjectPoolAlloc(&test_pool);
 		//auto& obj = ObjectPoolGetPtr(&test_pool, &test_res[i])->element;
 		//obj.ele = i;
 	}
+	//printf("b");
 }
 
 
@@ -47,7 +50,7 @@ TEST(ObjectPoolTest, Free) {
 	for (int i = 0; i < test_count; i++) {
 		//auto obj = ObjectPoolGetPtr(&test_pool, &test_res[i])->element;
 		//ASSERT_EQ(obj.ele, i);
-		IntObjectPoolFree(&test_pool, &test_res[i]);
+		IntObjectPoolFree(&test_pool, test_res[i]);
 	}
 
 }
