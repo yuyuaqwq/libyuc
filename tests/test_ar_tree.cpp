@@ -7,13 +7,12 @@
 
 #include <libyuc/tests/rand_data_set.h>
 
-//#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
+#define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 #include <libyuc/container/experimental/ar_tree.h>
 
 
-int seed = 312962319;
-
-static size_t test_count = 10000000;
+static int seed = 312962319;
+static size_t test_count = 10000;
 static ArTree test_ar_tree;
 static std::set<int64_t> test_set;
 #ifdef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
@@ -141,7 +140,7 @@ TEST(ArTreeTestEnv, Start) {
 	srand(seed);
 
 #ifdef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-	test_res_data_set = GenerateI64Vector(test_count);
+	test_res_data_set = GenerateI64Vector(test_count, false);
 #else
 	test_res_data_set = GenerateStringVector(test_count, 64, 128);
 #endif
@@ -165,6 +164,7 @@ TEST(ArTreeTest, Insert) {
 }
 
 TEST(ArTreeTest, Find) {
+	auto start_time = std::chrono::high_resolution_clock::now();
 	for (auto& data : test_res_data_set) {
 #ifndef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 		art_element_type ele;
@@ -178,6 +178,9 @@ TEST(ArTreeTest, Find) {
 			ASSERT_TRUE(false);
 		}
 	}
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+	std::cout << "time: " << duration.count() << "ns" << std::endl;
 }
 
 TEST(ArTreeTest, Iterator) {

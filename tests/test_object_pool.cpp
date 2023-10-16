@@ -12,7 +12,7 @@
 #include <libyuc/space_manager/object_pool.h>
 
 union IntEntry_User {
-	int64_t ele;
+	int32_t ele;
 };
 
 

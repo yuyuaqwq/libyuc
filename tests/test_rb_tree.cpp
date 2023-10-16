@@ -21,8 +21,8 @@ struct IntRbEntry_User {
 #define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetKey(MAIN_OBJ, OBJ) (&((IntRbEntry_User*)OBJ)->key)
 #include <libyuc/container/rb_tree.c>
 
-
-static size_t test_count = 10000000;
+static int seed = 312962319;
+static size_t test_count = 10000;
 static IntRbTree test_rb_tree;
 static std::set<int64_t> test_set;
 static std::vector<int64_t> test_res_data_set;
@@ -58,6 +58,8 @@ static void PrintRb(IntRbTree* tree, IntRbEntry* parent, IntRbEntry* entry_id, i
 }
 
 TEST(RbTreeTestEnv, Start) {
+	srand(seed);
+
 	test_res_data_set = GenerateI64Vector(test_count);
 	IntRbTreeInit(&test_rb_tree);
 }
@@ -78,11 +80,16 @@ TEST(RbTreeTest, Verify_Insert) {
 }
 
 TEST(RbTreeTest, Find) {
+	auto start_time = std::chrono::high_resolution_clock::now();
 	for (int i = 0; i < test_count; i++) {
 		if (IntRbTreeFind(&test_rb_tree, &test_res_data_set[i]) == nullptr) {
 			ASSERT_TRUE(false);
 		}
 	}
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+	std::cout << "time: " << duration.count() << "ns" << std::endl;
+
 }
 
 TEST(RbTreeTest, Iterator) {

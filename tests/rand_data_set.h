@@ -15,13 +15,15 @@ static void ReverseOrder(void* buf, size_t size) {
 	}
 }
 
-static std::vector<int64_t> GenerateI64Vector(size_t count) {
+static std::vector<int64_t> GenerateI64Vector(size_t count, bool dense = true) {
 	std::vector<int64_t> res;
 	res.reserve(count);
 	for (size_t i = 0; i < count; i++) {
 		int64_t data = i;
 		//ReverseOrder(&data, sizeof(data));
-		// data = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		if (!dense) {
+			data = ((int64_t)rand() << 48) + ((int64_t)rand() << 32) + ((int64_t)rand() << 16) + rand();
+		}
 		res.push_back(data);
 	}
 
