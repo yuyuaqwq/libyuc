@@ -1,7 +1,6 @@
 #undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME
-#undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Type_Id
-#undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Type_Offset
-#undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_INDEXER_Const_InvalidId
+
+#undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_Pos_Type_Id
 
 
 #undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_BLOCK_ALLOCATOR_Create
@@ -16,10 +15,25 @@
 
 
 #undef ObjectPoolSlotPos
+#undef ObjectPoolBlockId
+#undef ObjectPoolSlotId
+
 #undef ObjectPool
 
 #undef ObjectPoolSlotInit
 #undef ObjectPoolInit
 #undef ObjectPoolRelease
+#undef ObjectPoolGetPtr
 #undef ObjectPoolAlloc
 #undef ObjectPoolFree
+#undef ObjectPoolSplitId
+
+/*
+* ObjectPoolBlockVector
+*/
+#undef ObjectPoolBlockVector
+#undef ObjectPoolBlockVectorInit
+#undef ObjectPoolBlockVectorGetCount
+#undef ObjectPoolBlockVectorIndex
+#undef ObjectPoolBlockVectorRelease
+#undef ObjectPoolBlockVectorPushTail
