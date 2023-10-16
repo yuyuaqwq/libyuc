@@ -8,17 +8,16 @@
 
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_Const_InvalidId (-1)
 
-static ObjectPoolSlotPos kSlotPosInvalid = -1;
-static ObjectPoolSlotPos kBlockSlotCount = 512;
-static ObjectPoolSlotPos kBlockShift = 9;
-static ObjectPoolSlotPos kSlotMark = kBlockSlotCount - 1;
-
-
 
 typedef union ObjectPoolSlot {
     ObjectPoolSlotPos next;
     LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element element;
 } ObjectPoolSlot;
+
+static const ObjectPoolSlotPos kSlotPosInvalid = -1;
+static const ObjectPoolSlotPos kBlockSlotCount = 4096 / sizeof(ObjectPoolSlot);
+//static const ObjectPoolSlotPos kBlockShift = 10;    // 此处应当通过计算
+static const ObjectPoolSlotPos kSlotMark = kBlockSlotCount - 1;
 
 
 
@@ -39,10 +38,10 @@ void ObjectPoolRelease(ObjectPool* pool) {
 
 
 static void ObjectPoolSplitId(ObjectPoolSlotPos slot_pos, ObjectPoolBlockId* block_id, ObjectPoolSlotId* slot_id) {
-    //*block_id = slot_pos / kBlockSlotCount;
-    //*slot_id = slot_pos % kBlockSlotCount;
-    *block_id = slot_pos >> kBlockShift;
-    *slot_id = slot_pos & kSlotMark;
+    *block_id = slot_pos / kBlockSlotCount;
+    *slot_id = slot_pos % kBlockSlotCount;
+    //*block_id = slot_pos >> kBlockShift;
+    //*slot_id = slot_pos & kSlotMark;
 }
 
 
