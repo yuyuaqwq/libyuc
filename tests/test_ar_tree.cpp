@@ -12,7 +12,7 @@
 
 
 static int seed = 312962319;
-static size_t test_count = 10000;
+static size_t test_count = 10000000;
 static ArTree test_ar_tree;
 static std::set<int64_t> test_set;
 #ifdef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED

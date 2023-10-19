@@ -22,7 +22,7 @@ struct IntRbEntry_User {
 #include <libyuc/container/rb_tree.c>
 
 static int seed = 312962319;
-static size_t test_count = 10000;
+static size_t test_count = 10000000;
 static IntRbTree test_rb_tree;
 static std::set<int64_t> test_set;
 static std::vector<int64_t> test_res_data_set;

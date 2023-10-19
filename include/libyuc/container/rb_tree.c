@@ -54,7 +54,7 @@ static LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id GetSiblingEntry(RbTree* tree,
     else {
             assert(LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight(tree, entry_parent) == entry_id);
         ret = LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, entry_parent);
-    }\
+    }
     return ret;
 }
    
@@ -64,8 +64,8 @@ static LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id GetSiblingEntry(RbTree* tree,
 static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id ins_entry_id) {
     RbEntry* ins_entry = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, ins_entry_id);
     LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, ins_entry, kRbBlack);
-    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* cur_id = RbBsTreeStackVectorPopTail(stack);
-    if (cur_id == NULL) {
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* cur_id_ptr = RbBsTreeStackVectorPopTail(stack);
+    if (cur_id_ptr == NULL) {
         LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, ins_entry, kRbBlack);
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, ins_entry);
         return;
@@ -75,34 +75,34 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
        
     RbEntry* cur = NULL;
     /* 开始回溯维护 */
-    while (cur_id != NULL) {
-        cur = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *cur_id);
+    while (cur_id_ptr != NULL) {
+        cur = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *cur_id_ptr);
         if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, cur) == kRbBlack) {
             /* 当前节点(插入节点的父节点)是黑色，啥都不用做(是2节点 / 3节点的插入，直接合并) */
             break;
         }
-        LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* parent_id = RbBsTreeStackVectorPopTail(stack);
-        if (parent_id == NULL) {
+        LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* parent_id_ptr = RbBsTreeStackVectorPopTail(stack);
+        if (parent_id_ptr == NULL) {
             /* 没有父节点，回溯到根节点了，直接染黑 */
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, cur, kRbBlack);
             break;
         }
-        RbEntry* parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *parent_id);
-        LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id sibling_id = GetSiblingEntry(tree, parent, *cur_id, cur);
+        RbEntry* parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *parent_id_ptr);
+        LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id sibling_id = GetSiblingEntry(tree, parent, *cur_id_ptr, cur);
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, parent);
         RbEntry* sibling = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, sibling_id);
         if (sibling_id != LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId && LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbRed) {
             /* 兄弟节点是红色，说明是4节点的插入，分裂(红黑树的体现就是变色)，父节点向上插入，继续回溯 */
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, cur, kRbBlack);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, sibling, kRbBlack);
-            ins_entry_id = *parent_id;         /* 更新为该节点向上插入 */
+            ins_entry_id = *parent_id_ptr;         /* 更新为该节点向上插入 */
             ins_entry = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, ins_entry_id);
             if (RbBsTreeStackVectorGetTail(stack) == NULL) {
                 LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, ins_entry, kRbBlack);     /* 根节点，染黑并结束 */
                 break;
             }
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, ins_entry, kRbRed);
-            parent_id = RbBsTreeStackVectorPopTail(stack);
+            parent_id_ptr = RbBsTreeStackVectorPopTail(stack);
             /* 将parent视作插入节点 */
         }
         else {
@@ -113,24 +113,24 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
             */
                 assert(sibling_id == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId || LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbBlack);
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id new_sub_root_id;
-            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id;
+            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id_ptr;
             RbEntry* old_sub_root = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, old_sub_root_id);
             RbEntry* new_sub_root_parent = NULL;
-            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* new_sub_root_parent_id = RbBsTreeStackVectorGetTail(stack);
-            if (new_sub_root_parent_id) new_sub_root_parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *new_sub_root_parent_id);
-            if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, old_sub_root) == *cur_id) {
+            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* new_sub_root_parent_id_ptr = RbBsTreeStackVectorGetTail(stack);
+            if (new_sub_root_parent_id_ptr) new_sub_root_parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *new_sub_root_parent_id_ptr);
+            if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, old_sub_root) == *cur_id_ptr) {
                 if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight(tree, cur) == ins_entry_id) {
-                    RbRotateLeft(tree, old_sub_root, *cur_id, cur);
+                    RbRotateLeft(tree, old_sub_root, *cur_id_ptr, cur);
                 }
                 new_sub_root_id = RbRotateRight(tree, new_sub_root_parent, old_sub_root_id, old_sub_root);
             }
             else {
                 if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, cur) == ins_entry_id) {
-                    RbRotateRight(tree, old_sub_root, *cur_id, cur);
+                    RbRotateRight(tree, old_sub_root, *cur_id_ptr, cur);
                 }
                 new_sub_root_id = RbRotateLeft(tree, new_sub_root_parent, old_sub_root_id, old_sub_root);
             }
-            if (new_sub_root_parent_id) LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, new_sub_root_parent);
+            if (new_sub_root_parent_id_ptr) LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, new_sub_root_parent);
             RbEntry* new_sub_root = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, new_sub_root_id);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, new_sub_root, kRbBlack);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, old_sub_root, kRbRed);
@@ -141,7 +141,7 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
             }
             break;        /* 只是并入，未分裂，向上没有改变颜色，不再需要回溯 */
         }
-        cur_id = parent_id;
+        cur_id_ptr = parent_id_ptr;
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, cur);
     }
     LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, cur);
@@ -151,7 +151,7 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
 */
 static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id del_entry_id, bool is_parent_left) {
     RbEntry* del_entry = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, del_entry_id);
-    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* parent_id = NULL;
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* parent_id_ptr = NULL;
        
     RbColor del_color = LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, del_entry);
     if (del_color == kRbRed) { /* 是红色的，是3/4节点，因为此时一定是叶子节点(红节点不可能只有一个子节点)，直接移除 */ }
@@ -166,24 +166,24 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
         LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, del_entry_right, kRbBlack);
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, del_entry_right);
     }
-    else { parent_id = RbBsTreeStackVectorPopTail(stack); }
+    else { parent_id_ptr = RbBsTreeStackVectorPopTail(stack); }
        
     LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id new_sub_root_id;
-    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* grandpa_id = NULL;
+    LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id* grandpa_id_ptr = NULL;
     /* 回溯维护删除黑色节点，即没有子节点(2节点)的情况 */
     RbEntry* parent = NULL, * sibling = NULL, * grandpa = NULL;
-    if (parent_id) parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *parent_id);
-    while (parent_id != NULL) {
+    if (parent_id_ptr) parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *parent_id_ptr);
+    while (parent_id_ptr != NULL) {
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id sibling_id = is_parent_left ? LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight(tree, parent) : LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, parent);
         sibling = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, sibling_id);
-        grandpa_id = RbBsTreeStackVectorPopTail(stack);
-        if (grandpa_id) grandpa = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *grandpa_id);
+        grandpa_id_ptr = RbBsTreeStackVectorPopTail(stack);
+        if (grandpa_id_ptr) grandpa = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *grandpa_id_ptr);
         else grandpa = NULL;
         /* 黑色节点一定有兄弟节点 */
         if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbRed) {
             /* 兄弟节点为红，说明兄弟节点与父节点形成3节点，真正的兄弟节点应该是红兄弟节点的子节点
                 旋转，此时只是使得兄弟节点和父节点形成的3节点红色链接位置调换，当前节点的兄弟节点变为原兄弟节点的子节点 */
-            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id;
+            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id_ptr;
             RbEntry* old_sub_root = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, old_sub_root_id);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, old_sub_root, kRbRed);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, sibling, kRbBlack);
@@ -205,8 +205,8 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, old_sub_root);
             /* grandpa变为新根节点 */
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, grandpa);
-            grandpa_id = &new_sub_root_id;
-            grandpa = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *grandpa_id);
+            grandpa_id_ptr = &new_sub_root_id;
+            grandpa = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *grandpa_id_ptr);
         }
            
         /* 至此兄弟节点一定为黑 */
@@ -218,7 +218,7 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, sibling) != LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId && LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling_left) == kRbRed) {
             RbColor parent_color = LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, parent);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, parent, kRbBlack);
-            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id;
+            LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id_ptr;
             RbEntry* new_sub_root_parent = NULL;
             if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, parent) == sibling_id) {
                 if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetLeft(tree, sibling) == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId || LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling_left) == kRbBlack) {
@@ -228,7 +228,7 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
                 else {
                     LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, sibling_left, kRbBlack);
                 }
-                new_sub_root_id = RbRotateRight(tree, grandpa, *parent_id, parent);
+                new_sub_root_id = RbRotateRight(tree, grandpa, *parent_id_ptr, parent);
             }
             else {
                 if (LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetRight(tree, sibling) == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId || LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling_right) == kRbBlack) {
@@ -238,7 +238,7 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
                 else {
                     LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, sibling_right, kRbBlack);
                 }
-                new_sub_root_id = RbRotateLeft(tree, grandpa, *parent_id, parent);
+                new_sub_root_id = RbRotateLeft(tree, grandpa, *parent_id_ptr, parent);
             }
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, sibling);
             sibling = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, sibling_id);
@@ -268,8 +268,8 @@ static void RbTreeDeleteFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
                 为什么不是3/4节点？因为黑父节点如果是3，兄弟节点是红，4的话回溯时父节点是红 */
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, sibling, kRbRed);
         }
-        LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id child_id = *parent_id;
-        parent_id = grandpa_id;
+        LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id child_id = *parent_id_ptr;
+        parent_id_ptr = grandpa_id_ptr;
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, parent);
         parent = grandpa;
         if (parent != NULL) {
