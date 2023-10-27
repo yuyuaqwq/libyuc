@@ -386,9 +386,8 @@ static void ArNode256Release(ArTree* tree, ArNode256* node256) {
 /*
 * 在个人运行环境下测试，16字节查找性能如下：SIMD(400+ms) > 顺序查找性能(1000+ms) > 二分查找(1600+ms)
 */
-
 #ifdef _MSC_VER
-#include <intrin.h>
+#include <emmintrin.h>
 #endif
 
 static forceinline int16_t ArNode256FindPos(ArNode256* node, uint8_t key_byte) {
@@ -548,6 +547,17 @@ static ArNode** ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_by
     ptrdiff_t i;
     if (node->head.child_count > 0) {
         ptrdiff_t cmp_diff;
+#ifndef _MSC_VER
+        __m128i results = _mm_cmplt_epi8(_mm_set1_epi8(key_byte), _mm_loadu_si128((__m128i*)&node->keys[0]));
+        int16_t mask = (1 << node->head.child_count) - 1;
+        i = _mm_movemask_epi8(results) & mask;
+        if (i == 0) {
+            i = node->head.child_count;
+        }
+        else {
+            i = _tzcnt_u32(i);
+        }
+#else
         //i = ArNodeKeyArrayOrderFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
         i = ArNodeKeyArrayFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
         if (cmp_diff == 0) {
@@ -556,6 +566,7 @@ static ArNode** ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_by
             return &node->child_arr[i];
         }
         if (cmp_diff > 0) i++;
+#endif
     }
     else {
         i = 0;
@@ -698,7 +709,7 @@ static void ArNode48Delete(ArTree* tree, ArNode48** node_ptr, uint8_t key_byte) 
 
 static void ArNode256Delete(ArTree* tree, ArNode256** node_ptr, uint8_t key_byte) {
     ArNode256* node = *node_ptr;
-        assert(node->head.child_count >= 32);
+      assert(node->head.child_count >= 32);
     ArNode* find_node = node->child_arr[key_byte];
     if (find_node != InvalidId) {
         node->head.child_count--;

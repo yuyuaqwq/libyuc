@@ -140,7 +140,7 @@ TEST(ArTreeTestEnv, Start) {
 	srand(seed);
 
 #ifdef LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
-	test_res_data_set = GenerateI64Vector(test_count, false);
+	test_res_data_set = GenerateI64Vector(test_count, true);
 #else
 	test_res_data_set = GenerateStringVector(test_count, 64, 128);
 #endif
