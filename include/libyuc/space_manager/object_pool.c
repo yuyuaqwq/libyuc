@@ -24,7 +24,6 @@ static const ObjectPoolSlotPos kSlotMark = kBlockSlotCount - 1;
 void ObjectPoolInit(ObjectPool* pool) {
     pool->free_slot = kSlotPosInvalid;
     ObjectPoolBlockVectorInit(&pool->block_table, 8);
-    
 }
 /*
 * 释放整个对象池

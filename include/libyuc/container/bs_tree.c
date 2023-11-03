@@ -32,7 +32,10 @@ static void BsTreeSetNewChild(BsTree* tree, BsEntry* entry_parent, LIBYUC_CONTAI
 */
 static void BsTreeHitchEntry(BsTree* tree, BsEntry* entry_parent, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id entry_id, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id new_entry_id) {
     BsEntry* entry = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, entry_id);
-    BsEntry* new_entry = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, new_entry_id);
+    BsEntry* new_entry = NULL;
+    if (new_entry_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId) {
+        new_entry = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, new_entry_id);
+    }
     if (entry_parent != NULL) {
         BsTreeSetNewChild(tree, entry_parent, entry_id, new_entry_id);
     }
@@ -227,7 +230,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeDelete(BsTree* tree, BsTreeSta
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = BsTreeStackVectorGetTail(stack);
     BsEntry* parent = NULL;
     if (parent_id != NULL) {
-            assert(*parent_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId);
+          assert(*parent_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId);
         parent = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, *parent_id);
     }
     if (LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetLeft(tree, entry) != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId && LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, entry) != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId) {
