@@ -91,8 +91,11 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
         RbEntry* parent = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, *parent_id_ptr);
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id sibling_id = GetSiblingEntry(tree, parent, *cur_id_ptr, cur);
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, parent);
-        RbEntry* sibling = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, sibling_id);
-        if (sibling_id != LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId && LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbRed) {
+        RbEntry* sibling = NULL;
+        if (sibling_id != LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId) {
+            sibling = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, sibling_id);
+        }
+        if (sibling && LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbRed) {
             /* 兄弟节点是红色，说明是4节点的插入，分裂(红黑树的体现就是变色)，父节点向上插入，继续回溯 */
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, cur, kRbBlack);
             LIBYUC_CONTAINER_RB_TREE_ACCESSOR_SetColor(tree, sibling, kRbBlack);
@@ -112,7 +115,7 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
                 *     5r     20b    ->     !2r         10r    
                 * !2r                                                 20b
             */
-                assert(sibling_id == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId || LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbBlack);
+              assert(sibling_id == LIBYUC_CONTAINER_RB_TREE_REFERENCER_Const_InvalidId || LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetColor(tree, sibling) == kRbBlack);
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id new_sub_root_id;
             LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Id old_sub_root_id = *parent_id_ptr;
             RbEntry* old_sub_root = LIBYUC_CONTAINER_RB_TREE_REFERENCER_Reference(tree, old_sub_root_id);
@@ -145,6 +148,8 @@ static void RbTreeInsertFixup(RbTree* tree, RbBsTreeStackVector* stack, LIBYUC_C
             }
             break;        /* 只是并入，未分裂，向上没有改变颜色，不再需要回溯 */
         }
+        if (sibling) LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, sibling);
+
         cur_id_ptr = parent_id_ptr;
         LIBYUC_CONTAINER_RB_TREE_REFERENCER_Dereference(tree, cur);
     }
