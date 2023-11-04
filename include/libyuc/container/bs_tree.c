@@ -3,6 +3,7 @@
 #include <libyuc/container/bs_tree_BsTreeStackVector.cfg>
 #include <libyuc/container/vector.c>
 
+#define BsTreeStackVectorGetCount MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorGetCount)
 #define BsTreeStackVectorPushTail MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorPushTail)
 #define BsTreeStackVectorGetTail MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorGetTail)
 #define BsTreeStackVectorPopTail MAKE_NAME(LIBYUC_CONTAINER_BS_TREE_CLASS_NAME, BsTreeStackVectorPopTail)
@@ -227,7 +228,10 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreePut(BsTree* tree, BsTreeStackV
 LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeDelete(BsTree* tree, BsTreeStackVector* stack, LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id entry_id, bool* is_parent_left) {
       assert(entry_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId);
     BsEntry* entry = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, entry_id);
-    LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = BsTreeStackVectorGetTail(stack);
+    LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = NULL;
+    if (BsTreeStackVectorGetCount(stack) > 0) {
+        parent_id = BsTreeStackVectorGetTail(stack);
+    }
     BsEntry* parent = NULL;
     if (parent_id != NULL) {
           assert(*parent_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId);
@@ -249,8 +253,10 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeDelete(BsTree* tree, BsTreeSta
         }
         /* 被替换到当前位置的最小节点，保证回溯路径的正确 */
         *new_entry_id = min_entry_id;
-        BsEntry* min_entry_parent = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, min_entry_parent_id);
-           
+        BsEntry* min_entry_parent = NULL;
+        if (min_entry_parent_id != LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId) {
+            min_entry_parent = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, min_entry_parent_id);
+        }
         /* 最小节点继承待删除节点的左子树，因为最小节点肯定没有左节点，所以直接赋值 */
         LIBYUC_CONTAINER_BS_TREE_ACCESSOR_SetLeft(tree, min_entry, LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetLeft(tree, entry));
            
@@ -267,8 +273,9 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeDelete(BsTree* tree, BsTreeSta
         else {
             if (is_parent_left) *is_parent_left = false;
         }
-        LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, min_entry_parent);
-           
+        if (min_entry_parent) {
+            LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, min_entry_parent);
+        }
         /* 最后进行挂接 */
         BsTreeHitchEntry(tree, parent, entry_id, min_entry_id);
            
@@ -393,15 +400,17 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorNext(BsTree* tree, BsT
         LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
         return cur_id;
     }
-    LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = BsTreeStackVectorPopTail(stack);
+    
     BsEntry* parent = NULL;
-    while (parent_id != NULL) {
+    LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = NULL;
+    while (BsTreeStackVectorGetCount(stack) > 0) {
+        parent_id = BsTreeStackVectorPopTail(stack);
         parent = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, *parent_id);
         if (cur_id != LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetRight(tree, parent)) break;
         LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
         cur = parent;
         cur_id = *parent_id;
-        parent_id = BsTreeStackVectorPopTail(stack);
+        parent_id = NULL;
     }
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
     if (parent) LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, parent);
@@ -423,15 +432,16 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorPrev(BsTree* tree, BsT
         LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
         return cur_id;
     }
-    LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = BsTreeStackVectorPopTail(stack);
+    LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id* parent_id = NULL;
     BsEntry* parent = NULL;
-    while (parent_id != NULL) {
+    while (BsTreeStackVectorGetCount(stack) > 0) {
+        parent_id = BsTreeStackVectorPopTail(stack);
         parent = LIBYUC_CONTAINER_BS_TREE_REFERENCER_Reference(tree, *parent_id);
         if (cur_id != LIBYUC_CONTAINER_BS_TREE_ACCESSOR_GetLeft(tree, parent)) break;
         LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
         cur = parent;
         cur_id = *parent_id;
-        parent_id = BsTreeStackVectorPopTail(stack);
+        parent_id = NULL;
     }
     LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, cur);
     if (parent) LIBYUC_CONTAINER_BS_TREE_REFERENCER_Dereference(tree, parent);
@@ -439,6 +449,7 @@ LIBYUC_CONTAINER_BS_TREE_REFERENCER_Type_Id BsTreeIteratorPrev(BsTree* tree, BsT
     return LIBYUC_CONTAINER_BS_TREE_REFERENCER_Const_InvalidId;
 }
 
+#undef BsTreeStackVectorGetCount
 #undef BsTreeStackVectorGetTail
 #undef BsTreeStackVectorPushTail
 #undef BsTreeStackVectorPopTail

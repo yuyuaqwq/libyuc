@@ -244,24 +244,26 @@ static bool RotateByBalanceFactor(AvlTree* tree, LIBYUC_CONTAINER_AVL_TREE_REFER
 * 向树中插入节点的平衡操作
 */
 static void AvlTreeInsertFixup(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id ins_entry_id) {
-    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* cur_id_ptr = AvlBsTreeStackVectorPopTail(stack);
-    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id cur_id = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId;
-    if (cur_id_ptr) cur_id = *cur_id_ptr;
     LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id child_id = ins_entry_id;
     AvlEntry* cur = NULL;
     AvlEntry* child = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference(tree, child_id);
     LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_SetBalanceFactor(tree, child, 0);
     /* 插入节点后平衡因子可能发生变化，回溯维护平衡因子 */
-    while (cur_id != LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId) {
+    while (AvlBsTreeStackVectorGetCount(stack) > 0) {
+        LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* cur_id_ptr = AvlBsTreeStackVectorPopTail(stack);
+        LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id cur_id = *cur_id_ptr;
+    
         cur = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference(tree, cur_id);
         child = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference(tree, child_id);
         int8_t cur_bf = LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(tree, cur);
         if (child_id == LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft(tree, cur)) cur_bf++;        /* 新节点插入到当前节点的左子树 */
         else cur_bf--;         /* 新节点插入到当前节点的右子树 */
            
-        LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* parent_id_ptr = AvlBsTreeStackVectorPopTail(stack) ;
         LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id parent_id = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId;
-        if (parent_id_ptr) parent_id = *parent_id_ptr;
+        if (AvlBsTreeStackVectorGetCount(stack) > 0) {
+            LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* parent_id_ptr = AvlBsTreeStackVectorPopTail(stack) ;
+            parent_id = *parent_id_ptr;
+        }
         if (RotateByBalanceFactor(tree, parent_id, &cur_id, &cur, child_id, child, cur_bf) || cur_bf == 0) {
             /* 旋转后当前节点高度不变，或原先高度就不变，停止回溯 */
             break;
@@ -280,19 +282,23 @@ static void AvlTreeInsertFixup(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYU
 */
 static void AvlTreeDeleteFixup(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id del_entry_id, bool is_parent_left) {
     /* 删除节点后节点平衡因子可能发生变化，回溯维护节点平衡因子 */
-    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* cur_id_ptr = AvlBsTreeStackVectorPopTail(stack);
-    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id cur_id = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId;
-    if (cur_id_ptr) cur_id = *cur_id_ptr;
     LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id child_id = del_entry_id;
     AvlEntry* cur = NULL;
-    while (cur_id != LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId) {
+    while (AvlBsTreeStackVectorGetCount(stack) > 0) {
+        LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* cur_id_ptr = AvlBsTreeStackVectorPopTail(stack);
+        LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id cur_id = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId;
+        cur_id = *cur_id_ptr;
+    
         cur = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference(tree, cur_id);
         int8_t cur_bf = LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetBalanceFactor(tree, cur);
         if (is_parent_left) { cur_bf--; }
         else { cur_bf++; }
-        LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* parent_id_ptr = AvlBsTreeStackVectorPopTail(stack) ;
+
         LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id parent_id = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Const_InvalidId;
-        if (parent_id_ptr) parent_id = *parent_id_ptr;
+        if (AvlBsTreeStackVectorGetCount(stack) > 0) {
+            LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id* parent_id_ptr = AvlBsTreeStackVectorPopTail(stack) ;
+            parent_id = *parent_id_ptr;
+        }
         if (cur_bf != 0) {
             LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Id deep_child_id = is_parent_left ? LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetRight(tree, cur) : LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft(tree, cur);
             AvlEntry* deep_child = LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Reference(tree, deep_child_id);
@@ -314,7 +320,7 @@ static void AvlTreeDeleteFixup(AvlTree* tree, AvlBsTreeStackVector* stack, LIBYU
             is_parent_left = LIBYUC_CONTAINER_AVL_TREE_ACCESSOR_GetLeft(tree, cur) == child_id;
         }
     }
-    LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(tree, cur);
+    if (cur) LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Dereference(tree, cur);
 }
 /*
 * 初始化树

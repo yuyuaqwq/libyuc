@@ -1020,13 +1020,12 @@ art_element_type* ArTreeIteratorNext(ArTreeIterator* iter) {
       assert(iter->cur);
     art_element_type* element = ArLeafGetElement(iter->cur);
     art_key_type* key = ArElementGetKey(element);
-    ArTreeEntryPos* pos = ArTreeEntryPosVectorGetTail(&iter->stack);
-    while (pos != NULL) {
+    while (ArTreeEntryPosVectorGetCount() > 0) {
+        ArTreeEntryPos* pos = ArTreeEntryPosVectorGetTail(&iter->stack);
         // 取pos
         ArNode* next = ArNodeNext(pos->parent, &pos->pos);
         if (next == NULL) {
             ArTreeEntryPosVectorPopTail(&iter->stack);
-            pos = ArTreeEntryPosVectorGetTail(&iter->stack);
             continue;
         }
         if (ArNodeIsLeaf(next)) {

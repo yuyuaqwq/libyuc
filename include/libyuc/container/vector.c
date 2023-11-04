@@ -103,15 +103,11 @@ LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPushMultipleTail(Vector* vec
     return VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector) - (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)count);
 }
 LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorGetTail(Vector* vector) {
-    if (VectorGetCount(vector) == 0) {
-        return NULL;
-    }
+      release_assert(VectorGetCount(vector) > 0);
     return VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector) - 1);
 }
 LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Element* VectorPopTail(Vector* vector) {
-    if (VectorGetCount(vector) == 0) {
-        return NULL;
-    }
+      release_assert(VectorGetCount(vector) > 0);
     VectorSetCount(vector, VectorGetCount(vector) - 1);
     return VectorIndex(vector, (LIBYUC_CONTAINER_VECTOR_INDEXER_Type_Id)VectorGetCount(vector));
 }

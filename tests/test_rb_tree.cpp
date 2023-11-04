@@ -99,6 +99,7 @@ TEST(RbTreeTest, Iterator) {
 	while (iter_key) {
 		++i;
 		iter_key = IntRbTreeIteratorNext(&test_rb_tree, &iter);
+		//printf("%d\n", ((IntRbEntry_User*)(iter_key))->key);
 	}
 	ASSERT_EQ(i, test_count);
 }
