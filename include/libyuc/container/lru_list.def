@@ -22,3 +22,44 @@
 #ifndef LIBYUC_CONTAINER_LRU_LIST_COMPARER_Cmp
 #define LIBYUC_CONTAINER_LRU_LIST_COMPARER_Cmp(main_obj, obj1, obj2) ((LIBYUC_CONTAINER_LRU_LIST_COMPARER_Type_Diff)(*(obj1) - *(obj2)))
 #endif
+
+
+
+#define LruListEntry MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListEntry)
+#define LruListHashEntry MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListHashEntry)
+#define LruList MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruList)
+
+
+#define LruListInit MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListInit)
+#define LruListGet MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListGet)
+#define LruListGetTail MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListGetTail)
+#define LruListPut MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListPut)
+#define LruListDeleteByKey MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListDeleteByKey)
+#define LruListDeleteByEntry MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruListDeleteByEntry)
+
+
+/*
+* LruHashTable
+*/
+#define LruHashTable MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTable)
+#define LruHashTableIterator MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTableIterator)
+
+#define LruHashTableInit MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTableInit)
+#define LruHashTableFind MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTableFind)
+#define LruHashTableIteratorLocate MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTableIteratorLocate)
+#define LruHashTablePut MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTablePut)
+#define LruHashTableIteratorDelete MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTableIteratorDelete)
+#define LruHashTableDelete MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruHashTableDelete)
+
+
+/*
+* LruLinkList
+*/
+#define LruLinkListHead MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLinkListHead)
+#define LruLinkListEntry MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLinkListEntry)
+
+#define LruLinkListInit MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLinkListInit)
+#define LruLinkListPutFirst MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLinkListPutFirst)
+#define LruLinkListDeleteEntry MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLinkListDeleteEntry)
+#define LruLinkListLast MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLinkListLast)
+

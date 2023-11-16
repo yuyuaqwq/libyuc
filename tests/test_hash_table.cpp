@@ -6,7 +6,7 @@
 
 #include <libyuc/tests/rand_data_set.h>
 
-#include "C:/Users/gt1/Desktop/wyhash.h"
+#include "C:/Users/yuyu/Desktop/src/wyhash.h"
 #define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element int64_t
 #include <libyuc/container/hash_table.h>

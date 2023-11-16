@@ -16,8 +16,9 @@ typedef union ObjectPoolSlot {
 
 static const ObjectPoolSlotPos kSlotPosInvalid = -1;
 static const ObjectPoolSlotPos kBlockSlotCount = 4096 / sizeof(ObjectPoolSlot);
-//static const ObjectPoolSlotPos kBlockShift = 10;    // 此处应当通过计算
-static const ObjectPoolSlotPos kSlotMark = kBlockSlotCount - 1;
+
+//static const ObjectPoolSlotPos kBlockShift = 10;    // 此处应当通过计算得出
+//static const ObjectPoolSlotPos kSlotMark = kBlockSlotCount - 1;
 
 
 
@@ -37,6 +38,7 @@ void ObjectPoolRelease(ObjectPool* pool) {
 
 
 static void ObjectPoolSplitId(ObjectPoolSlotPos slot_pos, ObjectPoolBlockId* block_id, ObjectPoolSlotId* slot_id) {
+    // 交给编译器优化
     *block_id = slot_pos / kBlockSlotCount;
     *slot_id = slot_pos % kBlockSlotCount;
     //*block_id = slot_pos >> kBlockShift;

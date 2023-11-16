@@ -9,7 +9,7 @@
 
 #include <libyuc/container/lru_list.def>
 
-#define LIBYUC_CONTAINER_LIST_CLASS_NAME LruLink
+#define LIBYUC_CONTAINER_LIST_CLASS_NAME MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, LruLink)
 #include <libyuc/container/list.h>
 
 
@@ -20,13 +20,13 @@ typedef struct LruListHashEntry {
     LruListEntry* lru_list_entry;
 } LruListHashEntry;
 
-#define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME LruList
+#define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, Lru)
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element LruListHashEntry
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key LIBYUC_CONTAINER_LRU_LIST_Type_Key
 #include <libyuc/container/hash_table.h>
 
-typedef struct HashList {
-    LruListHashTable hash_table;
+typedef struct LruList {
+    LruHashTable hash_table;
     LruLinkListHead list_head;
     size_t max_count;
 } LruList;
@@ -38,7 +38,9 @@ LruListEntry* LruListPut(LruList* list, LruListEntry* entry);
 bool LruListDeleteByKey(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key);
 void LruListDeleteByEntry(LruList* list, LruListEntry* entry);
 
-#include <libyuc/container/lru_list.c>
+#include <libyuc/container/lru_list.undef>
+
+//#include <libyuc/container/lru_list.c>
 
 
 #endif // LIBYUC_CONTAINER_LRU_LIST_H_
