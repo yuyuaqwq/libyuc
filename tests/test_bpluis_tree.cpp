@@ -4,18 +4,12 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/tests/rand_data_set.h>
-
-
-
-
 #define LIBYUC_CONTAINER_BPLUS_TREE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Key int64_t
 #define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Id int16_t
 #define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Type_Offset uint16_t
 #define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Const_InvalidId -1
 #include <libyuc/container/bplus_tree.h>
-
 
 #define TEST_BPLUS_ENTRY_TO_ENTRY_EXTEND(ENTRY) ((IntBPlusEntryExtend*)((uintptr_t)(ENTRY) - sizeof(IntBPlusEntryExtend)))
 
@@ -90,6 +84,10 @@ IntBPlusElement* TEST_BPLUS_ELEMENT_REFERENCER_Reference(const IntBPlusEntry* EN
 #define LIBYUC_CONTAINER_BPLUS_TREE_ELEMENT_REFERENCER_Dereference
 
 #include <libyuc/container/bplus_tree.c>
+
+
+#include "rand_data_set.h"
+
 
 
 static size_t test_count = 10000000;

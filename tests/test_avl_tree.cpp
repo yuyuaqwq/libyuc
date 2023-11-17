@@ -5,11 +5,11 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/tests/rand_data_set.h>
-
 #define LIBYUC_CONTAINER_AVL_TREE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_AVL_TREE_REFERENCER_Type_Key int64_t
 #include <libyuc/container/experimental/avl_tree.h>
+
+#include "rand_data_set.h"
 
 struct IntAvlEntry_User {
 	IntAvlEntry avl_entry;

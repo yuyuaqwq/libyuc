@@ -5,11 +5,10 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/tests/rand_data_set.h>
-
 #define LIBYUC_CONTAINER_AR_TREE_KEY_MODE_FIXED
 #include <libyuc/container/experimental/ar_tree.h>
 
+#include "rand_data_set.h"
 
 static int seed = 312962319;
 static size_t test_count = 10000000;

@@ -27,17 +27,9 @@ typedef struct HashTableIterator {
     LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Id cur_index;
 } HashTableIterator;
 
-#ifdef LIBYUC_CONTAINER_HASH_TABLE_MODE_LRU
-#include <libyuc/container/hash_table_HashLruDoublyStaticList.cfg>
-#include <libyuc/container/doubly_static_list.h>
-#endif
-
 typedef struct HashTableEntry {
     LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Id dist; /* 与第一次哈希相差的距离，从1开始算起(0表示无效) */
-    LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element obj;
-#ifdef LIBYUC_CONTAINER_HASH_TABLE_MODE_LRU
-    HashLruDoublyStaticListEntry lru_entry;
-#endif
+    LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element ele;
 } HashTableEntry;
 
 
@@ -67,5 +59,3 @@ bool HashTableIteratorDelete(struct HashTable* table, HashTableIterator* iter);
 
 
 #include <libyuc/container/hash_table.undef>
-
-

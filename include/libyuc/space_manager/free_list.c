@@ -12,6 +12,7 @@ void FreeListInit(FreeList* head, LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id
     block->next_block_offset = LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Const_InvalidId;
     block->count = element_count - element_count % sizeof(FreeBlockEntry);
 }
+
 /*
 * 分配块，返回偏移
 */
@@ -41,6 +42,7 @@ LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id FreeListAlloc(FreeList* head, LIB
     };
     return LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Const_InvalidId;
 }
+
 /*
 * 释放块
 */
@@ -100,6 +102,7 @@ void FreeListFree(FreeList* head, LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id
         head->first_block[list_order] = free_offset;
     }
 }
+
 /*
 * 查询最大块长度
 */
@@ -116,6 +119,7 @@ LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id FreeListGetMaxFreeBlockSize(FreeL
     }
     return max;
 }
+
 LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id FreeListGetFreeBlockSize(FreeList* head, LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id list_order) {
     FreeBlockEntry* prev_block = (FreeBlockEntry*)((uintptr_t)&head->first_block[list_order]);
     LIBYUC_SPACE_MANAGER_FREE_LIST_INDEXER_Type_Id free_offset = head->first_block[list_order];

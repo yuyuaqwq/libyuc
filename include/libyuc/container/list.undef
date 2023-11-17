@@ -10,13 +10,13 @@
 
 
 #undef ListInit
-#undef ListPutEntryNext
 #undef ListPutFirst
 #undef ListPutLast
-#undef ListDeleteEntry
+#undef ListPutNext
 #undef ListDeleteFirst
 #undef ListDeleteLast
-#undef ListReplaceEntry
+#undef ListDelete
+#undef ListReplace
 #undef ListGetCount
 #undef ListFirst
 #undef ListLast

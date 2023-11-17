@@ -6,7 +6,6 @@
 #include <libyuc/algorithm/two.h>
 #include <libyuc/container/experimental/cb_tree.h>
 
-
 /*
 * 主要参考自项目：https://github.com/wuwenbin/buddy2
 */
@@ -17,7 +16,6 @@ typedef struct Buddy {
     /*uint8_t size;*/
     uint8_t logn[];        /* 实际存放指数+1，因为0用来表示没有空间，而2^0应该是1 */
 } Buddy;
-
 
 Buddy* BuddyCreate(LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset size);
 bool BuddyInit(Buddy* buddy, LIBYUC_SPACE_MANAGER_BUDDY_INDEXER_Type_Offset size);

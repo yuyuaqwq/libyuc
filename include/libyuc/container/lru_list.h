@@ -2,9 +2,6 @@
 * Copyright ©2022-2023 @yuyuaqwq, All Rights Reserved.
 */
 
-#ifndef LIBYUC_CONTAINER_LRU_LIST_H_
-#define LIBYUC_CONTAINER_LRU_LIST_H_
-
 #include <libyuc/basic.h>
 
 #include <libyuc/container/lru_list.def>
@@ -16,9 +13,11 @@
 typedef struct LruListEntry {
     LruLinkListEntry list_entry;
 } LruListEntry;
+
 typedef struct LruListHashEntry {
-    LruListEntry* lru_list_entry;
+    LruListEntry* lru_entry;
 } LruListHashEntry;
+
 
 #define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, Lru)
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element LruListHashEntry
@@ -27,20 +26,15 @@ typedef struct LruListHashEntry {
 
 typedef struct LruList {
     LruHashTable hash_table;
-    LruLinkListHead list_head;
+    LruLinkList list;
     size_t max_count;
 } LruList;
 
 void LruListInit(LruList* list, size_t max_count);
-LruListEntry* LruListGet(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key, bool put_first);
+LruListEntry* LruListGetByKey(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key, bool put_first);
 LruListEntry* LruListGetTail(LruList* list);
 LruListEntry* LruListPut(LruList* list, LruListEntry* entry);
+void LruListDelete(LruList* list, LruListEntry* entry);
 bool LruListDeleteByKey(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key);
-void LruListDeleteByEntry(LruList* list, LruListEntry* entry);
 
 #include <libyuc/container/lru_list.undef>
-
-//#include <libyuc/container/lru_list.c>
-
-
-#endif // LIBYUC_CONTAINER_LRU_LIST_H_

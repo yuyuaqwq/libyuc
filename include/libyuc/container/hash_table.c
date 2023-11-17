@@ -34,15 +34,15 @@ static forceinline LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Offset HashGetCurren
 static forceinline void HashEntryExchange(HashTable* table, HashTableEntry* entry_a, HashTableEntry* entry_b) {
     HashTableEntry temp;
     temp.dist = entry_a->dist;
-    temp.obj = entry_a->obj;
+    temp.ele = entry_a->ele;
     entry_a->dist = entry_b->dist;
-    entry_a->obj = entry_b->obj;
+    entry_a->ele = entry_b->ele;
     entry_b->dist = temp.dist;
-    entry_b->obj = temp.obj;
+    entry_b->ele = temp.ele;
 }
 static forceinline void HashEntryMove(HashTable* table, HashTableEntry* entry_dst, const HashTableEntry* entry_src) {
     entry_dst->dist = entry_src->dist;
-    entry_dst->obj = entry_src->obj;
+    entry_dst->ele = entry_src->ele;
 }
 
 LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Offset HashTableGetCount(HashTable* table) {
@@ -91,9 +91,12 @@ forceinline LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorL
     iter->dist = LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID;
     do {
         HashTableEntry* entry = HashBucketVectorIndex(&table->bucket, iter->cur_index);
-        LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* entry_key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj);
+        if (entry->dist == LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID) {
+            break;
+        }
+        LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* entry_key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->ele);
         if (LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, entry_key, key) == 0 && entry->dist != LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID) {
-            return &entry->obj;
+            return &entry->ele;
         }
         if (iter->dist++ > entry->dist || entry->dist == LIBYUC_CONTAINER_HASH_TABLE_DIST_INVALID_ID) {
             return NULL;
@@ -102,6 +105,7 @@ forceinline LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorL
     } while (true);
     return NULL;
 }
+
 bool HashTableIteratorDelete(HashTable* table, HashTableIterator* iter) {
     HashTableEntry* empty_entry = HashBucketVectorIndex(&table->bucket, iter->cur_index);
     if (empty_entry == NULL) {
@@ -123,10 +127,12 @@ bool HashTableIteratorDelete(HashTable* table, HashTableIterator* iter) {
     }
     return true;
 }
+
 LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorFirst(HashTable* table, HashTableIterator* iter) {
     iter->cur_index = 0;
     return HashTableIteratorNext(table, iter);
 }
+
 LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorNext(HashTable* table, HashTableIterator* iter) {
     HashTableEntry* entry = NULL;
     do {
@@ -138,22 +144,23 @@ LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableIteratorNext(HashTabl
             break;
         }
     } while (true);
-    return &entry->obj;
+    return &entry->ele;
 }
 
 LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* HashTableFind(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key) {
     HashTableIterator iter;
     return HashTableIteratorLocate(table, &iter, key);
 }
-void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* obj) {
+
+void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element* ele) {
     LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Offset dist = 1;
-    const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, obj);
+    const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key = LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, ele);
     LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Offset cur_index = HashGetIndex(table, key);
     HashTableEntry* entry;
     do {
         entry = HashBucketVectorIndex(&table->bucket, cur_index);
-        if (dist == entry->dist && LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->obj), key) == 0) {
-            entry->obj = (LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element)*obj;
+        if (dist == entry->dist && LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(table, LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(table, &entry->ele), key) == 0) {
+            entry->ele = (LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element)*ele;
             return;
         }
         if (dist > entry->dist) break;
@@ -162,7 +169,7 @@ void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Ty
     } while (true);
     HashTableEntry temp;
     temp.dist = dist;
-    temp.obj = (LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element)*obj;
+    temp.ele = (LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element)*ele;
     while (entry->dist != 0) {
         HashEntryExchange(table, &temp, entry);
         ++temp.dist;
@@ -177,6 +184,7 @@ void HashTablePut(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Ty
         HashRehash(table, HashBucketVectorGetCapacity(&table->bucket) * LIBYUC_CONTAINER_HASH_TABLE_DEFAULT_EXPANSION_FACTOR);
     }
 }
+
 bool HashTableDelete(HashTable* table, const LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key* key) {
     HashTableIterator iter;
     HashTableIteratorLocate(table, &iter, key);

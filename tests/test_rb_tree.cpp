@@ -4,9 +4,6 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/tests/rand_data_set.h>
-
-
 #define LIBYUC_CONTAINER_RB_TREE_CLASS_NAME Int
 #define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key int64_t
 #include <libyuc/container/rb_tree.h>
@@ -20,6 +17,8 @@ struct IntRbEntry_User {
 #define LIBYUC_CONTAINER_RB_TREE_REFERENCER_Type_Key int64_t
 #define LIBYUC_CONTAINER_RB_TREE_ACCESSOR_GetKey(MAIN_OBJ, OBJ) (&((IntRbEntry_User*)OBJ)->key)
 #include <libyuc/container/rb_tree.c>
+
+#include "rand_data_set.h"
 
 static int seed = 312962319;
 static size_t test_count = 10000000;

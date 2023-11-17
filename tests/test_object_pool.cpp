@@ -4,26 +4,25 @@
 
 #include <gtest/gtest.h>
 
-#include <libyuc/tests/rand_data_set.h>
-
-
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME Int
-#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element union IntEntry_User
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element int64_t	// union IntEntry_User
 #include <libyuc/space_manager/object_pool.h>
 
-union IntEntry_User {
-	int32_t ele;
-};
+#include "rand_data_set.h"
+
+//union IntEntry_User {
+//	int64_t ele;
+//};
 
 
 #define LIBYUC_SPACE_MANAGER_OBJECT_POOL_CLASS_NAME Int
-#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element IntEntry_User
+#define LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Element int64_t
 #include <libyuc/space_manager/object_pool.c>
 
 
-static size_t test_count = 100000000;
+static size_t test_count = 10000000;
 static IntObjectPool test_pool;
-static std::vector<IntObjectPoolSlotPos> test_res;
+static std::vector<int64_t*> test_res;
 static std::vector<int64_t*> test_res_stl;
 
 

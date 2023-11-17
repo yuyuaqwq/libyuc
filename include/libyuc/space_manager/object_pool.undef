@@ -13,12 +13,16 @@
 #undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_Type_Offset
 #undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_SLOT_INDEXER_GetPtr
 
+#undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_MODE_PTR
+#undef LIBYUC_SPACE_MANAGER_OBJECT_POOL_MODE_INDEX
 
 #undef ObjectPoolSlotPos
 #undef ObjectPoolBlockId
 #undef ObjectPoolSlotId
 
 #undef ObjectPool
+
+#undef ObjectPoolSlot
 
 #undef ObjectPoolSlotInit
 #undef ObjectPoolInit

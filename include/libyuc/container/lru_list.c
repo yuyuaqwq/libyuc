@@ -28,56 +28,59 @@
 #define LIBYUC_CONTAINER_HASH_TABLE_CLASS_NAME MAKE_NAME(LIBYUC_CONTAINER_LRU_LIST_CLASS_NAME, Lru)
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Element LruListHashEntry
 #define LIBYUC_CONTAINER_HASH_TABLE_INDEXER_Type_Key LIBYUC_CONTAINER_LRU_LIST_Type_Key
+#define LIBYUC_CONTAINER_HASH_TABLE_ACCESSOR_GetKey(HASH_TABLE, ELEMENT) LIBYUC_CONTAINER_LRU_LIST_ACCESSOR_GetKey(ObjectGetFromField((HASH_TABLE), LruHashTable, hash_table), (ELEMENT)->lru_entry)
 #define LIBYUC_CONTAINER_HASH_TABLE_COMPARER_Cmp(MAIN_OBJ, KEY1, KEY2) LIBYUC_CONTAINER_LRU_LIST_COMPARER_Cmp(MAIN_OBJ, KEY1, KEY2)
+#define LIBYUC_CONTAINER_HASH_TABLE_HASHER_HashCode(main_obj, obj) (_wymix(*(obj), UINT64_C(0x9E3779B97F4A7C15)))
 #include <libyuc/container/hash_table.c>
 
 
 void LruListInit(LruList* list, size_t max_count) {
     LruHashTableInit(&list->hash_table, max_count, 0);
-    LruLinkListInit(&list->list_head);
+    LruLinkListInit(&list->list);
     list->max_count = max_count;
 }
 
-LruListEntry* LruListGet(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key, bool put_first) {
+LruListEntry* LruListGetByKey(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key, bool put_first) {
     LruListHashEntry* hash_entry = LruHashTableFind(&list->hash_table, key);
     if (!hash_entry) {
         return NULL;
     }
     if (put_first) {
-        LruLinkListPutFirst(&list->list_head, LruLinkListDeleteEntry(&list->list_head, &hash_entry->lru_list_entry->list_entry));
+        LruLinkListDelete(&list->list, &hash_entry->lru_entry->list_entry);
+        LruLinkListPutFirst(&list->list, &hash_entry->lru_entry->list_entry);
     }
-    return hash_entry->lru_list_entry;
+    return hash_entry->lru_entry;
 }
 
 LruListEntry* LruListGetTail(LruList* list) {
-    return (LruListEntry*)LruLinkListLast(&list->list_head);
+    return (LruListEntry*)LruLinkListLast(&list->list);
 }
 
 LruListEntry* LruListPut(LruList* list, LruListEntry* entry) {
     LIBYUC_CONTAINER_LRU_LIST_Type_Key* key = LIBYUC_CONTAINER_LRU_LIST_ACCESSOR_GetKey(list, entry);
     LruListHashEntry put_hash_entry;
-    put_hash_entry.lru_list_entry = entry;
+    put_hash_entry.lru_entry = entry;
     LruHashTableIterator iter;
     LruListHashEntry* hash_entry = LruHashTableIteratorLocate(&list->hash_table, &iter, key);
     if (hash_entry) {
         LruListDeleteByKey(list, key);
     }
     LruHashTablePut(&list->hash_table, &put_hash_entry);
-    LruLinkListPutFirst(&list->list_head, &entry->list_entry);
-    return hash_entry ? hash_entry->lru_list_entry : NULL;
+    LruLinkListPutFirst(&list->list, &entry->list_entry);
+    return hash_entry ? hash_entry->lru_entry : NULL;
+}
+
+void LruListDelete(LruList* list, LruListEntry* entry) {
+    LIBYUC_CONTAINER_LRU_LIST_Type_Key* key = LIBYUC_CONTAINER_LRU_LIST_ACCESSOR_GetKey(list, entry);
+    LruHashTableDelete(&list->hash_table, key);
 }
 
 bool LruListDeleteByKey(LruList* list, LIBYUC_CONTAINER_LRU_LIST_Type_Key* key) {
     LruHashTableIterator iter;
     LruListHashEntry* del_hash_entry = LruHashTableIteratorLocate(&list->hash_table, &iter, key);
     if (del_hash_entry) {
-        LruLinkListDeleteEntry(&list->list_head, &del_hash_entry->lru_list_entry->list_entry);
+        LruLinkListDelete(&list->list, &del_hash_entry->lru_entry->list_entry);
     }
     LruHashTableIteratorDelete(&list->hash_table, &iter);
     return del_hash_entry ? true : false;
-}
-
-void LruListDeleteByEntry(LruList* list, LruListEntry* entry) {
-    LIBYUC_CONTAINER_LRU_LIST_Type_Key* key = LIBYUC_CONTAINER_LRU_LIST_ACCESSOR_GetKey(list, entry);
-    LruHashTableDelete(&list->hash_table, key);
 }
