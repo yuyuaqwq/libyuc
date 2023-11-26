@@ -27,7 +27,7 @@ typedef enum {
 
 /*
 * 页内红黑树
-*/\
+*/
 
 #include <libyuc/container/bplus_tree_BPlusEntryRbTree.cfg>
 #include <libyuc/container/rb_tree.h>
