@@ -423,11 +423,11 @@ static forceinline int16_t ArNode16FindPos(ArNode16* node, uint8_t key_byte) {
     i = _tzcnt_u32(i);
 #else
     //ptrdiff_t cmp_diff;
-    //int16_t i = ArNodeKeyArrayFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte. &cmp_diff);
+    //int16_t i = ArNodeKeyArraySearchByLowerBound(node->keys, 0, node->head.child_count - 1, &key_byte. &cmp_diff);
     //if (cmp_diff != 0) {
     //    return AR_TREE_ARRAY_InvalidId;
     //}
-    return ArNodeKeyArrayFind(node->keys, 0, node->head.child_count - 1, &key_byte);
+    return ArNodeKeyArraySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
 #endif
     return i;
 }
@@ -440,7 +440,7 @@ static ArNode** ArNode16Find(ArNode16* node, uint8_t key_byte) {
 }
 
 static forceinline int16_t ArNode4FindPos(ArNode4* node, uint8_t key_byte) {
-    return ArNodeKeyArrayFind(node->keys, 0, node->head.child_count - 1, &key_byte);
+    return ArNodeKeyArraySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
 }
 static ArNode** ArNode4Find(ArNode4* node, uint8_t key_byte) {
     size_t i = ArNode4FindPos(node, key_byte);
@@ -558,8 +558,8 @@ static ArNode** ArNode16Insert(ArTree* tree, ArNode16** node_ptr, uint8_t key_by
             i = _tzcnt_u32(i);
         }
 #else
-        //i = ArNodeKeyArrayOrderFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
-        i = ArNodeKeyArrayFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
+        //i = ArNodeKeyArraySearchByBinaryLowerBound(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
+        i = ArNodeKeyArraySearchByLowerBound(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
         if (cmp_diff == 0) {
             node->keys[i] = key_byte;
             node->child_arr[i] = child;
@@ -595,7 +595,7 @@ static ArNode** ArNode4Insert(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte
     ptrdiff_t i;
     if (node->head.child_count > 0) {
         ptrdiff_t cmp_diff;
-        i = ArNodeKeyArrayFind_Range(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
+        i = ArNodeKeyArraySearchByLowerBound(node->keys, 0, node->head.child_count - 1, &key_byte, &cmp_diff);
         if (cmp_diff == 0) {
             node->keys[i] = key_byte;
             node->child_arr[i] = child;
@@ -657,7 +657,7 @@ static ArNode** ArNodeInsert(ArTree* tree, ArNode** node, uint8_t key_byte, ArNo
 static void ArNode4Delete(ArTree* tree, ArNode4** node_ptr, uint8_t key_byte) {
     ArNode4* node = *node_ptr;
      assert(ArNodeGetFullCount((ArNode*)node) > 0);
-    int32_t i = ArNodeKeyArrayFind(node->keys, 0, node->head.child_count - 1, &key_byte);
+    int32_t i = ArNodeKeyArraySearch(node->keys, 0, node->head.child_count - 1, &key_byte);
     if (i != AR_TREE_ARRAY_InvalidId) {
         ArNodeKeyArrayDelete(node->keys, node->head.child_count, i);
         ArNodeChildArrayDelete(node->child_arr, node->head.child_count, i);

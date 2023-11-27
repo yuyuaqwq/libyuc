@@ -38,27 +38,27 @@
 #define LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(main_obj, obj1, obj2) ((LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff)(*(obj1) - *(obj2)))
 #endif
 
-#define ArrayFind MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayFind)
-#define ArrayFind_Range MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayFind_Range)
+#define ArraySearch MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArraySearch)
+#define ArraySearchByLowerBound MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArraySearchByLowerBound)
 #define ArrayInsert MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayInsert)
 #define ArrayDelete MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayDelete)
-#define ArrayOrderFind MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayOrderFind)
-#define ArrayOrderFind_Range MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayOrderFind_Range)
-#define ArrayOrderPut MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayOrderPut)
-#define ArrayOrderDelete MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayOrderDelete)
+#define ArraySearchByBinary MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArraySearchByBinary)
+#define ArraySearchByBinaryLowerBound MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArraySearchByBinaryLowerBound)
+#define ArrayPutByBinary MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayPutByBinary)
+#define ArrayDeleteByBinary MAKE_NAME(LIBYUC_ALGORITHM_ARRAY_CLASS, ArrayDeleteByBinary)
 
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff);
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearch(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearchByLowerBound(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff);
 void ArrayInsert(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id index, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element);
 void ArrayDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id index);
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff);
-void ArrayOrderPut(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element);
-bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearchByBinary(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearchByBinaryLowerBound(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff);
+void ArrayPutByBinary(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element);
+bool ArrayDeleteByBinary(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key);
 
 
 
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearch(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     for (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id i = begin; i <= end; i++) {
         if (LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[i]), key) == 0)
             return (LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id)i;
@@ -69,7 +69,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_
 /*
 * 有序数组，但以顺序查找的形式进行范围查找
 */
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff) {
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearchByLowerBound(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff) {
       assert(end > begin);
     if (end == begin) {
         *cmp_diff = LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, key, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[0]));
@@ -104,7 +104,7 @@ void ArrayDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGO
 /*
 * 找到了返回正确下标，否则返回-1
 */
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearchByBinary(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
     LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id mid;
     while (begin <= end) {
         mid = begin + ((end - begin) >> 1);
@@ -123,7 +123,7 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind(LIBYUC_ALGORITHM_ARRAY_IND
 * 找到了返回正确下标，否则返回第一个小于或大于key的元素下标
 * (通常返回第一个大于等于key的元素下标，若所有元素都小于key，则返回最后一个元素的下标)
 */
-LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind_Range(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff) {
+LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArraySearchByBinaryLowerBound(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id begin, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id end, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key, LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff* cmp_diff) {
     if (begin == end) {
         *cmp_diff = LIBYUC_ALGORITHM_ARRAY_COMPARER_Cmp(array, key, LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, &array[begin]));
     }
@@ -140,25 +140,26 @@ LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id ArrayOrderFind_Range(LIBYUC_ALGORITHM_ARR
 }
 
 
-void ArrayOrderPut(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element) {
+void ArrayPutByBinary(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* element) {
     LIBYUC_ALGORITHM_ARRAY_COMPARER_Type_Diff cmp_diff;
-    LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id index = ArrayOrderFind_Range(array, 0, count - 1, (const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key*)LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, element), &cmp_diff);
+    LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id index = ArraySearchByBinaryLowerBound(array, 0, count - 1, (const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key*)LIBYUC_ALGORITHM_ARRAY_ACCESSOR_GetKey(array, element), &cmp_diff);
 }
-bool ArrayOrderDelete(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
-    LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id id = ArrayOrderFind(array, 0, count - 1, key);
+bool ArrayDeleteByBinary(LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Element* array, LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Offset count, const LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key* key) {
+    LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Id id = ArraySearchByBinary(array, 0, count - 1, key);
     if (id == LIBYUC_ALGORITHM_ARRAY_INDEXER_Const_InvalidId) return false;
     ArrayDelete(array, count, id);
     return true;
 }
 
 
-#undef ArrayFind
+#undef ArraySearch
+#undef ArraySearchByLowerBound
 #undef ArrayInsert
 #undef ArrayDelete
-#undef ArrayOrderFind
-#undef ArrayOrderFind_Range
-#undef ArrayOrderPut 
-#undef ArrayOrderDelete 
+#undef ArraySearchByBinary
+#undef ArraySearchByBinaryLowerBound
+#undef ArrayPutByBinary 
+#undef ArrayDeleteByBinary 
 
 #undef LIBYUC_ALGORITHM_ARRAY_CLASS
 #undef LIBYUC_ALGORITHM_ARRAY_INDEXER_Type_Key
