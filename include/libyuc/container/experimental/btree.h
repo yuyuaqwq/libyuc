@@ -177,11 +177,13 @@ element_type* BTreeIteratorNext(BTree* tree, BTreeIterator* iter) {
     return &iter_pos->entry->element[iter_pos->cur_element_pos];
 }
 
+bool BTreeIteratorIsEmpty(BTree* tree, BTreeIterator* iter) {
+    return BTreeIteratorStackVectorIsEmpty(&iter->stack);
+}
 
 void BTreePutElement(BTree* tree, BTreeIterator* iter, element_type* element, entry_id_type left_child, entry_id_type right_child) {
-    BTreeIteratorPos* iter_pos = BTreeIteratorCur(tree, iter);
     entry_id_type entry;
-    if (!iter_pos) {
+    if (BTreeIteratorIsEmpty(tree, iter)) {
         // 创建新根节点
         if (left_child) {
             entry = (BTreeEntry*)MemoryAlloc(sizeof(BTreeEntry));
@@ -198,6 +200,8 @@ void BTreePutElement(BTree* tree, BTreeIterator* iter, element_type* element, en
         tree->root = entry;
         return;
     }
+
+    BTreeIteratorPos* iter_pos = BTreeIteratorCur(tree, iter);
 
     entry = iter_pos->entry;
 
