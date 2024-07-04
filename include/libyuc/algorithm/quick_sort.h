@@ -26,7 +26,7 @@ void QuickSort(int* arr, int left, int right) {
     int key = arr[right];
     int nkey;
     
-    int i = left; //指向最后会与key交换的成员，
+    int i = left; //指向最后会与key交换的成员，实际上也就相当于是最终基准值的位置，只是暂时不挪动末尾的基准值
     int j = left;
     while (j < right) {
         //原地分区
